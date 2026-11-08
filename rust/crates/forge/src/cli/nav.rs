@@ -429,15 +429,25 @@ fn hubs_layer(args: &[String]) -> Result<(), Fail> {
 	let t0 = Instant::now();
 	let table = |name: &str| -> Result<Vec<rustc_hash::FxHashMap<String, String>>, Fail> {
 		let f = root.join("data/sources/wago").join(&build).join(format!("{name}.csv"));
-		let text = std::fs::read_to_string(&f).map_err(|e| format!("{}: {e} (the grid's build {build}: cache its tables with forge data build)", f.display()))?;
+		let text = std::fs::read_to_string(&f).map_err(|e| format!("{}: {e} (the grid's build {build}: https://wago.tools/db2/{name}/csv?build={build})", f.display()))?;
 		Ok(forge_nav::hubs::csv_rows(&text))
 	};
-	let factions = table("FactionTemplate")?;
 	let areas = table("AreaTable")?;
 	let sources = root.join("data/sources");
 	let to_json = |v: &forge_guide::js::V| -> Result<serde_json::Value, String> { serde_json::from_str(&forge_guide::js::stringify(v, None)).map_err(|e| e.to_string()) };
-	let spawns = to_json(&forge_data::cmangos::load_spawn_heights(&sources, false)?.npc)?;
-	let templates = to_json(&forge_data::cmangos::load_creature_templates(&sources)?)?;
+	let (spawns, templates, factions) = match (forge_data::cmangos::load_spawn_heights(&sources, false), forge_data::cmangos::load_creature_templates(&sources)) {
+		(Ok(h), Ok(t)) => (to_json(&h.npc)?, to_json(&t)?, table("FactionTemplate")?),
+		(Err(e), _) | (_, Err(e)) => {
+			eprintln!("hubs: classic-db extract is not in this cache ({e}); using data/forever/npcs.json and map-frames.json");
+			let data = root.join("data/forever");
+			let read = |f: &str| -> Result<serde_json::Value, String> {
+				let p = data.join(f);
+				serde_json::from_slice(&std::fs::read(&p).map_err(|err| format!("{}: {err}", p.display()))?).map_err(|err| format!("{}: {err}", p.display()))
+			};
+			let (spawns, templates) = forge_nav::hubs::npcs_to_hub_tables(&read("npcs.json")?, &read("map-frames.json")?);
+			(spawns, templates, Vec::new())
+		}
+	};
 	let data = root.join("data/forever");
 	let read =
 		|f: &str| -> Result<serde_json::Value, String> { serde_json::from_slice(&std::fs::read(data.join(f)).map_err(|e| format!("{}: {e}", data.join(f).display()))?).map_err(|e| e.to_string()) };

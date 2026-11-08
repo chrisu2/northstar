@@ -260,11 +260,20 @@ pub struct GroundLayers {
 pub fn read_layers(dir: &Path) -> Result<GroundLayers, String> {
 	let hubs_file = dir.join("hubs.json");
 	if !hubs_file.is_file() {
-		return Err(format!("pack: no hubs layer at {} (forge nav layers hubs)", hubs_file.display()));
+		return Err(format!(
+			"pack: no hubs layer at {} (forge nav layers hubs --dir <70862 grid> --root <stage> --layers {}). Roads, if this folder has none: forge nav layers roads --wow <wowf install> --product wowf --offline --root <stage> --layers {}",
+			hubs_file.display(),
+			dir.display(),
+			dir.display()
+		));
 	}
 	let roads = dir.join("roads");
 	if !roads.join("index.json").is_file() {
-		return Err(format!("pack: no roads layer under {} (forge nav layers roads)", roads.display()));
+		return Err(format!(
+			"pack: no roads layer under {} (forge nav layers roads --wow <wowf install> --product wowf --offline --root <stage> --layers {}). --product wowf reads the installed Forever client. It does not read a beta cache and it does not launch the game.",
+			roads.display(),
+			dir.display()
+		));
 	}
 	let doc: Value = serde_json::from_slice(&std::fs::read(&hubs_file).map_err(|e| format!("{}: {e}", hubs_file.display()))?).map_err(|e| format!("{}: {e}", hubs_file.display()))?;
 	let mut hubs = FxHashMap::default();

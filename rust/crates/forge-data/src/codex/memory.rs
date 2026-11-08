@@ -20,8 +20,20 @@ fn lua_string(s: &str) -> String {
 	format!("\"{}\"", s.replace('\\', "\\\\").replace('"', "\\\"").replace('\n', "\\n"))
 }
 
+/// A filesystem path as a Lua string. Windows `loadfile`/`dofile` accept `/`. A backslash left
+/// in the Lua source is an escape, so `F:\addon` would not be the path that was written.
+fn lua_fs_path(p: &Path) -> String {
+	lua_string(&p.to_string_lossy().replace('\\', "/"))
+}
+
 /// files: the pack's (name, text); order: TOC order of the Lua files.
 pub fn measure(codex_lua: &Path, order: &[String], files: &[(String, String)]) -> Result<Memory, String> {
+	if !codex_lua.is_file() {
+		return Err(format!(
+			"measuring pack memory failed: Codex.lua is not at {}. --root must be the checkout that contains addon/Northstar/Lookup/Codex.lua",
+			codex_lua.display()
+		));
+	}
 	let pid = std::process::id();
 	let dir = std::env::temp_dir().join(format!("polestar-codex-pack-{pid}"));
 	let _ = std::fs::remove_dir_all(&dir);
@@ -32,7 +44,7 @@ pub fn measure(codex_lua: &Path, order: &[String], files: &[(String, String)]) -
 			let text = files.iter().find(|(n, _)| n == f).map(|(_, t)| t.as_str()).ok_or_else(|| format!("measuring pack memory failed: no {f}"))?;
 			let p = dir.join(f);
 			std::fs::write(&p, text).map_err(|e| e.to_string())?;
-			paths.push(lua_string(&p.to_string_lossy()));
+			paths.push(lua_fs_path(&p));
 		}
 		let program = format!(
 			r#"
@@ -41,8 +53,11 @@ Northstar = ns
 function ns.RegisterMapFrames() end
 -- (Codex.lua asks the faction for the Alliance's own way into the City of Dalaran.)
 ns.Compat = {{ GetPlayerFaction = function() return "Horde" end }}
-loadfile({codex})("Northstar", ns)
+local chunk, err = loadfile({codex})
+if not chunk then error("cannot load Codex.lua: " .. tostring(err)) end
+chunk("Northstar", ns)
 local C = ns.Codex
+if not (C and C.Each) then error("Codex.lua did not set Northstar.Codex") end
 collectgarbage("collect"); collectgarbage("collect")
 local base = collectgarbage("count")
 local t0 = os.clock()
@@ -60,7 +75,7 @@ collectgarbage("collect"); collectgarbage("collect")
 local decoded = collectgarbage("count") - base
 io.write(string.format("%.1f %.1f %d %.1f\n", raw, decoded, #keep, loadMs))
 "#,
-			codex = lua_string(&codex_lua.to_string_lossy()),
+			codex = lua_fs_path(codex_lua),
 			files = paths.join(", ")
 		);
 		let script = std::env::temp_dir().join(format!("polestar-codex-mem-{pid}.lua"));
@@ -100,4 +115,40 @@ fn run(script: &Path, program: &str) -> Result<Memory, String> {
 		return Err(format!("measuring pack memory failed: {s}"));
 	}
 	Ok(Memory { raw_kb: n[0], decoded_kb: n[1], records: n[2], load_ms: n[3] })
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn a_windows_path_is_a_lua_string_of_slashes() {
+		let s = lua_string(&r"F:\wowaddons\Northstar\Lookup\Codex.lua".replace('\\', "/"));
+		assert_eq!(s, "\"F:/wowaddons/Northstar/Lookup/Codex.lua\"");
+	}
+
+	#[test]
+	fn a_missing_codex_names_the_path() {
+		let err = match measure(Path::new("no-such-Codex.lua"), &[], &[]) {
+			Err(e) => e,
+			Ok(_) => panic!("missing Codex.lua was measured"),
+		};
+		assert!(err.contains("Codex.lua is not at"), "{err}");
+		assert!(!err.contains("attempt to call a nil value"), "{err}");
+	}
+
+	#[test]
+	fn measure_loads_codex_without_calling_nil() {
+		let dir = std::env::temp_dir().join(format!("ns-codex-mem-{}", std::process::id()));
+		std::fs::create_dir_all(&dir).unwrap();
+		let codex = dir.join("Codex.lua");
+		std::fs::write(
+			&codex,
+			"local _, ns = ...\nlocal C = {}\nfunction C.Each() end\nfunction C.Item() return {} end\nfunction C.Npc() return {} end\nfunction C.Object() return {} end\nfunction C.Quest() return {} end\nfunction C.Instance() return {} end\nfunction C.Zone() return {} end\nfunction C.Faction() return {} end\nfunction C.Spell() return {} end\nns.Codex = C\n",
+		)
+		.unwrap();
+		let mem = measure(&codex, &["A.lua".into()], &[("A.lua".into(), "-- pack\n".into())]).unwrap();
+		assert_eq!(mem.records, 0.0);
+		let _ = std::fs::remove_dir_all(&dir);
+	}
 }

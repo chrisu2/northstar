@@ -208,9 +208,13 @@ fn lua_to_json(expr: &str) -> Result<V, String> {
 	lua_to_json_within(expr, LUA_TIME, LUA_MEMORY)
 }
 
-/// The longest one read of translation files may run, and the most memory it may hold.
+/// The longest one batch of translation files may run. This is the standalone `lua5.1` limit the
+/// JavaScript tools used (120s), not a shorter budget. `read_locale_files` loads the pack in
+/// batches so one run does not have to parse every locale file before the deadline.
 #[cfg(feature = "native")]
-const LUA_TIME: std::time::Duration = std::time::Duration::from_secs(10);
+const LUA_TIME: std::time::Duration = std::time::Duration::from_secs(120);
+#[cfg(feature = "native")]
+const LOCALE_BATCH: usize = 40;
 #[cfg(feature = "native")]
 const LUA_MEMORY: usize = 256 << 20;
 
@@ -258,6 +262,15 @@ pub fn read_locale_files(entries: &[(String, String)]) -> Result<Vec<LocaleFile>
 	if entries.is_empty() {
 		return Ok(Vec::new());
 	}
+	let mut out = Vec::with_capacity(entries.len());
+	for batch in entries.chunks(LOCALE_BATCH) {
+		out.extend(read_locale_batch(batch)?);
+	}
+	Ok(out)
+}
+
+#[cfg(feature = "native")]
+fn read_locale_batch(entries: &[(String, String)]) -> Result<Vec<LocaleFile>, String> {
 	let list = entries.iter().map(|(file, locale)| format!("{{ path = {}, locale = {} }}", lua_string(file), lua_string(locale))).collect::<Vec<_>>().join(",\n");
 	let expr = format!(
 		r#"
@@ -838,6 +851,26 @@ mod tests {
 			Ok(r) => r,
 			Err(e) => (false, e),
 		}
+	}
+
+	#[test]
+	fn the_locale_read_budget_is_the_standalone_interpreters_and_files_are_batched() {
+		assert_eq!(LUA_TIME, std::time::Duration::from_secs(120));
+		assert!(LOCALE_BATCH < 100);
+		let dir = std::env::temp_dir().join(format!("forge-i18n-batch-{}", std::process::id()));
+		std::fs::create_dir_all(&dir).unwrap();
+		let n = LOCALE_BATCH + 1;
+		let mut entries = Vec::new();
+		for i in 0..n {
+			let file = dir.join(format!("{i}.lua"));
+			std::fs::write(&file, format!("local _, ns = ...\nns.L[\"k{i}\"] = \"v{i}\"\n")).unwrap();
+			entries.push((file.to_string_lossy().into_owned(), "deDE".into()));
+		}
+		let got = read_locale_files(&entries).unwrap();
+		assert_eq!(got.len(), n);
+		assert!(got.iter().all(|r| r.ok), "{}", got.iter().find(|r| !r.ok).map(|r| r.error.clone().unwrap_or_default()).unwrap_or_default());
+		assert_eq!(got[n - 1].strings.get(&format!("k{}", n - 1)).to_js_string(), format!("v{}", n - 1));
+		let _ = std::fs::remove_dir_all(&dir);
 	}
 
 	#[test]
