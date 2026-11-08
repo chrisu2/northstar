@@ -132,7 +132,7 @@ function run(script, { before = '', enabled = true } = {}) {
 		stubs: ['stub_ui.lua', 'stub_qol.lua'],
 		before: `${SECURE_VISIBILITY}\n${before}`,
 		addons: [{ name: 'Northstar', files: ['Core/Core.xml', 'Theme/Theme.xml', 'UI/UI.xml', 'QoL/QoL.xml'] }],
-		script: `uistub.install()\nstub.login()\nNorthstar.Set("ui.journal", false)\n${enabled ? 'Northstar.Set("qol.guideNameTarget", true)' : ''}\n${HELPERS}\n${script}`,
+		script: `uistub.install()\nstub.login()\nNorthstar.RegisterDefaults("ui", { wideGuide = true })\nNorthstar.Set("ui.wideGuide", true)\nNorthstar.Set("ui.journal", false)\n${enabled ? 'Northstar.Set("qol.guideNameTarget", true)' : ''}\n${HELPERS}\n${script}`,
 	}).emitted;
 }
 

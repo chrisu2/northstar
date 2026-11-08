@@ -48,3 +48,39 @@ test('accept then kill refreshes the sheet to the same line as the arrow', () =>
 	assert.match(after, /Kill Plainstrider for Plainstrider Meat \(1\/7\)/);
 	assert.equal(step, 'Step 2');
 });
+
+test('the default sheet is a short bar and does not open the wide guide', () => {
+	const [height, journal, wide, grown] = load(`
+		local N = Northstar.UI.Now
+		Northstar.Engine.GetStepIndex = function() return 1 end
+		Northstar.Engine.GetGuide = function() return { id = "synthetic/leveling/camp", category = "Leveling" } end
+		Northstar.Engine.GetStepView = function()
+			return { index = 1, title = "Camp", current = 1, goals = {
+				{ status = "current", text = "Accept The Hunt Begins" },
+				{ status = "active", text = "Accept A Humble Task" },
+			}}
+		end
+		Northstar.Engine.GetWaypoint = function() return { label = "Accept The Hunt Begins", stepIndex = 1, goalIndex = 1 } end
+		N.Show()
+		emit(N.frame:GetHeight())
+		emit(Northstar.Get("ui.journal"))
+		emit(Northstar.Get("ui.wideGuide"))
+		N.frame.Wide:Click()
+		emit(N.frame:GetHeight())
+	`);
+	assert.ok(height <= 120, `quest bar is ${height}`);
+	assert.equal(journal, true);
+	assert.equal(wide, false);
+	assert.ok(grown > height);
+});
+
+test('an old saved wide window stays closed unless wideGuide is set', () => {
+	const [journal, shown] = runAddon({
+		stubs: ['stub_ui.lua'],
+		addons: [{ name: 'Northstar', files: ['Core/Core.xml', 'Theme/Theme.xml', 'UI/UI.xml'] }],
+		saved: { Northstar: 'NorthstarDB = { schema = 1, settings = { ui = { journal = false, shown = true } } }' },
+		script: `uistub.install()\nstub.login()\nemit(Northstar.Get("ui.journal"))\nemit(Northstar.UI.GuideFrame and Northstar.UI.GuideFrame.Frame and Northstar.UI.GuideFrame.Frame:IsShown())`,
+	}).emitted;
+	assert.equal(journal, true);
+	assert.notEqual(shown, true);
+});

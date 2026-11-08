@@ -3421,7 +3421,7 @@ end
 function GF.ApplyVisibility()
 	ns.SetGuideAwayInside(hiddenInside() and ns.Get("ui.shown"))
 	if not F then return end
-	local show = ns.Get("ui.shown") and not ns.Get("ui.journal") and not (inCombat and ns.Get("ui.combat") == "hide") and not hiddenInside()
+	local show = ns.Get("ui.wideGuide") and ns.Get("ui.shown") and not ns.Get("ui.journal") and not (inCombat and ns.Get("ui.combat") == "hide") and not hiddenInside()
 	F:SetShown(show and true or false)
 end
 

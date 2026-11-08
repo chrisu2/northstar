@@ -371,7 +371,9 @@ local function setMode(m)
 		distText:SetTextColor(Nav.RGB("arrowNearText"))
 		-- An area objective is never done by standing somewhere: look around,
 		-- then move on (a click on the arrow, or the next spot comes up by itself).
-		distText:SetText(m == "search" and L["Search here"] or L["Arrived"])
+		distText:SetText(m == "search" and L["Search here"] or L["Here"])
+		local target = Nav.GetTarget()
+		if target and target.label and target.label ~= "" then labelText:SetText(target.label) end
 		if m == "search" then
 			etaColor()
 			etaText:SetText(L["Click the arrow for the next spot"])

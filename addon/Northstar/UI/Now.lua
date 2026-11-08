@@ -16,6 +16,9 @@ Sheet.AREAS = { "quest", "class", "trade", "pvp" }
 
 local f
 local area = "quest"
+local stepsOpen = false
+local COMPACT_H = 108
+local ROW_H = 16
 
 local function nowClock()
 	if GetTime then return GetTime() end
@@ -230,6 +233,16 @@ function Sheet.MatchesClass(header, classToken)
 	return false
 end
 
+-- Race and faction use the same rule as the guide menu. A class with no
+-- race or faction on the player still lists that class's guides.
+function Sheet.FitsCharacter(header, player)
+	if not Sheet.MatchesClass(header, player and player.class) then return false end
+	if not player or (not player.race and not player.faction) then return true end
+	local G = ns.Guides
+	if G and G.GuideMatches then return G.GuideMatches(header, player) end
+	return true
+end
+
 local function byTitle(a, b) return (a.title or "") < (b.title or "") end
 
 function Sheet.ClassView(headers, player)
@@ -238,7 +251,7 @@ function Sheet.ClassView(headers, player)
 	end
 	local rows = {}
 	for _, h in ipairs(headers or {}) do
-		if Sheet.MatchesClass(h, player.class) then
+		if Sheet.FitsCharacter(h, player) then
 			rows[#rows + 1] = { id = h.id, title = h.title or h.id }
 		end
 	end
@@ -376,7 +389,7 @@ local AREAS = {
 local function build()
 	if f then return f end
 	f = plate(UIParent, "NorthstarNow")
-	f:SetSize(348, 430)
+	f:SetSize(280, COMPACT_H)
 	f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -120)
 	f:SetFrameStrata("MEDIUM")
 	f:SetMovable(true)
@@ -402,9 +415,9 @@ local function build()
 	f.More:SetPoint("RIGHT", -12, 0)
 	f.More:SetHeight(36)
 
-	f.Wide = button(f, "Wide", 40, function()
-		ns.Set("ui.journal", false)
-		ns.Set("ui.shown", true)
+	f.Wide = button(f, "Steps", 48, function()
+		stepsOpen = not stepsOpen
+		Now.Refresh()
 	end)
 	f.Wide:SetPoint("TOPRIGHT", -10, -10)
 	f.Areas = {}
@@ -422,12 +435,12 @@ local function build()
 		local b = button(f, "", 300, function(self)
 			if self.rowId then openListed(self.rowId) end
 		end)
-		b:SetPoint("TOPLEFT", 16, -132 - (i - 1) * 16)
+		b:SetPoint("TOPLEFT", 16, -78 - (i - 1) * ROW_H)
 		b:Hide()
 		f.Rows[i] = b
 	end
 	f.Sleep = button(f, "Sleeping bag", 140, function() openListed(Sheet.SLEEP_ID) end)
-	f.Sleep:SetPoint("TOPLEFT", 16, -132)
+	f.Sleep:SetPoint("BOTTOMLEFT", 200, 12)
 	f.Sleep:Hide()
 	f.FishTime = button(f, "Fish time", 70, function() Fish.ToggleSession() end)
 	f.FishTime:SetPoint("BOTTOMLEFT", 100, 78)
@@ -440,7 +453,7 @@ local function build()
 		if ns.Set then ns.Set("qol.autoReleasePvP", not on) end
 		Now.Refresh()
 	end)
-	f.Release:SetPoint("TOPLEFT", 16, -300)
+	f.Release:SetPoint("TOPLEFT", 16, -78)
 	f.Release:Hide()
 
 	Now.frame = f
@@ -471,6 +484,10 @@ local function markAreas(frame)
 	end
 end
 
+local function fit(frame, rows)
+	frame:SetHeight(COMPACT_H + rows * ROW_H)
+end
+
 function Now.Apply(composed)
 	local frame = build()
 	markAreas(frame)
@@ -479,6 +496,7 @@ function Now.Apply(composed)
 	frame.FishTally:Hide()
 	frame.Release:Hide()
 	showRows(frame, {})
+	frame.Wide.Label:SetText(stepsOpen and "Less" or "Steps")
 	local headers = Sheet.Headers()
 	if area == "class" then
 		local view = Sheet.ClassView(headers, Sheet.Player())
@@ -488,6 +506,7 @@ function Now.Apply(composed)
 		frame.Next:SetText("")
 		frame.More:SetText("")
 		showRows(frame, view.rows)
+		fit(frame, #view.rows)
 	elseif area == "trade" then
 		local view = Sheet.TradeView(headers, Sheet.NamedRank)
 		frame.Area:SetText("TRADE")
@@ -501,6 +520,7 @@ function Now.Apply(composed)
 			rows[i] = { id = row.id, label = row.title .. "  " .. row.skill }
 		end
 		showRows(frame, rows)
+		fit(frame, #rows)
 		frame.FishTime:Show()
 		frame.FishTally:Show()
 	elseif area == "pvp" then
@@ -511,6 +531,7 @@ function Now.Apply(composed)
 		frame.Next:SetText(view.world)
 		frame.More:SetText(view.companion)
 		showRows(frame, view.battlegrounds)
+		fit(frame, #view.battlegrounds + 1)
 		frame.Release:Show()
 		frame.Release.Label:SetText(Sheet.ReleaseLabel(ns.Get and ns.Get("qol.autoReleasePvP")))
 	else
@@ -518,13 +539,11 @@ function Now.Apply(composed)
 		frame.Step:SetText(composed.step or "")
 		frame.Head:SetText(composed.title or "")
 		frame.Next:SetText(composed.next or "")
-		local more = table.concat(composed.more or {}, "\n")
+		local more = stepsOpen and table.concat(composed.more or {}, "\n") or ""
 		local sleep = Sheet.Open(headers, Sheet.SLEEP_ID)
-		if sleep.ok then
-			more = (more ~= "" and (more .. "\n") or "") .. "Cozy Sleeping Bag is a separate guide. It does not replace this route."
-			frame.Sleep:Show()
-		end
+		if sleep.ok then frame.Sleep:Show() end
 		frame.More:SetText(more)
+		fit(frame, (stepsOpen and more ~= "") and 2 or 0)
 	end
 end
 
@@ -595,6 +614,9 @@ if ns.RegisterCommand then
 end
 
 ns.OnLogin(function()
+	-- An older saved window that opened the wide guide does not bring that
+	-- window back. ui.wideGuide is the only switch for it.
+	if not ns.Get("ui.wideGuide") then ns.Set("ui.journal", true) end
 	Fish.Load()
 	sync()
 end)

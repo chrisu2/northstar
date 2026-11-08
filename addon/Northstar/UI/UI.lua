@@ -17,7 +17,8 @@ local format, type = string.format, type
 
 ns.RegisterDefaults("ui", {
 	shown = true,
-	journal = true, -- the compact step list; the wide guide window stays tucked away
+	journal = true, -- the compact current-action bar; the old guide window stays tucked away
+	wideGuide = false, -- the old wide guide window, off unless turned on in saved settings
 	locked = false,
 	lockHud = false, -- the arrow, the action buttons and the timers move only on a Shift-drag (ns.DragLocked)
 	growUp = false, -- pin the guide window by its bottom edge, so it grows upward

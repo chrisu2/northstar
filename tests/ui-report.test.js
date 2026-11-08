@@ -20,7 +20,7 @@ function run(script, before = '') {
 		stubs: ['stub_ui.lua'],
 		before,
 		addons: [{ name: 'Northstar', files: FILES }],
-		script: `uistub.install()\nstub.login()\nNorthstar.Set("ui.journal", false)\nlocal GF, UI = Northstar.UI.GuideFrame, Northstar.UI\n${script}`,
+		script: `uistub.install()\nstub.login()\nNorthstar.RegisterDefaults("ui", { wideGuide = true })\nNorthstar.Set("ui.wideGuide", true)\nNorthstar.Set("ui.journal", false)\nlocal GF, UI = Northstar.UI.GuideFrame, Northstar.UI\n${script}`,
 	}).emitted;
 }
 
