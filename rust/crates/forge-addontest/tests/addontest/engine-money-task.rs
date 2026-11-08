@@ -1,4 +1,4 @@
-//! Money and tasks (addon/Polestar/Core/Engine.lua): a `money` goal is done once the character holds that much
+//! Money and tasks (addon/Northstar/Core/Engine.lua): a `money` goal is done once the character holds that much
 //! and stays done for the rest of its step; a `when money` step applies by the money held when the route
 //! reaches it; a `task` goal is done only when the player ticks it, and holds its step until then unless it is
 //! optional. Real Core manifest, stub world (a level 1 Human Warrior in Elwynn Forest, with no money).
@@ -15,7 +15,7 @@ w.titles[783] = "A Threat Within"
 
 // Step 2 holds GOALS (Lua) and, when given, WHEN; steps 1 and 3 are plain.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/money", pack = "test", title = "Money", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Deputy Willem", goals = {
@@ -30,7 +30,7 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 -- The live step and step 2's goals as status:text.
 function state()
@@ -42,7 +42,7 @@ end
 "#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 fn run(goals: &str, when: Option<&str>, before: &str, script: &str) -> Vec<Value> {
@@ -51,7 +51,7 @@ fn run(goals: &str, when: Option<&str>, before: &str, script: &str) -> Vec<Value
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}w.onQuest(783, {{}})\n{before}"),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/money" }"#.into())],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/money" }"#.into())],
 		script: [TEST_PACK, TEST_SOURCE, &guide, HELPERS, "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 		..Default::default()
 	})
@@ -138,7 +138,7 @@ fn a_guide_whose_money_or_task_goal_lacks_its_field_is_refused() {
 		before: WORLD.into(),
 		addons: vec![core()],
 		script: r#"
-local V = Polestar.Guides.Validate
+local V = Northstar.Guides.Validate
 local function with(goal) return { id = "test/x", title = "X", steps = { { goals = { goal } } } } end
 emit({
 	ok = V(with({ t = "money", money = 100 })) or V(with({ t = "task", text = "Do it" })) or false,

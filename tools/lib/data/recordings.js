@@ -20,7 +20,7 @@
 //   "recorder"; recorded parents/sides only fill gaps (resolveFactions).
 // - quest rewards seen on the quest frames (items, choices, money) become
 //   the quest's `rewards` (a turn-in wins over an accept);
-// - finds (addon/Polestar_Recorder/Finds.lua), see applyFinds: rare
+// - finds (addon/Northstar_Recorder/Finds.lua), see applyFinds: rare
 //   sightings and kills give npc rank, levels, the "rare" role, instances and
 //   spawns; loot windows give drop chances (loots / kills) with their counts
 //   (`seen`), objects opened give treasure roles and spawns; instance entries

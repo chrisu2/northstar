@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light.svg">
-    <img src="docs/assets/banner-light.svg" alt="Polestar: leveling guides for World of Warcraft: Forever" width="880">
+    <img src="docs/assets/banner-light.svg" alt="Northstar: leveling guides for World of Warcraft: Forever" width="880">
   </picture>
 </p>
 
@@ -11,22 +11,26 @@
 </p>
 
 <p align="center">
+  This repository is <b>Northstar</b>, a fork of <a href="https://github.com/fitzforge/polestar">Polestar</a>. The guide text and the routes stay Polestar's, under the same GPL-3.0-only licence. Northstar uses its own addon name, saved variables, and commands so it can be installed beside Polestar. It targets World of Warcraft: Forever, Interface 16001.
+</p>
+
+<p align="center">
   <a href="https://www.curseforge.com/wow/addons/polestar"><img src="docs/assets/curseforge.svg" height="48" alt="Get it on CurseForge"></a>
   <a href="https://polestar.guide/client"><img src="docs/assets/client.svg" height="48" alt="Get the Polestar Client"></a>
-  <a href="https://github.com/fitzforge/polestar/releases/latest"><img src="docs/assets/download.svg" height="48" alt="Download Polestar"></a>
+  <a href="https://github.com/fitzforge/polestar/releases/latest"><img src="docs/assets/download.svg" height="48" alt="Download Northstar"></a>
 </p>
 
 <p align="center">
   <a href="https://polestar.guide"><b>polestar.guide</b></a>: every guide, community guides and the docs ·
   <a href="https://discord.gg/polestar"><b>Polestar Discord</b></a>: questions, feedback and bug reports ·
-  Polestar is free; if it saves you a few hours, you can <a href="https://ko-fi.com/0xfitz"><b>buy me a coffee</b></a>.
+  Northstar is free; if it saves you a few hours, you can <a href="https://ko-fi.com/0xfitz"><b>buy me a coffee</b></a>.
 </p>
 
 <p align="center">
   <a href="https://www.curseforge.com/wow/addons/polestar"><img alt="CurseForge downloads" src="https://img.shields.io/curseforge/dt/1744437?style=flat-square&logo=curseforge&logoColor=white&label=CurseForge&labelColor=232a3f&color=f16436"></a>
   <a href="https://github.com/fitzforge/polestar/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/fitzforge/polestar?filter=v*&style=flat-square&label=release&labelColor=232a3f&color=fabf4d"></a>
   <a href="https://github.com/fitzforge/polestar/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/fitzforge/polestar/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://discord.gg/polestar"><img alt="Discord: join the Polestar community" src="https://img.shields.io/badge/Discord-join_us-5865f2?style=flat-square&logo=discord&logoColor=white&labelColor=232a3f"></a>
+  <a href="https://discord.gg/polestar"><img alt="Discord: join the Northstar community" src="https://img.shields.io/badge/Discord-join_us-5865f2?style=flat-square&logo=discord&logoColor=white&labelColor=232a3f"></a>
   <a href="LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-e6ba66?style=flat-square&labelColor=232a3f"></a>
   <a href="https://ko-fi.com/0xfitz"><img alt="Ko-fi: buy me a coffee" src="https://img.shields.io/badge/Ko--fi-buy_me_a_coffee-ff5e5b?style=flat-square&logo=kofi&logoColor=white&labelColor=232a3f"></a>
 </p>
@@ -51,7 +55,7 @@
     <td align="center" width="220"><a href="#quick-start"><b>Play</b></a><br>Install the addon and follow the arrow.</td>
     <td align="center" width="220"><a href="https://polestar.guide/guides"><b>Browse the guides</b></a><br>Every guide, step by step, on polestar.guide.</td>
     <td align="center" width="220"><a href="#writing-a-community-addon"><b>Write guides</b></a><br>Publish your own routes as a community guide.</td>
-    <td align="center" width="220"><a href="#building-from-source"><b>Work on Polestar</b></a><br>Fix a guide, build the addon, run the tests.</td>
+    <td align="center" width="220"><a href="#building-from-source"><b>Work on Northstar</b></a><br>Fix a guide, build the addon, run the tests.</td>
   </tr>
 </table>
 
@@ -59,22 +63,22 @@
 
 1. **Install it** one of three ways:
    - **The CurseForge app:** search for
-     [Polestar Guides](https://www.curseforge.com/wow/addons/polestar) and
+     [Northstar Guides](https://www.curseforge.com/wow/addons/polestar) and
      install it, then skip to step 3.
    - **The [Polestar Client](https://polestar.guide/client):** a small app for
-     Windows, macOS and Linux that finds the game, installs Polestar and keeps
+     Windows, macOS and Linux that finds the game, installs Northstar and keeps
      it up to date, community guides included. Skip to step 3.
-   - **By hand:** download `Polestar-<version>.zip` from the
+   - **By hand:** download `Northstar-<version>.zip` from the
      [newest release](https://github.com/fitzforge/polestar/releases/latest),
      under *Assets* (not "Source code").
-2. **Unzip it into the game's AddOns folder**, so the Polestar folders
-   (`Polestar`, `Polestar_Guides`, `Polestar_Codex`, `Polestar_Nav` and the
-   others, with one `Polestar_<language>` folder per client language such as
-   `Polestar_deDE`) sit directly inside it:
+2. **Unzip it into the game's AddOns folder**, so the Northstar folders
+   (`Northstar`, `Northstar_Guides`, `Northstar_Codex`, `Northstar_Nav` and the
+   others, with one `Northstar_<language>` folder per client language such as
+   `Northstar_deDE`) sit directly inside it:
    `World of Warcraft/_classic_beta_/Interface/AddOns/` on the beta client,
    `_forever_/Interface/AddOns/` on the `_forever_` client. The same zip
    works for both; if you have both clients installed, unzip into each one.
-   In the game's AddOns list they all sit under one "Polestar" heading,
+   In the game's AddOns list they all sit under one "Northstar" heading,
    which its arrow folds away.
 3. **Restart the game completely** (a `/reload` does not load new addons) and
    log in. The guide window opens with a guide for your race, level and zone:
@@ -88,22 +92,22 @@ Good to know:
   button for a short menu.
 - `/polestar skip` moves on for good; `/polestar next` and `prev` only look
   ahead or back.
-- **Updating:** the CurseForge app and the Polestar Client update Polestar for
-  you. By hand, delete the old Polestar folders, then unzip the new release
-  the same way. Coming from 0.2.x, also delete the `Polestar_Guides_deDE`,
-  `Polestar_Names_deDE` kind (one of each per language): `Polestar_deDE` and
-  its siblings replace them, and Polestar reminds you at login while they are
+- **Updating:** the CurseForge app and the Polestar Client update Northstar for
+  you. By hand, delete the old Northstar folders, then unzip the new release
+  the same way. Coming from 0.2.x, also delete the `Northstar_Guides_deDE`,
+  `Northstar_Names_deDE` kind (one of each per language): `Northstar_deDE` and
+  its siblings replace them, and Northstar reminds you at login while they are
   still there.
-- **Memory:** the arrow's walking routes (`Polestar_Nav`) load after login,
+- **Memory:** the arrow's walking routes (`Northstar_Nav`) load after login,
   never in combat, and each continent's walking maps load when you get there.
   **Walk real paths** (Options, Arrow & routes) off never loads them.
-- **Optional:** `Polestar_Recorder` (`Polestar_Recorder-<version>.zip` in the
+- **Optional:** `Northstar_Recorder` (`Northstar_Recorder-<version>.zip` in the
   same release, or from the Polestar Client) records your play for the
   recording program that improves the routes. With the Polestar Client it
   records while sharing is on, which it is by default (one click in the
   Client stops it, and `/psrec off` always wins); on its own it stays off
   until you type `/psrec on`.
-- **Community guides** are routes other players publish for Polestar, on
+- **Community guides** are routes other players publish for Northstar, on
   [polestar.guide](https://polestar.guide/community): see
   [Community guides](#community-guides).
 - Something wrong? Click the bug in the guide window, beside Skip: say what
@@ -118,7 +122,7 @@ Good to know:
 
 ## What it is
 
-Polestar is one addon for the whole of WoW: Forever. It carries 256 guides:
+Northstar is one addon for the whole of WoW: Forever. It carries 256 guides:
 61 leveling guides that take both factions from 1 to 60 from every race's
 starting zone (Zephras Isle for the Skyborne included), 82 class guides for
 every class's quest chains and class mounts, the twelve professions from 1 to
@@ -127,7 +131,7 @@ collectible guides (mounts and pets) and 2 miscellaneous guides. Every one of
 them can be read step by step on [polestar.guide](https://polestar.guide/guides).
 
 Around the guides it adds a 3D waypoint arrow that walks real paths (on
-Polestar's walking maps, with a router that started from Shortest Path
+Northstar's walking maps, with a router that started from Shortest Path
 Forever's by Cillian Berragan) and a travel planner, quest markers on the map,
 talent plans for every class and spec, gear advice on tooltips, quest rewards
 and bags, a search for where any item, mount or pet comes from, a dungeon
@@ -139,21 +143,21 @@ Chinese (simplified and traditional).
 The leveling routes are not hand-picked. Every race plays its own starting
 zone (to about level 12, the Skyborne to about 15), then all the Horde races
 share one route from the Barrens to 60 and all the Alliance races one from
-Westfall. Polestar Forge builds them from the game's data and Forever's quest
+Westfall. Northstar Forge builds them from the game's data and Forever's quest
 data, elite and group quests included, writes the guides, and plays them the
 way a player follows them, refusing any step that can't be done as written.
 Every round of routes is read step by step, and a fix from a player's report
 becomes a permanent record the next build keeps
 ([How the routes are made](#how-the-routes-are-made)).
 
-Players publish their own routes for Polestar as community guides on
+Players publish their own routes for Northstar as community guides on
 [polestar.guide](https://polestar.guide/community), and the
 [Polestar Client](https://polestar.guide/client) installs them and keeps them
 up to date ([Community guides](#community-guides)). Each new character's
-first login opens a short welcome: a hello and what Polestar does; on the
+first login opens a short welcome: a hello and what Northstar does; on the
 account's first character, quest automation, the guide at login and the color
 scheme, then the route style (Fastest, Balanced or Roads, with a line on what
-each does); then the guide Polestar suggests for that character, the Discord
+each does); then the guide Northstar suggests for that character, the Discord
 and community guides (`/polestar welcome` shows it again).
 
 ### New in 0.3.0
@@ -174,7 +178,7 @@ change):
   confirms it: a quest taken or handed in, an item looted, a spell learnt.
 - **The arrow walks the guide's own paths.** The walk into each step is
   worked out when the guides are built (on Leffe's navigation maps and
-  Polestar's own), so the arrow follows it at once instead of searching
+  Northstar's own), so the arrow follows it at once instead of searching
   first; far waypoints draw their whole walk along the ground.
 - **Lifts and cities.** "Ride the elevator up" or "down", with the
   departure time; walks get on and off where the car stops; one fixed way in
@@ -204,12 +208,12 @@ change):
 
 ## A look inside
 
-Polestar's own windows, drawn from the addon's layout: the same pictures
+Northstar's own windows, drawn from the addon's layout: the same pictures
 [polestar.guide](https://polestar.guide) shows. The world map, minimap and zone
 art in them is © Blizzard Entertainment.
 
 <p align="center">
-  <img src="docs/assets/screenshots/hub.webp" width="880" alt="The Polestar hub on its Guides section. The rail holds Guides, Lookup, Dungeons, Talents and Rares, with Import and Options at its foot. The sidebar lists the guides by category (Leveling, Class, Professions, Reputation, Exploration, Legacy, Collectibles, Miscellaneous) and an installed community guide; the Alliance leveling guides are listed by level band with Westfall (12-17) selected, its steps, quests, zones and the next guide shown under the zone's map painting, with Load guide and Open in new tab buttons">
+  <img src="docs/assets/screenshots/hub.webp" width="880" alt="The Northstar hub on its Guides section. The rail holds Guides, Lookup, Dungeons, Talents and Rares, with Import and Options at its foot. The sidebar lists the guides by category (Leveling, Class, Professions, Reputation, Exploration, Legacy, Collectibles, Miscellaneous) and an installed community guide; the Alliance leveling guides are listed by level band with Westfall (12-17) selected, its steps, quests, zones and the next guide shown under the zone's map painting, with Load guide and Open in new tab buttons">
   <br><sub><b>The hub.</b> Guides, Lookup, Dungeons, Talents and Rares on one rail, Import and Options at its foot; here the Alliance leveling guides by level band.</sub>
 </p>
 
@@ -244,16 +248,16 @@ art in them is © Blizzard Entertainment.
 </table>
 
 Lookup, Dungeons and Rares read the Codex, a data pack that ships in the
-release as `Polestar_Codex` ([Lookup, Dungeons and
+release as `Northstar_Codex` ([Lookup, Dungeons and
 Rares](#lookup-dungeons-and-rares)). Renders of every window and state, drawn
 without the game, are in [docs/preview](docs/preview).
 
 ## polestar.guide
 
-[**polestar.guide**](https://polestar.guide) is Polestar's website: the guides,
+[**polestar.guide**](https://polestar.guide) is Northstar's website: the guides,
 the community guides, the Polestar Client and the docs in one place.
 
-- **[The guide library](https://polestar.guide/guides).** Every guide Polestar
+- **[The guide library](https://polestar.guide/guides).** Every guide Northstar
   ships, step by step as the guide window shows it, searchable by zone, class,
   mount or reward. Pick your race for your road from 1 to 60:
   [Alliance](https://polestar.guide/guides/alliance) or
@@ -268,21 +272,21 @@ the community guides, the Polestar Client and the docs in one place.
   [llms.txt](https://polestar.guide/llms.txt).
 
 <p align="center">
-  <a href="https://polestar.guide/guides"><img src="docs/assets/screenshots/site-library.webp" width="880" alt="The guide library on polestar.guide: All 222 guides that ship inside Polestar, a search for a zone, class, mount or reward, race buttons for the Alliance and the Horde, and the Human road from Elwynn Forest to level 60, guide by guide with steps and level ranges"></a>
+  <a href="https://polestar.guide/guides"><img src="docs/assets/screenshots/site-library.webp" width="880" alt="The guide library on polestar.guide: All 222 guides that ship inside Northstar, a search for a zone, class, mount or reward, race buttons for the Alliance and the Horde, and the Human road from Elwynn Forest to level 60, guide by guide with steps and level ranges"></a>
 </p>
 
 ## Community guides
 
-Guides for Polestar written by other players and published as their own
-addons. Install one next to Polestar and its guides show up in the guide
+Guides for Northstar written by other players and published as their own
+addons. Install one next to Northstar and its guides show up in the guide
 menu under **Community guides**, with the arrow, the map markers and
-everything else Polestar does. Each is made and supported by its author.
+everything else Northstar does. Each is made and supported by its author.
 
 Most are published on [polestar.guide](https://polestar.guide/community), which
 keeps them safe to play and fair to their authors:
 
-- **Plain text, built by Polestar.** An author publishes the guide files, never
-  code: the site builds every version with Polestar's own compiler, so no
+- **Plain text, built by Northstar.** An author publishes the guide files, never
+  code: the site builds every version with Northstar's own compiler, so no
   author's code runs in your game. It also checks every step against the game
   data and gives the author its notes; what to change is the author's call,
   and the notes never hold a version back.
@@ -291,7 +295,7 @@ keeps them safe to play and fair to their authors:
   first version, and any later one that changes owner or installs different
   addon folders.
 - **Pulled when it must be.** A person reviews every copyright notice; a
-  takedown removes the guide from the site and from every player's Polestar
+  takedown removes the guide from the site and from every player's Northstar
   Client. A version found to be harmful or broken can be turned off in the
   Client for everyone who has it, with the reason shown.
 
@@ -304,15 +308,15 @@ keeps them safe to play and fair to their authors:
 1. Find one on [polestar.guide](https://polestar.guide/community) and install
    it with the [Polestar Client](https://polestar.guide/client), which keeps it
    up to date. Or download it from wherever its author publishes it and
-   install it like any addon, next to the `Polestar` folders.
+   install it like any addon, next to the `Northstar` folders.
 2. Restart the game. Its guides appear in the guide menu
    (`/polestar guides`) under **Community guides**.
 3. **Options > Community guides** (`/polestar packs`) turns each one on or
    off without a reload, and picks where the guide for your level is
    suggested from.
 
-A community addon never replaces Polestar's guides or another one's.
-Report problems in it to its author, not to Polestar, and install them only
+A community addon never replaces Northstar's guides or another one's.
+Report problems in it to its author, not to Northstar, and install them only
 from authors you trust.
 
 ### Import strings
@@ -320,7 +324,7 @@ from authors you trust.
 A short guide shared as a single line of text (a quest chain, an item, a
 mount, an errand) can be pasted on the **Import page** without installing
 anything: `/polestar import` opens it, or follow the foot of the hub's left
-rail above Options. Polestar shows what the guide is before saving it, says
+rail above Options. Northstar shows what the guide is before saving it, says
 why when it turns one down, offers **Update** for a newer version and keeps
 your progress, and lists your imported guides with **Delete**. Imported guides
 appear in the guide menu under **Community guides > Imported**, credited to
@@ -329,9 +333,9 @@ their author, and are never suggested on their own.
 ### Writing a community addon
 
 Write leveling guides in plain text and publish them as your own addon,
-with the tools Polestar uses for its own: the guide format, the compiler,
+with the tools Northstar uses for its own: the guide format, the compiler,
 `lint`, `playtest`, and in the game the guide engine, the arrow and the map
-markers. Hand over to any of Polestar's guides with `next`, so your addon
+markers. Hand over to any of Northstar's guides with `next`, so your addon
 can cover one zone or the whole climb, under a license of your choice
 ([Data and licensing](#data-and-licensing)).
 
@@ -365,7 +369,7 @@ The [Polestar Client](https://polestar.guide/client) is a small desktop app for
 Windows, macOS and Linux (beta, 0.1.0). It finds WoW: Forever on your
 computer and:
 
-- **installs and updates Polestar's addons**: Polestar, the Recorder and
+- **installs and updates Northstar's addons**: Northstar, the Recorder and
   LibForeverData, each download checked against the checksum its GitHub
   release publishes. Other addons are never touched.
 - **installs community guides** from polestar.guide and keeps them current.
@@ -495,12 +499,12 @@ its source is in [apps/client](apps/client).
   the arrow is back on the guide.
 - **OpenMap.** On [OpenMap](https://www.curseforge.com/wow/addons/openmap)'s
   seamless world map the trail dots carry on across zone borders and show on
-  the whole-world view too. OpenMap's menu has a "Polestar trail dots" switch.
+  the whole-world view too. OpenMap's menu has a "Northstar trail dots" switch.
 - **Other addons' waypoints** (Options, Integrations, TomTom). Without TomTom, "Let other addons set
   waypoints" (off by default) lets addons that set TomTom waypoints point
-  Polestar's arrow and makes `/way` work; addons that expect TomTom's own
+  Northstar's arrow and makes `/way` work; addons that expect TomTom's own
   settings may not work with it on. With TomTom, the arrow can follow
-  TomTom's. Addon authors: `Polestar.Nav.API` (docs/ARCHITECTURE.md, "Nav
+  TomTom's. Addon authors: `Northstar.Nav.API` (docs/ARCHITECTURE.md, "Nav
   API").
 - **Flight map destination.** On the flight map, the destination the guide
   flies you to is marked with a bobbing arrow and its name above it, and a
@@ -518,7 +522,7 @@ gate and down into the mine, not over the edge. That is the work of
 maps of the continents from the game client and wrote a router that finds a
 route over them a couple of milliseconds at a time, so the game never
 stutters. It is beautiful work, and he generously said yes when we asked to
-use it. Polestar's travel planner still picks the flights, boats and
+use it. Northstar's travel planner still picks the flights, boats and
 Hearthstone; the router that started from his walks every leg between them.
 It keeps to roads where they are not much longer, round steep slopes, and out
 of the other faction's towns; when a walk must enter one (a quest inside
@@ -530,32 +534,32 @@ Balanced (the default) keeps to roads that aren't much longer and goes round
 hills, and Roads stays on roads even when they're longer. Every style keeps
 out of the other faction's towns.
 
-The router ships with Polestar as the `Polestar_Nav` folder. Polestar's
+The router ships with Northstar as the `Northstar_Nav` folder. Northstar's
 walking router started from Shortest Path Forever v1.16.0 by Cillian
-Berragan, with thanks; Polestar maintains it since 2026-10-16. It runs on
-Polestar's own walking maps of Eastern Kingdoms, Kalimdor and Zephras Isle,
+Berragan, with thanks; Northstar maintains it since 2026-10-16. It runs on
+Northstar's own walking maps of Eastern Kingdoms, Kalimdor and Zephras Isle,
 made from the game's geometry in a format grown from his by a port of his map
 baker (GPL-3.0-or-later; what came from where is in
-[addon/Polestar_Nav/CREDITS.md](addon/Polestar_Nav/CREDITS.md)).
+[addon/Northstar_Nav/CREDITS.md](addon/Northstar_Nav/CREDITS.md)).
 **Walk real paths** (Options, Arrow & routes) turns it off. If you like it, try
 his addon:
 [Shortest Path Forever on CurseForge](https://www.curseforge.com/wow/addons/shortest-path-forever)
 plans whole journeys with flights, boats, zeppelins, portals and live
 departure times.
 
-**Shortest Path Forever: an option.** With it installed, Polestar still
+**Shortest Path Forever: an option.** With it installed, Northstar still
 guides by default. **Hand guiding to Shortest Path Forever** (Options,
 Integrations) hands it the route instead: each goal goes to Shortest Path
-Forever, whose arrow, route and journey take you there, and Polestar's own
+Forever, whose arrow, route and journey take you there, and Northstar's own
 arrow, route lines, journey steps, travel button, transport alerts, map
-clicks and `/way` step aside, so the two never guide at once (Polestar's
+clicks and `/way` step aside, so the two never guide at once (Northstar's
 walking maps are not even loaded). The guide window and the map pins stay. A
 kill or collect area is handed over as an area, so it holds you there until
-the goal is done; if you clear or replace the journey, Polestar leaves it be
+the goal is done; if you clear or replace the journey, Northstar leaves it be
 until the guide moves on. With the option off, a journey you start in
-Shortest Path Forever itself still wins: Polestar steps aside the same way
+Shortest Path Forever itself still wins: Northstar steps aside the same way
 while it runs, and guides again when it ends. If Shortest Path Forever
-finds no way to a goal, or turns its journeys off, Polestar's own arrow
+finds no way to a goal, or turns its journeys off, Northstar's own arrow
 guides you there instead.
 
 ### Quests and the map
@@ -587,19 +591,19 @@ guides you there instead.
 
 ### Playing in a party
 
-Group play works only with party members who also run Polestar. On joining
-a party Polestar sends one small hidden hello; a member who answers is synced,
+Group play works only with party members who also run Northstar. On joining
+a party Northstar sends one small hidden hello; a member who answers is synced,
 and everything below but the chat line is about them. With friends who don't
-run Polestar nothing shows and nothing more is sent, apart from that line.
+run Northstar nothing shows and nothing more is sent, apart from that line.
 Turn each part off under Options > Questing > Quests > Group; nothing of it
 runs solo or in a raid.
 
 - **Party sync**: each member's count shows under the quest goals you share
   ("Ana 5/8", "Ben done"), and on a quest you took, which of them lacks it.
-  It is on by default; the first time a party member answers as a Polestar
-  user, Polestar says so once in chat. What goes out: quest IDs and counts,
+  It is on by default; the first time a party member answers as a Northstar
+  user, Northstar says so once in chat. What goes out: quest IDs and counts,
   level, XP %, class and race, your step, your guide (and pack) and your
-  Polestar version, as hidden addon messages to your party, never to chat.
+  Northstar version, as hidden addon messages to your party, never to chat.
   Up to v0.3.2 it was off by default and that choice wasn't stored, so if
   you had it off, this update turns it on once (the chat notice tells you);
   from this version on, turned off, it stays off.
@@ -611,26 +615,26 @@ runs solo or in a raid.
   than 2 minutes, doesn't hold you, and the guide window's party line offers
   "Go on without them".
 - **Share a missing quest**: a Share button on the goal of a quest you have
-  that a member lacks, using the game's own sharing. When Polestar knows why
+  that a member lacks, using the game's own sharing. When Northstar knows why
   they can't take it, it says so ("Ben (level 8, needs 10)", "another class",
   "already done").
 - **Party panel**: a small movable panel that opens by itself the first time
-  another Polestar member in the party is heard, with each one's level and
+  another Northstar member in the party is heard, with each one's level and
   XP, the step they are on, what they still need of yours, and whether they
   are dead, far away or offline. Click a name to point the arrow at them
   where the game gives their place on the map. Close it and it stays
   closed; a click on the guide window's party line or `/polestar party`
   brings it back (and says why when nothing can show yet). Without a
-  Polestar member in the party it stays hidden.
+  Northstar member in the party it stays hidden.
 - **Loot a friend needs**: "Ana still needs 2 Scalding Mornbrew" under a
   collect goal, and on a loot window or roll with a quest item a member still
   needs and you don't, "For Ana: she still needs 2". Nothing is passed,
   rolled or said for you.
 - **Tell my party in chat** (on by default): the one part everyone in the
-  party sees, Polestar or not. When you finish one of a quest's objectives,
-  one party chat line with the quest's link ("[Polestar] Finished: Plagued
+  party sees, Northstar or not. When you finish one of a quest's objectives,
+  one party chat line with the quest's link ("[Northstar] Finished: Plagued
   Hide 5/5 - [Plagued Lands]"), and when the quest is ready to turn in,
-  "[Polestar] Ready to turn in: [Plagued Lands]". Nothing for what was
+  "[Northstar] Ready to turn in: [Plagued Lands]". Nothing for what was
   already done when you log in, reload or join, and never the same line
   twice. During a boss fight, while the game holds chat back, a line waits
   up to two minutes. The first line says once where to turn it off.
@@ -645,7 +649,7 @@ runs solo or in a raid.
   most. Turn-in goals name the best reward.
 - **In your bags** every item that is an upgrade gets the same green arrow,
   in the game's bags, in Baganator and in EllesmereUI Bags. With Pawn
-  installed, "Leave bag arrows to Pawn" hides Polestar's.
+  installed, "Leave bag arrows to Pawn" hides Northstar's.
 - **Your own stat weights**: paste a Pawn scale string (Options, Questing,
   Rewards & gear, or `/polestar gear import`) and choose it under Stat weights
   as "Custom: <name>". It replaces the built-in weights at every level. One
@@ -669,13 +673,13 @@ runs solo or in a raid.
   to where they are turned in and takes the follow-ups there.
 - **Rares**: rares and treasures by zone with their spawns and signature
   drop, and an alert when one shows up on your minimap, nameplates or target.
-  A **Rare button** appears under the Target button when Polestar spots a rare
+  A **Rare button** appears under the Target button when Northstar spots a rare
   nearby and targets it by name (Options, Questing, Buttons, Rare button).
 - **Characters** (`/polestar alts`): every character on the account with its
   level, zone, guide, gold and an estimate of its rested XP.
 
 Lookup, Dungeons and Rares read the Codex, a data pack that ships in the
-release as `Polestar_Codex`. Without it Lookup still searches the guides, and
+release as `Northstar_Codex`. Without it Lookup still searches the guides, and
 each section says what is missing.
 
 ### Appearance and UI suites
@@ -691,9 +695,9 @@ each section says what is missing.
   scale, opacity and colors; reduced motion. Everything applies live,
   without a reload; right-click any setting to reset it.
 - **Fonts**: the game's own by default, or Inter, or EllesmereUI's.
-- **EllesmereUI** (Options, Integrations): Polestar follows its accent and font by default through
+- **EllesmereUI** (Options, Integrations): Northstar follows its accent and font by default through
   its public skinning API, and where its Quality of Life or Friends module
-  does the same job as a Polestar toggle, the toggle starts off.
+  does the same job as a Northstar toggle, the toggle starts off.
 
 ### Quality of life
 
@@ -702,7 +706,7 @@ Hearthstone is on cooldown says how long until it is ready and points the
 arrow at the inn; XP per hour and time to level;
 the level the guide wants you to reach, marked on the game's XP bar;
 selling grays and repairing (optionally from the guild bank first); buying
-what a step of Polestar's own guides asks you to buy (a community guide's
+what a step of Northstar's own guides asks you to buy (a community guide's
 step names what to buy and leaves it to you); learning new spells at class
 trainers; taking the best quest reward and wearing rewards that are upgrades;
 instant quest text, single-option gossip and faster auto-loot; hiding combat
@@ -717,16 +721,16 @@ the flight helper once, or to answer a request yourself.
 
 ### With a gamepad
 
-Polestar plays with a gamepad on Forever (ported from Ding! by Yendi,
+Northstar plays with a gamepad on Forever (ported from Ding! by Yendi,
 @moust4ki). Open its options from the minimap button (or `/polestar
 gamepad` without the game's gamepad interface): their **Gamepad** page names
 the buttons (Xbox letters or PlayStation shapes, read off the gamepad by
-default), and its **Key bindings** tab binds every Polestar action: next and
+default), and its **Key bindings** tab binds every Northstar action: next and
 previous step, browse the guide, show or hide the guide window, the guide
 menu, the options, report a problem, and the quest item, target and
 Hearthstone buttons. Nothing is bound until you bind it. Press A on a row,
 then a button, or hold one button and press another for a combination:
-Polestar watches its combinations itself, keeps the second button from the
+Northstar watches its combinations itself, keeps the second button from the
 game only while you hold the first, and never acts on one in a fight. With
 the game's gamepad interface on, LB and RB are its targeting buttons and
 every combination with them is the game's own: the row says so before it
@@ -737,11 +741,11 @@ The guide window never takes a button away from the game. To browse it with
 the gamepad, bind **Browse the guide with the gamepad**: the D-pad picks a
 line (up from the goals: Skip, the bug, the menu and the tabs), A points the
 arrow there or uses the quest item on its line (not with the game's gamepad
-interface, whose own buttons Polestar leaves alone), X shows the line's
+interface, whose own buttons Northstar leaves alone), X shows the line's
 details, LB / RB look at the previous and next step, Y minimizes the window,
 and B gives the gamepad back to the game.
 
-Every Polestar window you open (the guide menu with Lookup and Dungeons, the
+Every Northstar window you open (the guide menu with Lookup and Dungeons, the
 options, the welcome, the route choice, the report and copy windows, the
 drop-down menus) answers the gamepad while it is open: the D-pad moves the
 focus (an accent ring), A selects, B closes or goes back, LB / RB change tabs
@@ -757,7 +761,7 @@ shows: everything works with the mouse and keyboard as before.
 
 ### Recorder
 
-`Polestar_Recorder` is an optional companion addon that records your play
+`Northstar_Recorder` is an optional companion addon that records your play
 for the recording program, to improve the routes. It records while sharing
 is on in the [Polestar Client](https://polestar.guide/client) (on by
 default there, unless you stop it or type `/psrec off`); without the Client
@@ -778,14 +782,14 @@ steps and detours, the steps to fix first.
 `/polestar` (or `/pole`) shows or hides the guide window; settings live in
 `/polestar options`, grouped by what you came to do: Guide, Appearance, Map,
 Questing, Discovery, Quality of Life, Integrations (settings for other addons
-Polestar works with, such as Questie, shown while they are installed), Guide
+Northstar works with, such as Questie, shown while they are installed), Guide
 packs, Gamepad, Recorder and About, with a search that finds any setting.
 
 With the game's gamepad interface on (Options, Gamepad, Enable Gamepad UI)
 there are no slash commands: the game blocks gamepad actions after any
-addon command typed in chat, until the game freezes. Polestar's minimap
+addon command typed in chat, until the game freezes. Northstar's minimap
 button (on by default then) and its key bindings open the guide and the
-settings instead, and Polestar keeps out of the game's own windows.
+settings instead, and Northstar keeps out of the game's own windows.
 
 <details>
 <summary><b>Every slash command</b></summary>
@@ -809,7 +813,7 @@ settings instead, and Polestar keeps out of the game's own windows.
 | `arrow show\|hide\|reset` | The waypoint arrow (drag it to move it); while the guide hides it (**Hide the arrow with the guide**), these commands, `way` and `near` say so |
 | `reset` | Clear ticks and skips for the current guide |
 | `xp` | XP per hour, time to level and level splits |
-| `party [debug]` | Show or hide the party panel: each party member who also runs Polestar (level, step, what they still need); `debug` prints what party sync sends and hears, for a report |
+| `party [debug]` | Show or hide the party panel: each party member who also runs Northstar (level, step, what they still need); `debug` prints what party sync sends and hears, for a report |
 | `gear [item link]` | Gear advice: the weights in use, or compare an item |
 | `gear import [string]` | Import a Pawn scale: opens the paste box, or imports the string given |
 | `gear scales` | Open the window that manages your custom stat-weight scales |
@@ -872,10 +876,10 @@ flowchart LR
   routes --> guides["Guides<br/>written from the route"]
   guides --> check["Route check<br/>played like a player"]
   check --> legs["Walking legs<br/>for the arrow"]
-  legs --> addon["Polestar_Guides"]
+  legs --> addon["Northstar_Guides"]
 ```
 
-The routes are made by **Polestar Forge**, one program (`forge build`) that runs every step from
+The routes are made by **Northstar Forge**, one program (`forge build`) that runs every step from
 the installed game to checked guides ([docs/FORGE.md](docs/FORGE.md)). Each race has its own
 starting zone (levels 1 to about 12, the Skyborne to about 15); from there one Horde route runs
 from the Barrens and one Alliance route from Westfall to 60, written once per faction and played by
@@ -891,7 +895,7 @@ every race of it.
    tips. Quests that start from a rare drop are optional extras the route does not count on.
    Dungeon, raid and PvP quests are left out.
 3. **Walks.** Every walk a route may take is priced on the terrain, with Leffe's navigation maps
-   where they cover it and Polestar's own walking grid elsewhere ([nav](docs/forge/nav.md)).
+   where they cover it and Northstar's own walking grid elsewhere ([nav](docs/forge/nav.md)).
 4. **Route search.** Starting from the order players knew, the search reorders, adds and drops
    quests, from moving one stop to rebuilding a whole stretch, and keeps a change only when every
    step stays possible: the quest is available, the flight path is learnt, the hearthstone is
@@ -935,7 +939,7 @@ What you will notice, that 0.2.6's guides didn't do:
   it (a quest taken or handed in, a spell learnt), never when a window just opens.
 
 Every leveling guide is checked the way a player follows it before it ships, for every race and
-class, and each round of routes is read step by step. Polestar is not a speed-leveling guide:
+class, and each round of routes is read step by step. Northstar is not a speed-leveling guide:
 the aim is a route that makes sense to play, with nothing pointless in it.
 
 Forge's model is in [docs/forge/model.md](docs/forge/model.md) and the route check in
@@ -1003,12 +1007,12 @@ Every verb, modifier and condition is in
 
 ## Building from source
 
-This part is for working on Polestar itself: players need only the
+This part is for working on Northstar itself: players need only the
 [Quick start](#quick-start), guide authors the [Community guides](#community-guides)
 section. [docs/README.md](docs/README.md) maps every document, and
 [CHANGELOG.md](CHANGELOG.md) lists what changed in each release.
 
-Polestar has two command lines. **`forge`** (Rust, in `rust/`; build it
+Northstar has two command lines. **`forge`** (Rust, in `rust/`; build it
 with `cargo build --release -p forge` there, or take a prebuilt one from
 the Releases page) builds the data, the guides, the walking maps and the
 releases: `forge guide compile|lint|check`, `forge data ...`,
@@ -1024,9 +1028,9 @@ client's tables and installed addons.
 
 ```sh
 forge data build --kb                     # reference data into data/forever/ (local)
-forge data questdb                        # the Polestar_QuestDB pack
+forge data questdb                        # the Northstar_QuestDB pack
 forge guide lint                          # check every guide
-forge guide compile                       # build addon/Polestar_Guides
+forge guide compile                       # build addon/Northstar_Guides
 node --test "tests/**/*.test.js"          # the test suite
 node tools/polestar.js preview            # render the UI to docs/preview/*.svg
 node tools/polestar.js install --recorder # into a detected Forever or beta client
@@ -1054,7 +1058,7 @@ them, lists the generated files and gives the rebuild order after a data
 change.
 
 <details>
-<summary><b>Polestar Forge: making the routes</b></summary>
+<summary><b>Northstar Forge: making the routes</b></summary>
 
 ```sh
 cd rust && cargo build --release -p forge && cd ..   # or a prebuilt forge from the Releases page
@@ -1078,7 +1082,7 @@ node tools/polestar.js play              # prints http://127.0.0.1:8077/
 node tools/polestar.js play --fresh      # a new level 1 character, default settings
 ```
 
-One long-lived Lua 5.1 process runs Polestar, its guides and the built data
+One long-lived Lua 5.1 process runs Northstar, its guides and the built data
 packs against the simulated world of the tests. The page shows a 1920x1080
 game screen with the hub and the guide window; click, hover, scroll, drag,
 type into search boxes and run slash commands from the chat line. A side
@@ -1157,14 +1161,14 @@ take in the new zones ([docs/FORGE.md](docs/FORGE.md)).
 
 | Path | What lives there |
 |---|---|
-| [`addon/Polestar`](addon/Polestar) | The addon: engine, navigation, UI, modules, textures drawn in code ([addon/README.md](addon/README.md); every addon: [docs/ARCHITECTURE.md, "Overview"](docs/ARCHITECTURE.md#overview)) |
-| [`addon/Polestar_Guides`](addon/Polestar_Guides) | The compiled guides (generated by `compile`) |
-| [`addon/Polestar_ItemDB`](addon/Polestar_ItemDB) | Item stats for gear advice: `Items.lua` from `forge data itemdb`, `Forever.lua` from `forge data gear` |
-| [`addon/Polestar_Nav`](addon/Polestar_Nav) | The arrow's walking routes: Polestar's walking router, started from Shortest Path Forever's by Cillian Berragan (GPL-3.0-or-later), on Polestar's walking maps of Eastern Kingdoms, Kalimdor and Zephras Isle, grown from his format (`nav pack`; [CREDITS.md](addon/Polestar_Nav/CREDITS.md)) |
-| [`addon/Polestar_Recorder`](addon/Polestar_Recorder) | The optional session recorder |
+| [`addon/Northstar`](addon/Northstar) | The addon: engine, navigation, UI, modules, textures drawn in code ([addon/README.md](addon/README.md); every addon: [docs/ARCHITECTURE.md, "Overview"](docs/ARCHITECTURE.md#overview)) |
+| [`addon/Northstar_Guides`](addon/Northstar_Guides) | The compiled guides (generated by `compile`) |
+| [`addon/Northstar_ItemDB`](addon/Northstar_ItemDB) | Item stats for gear advice: `Items.lua` from `forge data itemdb`, `Forever.lua` from `forge data gear` |
+| [`addon/Northstar_Nav`](addon/Northstar_Nav) | The arrow's walking routes: Northstar's walking router, started from Shortest Path Forever's by Cillian Berragan (GPL-3.0-or-later), on Northstar's walking maps of Eastern Kingdoms, Kalimdor and Zephras Isle, grown from his format (`nav pack`; [CREDITS.md](addon/Northstar_Nav/CREDITS.md)) |
+| [`addon/Northstar_Recorder`](addon/Northstar_Recorder) | The optional session recorder |
 | [`guides/forever`](guides/forever) | The guide sources: leveling, professions, reputation, exploration, Legacy, collectibles |
 | [`tools`](tools) | The command line (`polestar.js`), the guide compiler, the simulator, data importers, texture and preview renderers, the playground ([tools/README.md](tools/README.md)) |
-| [`rust`](rust) | Polestar Forge, the Rust pipeline that makes the routes and writes them into the guides: one `forge` program ([docs/FORGE.md](docs/FORGE.md)) |
+| [`rust`](rust) | Northstar Forge, the Rust pipeline that makes the routes and writes them into the guides: one `forge` program ([docs/FORGE.md](docs/FORGE.md)) |
 | [`apps/client`](apps/client) | The Polestar Client, the desktop app that installs and updates the addons and community guides and sends recordings ([apps/client/README.md](apps/client/README.md)) |
 | [`services/ingest`](services/ingest) | The recording program's server: it checks and stores the chunks the Polestar Client sends ([services/ingest/README.md](services/ingest/README.md)) |
 | [`tests`](tests) | `node --test` suites; `tests/lua` is the simulated game client they run the addon in ([tests/README.md](tests/README.md)) |
@@ -1197,7 +1201,7 @@ saved you a minute. Questions and ideas are welcome on the
   [Polestar Client](#polestar-client) (it shares by default) and play, or attach `record report`
   for the steps that felt slow.
 - **With an AI agent?** It reads [AGENTS.md](AGENTS.md) in a clone. To have
-  Polestar's skills everywhere, install them:
+  Northstar's skills everywhere, install them:
   `npx skills add fitzforge/polestar -g`, or the Claude Code and Codex
   plugins in [CONTRIBUTING.md](CONTRIBUTING.md#installing-the-skills).
 
@@ -1205,7 +1209,7 @@ Contributions are accepted under the GPL-3.0, the project's license.
 
 ## Data and licensing
 
-Polestar is free and open source under the
+Northstar is free and open source under the
 [GNU General Public License, version 3](LICENSE).
 
 Its data comes from public sources, the game client's own tables and
@@ -1216,35 +1220,35 @@ credited there. Inputs whose terms do not allow redistribution are read from
 your installed copies at build time and their outputs stay local: a Codex
 built with those extras (`--local-extras`) and the zone crossings pack are
 never packaged; the Codex that ships is built from release-safe inputs only. No game
-art ships with Polestar: zone paintings are read from the player's own
+art ships with Northstar: zone paintings are read from the player's own
 client, and every texture is drawn in code. The screenshots in this README
 show the game (© Blizzard Entertainment) and are not part of the release.
 
 The Inter typeface (SIL Open Font License 1.1) ships with the addon; the
-POLESTAR wordmark is cut from Cinzel (SIL Open Font License 1.1) and ships
+NORTHSTAR wordmark is cut from Cinzel (SIL Open Font License 1.1) and ships
 only as images. The README's banner, buttons, logo, charts and the
 CurseForge avatar are drawn by [`tools/readme`](tools/readme) from the same sources, with
 Marcellus (SIL Open Font License 1.1) for the banner's lines; the CurseForge
 button's anvil is the CurseForge mark from simple-icons (CC0 1.0).
 
-The walking router in `Polestar_Nav` started from Shortest Path Forever's, by
+The walking router in `Northstar_Nav` started from Shortest Path Forever's, by
 Cillian Berragan, and keeps his copyright in the files that began as his; its
-maps of Eastern Kingdoms, Kalimdor and Zephras Isle are Polestar's, written in
+maps of Eastern Kingdoms, Kalimdor and Zephras Isle are Northstar's, written in
 a format grown from his by a port of his baker; all of it is under
 the GPL version 3 or later, used with his permission
 (see [Pathing by Shortest Path Forever](#pathing-by-shortest-path-forever));
 the guide-pack permission below does not cover them.
 
 The walks baked into the guides are drawn on Leffe's navigation maps (and on
-Polestar's own maps where his have no way), used with Leffe's full
+Northstar's own maps where his have no way), used with Leffe's full
 permission; his map files are not part of the addon.
 
 [LICENSE-EXCEPTION.md](LICENSE-EXCEPTION.md) adds a permission under section
-7: guide packs produced by Polestar's compiler and import strings produced by
+7: guide packs produced by Northstar's compiler and import strings produced by
 its tools, including the reference data they place in them, may be
 distributed under terms of the author's choice (not guide text copied from
-Polestar's own guides, nor Polestar's code).
+Northstar's own guides, nor Northstar's code).
 
 <p align="center"><img src="docs/assets/emblem.svg" width="28" alt=""></p>
 
-<p align="center"><sub>World of Warcraft is a trademark of Blizzard Entertainment. Polestar is a community project, not affiliated with or endorsed by Blizzard.</sub></p>
+<p align="center"><sub>World of Warcraft is a trademark of Blizzard Entertainment. Northstar is a community project, not affiliated with or endorsed by Blizzard.</sub></p>

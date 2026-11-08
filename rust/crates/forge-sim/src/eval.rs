@@ -50,7 +50,7 @@ pub const FREE_HEARTH_MIN_TRIP_SEC: f64 = 180.0;
 /// about the death's own uncertainty (deathskipSec's spread).
 pub const DEATHSKIP_GAIN_SEC: f64 = 30.0;
 /// Forever's resurrection sickness after a Spirit Healer's resurrection: none through
-/// SICKNESS_FREE_LEVEL, then SICKNESS_SEC (Polestar's death helper, QoL/Death.lua; #390).
+/// SICKNESS_FREE_LEVEL, then SICKNESS_SEC (Northstar's death helper, QoL/Death.lua; #390).
 pub const SICKNESS_FREE_LEVEL: usize = 10;
 pub const SICKNESS_SEC: f64 = 600.0;
 

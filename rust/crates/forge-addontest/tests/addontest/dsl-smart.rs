@@ -80,25 +80,25 @@ fn find_guide_files(base: &Path, sub: &Path, out: &mut Vec<String>) {
 const REGISTER_RESULTS: &str = r#"
 			@TEST_PACK@
 			local results = {}
-			local real = Polestar.RegisterGuide
-			Polestar.RegisterGuide = function(g) local ok, e = real(g); results[#results + 1] = ok and "ok" or e; return ok, e end
-			assert(loadfile(@FILE@))("Polestar_Guides", {})
+			local real = Northstar.RegisterGuide
+			Northstar.RegisterGuide = function(g) local ok, e = real(g); results[#results + 1] = ok and "ok" or e; return ok, e end
+			assert(loadfile(@FILE@))("Northstar_Guides", {})
 			emit({ results = results })"#;
 
 const REGISTER_GUIDE: &str = r#"
 			@TEST_PACK@
 			local got, results = nil, {}
-			local real = Polestar.RegisterGuide
-			Polestar.RegisterGuide = function(g) got = g; local ok, e = real(g); results[#results + 1] = ok and "ok" or e; return ok, e end
-			assert(loadfile(@FILE@))("Polestar_Guides", {})
+			local real = Northstar.RegisterGuide
+			Northstar.RegisterGuide = function(g) got = g; local ok, e = real(g); results[#results + 1] = ok and "ok" or e; return ok, e end
+			assert(loadfile(@FILE@))("Northstar_Guides", {})
 			emit({ results = results, guide = got })"#;
 
 const FRAMES: &str = r#"
 			local frames, guides = {}, {}
-			Polestar.RegisterPack = function() end
-			Polestar.RegisterMapFrames = function(t) for k, v in pairs(t.era) do frames[k] = v end end
-			Polestar.RegisterGuide = function(g) guides[#guides + 1] = g end
-			for _, f in ipairs({ @ORDER@ }) do assert(loadfile(f))("Polestar_Guides", {}) end
+			Northstar.RegisterPack = function() end
+			Northstar.RegisterMapFrames = function(t) for k, v in pairs(t.era) do frames[k] = v end end
+			Northstar.RegisterGuide = function(g) guides[#guides + 1] = g end
+			for _, f in ipairs({ @ORDER@ }) do assert(loadfile(f))("Northstar_Guides", {}) end
 			local missing, era, seen = {}, 0, {}
 			local function walk(t, where)
 				if seen[t] then return end
@@ -176,7 +176,7 @@ fn every_goal_of_a_quest_that_needs_a_profession_carries_it_a_leveling_guide_war
 	let file = tp.dir.join(tp.guides_of("test/s"));
 	assert!(is_match(&fs::read_to_string(&file).unwrap(), r#"profLine = 186, profName = "Mining", profRank = 50"#));
 	let out = emitted(&RunAddon {
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: REGISTER_RESULTS.replace("@TEST_PACK@", TEST_PACK).replace("@FILE@", &lua_string(&file.to_string_lossy())),
 		..Default::default()
 	})
@@ -202,7 +202,7 @@ fn smart_goals_emit_lua_the_real_engine_registry_accepts_and_round_trip() {
 	));
 	assert!(is_match(&lua, r#"\{ t = "accept", quest = 9500, title = "Either Way", npc = 823, npcName = "Deputy Willem", minLevel = 1, qlvl = 3, pre = \{ 9201, 783 \},"#));
 	let out = emitted(&RunAddon {
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: REGISTER_GUIDE.replace("@TEST_PACK@", TEST_PACK).replace("@FILE@", &lua_string(&file.to_string_lossy())),
 		..Default::default()
 	})
@@ -232,7 +232,7 @@ fn every_era_frame_coordinate_in_an_emitted_pack_candidates_included_has_its_map
 	assert_eq!(r.errors, Vec::<String>::new());
 	let tp = dsl::write_our_test_pack(&r.guides);
 	let order = tp.scripts.iter().map(|f| lua_string(&f.to_string_lossy())).collect::<Vec<_>>().join(", ");
-	let out = emitted(&RunAddon { addons: vec![Addon::files("Polestar", &["Core/Init.lua"])], script: FRAMES.replace("@ORDER@", &order), ..Default::default() }).remove(0);
+	let out = emitted(&RunAddon { addons: vec![Addon::files("Northstar", &["Core/Init.lua"])], script: FRAMES.replace("@ORDER@", &order), ..Default::default() }).remove(0);
 	assert_eq!(out["missing"], "");
 	assert!(out["era"].as_f64().unwrap() > 20.0, "{}", out["era"]);
 	// The repro's shape: candidates on maps other than the guide's own zone.

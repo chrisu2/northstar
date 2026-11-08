@@ -1,4 +1,4 @@
-//! Compat (addon/Polestar/Core/Compat.lua): map frames and world coordinates, quest objective normalization, NPC
+//! Compat (addon/Northstar/Core/Compat.lua): map frames and world coordinates, quest objective normalization, NPC
 //! IDs, player info, against the stub world.
 
 use forge_addontest::run::addons_dir;
@@ -16,8 +16,8 @@ fn run_with(script: &str, before: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{BASE}{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		script: format!("C = Polestar.Compat\n{script}"),
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		script: format!("C = Northstar.Compat\n{script}"),
 		..Default::default()
 	})
 	.remove(0)
@@ -51,7 +51,7 @@ fn round(list: &Value) -> Value {
 #[test]
 fn maptoworld_uses_registered_era_bounds_for_frame_e_and_the_live_client_otherwise() {
 	let out = run(r#"
-		Polestar.RegisterMapFrames({ era = { [1429] = { c = 0, left = 1600, right = -1400, top = 600, bottom = -1400 } } })
+		Northstar.RegisterMapFrames({ era = { [1429] = { c = 0, left = 1600, right = -1400, top = 600, bottom = -1400 } } })
 		emit({ { C.MapToWorld(1429, 50, 50, "e") }, { C.MapToWorld(1429, 50, 50) }, { C.MapToWorld(9998, 50, 50, "e") },
 			{ C.MapToWorld(9999, 50, 50) } })
 	"#);
@@ -64,7 +64,7 @@ fn maptoworld_uses_registered_era_bounds_for_frame_e_and_the_live_client_otherwi
 #[test]
 fn an_era_point_converts_back_to_the_live_map_percent_with_worldtomap_with_or_without_getmapposfromworldpos() {
 	let script = r#"
-		Polestar.RegisterMapFrames({ era = { [1429] = { c = 0, left = 1600, right = -1400, top = 600, bottom = -1400 } } })
+		Northstar.RegisterMapFrames({ era = { [1429] = { c = 0, left = 1600, right = -1400, top = 600, bottom = -1400 } } })
 		local c, wx, wy = C.MapToWorld(1429, 50, 50, "e")
 		emit({ { C.WorldToMap(c, wx, wy, 1429) }, { C.WorldToMap(1, wx, wy, 1429) } })
 	"#;
@@ -337,7 +337,7 @@ fn walk(dir: &Path, root: &Path, bare: &[Regex], comment: &Regex, found: &mut Ve
 			walk(&p, root, bare, comment, found);
 		} else {
 			let rel = p.strip_prefix(root).unwrap();
-			if p.extension().is_some_and(|x| x == "lua") && rel != Path::new("Polestar/Core/Compat.lua") {
+			if p.extension().is_some_and(|x| x == "lua") && rel != Path::new("Northstar/Core/Compat.lua") {
 				// The walking maps' parts may hold zlib bytes in their literals (maps format 5): not UTF-8.
 				let text = String::from_utf8_lossy(&std::fs::read(&p).unwrap()).into_owned();
 				for (i, line) in text.split('\n').enumerate() {

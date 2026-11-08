@@ -1,4 +1,4 @@
-//! `when knows` during play (addon/Polestar/Core/Engine.lua, Own.predicateHolds): the step applies while
+//! `when knows` during play (addon/Northstar/Core/Engine.lua, Own.predicateHolds): the step applies while
 //! the character knows the spell (Compat.IsSpellKnown, else Compat.IsPlayerSpell). Learning one
 //! re-evaluates the guide (SPELLS_CHANGED), and a step the route has passed keeps its stored outcome.
 //! Real Core manifest, stub world (a level 1 Human Warrior in Elwynn Forest), as tests/engine-when-skill.rs.
@@ -17,7 +17,7 @@ w.onQuest(783, {})
 // Step 2 is the conditional one, between taking and handing in A Threat Within: @WHEN@ is Lua for its
 // predicates.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/knows", pack = "test", title = "Knows", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Deputy Willem", goals = {
@@ -34,7 +34,7 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 function state() local v = E.GetStepView(2); return { live = E.GetLiveStep(), status = v.status } end
 "#;
@@ -43,7 +43,7 @@ const KNOWS: &str = r#"{ { k = "knows", spell = 100 } }"#;
 const NOT_KNOWN: &str = r#"{ { k = "knows", spell = 100, neg = true } }"#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 fn run(when: &str, login: &str, script: &str) -> Vec<Value> {
@@ -52,7 +52,7 @@ fn run(when: &str, login: &str, script: &str) -> Vec<Value> {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/knows" }"#.into())],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/knows" }"#.into())],
 		script: [TEST_PACK, TEST_SOURCE, &guide, HELPERS, "stub.login()", login, r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 		..Default::default()
 	})
@@ -94,7 +94,7 @@ fn guides_validate_takes_a_knows_predicate_with_a_spell_id_and_refuses_one_witho
 		stubs: vec!["stub_world.lua"],
 		addons: vec![core()],
 		script: r#"
-			local V = Polestar.Guides.Validate
+			local V = Northstar.Guides.Validate
 			local function g(pred) return { id = "t/v", pack = "test", title = "V", minLevel = 1, maxLevel = 10, steps = { { when = { pred }, goals = { { t = "note", text = "x" } } } } } end
 			emit({
 				spell = V(g({ k = "knows", spell = 100, neg = true })) or "ok",

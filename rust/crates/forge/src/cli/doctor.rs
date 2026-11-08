@@ -9,7 +9,7 @@ use std::process::ExitCode;
 pub(super) const USAGE: &str = "usage: forge doctor [--wow <folder>] [--forget] [--root <checkout>] [--pack <dir>] [--grid <dir>] [--leffe <dir>]
 
 Prints what Forge finds and what `forge build` would use, with the fix for anything missing:
-the game folder and how it was chosen (--wow, $POLESTAR_WOW_DIR, the remembered folder, a
+the game folder and how it was chosen (--wow, $NORTHSTAR_WOW_DIR, the remembered folder, a
 search), every build in it and every other install found, Forever's quest data addon, the data
 (the checkout's data/sources, else the data pack), the table definitions, Leffe's navigation
 maps, the walking grid and the walks backend. Exits 1 when the build could not run.
@@ -87,7 +87,7 @@ pub fn main() -> ExitCode {
 	match &found {
 		Some((dir, how)) => {
 			let how = match how {
-				forge_gamedata::Found::Env => "from $POLESTAR_WOW_DIR",
+				forge_gamedata::Found::Env => "from $NORTHSTAR_WOW_DIR",
 				forge_gamedata::Found::Config => "remembered",
 				forge_gamedata::Found::Search => "found by searching",
 			};
@@ -124,7 +124,7 @@ pub fn main() -> ExitCode {
 		}
 		None => {
 			line(false, "game folder", "not found");
-			fix("pass --wow <the folder holding .build.info and Data> once (it is remembered), or set POLESTAR_WOW_DIR");
+			fix("pass --wow <the folder holding .build.info and Data> once (it is remembered), or set NORTHSTAR_WOW_DIR");
 			ready = false;
 		}
 	}
@@ -162,7 +162,7 @@ pub fn main() -> ExitCode {
 		_ => {
 			line(false, "data", "no checkout with data/sources here and no data pack");
 			fix(&format!(
-				"run from inside a Polestar checkout with data/sources, or forge data fetch (into {}) once a public data pack is published",
+				"run from inside a Northstar checkout with data/sources, or forge data fetch (into {}) once a public data pack is published",
 				pack_dir.as_ref().map_or("--dest <dir>".into(), |p| p.display().to_string())
 			));
 			ready = false;
@@ -183,7 +183,7 @@ pub fn main() -> ExitCode {
 		let sources = r.join("data/sources");
 		let saved = forge_data::tables::saved_builds(&sources);
 		let saved_text = if saved.is_empty() { "none saved".to_string() } else { format!("saved: {}", saved.join(", ")) };
-		let grid = val("--grid").map(abs).or_else(|| std::env::var_os("POLESTAR_GRID").map(PathBuf::from)).unwrap_or_else(|| forge::grid_dir(None, r));
+		let grid = val("--grid").map(abs).or_else(|| std::env::var_os("NORTHSTAR_GRID").map(PathBuf::from)).unwrap_or_else(|| forge::grid_dir(None, r));
 		match forge::grid_build(&grid) {
 			Ok((_, b)) if saved.contains(&b) => line(true, "Forever tables", &format!("saved for the grid's build {b} ({})", forge_data::tables::saved_root(&sources).join(&b).display())),
 			Ok((p, b)) => {
@@ -237,7 +237,7 @@ pub fn main() -> ExitCode {
 			fix("forge data fetch (the data pack carries the walks on Leffe's maps)");
 		}
 	}
-	let given = val("--grid").map(abs).or_else(|| std::env::var_os("POLESTAR_GRID").map(PathBuf::from));
+	let given = val("--grid").map(abs).or_else(|| std::env::var_os("NORTHSTAR_GRID").map(PathBuf::from));
 	match (&given, &client_dir) {
 		(Some(g), _) => {
 			let ok = g.join("index.json").is_file();

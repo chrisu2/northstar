@@ -5,7 +5,7 @@
 --     itself gives (quest titles, item, map, area, zone, spell, faction,
 --     instance, class and race names, a few GlobalStrings) comes back as a
 --     placeholder, ⟦q176⟧, that holds no word, so a word left on screen is
---     Polestar's;
+--     Northstar's;
 --   * records every text the addons put up: font strings and buttons
 --     (SetText, SetFormattedText), tooltips, chat, error and popup texts,
 --     Settings panel names and menu entries, each with the scene it showed
@@ -149,7 +149,7 @@ local function site(level)
 		local info = debug.getinfo(level, "Sl")
 		if not info then break end
 		local rel = (info.source or ""):match("[/\\]addon[/\\](.*)$")
-		if rel and not rel:find("^Polestar_%l%l%u%u[/\\]") then
+		if rel and not rel:find("^Northstar_%l%l%u%u[/\\]") then
 			chain[#chain + 1] = rel:gsub("\\", "/") .. ":" .. (info.currentline or 0)
 			if #chain >= 3 then break end
 		end
@@ -250,7 +250,7 @@ end
 local lmiss = {} -- interface key -> { addon = name, sites = { [site] = true } }
 local nmiss = {} -- "kind:id" -> true
 local ownPairs = {} -- { english, translation } of every translated text the client has
-local shownNames = {} -- every name Polestar.Names gave (the client's language)
+local shownNames = {} -- every name Northstar.Names gave (the client's language)
 local guideTexts = {} -- pack id -> { [guide id] = { english = translation } }
 local guideEnglish = {} -- { id, pack, texts = { english... }, names }
 local authorCredits = {} -- exact credit line -> the same label without its proper name
@@ -283,9 +283,9 @@ local function watchL(addon, ns)
 	A.L[addon] = L
 end
 
--- Polestar's L right after Core/Init.lua makes it; the Recorder's after
+-- Northstar's L right after Core/Init.lua makes it; the Recorder's after
 -- Recorder.lua does. Their locale files fill them next. The first file of
--- any other addon (the guides, a pack) finds Polestar loaded: its hooks go
+-- any other addon (the guides, a pack) finds Northstar loaded: its hooks go
 -- in then, before a guide registers.
 do
 	local load = loadfile
@@ -293,8 +293,8 @@ do
 		local chunk, err = load(file)
 		if not chunk then return chunk, err end
 		local folder = file:match("[/\\]addon[/\\]([^/\\]+)[/\\]")
-		if folder and folder ~= "Polestar" and Polestar and Polestar.GuideTexts then A.hookPolestar() end
-		local addon = (file:match("[/\\](Polestar)[/\\]Core[/\\]Init%.lua$")) or (file:match("[/\\](Polestar_Recorder)[/\\]Recorder%.lua$"))
+		if folder and folder ~= "Northstar" and Northstar and Northstar.GuideTexts then A.hookNorthstar() end
+		local addon = (file:match("[/\\](Northstar)[/\\]Core[/\\]Init%.lua$")) or (file:match("[/\\](Northstar_Recorder)[/\\]Recorder%.lua$"))
 		if not addon then return chunk, err end
 		return function(name, ns, ...)
 			local r = { chunk(name, ns, ...) }
@@ -304,9 +304,9 @@ do
 	end
 end
 
--- Hooks into Polestar itself, once it has loaded.
-function A.hookPolestar()
-	local ns = Polestar
+-- Hooks into Northstar itself, once it has loaded.
+function A.hookNorthstar()
+	local ns = Northstar
 	if not ns or ns.__leaks then return end
 	ns.__leaks = true
 	-- LEAKS.everyStep: every step and goal shows, whatever class, race or
@@ -544,7 +544,7 @@ function A.dump()
 		for k, v in pairs(L) do if type(k) == "string" and type(v) == "string" then learn(k, v) end end
 	end
 	for _, p in ipairs(ownPairs) do learn(p[1], p[2]) end
-	-- The names Polestar.Names gave are the client's: by each of their Latin words.
+	-- The names Northstar.Names gave are the client's: by each of their Latin words.
 	-- A word of four letters or more from one of them is the language's own
 	-- wherever it shows (a first name, a name with an ending).
 	local nameIndex, nameWords = {}, {}
@@ -581,7 +581,7 @@ function A.dump()
 		end
 	end
 	-- A name shows in the English its guide gives it: the names pack lacks
-	-- it (asked and missed), or nothing asked Polestar.Names for it.
+	-- it (asked and missed), or nothing asked Northstar.Names for it.
 	local english = {}
 	for _, g in ipairs(guideEnglish) do
 		for k, v in pairs(g.names) do if type(v) == "string" and v:find("%a%a%a") then english[k] = english[k] or v end end

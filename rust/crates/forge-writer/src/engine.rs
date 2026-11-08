@@ -21,7 +21,7 @@
 //!   `group`) are asked: every non-along step of the family's work is `when group <root>`, its first
 //!   elite work step says how hard it is, and its kills and collections say the group size.
 //!
-//! Pack format 5 (Polestar 0.3.0) rules, off unless `format_0_3`: R5 `when group`, R6 `task`/`cast`,
+//! Pack format 5 (Northstar 0.3.0) rules, off unless `format_0_3`: R5 `when group`, R6 `task`/`cast`,
 //! R7 `abandon` when the log would pass 40, R8 `skipto` over blocks for one carried quest.
 //!
 //! Positions are world yards (the compiler's resolved goals and spots); a passing leg is first found by
@@ -1737,7 +1737,7 @@ pub fn engine_pass(tree: &mut BTreeMap<String, String>, t: &Travel, inp: &Inputs
 		ask_group(&ch, &texts, &by_step, &fam, &gq, &tips, &step_only, &mut edits, &mut touched, &mut rep, "groups when group");
 	}
 
-	// ---- pack format 5 (Polestar 0.3.0) ----
+	// ---- pack format 5 (Northstar 0.3.0) ----
 	if opts.format_0_3 {
 		// R5: group and dungeon quests' work, asked once. Every goal of a group quest the route takes is
 		// asked for: the accept, the work and the turn-in (the player who skips it skips all of it). (A

@@ -45,7 +45,7 @@ pub struct Settings {
 	pub consent_at: Option<i64>,
 	pub paused: bool,
 	/// Sharing has been on at least once (by default or by the player): from then on the client
-	/// tells the Recorder whether to record (Ack.lua's `PolestarRecorderShare`), and sharing off
+	/// tells the Recorder whether to record (Ack.lua's `NorthstarRecorderShare`), and sharing off
 	/// is the player's own choice, never turned back on by default.
 	pub ever_shared: bool,
 	/// The notice saying what sharing sends (with its Stop sharing) was read, or the player chose
@@ -59,7 +59,7 @@ pub struct Settings {
 	pub channel: Channel,
 	/// Look for addon updates every 6 hours (and say so in the tray).
 	pub auto_check: bool,
-	/// Install addon updates as soon as they are found (while the game is closed). Polestar's
+	/// Install addon updates as soon as they are found (while the game is closed). Northstar's
 	/// own addons only: community packs have `auto_update_packs`.
 	pub auto_install: bool,
 	/// Install routine community pack updates by themselves (packs.rs `auto_update_ok`).

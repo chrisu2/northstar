@@ -19,7 +19,7 @@ w.race, w.faction, w.class, w.className, w.level = "Orc", "Horde", "SHAMAN", "Sh
 // first. Errand: one accept can be taken now. Barrens: a leveling guide shaped like Call of Water.
 const GUIDES: &str = r#"
 local function reg(id, title, category, steps)
-	assert(Polestar.RegisterGuide({ id = id, pack = "test", title = title, category = category, minLevel = 20, maxLevel = 23, steps = steps }))
+	assert(Northstar.RegisterGuide({ id = id, pack = "test", title = title, category = category, minLevel = 20, maxLevel = 23, steps = steps }))
 end
 reg("test/water", "Call of Water", "Class", {
 	{ title = "Searn Firewarder", goals = { { t = "accept", quest = 1528, title = "Call of Water", npc = 5892, npcName = "Searn Firewarder", minLevel = 20, map = 1454, x = 38, y = 36 } } },
@@ -50,8 +50,8 @@ reg("test/barrens", "Barrens", "Leveling", {
 "#;
 
 const HELPERS: &str = r#"
-			E, w = Polestar.Engine, stub.world
-			local p = Polestar.UI.GuideFrame.parts
+			E, w = Northstar.Engine, stub.world
+			local p = Northstar.UI.GuideFrame.parts
 			function shown()
 				local wp = E.GetWaypoint()
 				return { step = E.GetStepIndex() or false, notice = p.empty:IsShown() and p.empty.Title:GetText() or false,
@@ -60,14 +60,14 @@ const HELPERS: &str = r#"
 			end
 			stub.login()
 			stub.fire("QUEST_LOG_UPDATE")
-			Polestar.Set("behavior.autoAccept", false)
+			Northstar.Set("behavior.autoAccept", false)
 "#;
 
 fn run(script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec!["Polestar".into()],
+		addons: vec!["Northstar".into()],
 		script: [TEST_PACK, TEST_SOURCE, GUIDES, HELPERS, script].join("\n"),
 		..Default::default()
 	})
@@ -148,7 +148,7 @@ fn no_notice_when_an_opening_quest_can_be_taken_now_once_the_guide_is_under_way_
 #[test]
 fn the_guide_menu_s_row_says_when_a_class_guide_opens_and_stops_once_it_does() {
 	let out = run(r#"
-		local UI, P = Polestar.UI, Polestar.UI.Picker
+		local UI, P = Northstar.UI, Northstar.UI.Picker
 		local function row(title)
 			for _, f in ipairs(stub.frames) do
 				if f.psGuide and rawget(f, "Range") and f:IsShown() and f.psGuide.title == title then return f.Note:GetText() end

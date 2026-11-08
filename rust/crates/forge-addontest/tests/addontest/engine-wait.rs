@@ -1,4 +1,4 @@
-//! The `wait` goal (addon/Polestar/Core/Engine.lua): its countdown starts once the goals before it in the step
+//! The `wait` goal (addon/Northstar/Core/Engine.lua): its countdown starts once the goals before it in the step
 //! are done, its view carries the seconds left as a "wait" bar, and it is done (and latched) when they run out.
 //! Real Core manifest, stub world (a level 1 Human Warrior in Elwynn Forest).
 
@@ -12,7 +12,7 @@ w.moveTo(1429, 48, 42)
 "#;
 
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/wait", pack = "test", title = "Wait", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "The boat", goals = {
@@ -29,13 +29,13 @@ fn a_wait_counts_down_once_the_goals_before_it_are_done_and_then_the_step_moves_
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/wait" }"#.into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/wait" }"#.into())],
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,
 			GUIDE,
-			"E = Polestar.Engine",
+			"E = Northstar.Engine",
 			"stub.login()",
 			r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#,
 			r#"

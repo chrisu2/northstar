@@ -1,5 +1,5 @@
 'use strict';
-// Polestar baseline extractor (docs/legacy/SIMULATION-js.md §5): compiles the project's
+// Northstar baseline extractor (docs/legacy/SIMULATION-js.md §5): compiles the project's
 // guides and turns a race's leveling routes (the default `next` chain and
 // every route choice) into normalized event sequences for the simulator.
 
@@ -92,7 +92,7 @@ function firstFor(guides, rFile, { anyRace = false } = {}) {
 }
 
 // Routes for a race: { default, variants: [{ label, choices, sequence }], graph, prefix }
-// or null when no Polestar guide starts that race. Event objects are shared
+// or null when no Northstar guide starts that race. Event objects are shared
 // between the sequences; treat them as read-only.
 // With `pack` ({ dir, manifest }: another guide pack), the routes are that
 // pack's chain instead, compiled with our guides (guidesDir) as context: it
@@ -101,7 +101,7 @@ function firstFor(guides, rFile, { anyRace = false } = {}) {
 // default chain comes first (`prefix`, its guide ids): the race's starting
 // guide, then `next` (else the first route choice), up to and including the
 // guide whose maxLevel reaches the pack chain's first level.
-function loadPolestarRoutes({ guidesDir, dataDir, data = null, faction = null, race, cls = null, quests = null, maxPaths = MAX_ENUMERATED, pack = null } = {}) {
+function loadNorthstarRoutes({ guidesDir, dataDir, data = null, faction = null, race, cls = null, quests = null, maxPaths = MAX_ENUMERATED, pack = null } = {}) {
 	const rFile = raceFile(race);
 	// A one-side race implies its faction; Skyborne (both sides) needs one given.
 	const sides = Object.keys((RACES[lower(race).replace(/[\s_-]/g, '')] || {}).sides || {});
@@ -137,7 +137,7 @@ function loadPolestarRoutes({ guidesDir, dataDir, data = null, faction = null, r
 			g = nx ? byId.get(nx) : null;
 		}
 	}
-	const name = pack ? pack.manifest.id : 'Polestar';
+	const name = pack ? pack.manifest.id : 'Northstar';
 
 	const options = (g) => {
 		const list = g.nextChoices && g.nextChoices.length ? g.nextChoices : g.next ? [g.next] : [];
@@ -294,4 +294,4 @@ function requiredEvents(events) {
 	return events.filter((e) => !e.optional && !(e.q != null && optQuest.has(Number(e.q))));
 }
 
-module.exports = { loadPolestarRoutes, requiredEvents };
+module.exports = { loadNorthstarRoutes, requiredEvents };

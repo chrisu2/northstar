@@ -29,11 +29,11 @@ sequenceDiagram
 | The reporter edits the post's first message | the bot | nothing; the issue body is written again |
 | A pull request addresses the issue for the first time (its title names `#N`, or it says `closes`/`fixes`/`resolves #N`) | `pr-links.yml` | ping: "A fix for this is open (#M). It still has to be reviewed; we'll tell you here when it's fixed.", tag **In progress**. Once per issue: more pull requests, edits and closes tell the thread nothing. On GitHub the issue gets one comment listing its pull requests, kept up to date, and the label `has-pr` (CONTRIBUTING.md, "Before you start") |
 | Issue labelled **needs-info** | `discord-issue-sync.yml` | ping: "We need a little more to go on with this one", quoting the maintainer's last comment on the issue, and "Please answer here in the thread". The answer comes back to the issue as a follow-up. Tags unchanged |
-| Issue closed as **completed** (button, or `Fixes #N` in a commit) | `discord-issue-sync.yml` | ping: "This is fixed and will ship in the next Polestar update", tag **Fixed**, thread locked |
+| Issue closed as **completed** (button, or `Fixes #N` in a commit) | `discord-issue-sync.yml` | ping: "This is fixed and will ship in the next Northstar update", tag **Fixed**, thread locked |
 | Issue closed as **not planned** | the same | ping: "We've decided not to change this one" (or, from `/close`, "No change is needed here", "We couldn't reproduce this one", "We're closing this one without a fix for now"), quoting your last comment on the issue as the reason; tag **Won't fix**, locked |
-| Issue closed as **duplicate** of #M (`gh issue close N --duplicate-of M`, GitHub's "Close as duplicate", or `/close`), or closed as **not planned** with a maintainer's `Duplicate of #M` comment (what GitHub's website and older `gh` leave) and no other `resolution:` label | the same | ping: where #M stands, read from GitHub: labelled `released:vX` "It's the same bug as #M, and the fix is out in Polestar X"; labelled `fix-merged` or closed as completed "It's the same bug as #M, and that's already fixed: it ships in the next Polestar update"; closed as not planned "It's the same as #M, and we've decided not to change it" (or its `resolution:` label's words), quoting #M's last maintainer comment when it is 300 characters or less; open "we're tracking it in #M", with "A fix is in progress." when #M has `has-pr`. Then the maintainer's explanation on this issue: their latest comment that is more than the bare `Duplicate of #M` line. Tag **Duplicate**, locked |
+| Issue closed as **duplicate** of #M (`gh issue close N --duplicate-of M`, GitHub's "Close as duplicate", or `/close`), or closed as **not planned** with a maintainer's `Duplicate of #M` comment (what GitHub's website and older `gh` leave) and no other `resolution:` label | the same | ping: where #M stands, read from GitHub: labelled `released:vX` "It's the same bug as #M, and the fix is out in Northstar X"; labelled `fix-merged` or closed as completed "It's the same bug as #M, and that's already fixed: it ships in the next Northstar update"; closed as not planned "It's the same as #M, and we've decided not to change it" (or its `resolution:` label's words), quoting #M's last maintainer comment when it is 300 characters or less; open "we're tracking it in #M", with "A fix is in progress." when #M has `has-pr`. Then the maintainer's explanation on this issue: their latest comment that is more than the bare `Duplicate of #M` line. Tag **Duplicate**, locked |
 | Issue reopened | the same | "We've reopened this", tag **Tracked**, unlocked |
-| A release published | `discord-release-notify.yml` | ping: "The fix is out in **Polestar 0.2.x**", for every issue closed as completed that the release ships; the issue gets `released:v0.2.x` so it is never told twice. An issue closed by a commit (`Fixes #N`, a merged pull request) ships in the first full release whose tag holds that commit, so a fix merged into `next` waits for the feature release, however many patches go out first. One closed by hand (a patch's fix) ships in the first full release published after it closed. Prereleases do not count as the release before. Each issue from Discord closed as a duplicate of one the release ships (filed from Discord or not; found by GitHub's search for `reason:duplicate` and for a `Duplicate of` comment) gets "The fix for #M, the same bug as yours, is out in **Polestar 0.2.x**" and the same `released:` label, so it too is told once |
+| A release published | `discord-release-notify.yml` | ping: "The fix is out in **Northstar 0.2.x**", for every issue closed as completed that the release ships; the issue gets `released:v0.2.x` so it is never told twice. An issue closed by a commit (`Fixes #N`, a merged pull request) ships in the first full release whose tag holds that commit, so a fix merged into `next` waits for the feature release, however many patches go out first. One closed by hand (a patch's fix) ships in the first full release published after it closed. Prereleases do not count as the release before. Each issue from Discord closed as a duplicate of one the release ships (filed from Discord or not; found by GitHub's search for `reason:duplicate` and for a `Duplicate of` comment) gets "The fix for #M, the same bug as yours, is out in **Northstar 0.2.x**" and the same `released:` label, so it too is told once |
 | A prerelease published (`v0.3.0-rc.1`: GitHub's prerelease flag, or a tag with a `-` part) | the same | nothing in the threads, and no `released:` label. The testers channel gets one message pinging the tester role: the tag, the release's link, the player entries from the tag's `changes/` (as many as fit), and a request to report in #bugs. A re-run finds that message (a bot message with the tag in bold, among the channel's last 50) and pings no one again |
 
 ## What an issue holds
@@ -69,7 +69,7 @@ other issues or carry HTML. Say so in the #bugs guidelines, for example:
 ### 1. Discord
 
 1. In the [Developer Portal](https://discord.com/developers/applications),
-   New Application, "Polestar Bot". Under **Bot**: Reset Token (that is
+   New Application, "Northstar Bot". Under **Bot**: Reset Token (that is
    `DISCORD_TOKEN`), turn off Public Bot, and turn on **Message Content
    Intent**.
 2. Invite it, with your application id in place of `APP_ID`:
@@ -159,7 +159,7 @@ the thread, as when it is closed there. Only you see the bot's answer.
 
 | Command | The issue | The reporter is told |
 |---|---|---|
-| `/close reason:Fixed` | closed as completed | "This is fixed and will ship in the next Polestar update", **Fixed** |
+| `/close reason:Fixed` | closed as completed | "This is fixed and will ship in the next Northstar update", **Fixed** |
 | `/close reason:Won't fix` | not planned, `resolution:wontfix` | "We've decided not to change this one", **Won't fix** |
 | `/close reason:No action needed` | not planned, `resolution:no-action` | "No change is needed here", **Won't fix** |
 | `/close reason:Can't reproduce` | not planned, `resolution:cannot-reproduce` | "We couldn't reproduce this one", **Won't fix** |
@@ -187,7 +187,7 @@ clients elsewhere.
 | `bot.js` | The service: settings, the gateway, the sync |
 | `notify.js` | The Actions' entry: `issue` (closed, reopened) and `release` |
 | `links.js` | The Actions' entry for pull requests: `event`, and `sweep` for every open one (`--dry-run`) |
-| `lib/report.js` | The addon's report (`addon/Polestar/UI/Report.lua`) read back into fields |
+| `lib/report.js` | The addon's report (`addon/Northstar/UI/Report.lua`) read back into fields |
 | `lib/issue.js` | Issue title, body, labels and comments; the marker; making player text inert |
 | `lib/sync.js` | Posts, follow-ups and edits to issues; the index and the backfill |
 | `lib/notify.js` | Close, reopen and release messages, tags and locks; the testers' ping for a prerelease |

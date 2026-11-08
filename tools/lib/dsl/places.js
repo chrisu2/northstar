@@ -1,7 +1,7 @@
 'use strict';
 // The location of `sethome`, `hearth`, `fly` and `getfp` against the places
 // the game can report, matched the way the addon matches it
-// (addon/Polestar/Core/Engine.lua, goalDone), ignoring case:
+// (addon/Northstar/Core/Engine.lua, goalDone), ignoring case:
 //   sethome  GetBindLocation() equals it: an inn's bind location
 //   hearth   the zone or subzone text equals it on arrival: an inn's area or
 //            the zone an inn stands in

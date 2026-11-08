@@ -880,7 +880,7 @@ the one line for the overrides file that undoes it.
 
 Overrides are for a maintainer who knows better than the model. They live under `overrides` in the
 checkout's `data/route-fixes.json`, beside the deliberate orders; the build reads the file at run time,
-never from inside `forge`. Set `POLESTAR_ROUTE_FIXES` to the path of another file to use that one
+never from inside `forge`. Set `NORTHSTAR_ROUTE_FIXES` to the path of another file to use that one
 instead. Every cut honours them as hard rules, and the ledgers show `override` as the reason. The file
 is part of the routes stage's cache key, so changing it rebuilds the routes.
 
@@ -932,7 +932,7 @@ forge sim why 1234 --start Orc --dir out/routes
 ```
 
 It reads `Orc.json`, `Orc.skips.json` and `Orc.edits.json` from `--dir`, else `<O>/routes` for
-`--out O` (a `forge build` output, e.g. `--out forge-out`), else `POLESTAR_ROUTES`.
+`--out O` (a `forge build` output, e.g. `--out forge-out`), else `NORTHSTAR_ROUTES`.
 
 `forge sim skips` merges the skip ledgers of every start in a folder into one markdown table, one row
 per quest, with the starts it applies to:
@@ -1061,7 +1061,7 @@ it), so a run killed for memory can be resumed with fewer threads.
 
 To cut one start by hand, use `forge sim route`. By default (`--seed guides`) its seed is the goal
 stream of the current guides (`--guides DIR`, default `<root>/guides`), made as `forge build` makes it;
-`--seed <file>` takes a chain as a `{"goals": [...]}` document. Only when `POLESTAR_V1_SEEDS` is set
+`--seed <file>` takes a chain as a `{"goals": [...]}` document. Only when `NORTHSTAR_V1_SEEDS` is set
 does the default read saved `v1-<faction>-<race>-on.json` chains from that folder instead; nothing
 else needs it. To match the build:
 
@@ -1103,8 +1103,8 @@ edit in its output has `byStart`: every start's hours and minutes saved.
 
 | Symptom | Likely cause | What to do |
 |---|---|---|
-| `seed ...: No such file` | a `--seed` file, or (with `POLESTAR_V1_SEEDS` set) that folder, without the chain | pass another `--seed`, or unset `POLESTAR_V1_SEEDS` to seed from the guides |
-| `knowledge base: ...` | our quest facts are not where Forge looks | set `POLESTAR_KB`, or build the data first ([data.md](data.md)) |
+| `seed ...: No such file` | a `--seed` file, or (with `NORTHSTAR_V1_SEEDS` set) that folder, without the chain | pass another `--seed`, or unset `NORTHSTAR_V1_SEEDS` to seed from the guides |
+| `knowledge base: ...` | our quest facts are not where Forge looks | set `NORTHSTAR_KB`, or build the data first ([data.md](data.md)) |
 | `warning: walks-....bin was built on world ...` | the walks are older than the world | rebuild the walks ([nav.md](nav.md)); hours are not comparable until then |
 | `v1 breaks deliberate pair: ...: left out` (also in `fixes.md` as `left out`) | the guides changed, or a pair is wrong for this start | check the pair's `why`; fix the pair or the guide |
 | `RECORD CONFLICT (still broken after the record repairs): ...: left out` | two records want different steps at the same place (c14 Night Elf: #555's Fangs then Pelts and a review's lurkers then the recipe, both right after Zenn's Bidding) | merge the two records into one order, or drop one |

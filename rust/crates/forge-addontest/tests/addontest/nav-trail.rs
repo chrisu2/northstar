@@ -16,13 +16,13 @@ fn world_spacing(yards_across: f64) -> f64 {
 }
 
 const PRELUDE: &str = r#"
-local N, Pins, nav = Polestar.Nav, Polestar.Pins, stub.nav
+local N, Pins, nav = Northstar.Nav, Northstar.Pins, stub.nav
 local function target(wx, wy, label)
 	local m, x, y = nav.mapPoint(wx, wy)
 	N.SetTarget(m, x, y, label or "Target")
 end
 local function known(...)
-	local flags = Polestar.CharState().flags
+	local flags = Northstar.CharState().flags
 	flags.taxi = {}
 	for _, id in ipairs({ ... }) do flags.taxi[id] = true end
 end
@@ -68,7 +68,7 @@ end
 fn run(script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])],
 		login: true,
 		script: format!("{PRELUDE}\nnav.faction = \"Alliance\"\nnav.useTravelWorld()\n{script}"),
 		..Default::default()
@@ -155,8 +155,8 @@ fn placement_a_dot_every_spacing_counted_back_from_the_end_continuous_over_joint
 #[test]
 fn minimap_dots_40_yd_apart_inside_the_visible_disc_or_square_honouring_rotation_and_the_indoor_zoom() {
 	let out = run(r#"
-		Polestar.Set("nav.travel", false)
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("nav.travel", false)
+		Northstar.Set("ui.reduceMotion", true)
 		nav.viewRadius = 200
 		nav.place(0, 0)
 		target(0, -900)                                   -- 900 yd east
@@ -208,8 +208,8 @@ fn minimap_dots_40_yd_apart_inside_the_visible_disc_or_square_honouring_rotation
 #[test]
 fn world_map_spacing_scales_with_the_viewed_map_60_to_its_width_at_least_15_yd_clipped_to_the_map() {
 	let out = run(r#"
-		Polestar.Set("nav.travel", false)
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("nav.travel", false)
+		Northstar.Set("ui.reduceMotion", true)
 		nav.maps[9002] = { c = 0, top = 200, bottom = -200, left = 200, right = -200, name = "Tinyshire" }
 		nav.place(0, 0)
 		target(0, -900)
@@ -246,7 +246,7 @@ fn world_map_spacing_scales_with_the_viewed_map_60_to_its_width_at_least_15_yd_c
 #[test]
 fn a_flight_route_dots_run_from_the_player_along_every_leg_on_both_surfaces() {
 	let out = run(r#"
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("ui.reduceMotion", true)
 		nav.viewRadius = 200
 		known(1, 2)
 		nav.place(0, 600)
@@ -268,7 +268,7 @@ fn a_flight_route_dots_run_from_the_player_along_every_leg_on_both_surfaces() {
 #[test]
 fn no_dots_across_a_continent_change_or_along_a_hearthstone_jump() {
 	let out = run(r#"
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("ui.reduceMotion", true)
 		nav.place(0, 0, 1)                                -- Farland, continent 1
 		target(-800, 100, "Docks quest")
 		local r = { route = route(), runs = runsOf() }
@@ -301,8 +301,8 @@ fn no_dots_across_a_continent_change_or_along_a_hearthstone_jump() {
 #[test]
 fn counts_are_capped_40_on_the_minimap_300_on_the_world_map() {
 	let out = run(r#"
-		Polestar.Set("nav.travel", false)
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("nav.travel", false)
+		Northstar.Set("ui.reduceMotion", true)
 		nav.viewRadius = 3000
 		nav.place(0, 1000)
 		target(0, -1000)                                  -- 2000 yd in view: 50 dots
@@ -312,7 +312,7 @@ fn counts_are_capped_40_on_the_minimap_300_on_the_world_map() {
 			legs[i] = { kind = "walk", label = "Leg " .. i, to = { c = 0, wx = i % 2 == 0 and 900 or -900, wy = 900 - i * 60 } }
 		end
 		N.GetRoute = function() return legs, 1 end
-		Polestar.Fire("ROUTE_CHANGED", legs)
+		Northstar.Fire("ROUTE_CHANGED", legs)
 		nav.showWorldMap(9000)
 		r.world = #Pins.GetTrailFrames("world")
 		r.pool = #Pins.GetTrailFrames("world")[1].parent.regions
@@ -326,7 +326,7 @@ fn counts_are_capped_40_on_the_minimap_300_on_the_world_map() {
 #[test]
 fn the_dots_crawl_toward_the_target_while_shown_and_hold_still_with_reduced_motion() {
 	let out = run(r#"
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		nav.viewRadius = 200
 		nav.place(0, 0)
 		target(0, -900)
@@ -343,7 +343,7 @@ fn the_dots_crawl_toward_the_target_while_shown_and_hold_still_with_reduced_moti
 		Minimap:Show()
 		stub.advance(0.3)
 		r.shown = Pins.trailDriver:IsShown()
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("ui.reduceMotion", true)
 		r.s0 = xs()
 		stub.advance(1)
 		r.s1 = xs()
@@ -373,7 +373,7 @@ fn the_dots_crawl_toward_the_target_while_shown_and_hold_still_with_reduced_moti
 #[test]
 fn nav_traildots_nav_worldpins_and_nav_minimappins_switch_the_trail_no_target_no_trail() {
 	let out = run(r#"
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		nav.viewRadius = 200
 		nav.place(0, 0)
 		target(0, -900)
@@ -383,20 +383,20 @@ fn nav_traildots_nav_worldpins_and_nav_minimappins_switch_the_trail_no_target_no
 		stub.advance(0.1)
 		r.on = counts()
 		r.driverOn = Pins.trailDriver:IsShown()
-		Polestar.Set("nav.trailDots", false)
+		Northstar.Set("nav.trailDots", false)
 		r.off = counts()
 		r.gone = Pins.GetTrail() == nil
 		stub.advance(0.2)
 		r.driver = Pins.trailDriver:IsShown()
-		Polestar.Set("ui.reduceMotion", true)            -- phase 0.5 from here: 4 minimap dots
-		Polestar.Set("nav.trailDots", true)
+		Northstar.Set("ui.reduceMotion", true)            -- phase 0.5 from here: 4 minimap dots
+		Northstar.Set("nav.trailDots", true)
 		r.back = counts()
-		Polestar.Set("nav.minimapPins", false)
+		Northstar.Set("nav.minimapPins", false)
 		r.noMinimap = counts()
-		Polestar.Set("nav.minimapPins", true)
-		Polestar.Set("nav.worldPins", false)
+		Northstar.Set("nav.minimapPins", true)
+		Northstar.Set("nav.worldPins", false)
 		r.noWorld = counts()
-		Polestar.Set("nav.worldPins", true)
+		Northstar.Set("nav.worldPins", true)
 		N.ReleaseTarget()
 		r.noTarget = counts()
 		emit(r)"#);
@@ -416,20 +416,20 @@ fn nav_traildots_nav_worldpins_and_nav_minimappins_switch_the_trail_no_target_no
 #[test]
 fn the_trail_follows_the_route_as_its_legs_advance_route_advanced() {
 	let out = run(r#"
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("ui.reduceMotion", true)
 		nav.viewRadius = 200
 		known(1, 2)
 		nav.place(0, 600)
 		target(0, -780)
 		local advanced = 0
-		Polestar.On("ROUTE_ADVANCED", function() advanced = advanced + 1 end)
+		Northstar.On("ROUTE_ADVANCED", function() advanced = advanced + 1 end)
 		local before = Pins.GetTrail()
 		nav.place(0, 785)                                 -- at the flight master: the walk is done
 		stub.advance(0.2)
 		local r = { advanced = advanced, republished = Pins.GetTrail() ~= before, route = route(), runs = runsOf() }
 		local legs = N.GetRoute()                         -- on to the last leg: straight to the target
 		N.GetRoute = function() return legs, 3 end
-		Polestar.Fire("ROUTE_ADVANCED", legs, 3)
+		Northstar.Fire("ROUTE_ADVANCED", legs, 3)
 		r.last = { runs = runsOf(), mm = mmDots() }
 		emit(r)"#);
 	let out = &out[0];
@@ -503,8 +503,8 @@ fn stitched_spacing(yards_across: f64) -> f64 {
 fn openmap_on_a_zone_the_dots_run_on_past_its_edges_as_far_as_the_view_shows_through_openmap_s_placement() {
 	let out = run(&(OPENMAP.to_string()
 		+ r#"
-		Polestar.Set("nav.travel", false)
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("nav.travel", false)
+		Northstar.Set("ui.reduceMotion", true)
 		nav.maps[9002] = { c = 0, top = 200, bottom = -200, left = 200, right = -200, name = "Tinyshire" }
 		nav.place(0, 0)
 		target(0, -900)
@@ -535,10 +535,10 @@ fn openmap_on_a_zone_the_dots_run_on_past_its_edges_as_far_as_the_view_shows_thr
 fn openmap_the_world_view_places_each_continent_s_dots_through_its_own_map_and_follows_a_pan() {
 	let out = run(&(OPENMAP.to_string()
 		+ r#"
-		Polestar.Set("nav.travel", false)
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("nav.travel", false)
+		Northstar.Set("ui.reduceMotion", true)
 		nav.place(0, 300, 1)                             -- on Farland (continent 1)
-		Polestar.Nav.SetTarget(9001, 80, 50, "Far target")
+		Northstar.Nav.SetTarget(9001, 80, 50, "Far target")
 		nav.showWorldMap(947)
 		local r = { world = rawDots() }
 		view(70, 0, 80, 100)                             -- pan: a strip of the world
@@ -572,16 +572,16 @@ fn openmap_the_world_view_places_each_continent_s_dots_through_its_own_map_and_f
 fn openmap_its_menu_has_a_switch_for_the_dots_nav_openmapdots_and_polestar_s_trail_setting_still_rules() {
 	let out = run(&(OPENMAP.to_string()
 		+ r#"
-		Polestar.Set("nav.travel", false)
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("nav.travel", false)
+		Northstar.Set("ui.reduceMotion", true)
 		nav.place(0, 0)
 		target(0, -900)
 		nav.showWorldMap(9000)
-		local spec = OM.toggles["Polestar.trailDots"]
+		local spec = OM.toggles["Northstar.trailDots"]
 		local r = { on = #rawDots(), get = spec and spec.get(), label = spec and spec.label, section = spec and spec.section }
 		spec.set(false)
 		stub.runMapFrame(WorldMapFrame, 0)
-		r.off, r.setting, r.getOff = #rawDots(), Polestar.Get("nav.openmapDots"), spec.get()
+		r.off, r.setting, r.getOff = #rawDots(), Northstar.Get("nav.openmapDots"), spec.get()
 		OM.stitched = false
 		OM.callbacks.OpenMap_StitchedChanged(false)
 		stub.runMapFrame(WorldMapFrame, 0)
@@ -589,15 +589,15 @@ fn openmap_its_menu_has_a_switch_for_the_dots_nav_openmapdots_and_polestar_s_tra
 		spec.set(true)
 		OM.stitched = true
 		OM.callbacks.OpenMap_StitchedChanged(true)
-		Polestar.Set("nav.trailDots", false)
+		Northstar.Set("nav.trailDots", false)
 		stub.runMapFrame(WorldMapFrame, 0)
 		r.trailOff = #rawDots()
 		emit(r)"#));
 	let out = &out[0];
 	assert!(num(&out["on"]) > 0.0);
 	assert_eq!(out["get"], true);
-	assert_eq!(out["label"], "Polestar trail dots");
-	assert_eq!(out["section"], "Polestar");
+	assert_eq!(out["label"], "Northstar trail dots");
+	assert_eq!(out["section"], "Northstar");
 	assert_eq!(out["off"], 0);
 	assert_eq!(out["setting"], false);
 	assert_eq!(out["getOff"], false);

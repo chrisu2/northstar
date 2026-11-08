@@ -22,7 +22,7 @@
 		{ id: 'sending', label: 'What we send', glyph: 'eye' },
 	];
 	const status = $derived(STATUS[snapshot.status.kind]);
-	// Polestar's own addons and the community packs with an update the game can take.
+	// Northstar's own addons and the community packs with an update the game can take.
 	const updates = $derived(snapshot.addons.products.filter((p) => p.status === 'update').length + snapshot.community.packs.filter((p) => p.status === 'update' && !p.blocked).length);
 	const attention = $derived(snapshot.status.kind === 'attention' || snapshot.status.kind === 'rejected');
 
@@ -63,7 +63,7 @@
 	<div class="lockup" data-tauri-drag-region>
 		<Emblem size={36} glow target />
 		<div class="words">
-			<span class="wordmark" style:--w="url({wordmark})" role="img" aria-label="Polestar"></span>
+			<span class="wordmark" style:--w="url({wordmark})" role="img" aria-label="Northstar"></span>
 			<span class="tagline small">Client</span>
 		</div>
 	</div>

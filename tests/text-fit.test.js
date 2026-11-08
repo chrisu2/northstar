@@ -1,6 +1,6 @@
 'use strict';
 // Text stays inside its window. Every scene of `node tools/polestar.js
-// preview` that shows one of Polestar's windows (the guide window, the hub on
+// preview` that shows one of Northstar's windows (the guide window, the hub on
 // each section, Options on every page and tab, the welcome, the route
 // choice, the rare alert, the report window and the copy window) is laid out
 // through the preview's frame dump, in Open Sans, the game font and Inter, and every
@@ -22,7 +22,7 @@ const P = require('../tools/commands/preview');
 const { audit, describe, fontsFor, PASSES } = require('../tools/preview/fit');
 
 const SLACK = 1.15;
-const WINDOWS = new Set(['PolestarGuideFrame', 'PolestarOptions', 'PolestarPicker', 'PolestarWelcome', 'PolestarRouteChoice', 'PolestarMenu', 'PolestarRareToast', 'PolestarReport', 'PolestarCopy']);
+const WINDOWS = new Set(['NorthstarGuideFrame', 'NorthstarOptions', 'NorthstarPicker', 'NorthstarWelcome', 'NorthstarRouteChoice', 'NorthstarMenu', 'NorthstarRareToast', 'NorthstarReport', 'NorthstarCopy']);
 
 // The preview's fonts, every advance SLACK times wider.
 const fonts = fontsFor(SLACK);
@@ -47,9 +47,9 @@ const windowed = P.SCENES.filter((s) => s.panels.every((p) => p.roots.every((r) 
 
 test('the audit covers the hub, Options, the guide window and the welcome', () => {
 	const roots = new Set(windowed.flatMap((s) => s.panels.flatMap((p) => p.roots)));
-	for (const r of ['PolestarGuideFrame', 'PolestarOptions', 'PolestarPicker', 'PolestarWelcome']) assert.ok(roots.has(r), r);
+	for (const r of ['NorthstarGuideFrame', 'NorthstarOptions', 'NorthstarPicker', 'NorthstarWelcome']) assert.ok(roots.has(r), r);
 	const scripts = windowed.flatMap((s) => s.panels.map((p) => p.script)).join('\n');
-	for (const section of ['Polestar.Lookup.Show', 'Polestar.Dungeons.Open', 'Polestar.Rares.Show', 'Polestar.UI.ShowPicker', '"guidepacks"']) {
+	for (const section of ['Northstar.Lookup.Show', 'Northstar.Dungeons.Open', 'Northstar.Rares.Show', 'Northstar.UI.ShowPicker', '"guidepacks"']) {
 		assert.ok(scripts.includes(section), section);
 	}
 });
@@ -67,16 +67,16 @@ test('text fits: every Options page and tab', () => {
 	const pages = runAddon({
 		stubs: ['stub_ui.lua'],
 		before: recorder,
-		addons: [{ name: 'Polestar', files: P.MODULE_FILES }],
-		script: 'uistub.install()\nstub.login()\nemit(Polestar.UI.Options.Pages())',
+		addons: [{ name: 'Northstar', files: P.MODULE_FILES }],
+		script: 'uistub.install()\nstub.login()\nemit(Northstar.UI.Options.Pages())',
 	}).emitted[0];
 	assert.ok(pages.length >= 8, `${pages.length} pages`);
 	const panels = [];
 	for (const p of pages) {
 		const tabs = Array.isArray(p.tabs) && p.tabs.length ? p.tabs : [null];
 		for (const t of tabs) {
-			const select = t ? `; Polestar.UI.Options.Select(${JSON.stringify(p.key)}, ${JSON.stringify(t)})` : '';
-			panels.push({ files: P.MODULE_FILES, before: recorder, roots: ['PolestarOptions'], name: `${p.key}${t ? ' > ' + t : ''}`, script: `Polestar.UI.ShowOptions(${JSON.stringify(p.key)})${select}` });
+			const select = t ? `; Northstar.UI.Options.Select(${JSON.stringify(p.key)}, ${JSON.stringify(t)})` : '';
+			panels.push({ files: P.MODULE_FILES, before: recorder, roots: ['NorthstarOptions'], name: `${p.key}${t ? ' > ' + t : ''}`, script: `Northstar.UI.ShowOptions(${JSON.stringify(p.key)})${select}` });
 		}
 	}
 	const found = [];

@@ -2,7 +2,7 @@
 // Attunements and keys (docs/ARCHITECTURE.md, "Codex" and "Dungeons"): per
 // Codex instance, what lets a character in or opens its doors, as steps the
 // Dungeons page shows with the character's progress and the "Guide me
-// through it" guide walks (addon/Polestar/Dungeons/Attune.lua).
+// through it" guide walks (addon/Northstar/Dungeons/Attune.lua).
 //
 // The cited table data/codex/attunements.json names each attunement's
 // goal only: the quests that end its chain (one of them with `any`), or the
@@ -299,7 +299,7 @@ function auditReport(journal, attune, codex = {}, { verdicts } = {}) {
 	const table = loadAttunementTable();
 	const theirs = ((attune && attune.attunes) || []).filter((x) => !/^DUNGEONS$|^CLASS/.test(x.group || ''));
 	const lines = [];
-	lines.push('# Attunements: Polestar against Attune', '');
+	lines.push('# Attunements: Northstar against Attune', '');
 	lines.push(`Local comparison (Attune ${(attune && attune.meta && attune.meta.version) || '?'}: no licence, read here only). Ours: the Codex journal's attunements, built from the Codex's quests and items and the cited goals in data/codex/attunements.json.`, '');
 	const matched = new Set();
 	const rows = [];

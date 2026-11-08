@@ -1,4 +1,4 @@
-//! Items the guide keeps for later (addon/Polestar/Core/Engine.lua, Engine.KeptItems): from the live step on, a
+//! Items the guide keeps for later (addon/Northstar/Core/Engine.lua, Engine.KeptItems): from the live step on, a
 //! `use` item, a `collect`'s, a `buy`'s, a `craft`'s reagents and the item an `accept` starts from; before it, a quest
 //! `collect` whose quest is in the log, kept for the step that hands it in. Goals for another class are not this
 //! character's. Real Core manifest, stub world (a level 1 Human Warrior in Elwynn Forest).
@@ -15,7 +15,7 @@ w.titles[8] = "A Letter"
 "#;
 
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/keep", pack = "test", title = "Keep", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Candles", goals = {
@@ -40,13 +40,13 @@ fn run(script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/keep" }"#.into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/keep" }"#.into())],
 		script: format!(
 			r#"{TEST_PACK}
 {TEST_SOURCE}
 {GUIDE}
-E = Polestar.Engine
+E = Northstar.Engine
 w = stub.world
 function flush() stub.advance(1.1) end
 function kept() local out = {{}}; for id, s in pairs(E.KeptItems()) do out[tostring(id)] = s end; return out end

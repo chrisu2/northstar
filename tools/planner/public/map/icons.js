@@ -1,8 +1,8 @@
 // The pin atlas: one 1024 x 1024 texture of 64 px cells drawn on demand.
 // A pin is a dark scrim disc holding the goal's game icon (a square icon
 // inset in a circle mask, a cut-out ui icon whole) or, while that loads or
-// when it is missing, the verb's Polestar glyph tinted by its subject
-// colour. Cell 1 holds the current pin's glow, cell 0 the character's arrow (the Polestar Nav arrow in
+// when it is missing, the verb's Northstar glyph tinted by its subject
+// colour. Cell 1 holds the current pin's glow, cell 0 the character's arrow (the Northstar Nav arrow in
 // the accent over its glow). Cells are kept least-recently-used: the game
 // has thousands of icons, a route shows a few dozen at a time.
 //

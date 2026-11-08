@@ -1,6 +1,6 @@
 'use strict';
 // Quality of Life toolchain: `qol build` (Spirit Healers and flight masters
-// -> addon/Polestar/QoL/Data.lua) and the qol media generator.
+// -> addon/Northstar/QoL/Data.lua) and the qol media generator.
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -56,7 +56,7 @@ test('qol build: generated Lua loads into the addon namespace', () => {
 			script: `
 				local ns = { QoL = {} }
 				function ns.QoL.SetData(t) ns.data = t end
-				loadfile(${JSON.stringify(file)})("Polestar", ns)
+				loadfile(${JSON.stringify(file)})("Northstar", ns)
 				emit({ healers = #ns.data.spiritHealers, first = ns.data.spiritHealers[1], fm = ns.data.flightMasters, reagents = ns.data.reagentVendors })
 			`,
 		}).emitted;
@@ -84,11 +84,11 @@ test('qol media: power-of-two TGA glyphs under Media/UI with the qol- prefix', (
 
 test('qol media: every glyph the addon references is generated and committed', () => {
 	const src = ['Buttons.lua', 'Rewards.lua', 'Flight.lua', 'Death.lua', 'Options.lua']
-		.map((f) => fs.readFileSync(path.join(__dirname, '..', 'addon', 'Polestar', 'QoL', f), 'utf8'))
+		.map((f) => fs.readFileSync(path.join(__dirname, '..', 'addon', 'Northstar', 'QoL', f), 'utf8'))
 		.join('\n');
 	const used = new Set(src.match(/qol-[a-z]+(?:-[a-z]+)*/g));
 	for (const name of used) {
 		assert.ok(media.textures.includes(name), `${name} generated`);
-		assert.ok(fs.existsSync(path.join(__dirname, '..', 'addon', 'Polestar', 'Media', 'UI', `${name}.tga`)), `${name}.tga committed`);
+		assert.ok(fs.existsSync(path.join(__dirname, '..', 'addon', 'Northstar', 'Media', 'UI', `${name}.tga`)), `${name}.tga committed`);
 	}
 });

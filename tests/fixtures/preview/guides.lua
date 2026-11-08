@@ -1,6 +1,6 @@
 -- The Horde road from Durotar through the Barrens to Stonetalon Mountains, as
 -- `compile` built it at 1990760: the six -- Source blocks of
--- addon/Polestar_Guides/Guides.lua, copied unchanged. The guide menu scenes of
+-- addon/Northstar_Guides/Guides.lua, copied unchanged. The guide menu scenes of
 -- `node tools/polestar.js preview` load these instead of the shipped guides, so
 -- docs/preview changes only with the UI, never with a recompile. Copy the
 -- blocks again when the compiled guide shape changes.
@@ -8,7 +8,7 @@
 -- Source: forever/horde/orc-troll/01-durotar.guide
 do
 	local function register()
-		Polestar.RegisterGuide({
+		Northstar.RegisterGuide({
 			id = "forever/horde/orc-troll/01-durotar",
 			pack = "guides",
 			title = "Durotar",
@@ -20,7 +20,7 @@ do
 			zone = 1411,
 			zoneName = "Durotar",
 			next = "forever/horde/orc-troll/02-the-barrens",
-			author = "Polestar",
+			author = "Northstar",
 			version = 1,
 			steps = {
 				{
@@ -590,7 +590,7 @@ end
 -- Source: forever/horde/orc-troll/02-the-barrens.guide
 do
 	local function register()
-		Polestar.RegisterGuide({
+		Northstar.RegisterGuide({
 			id = "forever/horde/orc-troll/02-the-barrens",
 			pack = "guides",
 			title = "The Barrens",
@@ -602,7 +602,7 @@ do
 			zone = 1413,
 			zoneName = "The Barrens",
 			next = "forever/horde/02-the-barrens",
-			author = "Polestar",
+			author = "Northstar",
 			version = 1,
 			steps = {
 				{
@@ -951,7 +951,7 @@ end
 -- Source: forever/horde/02-the-barrens.guide
 do
 	local function register()
-		Polestar.RegisterGuide({
+		Northstar.RegisterGuide({
 			id = "forever/horde/02-the-barrens",
 			pack = "guides",
 			title = "The Barrens",
@@ -962,7 +962,7 @@ do
 			zone = 1413,
 			zoneName = "The Barrens",
 			next = "forever/horde/03-silverpine-forest",
-			author = "Polestar",
+			author = "Northstar",
 			version = 1,
 			steps = {
 				{
@@ -1344,7 +1344,7 @@ end
 -- Source: forever/horde/03-silverpine-forest.guide
 do
 	local function register()
-		Polestar.RegisterGuide({
+		Northstar.RegisterGuide({
 			id = "forever/horde/03-silverpine-forest",
 			pack = "guides",
 			title = "Silverpine Forest & Orgrimmar",
@@ -1355,7 +1355,7 @@ do
 			zone = 1421,
 			zoneName = "Silverpine Forest",
 			next = "forever/horde/04-the-barrens",
-			author = "Polestar",
+			author = "Northstar",
 			version = 1,
 			steps = {
 				{
@@ -1668,7 +1668,7 @@ end
 -- Source: forever/horde/04-the-barrens.guide
 do
 	local function register()
-		Polestar.RegisterGuide({
+		Northstar.RegisterGuide({
 			id = "forever/horde/04-the-barrens",
 			pack = "guides",
 			title = "The Barrens",
@@ -1679,7 +1679,7 @@ do
 			zone = 1413,
 			zoneName = "The Barrens",
 			next = "forever/horde/05-stonetalon-mountains",
-			author = "Polestar",
+			author = "Northstar",
 			version = 1,
 			steps = {
 				{
@@ -2323,7 +2323,7 @@ end
 -- Source: forever/horde/05-stonetalon-mountains.guide
 do
 	local function register()
-		Polestar.RegisterGuide({
+		Northstar.RegisterGuide({
 			id = "forever/horde/05-stonetalon-mountains",
 			pack = "guides",
 			title = "Stonetalon Mountains & Ashenvale",
@@ -2334,7 +2334,7 @@ do
 			zone = 1442,
 			zoneName = "Stonetalon Mountains",
 			next = "forever/horde/06-hillsbrad-foothills",
-			author = "Polestar",
+			author = "Northstar",
 			version = 1,
 			steps = {
 				{

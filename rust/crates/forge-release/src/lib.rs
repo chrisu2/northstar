@@ -6,7 +6,7 @@
 //! - [`version`]: the version in package.json, guides/pack.json and every addon TOC.
 //! - [`changelog`]: the changelog fragments in changes/ and the release section they become.
 //! - [`notes`]: the release notes (GitHub, CurseForge, Discord) from a version's changelog section.
-//! - [`credits`]: the Guiding Stars page's names (addon/Polestar/Core/Credits.lua).
+//! - [`credits`]: the Guiding Stars page's names (addon/Northstar/Core/Credits.lua).
 
 pub mod addons;
 pub mod changelog;

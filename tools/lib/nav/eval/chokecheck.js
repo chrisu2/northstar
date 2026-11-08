@@ -1,13 +1,13 @@
 'use strict';
-// A Polestar_Nav folder's Nav/Chokepoints.lua checked (chokepoints.js): counts by kind per continent against a
+// A Northstar_Nav folder's Nav/Chokepoints.lua checked (chokepoints.js): counts by kind per continent against a
 // reference file (today's), the sanity problems (lift pairs, bridge sides, entries off our grid), the curated passages
 // players use, and the passages a set of drawn lines (nav eval reports, broad.js runs) pass in the reference file that
 // the folder's file lacks.
 //
-//   node tools/lib/nav/eval/chokecheck.js --nav <Polestar_Nav dir> [--ref <dir or Chokepoints.lua>] [--grid <dir>]
+//   node tools/lib/nav/eval/chokecheck.js --nav <Northstar_Nav dir> [--ref <dir or Chokepoints.lua>] [--grid <dir>]
 //     [--lines <report.json>,...]
 //
-// --ref defaults to the repository's addon/Polestar_Nav, --grid to data/local/nav4 (the off-grid check needs it).
+// --ref defaults to the repository's addon/Northstar_Nav, --grid to data/local/nav4 (the off-grid check needs it).
 // Prints markdown.
 
 const fs = require('node:fs');
@@ -33,7 +33,7 @@ function main(argv) {
 	const { opts: o, error } = parseArgs(argv, { flags: [], options: ['--nav', '--ref', '--grid', '--lines'] });
 	if (error || !o.nav) throw new Error(error || 'usage: chokecheck.js --nav <dir> [--ref <dir>] [--grid <dir>] [--lines a.json,b.json]');
 	const cand = load(path.resolve(o.nav));
-	const ref = load(path.resolve(o.ref || path.join(ROOT, 'addon', 'Polestar_Nav')));
+	const ref = load(path.resolve(o.ref || path.join(ROOT, 'addon', 'Northstar_Nav')));
 	const out = [];
 	if (!cand) {
 		console.log(`No Nav/Chokepoints.lua in ${o.nav}.`);

@@ -5,7 +5,7 @@
 //! References: rust/tests/golden/guidetext/<case>.json.gz (its README and regen.js: guidetext.js on the
 //! committed guide slice and data slice, the golden slice worlds as its sim dir; no consensus export, no
 //! walking grid). Optional extra, skipped with a note when unset: the same on a full checkout with
-//! $POLESTAR_CHECKOUT, $POLESTAR_JS and $POLESTAR_JSREF (below).
+//! $NORTHSTAR_CHECKOUT, $NORTHSTAR_JS and $NORTHSTAR_JSREF (below).
 
 use crate::common;
 use forge_core::{Faction, Projector};
@@ -17,8 +17,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::Instant;
 
-/// The local inputs: $POLESTAR_CHECKOUT (guides, data/forever, data/sim/export), $POLESTAR_JS (a checkout whose
-/// tools/lib/judge/guidetext.js is the reference), $POLESTAR_JSREF (simdir/, repaired/; dumps go to gt/).
+/// The local inputs: $NORTHSTAR_CHECKOUT (guides, data/forever, data/sim/export), $NORTHSTAR_JS (a checkout whose
+/// tools/lib/judge/guidetext.js is the reference), $NORTHSTAR_JSREF (simdir/, repaired/; dumps go to gt/).
 struct Paths {
 	lodestar: String,
 	gt: String,
@@ -30,7 +30,7 @@ struct Paths {
 impl Paths {
 	fn from_env() -> Option<Paths> {
 		let var = |k: &str| std::env::var(k).ok();
-		let (lodestar, js, jsref) = (var("POLESTAR_CHECKOUT")?, var("POLESTAR_JS")?, var("POLESTAR_JSREF")?);
+		let (lodestar, js, jsref) = (var("NORTHSTAR_CHECKOUT")?, var("NORTHSTAR_JS")?, var("NORTHSTAR_JSREF")?);
 		Some(Paths { lodestar, gt: format!("{js}/tools/lib/judge/guidetext.js"), sim: format!("{jsref}/simdir"), v2: format!("{jsref}/repaired"), out: format!("{jsref}/gt") })
 	}
 }
@@ -116,10 +116,10 @@ fn dump(p: &Paths, name: &str, target: &str) -> Value {
 	let st = Command::new("node")
 		.arg(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/js/guidetext-dump.js"))
 		.args([p.gt.as_str(), target, refp.to_str().unwrap()])
-		.env("POLESTAR_JUDGE_SIM", &p.sim)
-		.env("POLESTAR_JUDGE_GUIDES", format!("{lodestar}/guides"))
-		.env("POLESTAR_JUDGE_DATA", format!("{lodestar}/data/forever"))
-		.env("POLESTAR_JUDGE_EXPORT", format!("{lodestar}/data/sim/export"))
+		.env("NORTHSTAR_JUDGE_SIM", &p.sim)
+		.env("NORTHSTAR_JUDGE_GUIDES", format!("{lodestar}/guides"))
+		.env("NORTHSTAR_JUDGE_DATA", format!("{lodestar}/data/forever"))
+		.env("NORTHSTAR_JUDGE_EXPORT", format!("{lodestar}/data/sim/export"))
 		.status()
 		.expect("node");
 	assert!(st.success(), "{target}: guidetext-dump.js failed");
@@ -181,7 +181,7 @@ fn run(name: &str, d: &Value, guides: &Path, data_dir: &Path, export: &Path, fac
 /// The committed references on the guide and data slices: the shipped chains of the slice (Orc, Human)
 /// and a dir target (the slice's Orc/Troll folder, its guides in id order).
 #[test]
-#[ignore = "needs POLESTAR_CHECKOUT, POLESTAR_JS, POLESTAR_JSREF and node"]
+#[ignore = "needs NORTHSTAR_CHECKOUT, NORTHSTAR_JS, NORTHSTAR_JSREF and node"]
 fn guidetext_parity() {
 	let root = common::root();
 	let data = GameData::from_source(&DirSource::repo(&root)).unwrap();
@@ -201,12 +201,12 @@ fn guidetext_parity() {
 #[test]
 fn guidetext_parity_local() {
 	let Some(p) = Paths::from_env() else {
-		println!("guidetext_parity_local: skipped (set POLESTAR_CHECKOUT, POLESTAR_JS and POLESTAR_JSREF)");
+		println!("guidetext_parity_local: skipped (set NORTHSTAR_CHECKOUT, NORTHSTAR_JS and NORTHSTAR_JSREF)");
 		return;
 	};
 	let need = [&p.gt, &p.sim, &p.v2, &p.lodestar];
 	if need.iter().any(|q| !Path::new(q).exists()) || Command::new("node").arg("--version").output().is_err() {
-		println!("guidetext_parity_local: skipped (needs {need:?} from POLESTAR_CHECKOUT/POLESTAR_JS/POLESTAR_JSREF, and node)");
+		println!("guidetext_parity_local: skipped (needs {need:?} from NORTHSTAR_CHECKOUT/NORTHSTAR_JS/NORTHSTAR_JSREF, and node)");
 		return;
 	}
 	let lodestar = PathBuf::from(&p.lodestar);

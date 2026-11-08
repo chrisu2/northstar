@@ -11,7 +11,7 @@ const FILES: &[&str] = &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml", "Map
 // Zone 9000 shows art 9001 (one 1002 x 668 layer of 256px tiles); the table holds three overlays: a 300 x 200
 // one at (600, 100) (two tiles, the second 44 wide), a 100 x 100 one at (50, 300) and a 64 x 64 one at (0, 0).
 const SETUP: &str = r#"
-local M, m = Polestar.Maps, stub.maps
+local M, m = Northstar.Maps, stub.maps
 C_Map.GetMapArtLayers = function(id)
 	if id == 9000 then return { { layerWidth = 1002, layerHeight = 668, tileWidth = 256, tileHeight = 256 } } end
 	return {}
@@ -20,12 +20,12 @@ ART = 9001
 C_Map.GetMapArtID = function(id) return id == 9000 and ART or nil end
 EXPLORED = {}
 C_MapExplorationInfo = { GetExploredMapTextures = function() return EXPLORED end }
-Polestar.UI.ZoneArt.RegisterOverlays("test", { [9001] = { 256, 256,
+Northstar.UI.ZoneArt.RegisterOverlays("test", { [9001] = { 256, 256,
 	{ 300, 200, 600, 100, 501, 502 },
 	{ 100, 100, 50, 300, 503 },
 	{ 64, 64, 0, 0, 504 },
 } })
--- Every shown texture under a Polestar frame on the canvas.
+-- Every shown texture under a Northstar frame on the canvas.
 function revealed()
 	local out = {}
 	for _, f in ipairs(stub.frames) do
@@ -42,7 +42,7 @@ function revealed()
 	table.sort(out, function(a, b) return a.file < b.file end)
 	return out
 end
--- Frames of Polestar's on the canvas.
+-- Frames of Northstar's on the canvas.
 function frameCount()
 	return #m.canvas.children
 end
@@ -52,8 +52,8 @@ fn run(script: &str, saved: Option<&str>) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_maps.lua"],
 		before: "stub.maps.useWorld(); stub.maps.withMapCanvas(); stub.maps.place(0, 800); ".into(),
-		addons: vec![Addon::files("Polestar", FILES)],
-		saved: saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		addons: vec![Addon::files("Northstar", FILES)],
+		saved: saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		login: true,
 		script: format!("{SETUP}{script}"),
 	})
@@ -72,7 +72,7 @@ fn files(list: &Value) -> Value {
 fn unexplored_every_overlay_of_the_art_minus_the_explored_ones_matched_on_offset_and_size() {
 	let out = run(
 		r#"
-		local art = Polestar.UI.ZoneArt.overlays[9001]
+		local art = Northstar.UI.ZoneArt.overlays[9001]
 		local function ids(list) local t = {}; for i, o in ipairs(list) do t[i] = o[5] end; return t end
 		local none = ids(M.UnexploredOverlays(art, nil))
 		local empty = ids(M.UnexploredOverlays(art, {}))
@@ -115,8 +115,8 @@ fn the_world_map_shows_unexplored_overlays_tinted_split_into_tiles_as_blizzard_s
 		EXPLORED = { { textureWidth = 64, textureHeight = 64, offsetX = 0, offsetY = 0, isShownByMouseOver = false, fileDataIDs = { 504 } } }
 		m.showMap(9000)
 		local tint = revealed()
-		local r, g, b = Polestar.Theme.Color("mapUnexplored")
-		Polestar.Set("maps.reveal", "on")
+		local r, g, b = Northstar.Theme.Color("mapUnexplored")
+		Northstar.Set("maps.reveal", "on")
 		local plain = revealed()
 		-- Exploring an area: the client fires MAP_EXPLORATION_UPDATED.
 		table.insert(EXPLORED, { textureWidth = 100, textureHeight = 100, offsetX = 50, offsetY = 300, isShownByMouseOver = false, fileDataIDs = { 503 } })
@@ -149,17 +149,17 @@ fn off_costs_nothing_no_frames_until_it_is_turned_on_a_map_whose_art_differs_is_
 		local before = frameCount()
 		m.showMap(9000)
 		local offShown = { #revealed(), frameCount() }
-		Polestar.Set("maps.reveal", "tint")
+		Northstar.Set("maps.reveal", "tint")
 		local on = frameCount()
 		local shown = #revealed()
-		Polestar.Set("maps.reveal", "off")
+		Northstar.Set("maps.reveal", "off")
 		local cleared = #revealed()
-		Polestar.Set("maps.reveal", "tint")
+		Northstar.Set("maps.reveal", "tint")
 		ART = 7777 -- the client shows other art than the table was built for
 		WorldMapFrame:Hide()
 		m.showMap(9000)
 		emit({ before = before, offShown = offShown, on = on, shown = shown, cleared = cleared, other = #revealed() })"#,
-		Some(r#"PolestarDB = { schema = 1, settings = { maps = { reveal = "off" } } }"#),
+		Some(r#"NorthstarDB = { schema = 1, settings = { maps = { reveal = "off" } } }"#),
 	);
 	assert_eq!(out["offShown"], json!([0, out["before"]]));
 	assert_eq!(out["on"], out["before"].as_i64().unwrap() + 1, "its frame is made when the reveal is first turned on");
@@ -193,19 +193,19 @@ fn coordinates_format_to_one_decimal_rounded_half_up_on_the_tenth_no_position_is
 fn the_minimap_readout_exists_only_once_turned_on_follows_the_player_and_blanks_without_a_position() {
 	let out = run(
 		r#"
-		local before = stub.frame("PolestarMinimapCoords")
-		Polestar.Set("maps.minimapCoords", true)
-		local f = stub.frame("PolestarMinimapCoords")
+		local before = stub.frame("NorthstarMinimapCoords")
+		Northstar.Set("maps.minimapCoords", true)
+		local f = stub.frame("NorthstarMinimapCoords")
 		local first = f.Text:GetText()
 		m.place(0, 600) -- 10 map percent further on
 		stub.advance(0.3)
 		local moved = f.Text:GetText()
-		local getPos = Polestar.Compat.GetPlayerMapPosition
-		Polestar.Compat.GetPlayerMapPosition = function() return nil end
+		local getPos = Northstar.Compat.GetPlayerMapPosition
+		Northstar.Compat.GetPlayerMapPosition = function() return nil end
 		stub.advance(0.3)
 		local none = f.Text:GetText()
-		Polestar.Compat.GetPlayerMapPosition = getPos
-		Polestar.Set("maps.minimapCoords", false)
+		Northstar.Compat.GetPlayerMapPosition = getPos
+		Northstar.Set("maps.minimapCoords", false)
 		emit({ before = before ~= nil, first = first, moved = moved, none = none, hidden = not f:IsShown() })"#,
 		None,
 	);
@@ -221,36 +221,36 @@ fn the_minimap_button_exists_only_once_turned_on_click_shows_or_hides_the_guide_
 	let out = run(
 		r#"
 		local fired = {}
-		Polestar.On("TOGGLE_FRAME", function() fired[#fired + 1] = "toggle" end)
-		Polestar.On("SHOW_OPTIONS", function() fired[#fired + 1] = "options" end)
-		local before = stub.frame("PolestarMinimapButton")
-		Polestar.Set("maps.minimapButton", true)
-		local b = stub.frame("PolestarMinimapButton")
+		Northstar.On("TOGGLE_FRAME", function() fired[#fired + 1] = "toggle" end)
+		Northstar.On("SHOW_OPTIONS", function() fired[#fired + 1] = "options" end)
+		local before = stub.frame("NorthstarMinimapButton")
+		Northstar.Set("maps.minimapButton", true)
+		local b = stub.frame("NorthstarMinimapButton")
 		local function at() local _, rel, _, x, y = b:GetPoint(1); return { rel == Minimap, math.floor(x + 0.5), math.floor(y + 0.5) } end
 		local start = at()
 		b:Click("LeftButton")
 		b:Click("RightButton")
-		local menu = Polestar.Widgets.MenuShown(b)
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Options" then r:Click() end end
-		local picked = not PolestarMenu:IsShown()
+		local menu = Northstar.Widgets.MenuShown(b)
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Options" then r:Click() end end
+		local picked = not NorthstarMenu:IsShown()
 		-- Drag to the right of the minimap's centre (70, 70): east, 0 degrees.
 		stub.cursor = { 200, 70 }
 		b:GetScript("OnDragStart")(b)
 		b:GetScript("OnUpdate")(b, 0.01)
 		local dragging = at()
 		b:GetScript("OnDragStop")(b)
-		local saved, stopped = Polestar.Get("maps.minimapButtonAngle"), b:GetScript("OnUpdate") == nil
+		local saved, stopped = Northstar.Get("maps.minimapButtonAngle"), b:GetScript("OnUpdate") == nil
 		-- A square minimap: straight up rides the square's top edge.
 		GetMinimapShape = function() return "SQUARE" end
-		Polestar.Set("maps.minimapButtonAngle", 45)
+		Northstar.Set("maps.minimapButtonAngle", 45)
 		local corner = at()
 		-- The minimap resized (Edit Mode): the button stays on the new edge.
 		GetMinimapShape = nil
-		Polestar.Set("maps.minimapButtonAngle", 0)
+		Northstar.Set("maps.minimapButtonAngle", 0)
 		Minimap:SetSize(280, 280)
 		stub.RunScript(Minimap, "OnSizeChanged", 280, 280)
 		local resized = at()
-		Polestar.Set("maps.minimapButton", false)
+		Northstar.Set("maps.minimapButton", false)
 		emit({ before = before ~= nil, start = start, fired = fired, menu = menu, picked = picked, dragging = dragging, saved = saved,
 			stopped = stopped, corner = corner, resized = resized, hidden = not b:IsShown() })"#,
 		None,
@@ -258,7 +258,7 @@ fn the_minimap_button_exists_only_once_turned_on_click_shows_or_hides_the_guide_
 	assert_eq!(out["before"], false, "no frame while off");
 	// 225 degrees (south-west) at 70 + 5 px from the centre.
 	assert_eq!(out["start"], json!([true, -53, -53]));
-	assert_eq!(out["menu"], true, "right-click opens Polestar's menu on the button");
+	assert_eq!(out["menu"], true, "right-click opens Northstar's menu on the button");
 	assert_eq!(out["picked"], true, "picking an item closes the menu");
 	assert_eq!(out["fired"], json!(["toggle", "options"]));
 	assert_eq!(out["dragging"], json!([true, 75, 0]));
@@ -281,31 +281,31 @@ local recs = {
 	molten = { key = "molten", name = "Molten Core", kind = "raid", levels = { 60, 60, 60 } }, -- no entrance known
 }
 local loaded = false
-Polestar.Codex = {
+Northstar.Codex = {
 	IsLoaded = function() return loaded end,
-	Load = function() CODEX_LOADS = CODEX_LOADS + 1; loaded = true; Polestar.Fire("CODEX_LOADED", {}); return true end,
+	Load = function() CODEX_LOADS = CODEX_LOADS + 1; loaded = true; Northstar.Fire("CODEX_LOADED", {}); return true end,
 	Each = function(kind, fn) if kind == "instance" then for k, r in pairs(recs) do fn(k, r.name) end end end,
 	Instance = function(k) return recs[k] end,
 }
 "#;
 
-const DUNGEON_PINS: Option<&str> = Some("PolestarDB = { schema = 1, settings = { maps = { dungeonPins = true } } }");
+const DUNGEON_PINS: Option<&str> = Some("NorthstarDB = { schema = 1, settings = { maps = { dungeonPins = true } } }");
 
 #[test]
 fn dungeon_pins_the_codex_loads_only_when_the_world_map_opens_one_pin_per_known_entrance() {
 	let out = run(
 		&(CODEX.to_string()
 			+ r#"
-		local P = Polestar.Pins
+		local P = Northstar.Pins
 		local atLogin = { loads = CODEX_LOADS, layer = P.GetLayer("maps.dungeons") ~= nil }
 		WorldMapFrame:Hide()
 		m.showMap(9000)
 		local layer = P.GetLayer("maps.dungeons")
 		local keys = {}
 		for _, p in ipairs(layer) do keys[#keys + 1] = p.key .. "@" .. p.x .. "," .. p.y .. ":" .. p.icon end
-		local r, g, b = Polestar.Theme.Color("dungeon")
+		local r, g, b = Northstar.Theme.Color("dungeon")
 		local color = layer[1].color[1] == r and layer[1].color[2] == g and layer[1].color[3] == b
-		Polestar.Set("maps.dungeonPins", false)
+		Northstar.Set("maps.dungeonPins", false)
 		local off = P.GetLayer("maps.dungeons") == nil
 		emit({ atLogin = atLogin, loads = CODEX_LOADS, keys = keys, color = color, off = off })"#),
 		DUNGEON_PINS,
@@ -322,7 +322,7 @@ fn with_dungeon_pins_off_the_world_map_opening_never_loads_the_codex() {
 	let out = run(
 		&(CODEX.to_string()
 			+ r#"
-		Polestar.Set("maps.dungeonPins", false)
+		Northstar.Set("maps.dungeonPins", false)
 		WorldMapFrame:Hide()
 		m.showMap(9000)
 		emit({ loads = CODEX_LOADS })"#),
@@ -336,14 +336,14 @@ fn a_dungeon_pin_opens_its_dungeon_page_without_the_dungeons_module_or_with_shif
 	let out = run(
 		&(CODEX.to_string()
 			+ r#"
-		Polestar.Codex.Load()
+		Northstar.Codex.Load()
 		local opened = {}
-		Polestar.Dungeons = { IsEnabled = function() return true end, Open = function(key) opened[#opened + 1] = key; return true end }
+		Northstar.Dungeons = { IsEnabled = function() return true end, Open = function(key) opened[#opened + 1] = key; return true end }
 		local targets = {}
-		Polestar.Nav.SetTarget = function(map, x, y, label) targets[#targets + 1] = label .. "@" .. map .. ":" .. x .. "," .. y end
-		Polestar.Maps.RefreshDungeonPins()
+		Northstar.Nav.SetTarget = function(map, x, y, label) targets[#targets + 1] = label .. "@" .. map .. ":" .. x .. "," .. y end
+		Northstar.Maps.RefreshDungeonPins()
 		local byKey = {}
-		for _, p in ipairs(Polestar.Pins.GetLayer("maps.dungeons")) do byKey[p.key] = p end
+		for _, p in ipairs(Northstar.Pins.GetLayer("maps.dungeons")) do byKey[p.key] = p end
 		local dm, hot = byKey.deadmines, byKey["hall-of-thanes"]
 		local tip = {}
 		local t = {}
@@ -355,9 +355,9 @@ fn a_dungeon_pin_opens_its_dungeon_page_without_the_dungeons_module_or_with_shif
 		stub.keys.shift = true
 		dm.onClick("LeftButton")
 		stub.keys.shift = false
-		Polestar.Dungeons = nil
-		Polestar.Maps.RefreshDungeonPins()
-		for _, p in ipairs(Polestar.Pins.GetLayer("maps.dungeons")) do if p.key == "deadmines" then p.onClick("LeftButton") end end
+		Northstar.Dungeons = nil
+		Northstar.Maps.RefreshDungeonPins()
+		for _, p in ipairs(Northstar.Pins.GetLayer("maps.dungeons")) do if p.key == "deadmines" then p.onClick("LeftButton") end end
 		emit({ page = dm.page, opened = opened, targets = targets, tip = tip })"#),
 		DUNGEON_PINS,
 	);

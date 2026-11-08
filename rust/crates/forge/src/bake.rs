@@ -35,7 +35,7 @@ pub struct BakeIn<'a> {
 	/// The cached Forever AreaTable.csv and data/forever/zones.json (the grid's zone pricing).
 	pub area_table: &'a Path,
 	pub zones: &'a Path,
-	/// Polestar_Nav's Nav/Chokepoints.lua (the named passages a long way may take).
+	/// Northstar_Nav's Nav/Chokepoints.lua (the named passages a long way may take).
 	pub chokepoints: &'a Path,
 	pub threads: usize,
 	pub log: &'a (dyn Fn(&str) + Sync),

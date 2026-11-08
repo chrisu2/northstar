@@ -1,6 +1,6 @@
 # The CurseForge listing
 
-Everything the Polestar project on CurseForge needs, in one folder:
+Everything the Northstar project on CurseForge needs, in one folder:
 
 | File | What it is |
 |---|---|
@@ -34,7 +34,7 @@ Free, open-source guides for World of Warcraft: Forever: leveling routes for eve
 
 ## Project settings
 
-- [ ] **Name:** Polestar Guides (live at https://www.curseforge.com/wow/addons/polestar)
+- [ ] **Name:** Northstar Guides (live at https://www.curseforge.com/wow/addons/polestar)
 - [ ] **Slug:** `polestar`
 - [ ] **Summary:** the text above
 - [ ] **Description:** [description.md](description.md), pasted whole, editor in Markdown mode
@@ -46,10 +46,10 @@ Free, open-source guides for World of Warcraft: Forever: leveling routes for eve
 - [ ] **Issues URL:** https://github.com/fitzforge/polestar/issues
 - [ ] **Wiki or docs URL** (if asked): https://github.com/fitzforge/polestar/blob/main/docs/README.md
 - [ ] **Discord** (if the form has a field for it): https://discord.gg/polestar
-- [ ] **Donation:** Ko-fi, `0xfitz` (https://ko-fi.com/0xfitz); the description's "Support Polestar" section links the same page
+- [ ] **Donation:** Ko-fi, `0xfitz` (https://ko-fi.com/0xfitz); the description's "Support Northstar" section links the same page
 - [ ] **Experimental:** off, so the project syncs to the CurseForge app
 - [ ] **Allow comments:** on
-- [ ] **Relations:** none; Polestar needs no other addon
+- [ ] **Relations:** none; Northstar needs no other addon
 
 The categories are CurseForge's World of Warcraft addon categories as its
 search page lists them (checked 2026-10-14): Quests & Leveling for the guides,
@@ -61,10 +61,10 @@ indicator.
 
 ### The file
 
-- **File:** `dist/Polestar-<version>.zip`, from `forge release pack`
+- **File:** `dist/Northstar-<version>.zip`, from `forge release pack`
   (docs/RELEASING.md). Its addon folders sit at the top level, as CurseForge
   and its app expect.
-- **Display name:** `Polestar <version>`
+- **Display name:** `Northstar <version>`
 - **Release type:** Release. CurseForge lists a project in its app only once
   it has a Release file, and offers Beta files only to players who opt in;
   the version number (0.x) and the description's "Beta" section say it is a
@@ -72,7 +72,7 @@ indicator.
 - **Game version:** Forever 1.60.1
 - **Changelog:** the version's "For players" section of CHANGELOG.md, in
   Markdown, each list item joined onto one line
-- **Not uploaded:** `Polestar_Recorder-<version>.zip` and `SHA256SUMS` stay on
+- **Not uploaded:** `Northstar_Recorder-<version>.zip` and `SHA256SUMS` stay on
   the GitHub release.
 
 ### The gallery

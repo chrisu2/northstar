@@ -67,22 +67,22 @@
 		},
 		{
 			"id": "polestar",
-			"title": "Polestar's own data: corrections, the availability rules, the simulator's calibration, the nav pack's map list, the shipped zone crossings",
-			"credit": "Polestar contributors",
+			"title": "Northstar's own data: corrections, the availability rules, the simulator's calibration, the nav pack's map list, the shipped zone crossings",
+			"credit": "Northstar contributors",
 			"licence": "GPL-3.0",
 			"url": "https://github.com/fitzforge/polestar",
 			"files": [
 				"forever-db/corrections/*.json",
 				"data/rules.json",
 				"data/sim/params.json",
-				"addon/Polestar_Nav/PACK.json",
+				"addon/Northstar_Nav/PACK.json",
 				"data/crossings.json"
 			]
 		},
 		{
 			"id": "kb",
-			"title": "Polestar knowledge base, public part: facts that are high confidence or where two sources agree, from public sources only; quest mechanics on their public sources only (client data, server data, our corrections; one source alone at medium), and quest steps of high confidence from those that quote none of the site's text; and, with their values withheld, which quest facts are uncertain and which disagree (the route keeps such quests out)",
-			"credit": "Polestar contributors; facts credited to their sources (EG Link output CC BY 4.0, Factoruide GPL-2.0-or-later, CMaNGOS, pfQuest MIT, the client tables)",
+			"title": "Northstar knowledge base, public part: facts that are high confidence or where two sources agree, from public sources only; quest mechanics on their public sources only (client data, server data, our corrections; one source alone at medium), and quest steps of high confidence from those that quote none of the site's text; and, with their values withheld, which quest facts are uncertain and which disagree (the route keeps such quests out)",
+			"credit": "Northstar contributors; facts credited to their sources (EG Link output CC BY 4.0, Factoruide GPL-2.0-or-later, CMaNGOS, pfQuest MIT, the client tables)",
 			"licence": "GPL-3.0 (our words); facts from the sources credited",
 			"url": "https://github.com/fitzforge/polestar",
 			"kb": {
@@ -104,7 +104,7 @@
 		{
 			"id": "walks",
 			"title": "Walk stores answered on Leffe's navigation maps (store-leffe-*): walking times and distances between the world's points, per faction, with each place's zone on his maps (derived numbers, no client or map geometry), so forge build runs the hybrid without his maps. Our grid's stores are not packed: they are keyed by the grid they were built on, and every contributor builds their own",
-			"credit": "Polestar contributors; the store-leffe walks were answered on Leffe's navigation maps (his maps are private and not in the pack; the walks are published with Leffe's permission)",
+			"credit": "Northstar contributors; the store-leffe walks were answered on Leffe's navigation maps (his maps are private and not in the pack; the walks are published with Leffe's permission)",
 			"licence": "GPL-3.0",
 			"url": "https://github.com/fitzforge/polestar",
 			"walks": true,
@@ -116,7 +116,7 @@
 		{
 			"id": "grid",
 			"title": "The navigation grid (data/local/nav4)",
-			"note": "Not in the pack: built from your own client's map tiles. Until forge builds it, pass --grid <dir> (or POLESTAR_GRID). The walks on your grid are routed on your machine; the pack's Leffe walks answer every walk they hold."
+			"note": "Not in the pack: built from your own client's map tiles. Until forge builds it, pass --grid <dir> (or NORTHSTAR_GRID). The walks on your grid are routed on your machine; the pack's Leffe walks answer every walk they hold."
 		},
 		{
 			"id": "questie",

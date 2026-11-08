@@ -1,15 +1,15 @@
 'use strict';
 // One playground session: a long-lived Lua 5.1 process running the real
-// addons (Polestar, Polestar_Guides, and the data packs Polestar_QuestDB,
-// Polestar_ItemDB and Polestar_Codex loaded on demand when built, and
-// Polestar_Nav, the walking engine, its maps decoded by
+// addons (Northstar, Northstar_Guides, and the data packs Northstar_QuestDB,
+// Northstar_ItemDB and Northstar_Codex loaded on demand when built, and
+// Northstar_Nav, the walking engine, its maps decoded by
 // tests/lua/stub_encoding.lua) against the
 // test client stub, the stub world and the preview overlay, driven through
 // tools/play/driver.lua. Each interaction runs one Lua chunk, lets stub time
 // run, dumps the visible frames and draws them with tools/preview/render.js,
 // returning the SVG, the hit map (tools/play/public/hit.js) and the state.
 // `packs`: other guide packs' built folders (absolute), loaded by their TOC
-// after Polestar_Guides, as the client loads them.
+// after Northstar_Guides, as the client loads them.
 //
 //   const s = new Session({ dataDir, artDir, config, packs });
 //   await s.start();
@@ -18,8 +18,8 @@
 //
 // The character and their SavedVariables live in dataDir (data/play/):
 //   config.json                    race, class, faction, EllesmereUI on/off
-//   SavedVariables/Polestar.lua    PolestarDB, as the client writes it
-//   Character/Polestar.lua         PolestarCharDB
+//   SavedVariables/Northstar.lua    NorthstarDB, as the client writes it
+//   Character/Northstar.lua         NorthstarCharDB
 //   world.lua                      the stub world (level, place, quest log...)
 
 const { spawn } = require('node:child_process');
@@ -36,7 +36,7 @@ const { svg, TextureCache, readTGA, png } = require('../preview/render');
 
 const { ROOT, DATA } = require('../lib/paths');
 const STUBS = path.join(ROOT, 'tests', 'lua');
-const MEDIA = path.join(ROOT, 'addon', 'Polestar', 'Media');
+const MEDIA = path.join(ROOT, 'addon', 'Northstar', 'Media');
 const FOREVER = DATA;
 const SCREEN = { x: 0, y: 0, w: 1920, h: 1080 };
 
@@ -255,7 +255,7 @@ class Session {
 		const lines = [];
 		const dof = (f) => lines.push(`dofile(${luaString(f)})`);
 		lines.push(`package.path = ${luaString(STUBS + '/?.lua;')} .. package.path`);
-		// stub_encoding.lua: C_EncodingUtil, which Polestar_Nav's packed walking maps are decoded with.
+		// stub_encoding.lua: C_EncodingUtil, which Northstar_Nav's packed walking maps are decoded with.
 		for (const s of ['wow_stub.lua', 'stub_world.lua', 'stub_encoding.lua', ...packs.stubs]) dof(path.join(STUBS, s));
 		lines.push('local w = stub.world', d.mapsLua);
 		if (this.artDir) {
@@ -266,14 +266,14 @@ C_Map.GetMapArtLayerTextures = function(id) local m = ART[id]; return m and m.te
 C_Map.GetMapArtID = function(id) local m = ART[id]; return m and m.artID end`);
 		}
 		lines.push(packs.before);
-		// Our guides' faction parts (format 8) load on demand, as in the client: Polestar loads the
-		// character's faction's once Polestar_Guides is in (Core/Guides.lua), the other's when asked.
-		for (const part of ['Polestar_Guides_Alliance', 'Polestar_Guides_Horde']) {
+		// Our guides' faction parts (format 8) load on demand, as in the client: Northstar loads the
+		// character's faction's once Northstar_Guides is in (Core/Guides.lua), the other's when asked.
+		for (const part of ['Northstar_Guides_Alliance', 'Northstar_Guides_Horde']) {
 			if (fs.existsSync(path.join(ROOT, 'addon', part, `${part}.toc`))) lines.push(`stub.packs.${part} = { ${tocFiles(part).map(luaString).join(', ')} }`);
 		}
-		// Polestar_Nav loads on demand, as in the client: Data.Pack loads it at login (Nav/Walk.lua).
-		if (fs.existsSync(path.join(ROOT, 'addon', 'Polestar_Nav', 'Polestar_Nav.toc'))) {
-			lines.push(`stub.packs.Polestar_Nav = { ${tocFiles('Polestar_Nav').map(luaString).join(', ')} }`);
+		// Northstar_Nav loads on demand, as in the client: Data.Pack loads it at login (Nav/Walk.lua).
+		if (fs.existsSync(path.join(ROOT, 'addon', 'Northstar_Nav', 'Northstar_Nav.toc'))) {
+			lines.push(`stub.packs.Northstar_Nav = { ${tocFiles('Northstar_Nav').map(luaString).join(', ')} }`);
 		}
 		lines.push(d.metrics);
 		dof(path.join(ROOT, 'tools', 'preview', 'stub.lua'));
@@ -302,12 +302,12 @@ w.zone, w.subzone = ${luaString(zone ? zone.name : '')}, ""`);
 	for _, f in ipairs(saved) do dofile(f) end
 	stub.addonLoaded(name)
 end`);
-		const sv = [this.file('SavedVariables', 'Polestar.lua'), this.file('Character', 'Polestar.lua')].filter((f) => fs.existsSync(f));
-		lines.push(`__load("Polestar", { ${tocFiles('Polestar').map(luaString).join(', ')} }, { ${sv.map(luaString).join(', ')} })`);
-		lines.push(`__load("Polestar_Guides", { ${tocFiles('Polestar_Guides').map(luaString).join(', ')} }, {})`);
-		// The local crossings addon loads with Polestar in the client when it is built.
-		if (fs.existsSync(path.join(ROOT, 'addon', 'Polestar_Travel', 'Polestar_Travel.toc'))) {
-			lines.push(`__load("Polestar_Travel", { ${tocFiles('Polestar_Travel').map(luaString).join(', ')} }, {})`);
+		const sv = [this.file('SavedVariables', 'Northstar.lua'), this.file('Character', 'Northstar.lua')].filter((f) => fs.existsSync(f));
+		lines.push(`__load("Northstar", { ${tocFiles('Northstar').map(luaString).join(', ')} }, { ${sv.map(luaString).join(', ')} })`);
+		lines.push(`__load("Northstar_Guides", { ${tocFiles('Northstar_Guides').map(luaString).join(', ')} }, {})`);
+		// The local crossings addon loads with Northstar in the client when it is built.
+		if (fs.existsSync(path.join(ROOT, 'addon', 'Northstar_Travel', 'Northstar_Travel.toc'))) {
+			lines.push(`__load("Northstar_Travel", { ${tocFiles('Northstar_Travel').map(luaString).join(', ')} }, {})`);
 		}
 		for (const dir of this.packs) lines.push(`__load(${luaString(path.basename(dir))}, { ${dirFiles(dir).map(luaString).join(', ')} }, {})`);
 		lines.push('stub.login()', 'stub.advance(1)', 'play.serve()');
@@ -430,16 +430,16 @@ end`);
 			case 'dragStop': return `play.dragStop(${xy})`;
 			case 'key': return `play.key(${luaString(String(a.key || ''))}, ${a.text == null ? 'nil' : luaString(String(a.text))})`;
 			case 'slash': return `play.slash(${luaString(String(a.text || ''))})`;
-			case 'set': return `Polestar.Set(${luaString(String(a.path))}, ${a.value == null ? 'nil' : luaValue(a.value)})`;
-			case 'resetLook': return `for _, k in ipairs({ "style", "compact", "scale", "width", "bgOpacity", "opacity", "scheme", "accent", "bgColor", "brightness", "upcoming", "upcomingOpen", "showNotes", "menuScale", "font", "locked", "pos" }) do Polestar.Set("ui." .. k, Polestar.GetDefault("ui." .. k)) end`;
+			case 'set': return `Northstar.Set(${luaString(String(a.path))}, ${a.value == null ? 'nil' : luaValue(a.value)})`;
+			case 'resetLook': return `for _, k in ipairs({ "style", "compact", "scale", "width", "bgOpacity", "opacity", "scheme", "accent", "bgColor", "brightness", "upcoming", "upcomingOpen", "showNotes", "menuScale", "font", "locked", "pos" }) do Northstar.Set("ui." .. k, Northstar.GetDefault("ui." .. k)) end`;
 			case 'goal': return 'return play.doGoal()';
 			case 'step': return 'return play.playStep()';
 			case 'guide': return 'return play.playGuide()';
-			case 'gotoStep': return `Polestar.Engine.Goto(${n(a.step, 1)})`;
-			case 'prevStep': return 'Polestar.Engine.Prev()';
-			case 'nextStep': return 'Polestar.Engine.Next()';
-			case 'loadGuide': return `Polestar.Engine.SetGuide(${luaString(String(a.guide))})`;
-			case 'tip': return 'local p = Polestar.UI.GuideFrame.parts; if p and p.tip and p.tip.shown then p.tip:Click() end';
+			case 'gotoStep': return `Northstar.Engine.Goto(${n(a.step, 1)})`;
+			case 'prevStep': return 'Northstar.Engine.Prev()';
+			case 'nextStep': return 'Northstar.Engine.Next()';
+			case 'loadGuide': return `Northstar.Engine.SetGuide(${luaString(String(a.guide))})`;
+			case 'tip': return 'local p = Northstar.UI.GuideFrame.parts; if p and p.tip and p.tip.shown then p.tip:Click() end';
 			case 'time': return `stub.advance(${Math.max(0, Math.min(3600, n(a.seconds, 60)))})`;
 			case 'level': return `stub.world.setLevel(${Math.max(1, Math.min(60, Math.round(n(a.level, 1))))})`;
 			case 'move': return `stub.world.moveTo(${n(a.map)}, ${n(a.x, 50)}, ${n(a.y, 50)}); play.syncZone()`;
@@ -465,12 +465,12 @@ end`);
 		switch (which) {
 			// The waiting route choice: the active guide's, else play a guide that
 			// offers one (the active one when it does) to its end.
-			case 'route': return `local E, G = Polestar.Engine, Polestar.Guides
+			case 'route': return `local E, G = Northstar.Engine, Northstar.Guides
 local from = E.PendingRouteChoice()
-if from then Polestar.Fire("ROUTE_CHOICE", from); return "shown" end
+if from then Northstar.Fire("ROUTE_CHOICE", from); return "shown" end
 local g = E.GetGuide()
 if not (g and g.nextChoices) then
-	local me = Polestar.Compat.GetPlayerInfo()
+	local me = Northstar.Compat.GetPlayerInfo()
 	for _, h in ipairs(G.List()) do
 		local full = G.Get(h.id)
 		if full and full.nextChoices and G.GuideMatches(full, me) then g = full; break end
@@ -482,17 +482,17 @@ end
 local r = play.playGuide()
 if E.OfferRouteChoice() then return "shown" end
 return r`;
-			case 'outlevel': return `local E, G = Polestar.Engine, Polestar.Guides
+			case 'outlevel': return `local E, G = Northstar.Engine, Northstar.Guides
 local g = E.GetGuide()
 if not g then return "noguide" end
 local to = g.next or (g.nextChoices and g.nextChoices[1]) or G.Suggest()
 if to == g.id then to = nil end
-Polestar.Fire("GUIDE_OUTLEVELED", g.id, to)`;
-			case 'train': return `local E = Polestar.Engine
+Northstar.Fire("GUIDE_OUTLEVELED", g.id, to)`;
+			case 'train': return `local E = Northstar.Engine
 local t = E.NearestClassTrainer and E.NearestClassTrainer()
-Polestar.Fire("TRAIN_DUE", stub.world.level, t or { npcName = "your class trainer" })`;
-			case 'clearBanners': return 'Polestar.Fire("CLASS_TRAINED"); local GF = Polestar.UI.GuideFrame; if GF.notices then GF.notices.outlevel = nil end; GF.Layout()';
-			case 'doneStep': return `local E = Polestar.Engine
+Northstar.Fire("TRAIN_DUE", stub.world.level, t or { npcName = "your class trainer" })`;
+			case 'clearBanners': return 'Northstar.Fire("CLASS_TRAINED"); local GF = Northstar.UI.GuideFrame; if GF.notices then GF.notices.outlevel = nil end; GF.Layout()';
+			case 'doneStep': return `local E = Northstar.Engine
 local i = E.GetStepIndex()
 if not i then return "noguide" end
 play.playStep()
@@ -504,13 +504,13 @@ E.Goto(i)`;
 	openLua(what, arg) {
 		switch (what) {
 			// side: beside the guide window (at its default place), as if dragged there.
-			case 'hub': return `Polestar.UI.ShowPicker(); Polestar.UI.Picker.ShowSection("Guides")${arg === 'side' ? '\nif PolestarPicker then PolestarPicker:ClearAllPoints(); PolestarPicker:SetPoint("LEFT", UIParent, "LEFT", 48, 40) end' : ''}`;
-			case 'section': return `Polestar.UI.ShowPicker(); Polestar.UI.Picker.ShowSection(${luaString(String(arg || 'Guides'))})`;
-			case 'lookup': return `Polestar.UI.ShowPicker(); Polestar.UI.Picker.ShowSection("Lookup")${arg ? `; Polestar.UI.Picker.SetQuery(${luaString(String(arg))})` : ''}`;
-			case 'guide': return 'Polestar.Set("ui.shown", true)';
-			case 'options': return `Polestar.UI.ShowOptions(${arg ? luaString(String(arg)) : ''})`;
+			case 'hub': return `Northstar.UI.ShowPicker(); Northstar.UI.Picker.ShowSection("Guides")${arg === 'side' ? '\nif NorthstarPicker then NorthstarPicker:ClearAllPoints(); NorthstarPicker:SetPoint("LEFT", UIParent, "LEFT", 48, 40) end' : ''}`;
+			case 'section': return `Northstar.UI.ShowPicker(); Northstar.UI.Picker.ShowSection(${luaString(String(arg || 'Guides'))})`;
+			case 'lookup': return `Northstar.UI.ShowPicker(); Northstar.UI.Picker.ShowSection("Lookup")${arg ? `; Northstar.UI.Picker.SetQuery(${luaString(String(arg))})` : ''}`;
+			case 'guide': return 'Northstar.Set("ui.shown", true)';
+			case 'options': return `Northstar.UI.ShowOptions(${arg ? luaString(String(arg)) : ''})`;
 			case 'map': return 'play.toggleMap()';
-			case 'route': return 'Polestar.Engine.OfferRouteChoice()';
+			case 'route': return 'Northstar.Engine.OfferRouteChoice()';
 			default: throw new Error(`unknown window "${what}"`);
 		}
 	}
@@ -561,15 +561,15 @@ return snap`, timeout);
 	// SavedVariables and the world, written the way the client writes them.
 	async save({ logout = false } = {}) {
 		if (!this.proc) return false;
-		const r = await this.call(`${logout ? 'stub.fire("PLAYER_LOGOUT")\n' : ''}return { db = play.savedVariables({ "PolestarDB" }), char = play.savedVariables({ "PolestarCharDB" }), world = play.worldSnapshot() }`);
+		const r = await this.call(`${logout ? 'stub.fire("PLAYER_LOGOUT")\n' : ''}return { db = play.savedVariables({ "NorthstarDB" }), char = play.savedVariables({ "NorthstarCharDB" }), world = play.worldSnapshot() }`);
 		if (!r.ok) return false;
 		const write = (rel, text) => {
 			const f = this.file(...rel);
 			fs.mkdirSync(path.dirname(f), { recursive: true });
 			fs.writeFileSync(f, text);
 		};
-		write(['SavedVariables', 'Polestar.lua'], r.value.db);
-		write(['Character', 'Polestar.lua'], r.value.char);
+		write(['SavedVariables', 'Northstar.lua'], r.value.db);
+		write(['Character', 'Northstar.lua'], r.value.char);
 		write(['world.lua'], r.value.world);
 		this.lastSave = Date.now();
 		return true;

@@ -179,11 +179,11 @@ fn replay(args: &[String]) {
 /// The seed of a start: `--seed <file>` (a chain document: `goals`), or `--seed guides` (the
 /// default): the goal stream made from the current guides as `forge build` makes it
 /// ([`forge::v1_goals`]: `--guides <dir>`, default <root>/guides, over <root>/data/forever), or,
-/// with $POLESTAR_V1_SEEDS set, the file v1-<faction>-<race>-on.json there.
+/// with $NORTHSTAR_V1_SEEDS set, the file v1-<faction>-<race>-on.json there.
 fn seed_doc(args: &[String], faction: forge_core::Faction, race: &str) -> (String, Value) {
 	let s = arg(args, "--seed").unwrap_or_else(|| "guides".into());
 	if s == "guides" {
-		if let Ok(dir) = std::env::var("POLESTAR_V1_SEEDS") {
+		if let Ok(dir) = std::env::var("NORTHSTAR_V1_SEEDS") {
 			let f = format!("{dir}/v1-{}-{}-on.json", faction.lower(), race.to_lowercase());
 			let b = std::fs::read(&f).unwrap_or_else(|e| die(&format!("seed {f}: {e}")));
 			return (f, serde_json::from_slice(&b).unwrap_or_else(|e| die(&format!("seed: {e}"))));
@@ -481,7 +481,7 @@ fn route_resume(args: &[String], root: &Path, world_dir: &Path, faction: forge_c
 	use forge::Part;
 	let stamp = |p: &Path| std::fs::metadata(p).map_or_else(|_| "missing".to_string(), |m| format!("{} {:?}", m.len(), m.modified().ok().and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())));
 	let files = format!("{}\0{}", stamp(&world_dir.join(format!("world-{}.json", faction.lower()))), stamp(&world_dir.join(format!("walks-{}.bin", faction.lower()))));
-	let env = ["POLESTAR_KB", "POLESTAR_GRID", forge_sim::fixes::ENV].map(|k| std::env::var(k).unwrap_or_default()).join("\0");
+	let env = ["NORTHSTAR_KB", "NORTHSTAR_GRID", forge_sim::fixes::ENV].map(|k| std::env::var(k).unwrap_or_default()).join("\0");
 	let exe = std::env::current_exe().unwrap_or_default();
 	let fixes = forge_sim::fixes::find(&[]).unwrap_or_default();
 	let kb = stage::kb_path(root);
@@ -609,24 +609,24 @@ fn guards_cmd(args: &[String]) {
 }
 
 /// The quest atlas as the judge builds it: the faction's, subzones from the walking grid's tile
-/// heads (data/local/nav4, or $POLESTAR_GRID).
+/// heads (data/local/nav4, or $NORTHSTAR_GRID).
 fn judge_atlas(root: &Path, faction: forge_core::Faction, data: &forge_world::GameData) -> forge_world::Atlas {
 	let t0 = Instant::now();
-	let grid = std::env::var("POLESTAR_GRID").map(PathBuf::from).unwrap_or_else(|_| root.join("data/local/nav4"));
+	let grid = std::env::var("NORTHSTAR_GRID").map(PathBuf::from).unwrap_or_else(|_| root.join("data/local/nav4"));
 	let sub = forge_world::atlas::GridSubzones::open(&grid, &root.join("data/sources"));
 	let a = forge_world::Atlas::build_for(faction, data, Some(&sub), None);
 	eprintln!("atlas in {:.2} s ({} areas)", t0.elapsed().as_secs_f64(), a.areas.len());
 	a
 }
 
-/// The knowledge base's doubtful quests (data/local/kb/forever-kb.sqlite, or $POLESTAR_KB).
+/// The knowledge base's doubtful quests (data/local/kb/forever-kb.sqlite, or $NORTHSTAR_KB).
 fn kb_missing_of(root: &Path) -> rustc_hash::FxHashMap<u32, Vec<forge_sim::insertable::Missing>> {
-	let kb = std::env::var("POLESTAR_KB").map(PathBuf::from).unwrap_or_else(|_| root.join("data/local/kb/forever-kb.sqlite"));
+	let kb = std::env::var("NORTHSTAR_KB").map(PathBuf::from).unwrap_or_else(|_| root.join("data/local/kb/forever-kb.sqlite"));
 	forge_sim::insertable::kb_missing(&kb).unwrap_or_else(|e| die(&format!("knowledge base: {e}")))
 }
 
 fn kb_doubts_of(root: &Path) -> rustc_hash::FxHashMap<u32, String> {
-	let kb = std::env::var("POLESTAR_KB").map(PathBuf::from).unwrap_or_else(|_| root.join("data/local/kb/forever-kb.sqlite"));
+	let kb = std::env::var("NORTHSTAR_KB").map(PathBuf::from).unwrap_or_else(|_| root.join("data/local/kb/forever-kb.sqlite"));
 	let d = forge_sim::insertable::kb_doubts(&kb).unwrap_or_else(|e| die(&format!("knowledge base: {e}")));
 	eprintln!("knowledge base: {} quests uncertain (never added)", d.len());
 	d
@@ -671,13 +671,13 @@ fn calibrate_cmd(args: &[String]) {
 }
 
 /// The routes folder `why` and `skips` read: --dir D, else <O>/routes for --out O (a forge build's
-/// output), else $POLESTAR_ROUTES.
+/// output), else $NORTHSTAR_ROUTES.
 fn routes_dir(args: &[String]) -> PathBuf {
 	arg(args, "--dir")
 		.map(PathBuf::from)
 		.or_else(|| arg(args, "--out").map(|o| PathBuf::from(o).join("routes")))
-		.or_else(|| std::env::var_os("POLESTAR_ROUTES").map(PathBuf::from))
-		.unwrap_or_else(|| usage("--dir <routes dir> or --out <forge build output> is required (or POLESTAR_ROUTES)"))
+		.or_else(|| std::env::var_os("NORTHSTAR_ROUTES").map(PathBuf::from))
+		.unwrap_or_else(|| usage("--dir <routes dir> or --out <forge build output> is required (or NORTHSTAR_ROUTES)"))
 }
 
 /// forge sim why <quest> --start S [--dir D]: where the quest is in S's cut (and the edits

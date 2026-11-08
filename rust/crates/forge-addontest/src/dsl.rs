@@ -117,7 +117,7 @@ impl TestPack {
 	}
 
 	/// The name in `files` of the Guides.lua that registers guide `id`: the pack's own, or the part it
-	/// went into (Polestar's own pack keeps each faction's guides in a part, format 8).
+	/// went into (Northstar's own pack keeps each faction's guides in a part, format 8).
 	pub fn guides_of(&self, id: &str) -> &str {
 		let needle = format!("\n\t\t\tid = \"{id}\",\n");
 		self.files

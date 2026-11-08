@@ -71,7 +71,7 @@ fn a_task_in_an_along_step_warns_polestar_checks_it_off_only_on_the_step_the_rou
 	assert_eq!(
 		r.warned("along"),
 		vec![format!(
-			"test.guide:{}: `task` in an `along` step never checks off: Polestar checks it only on the step the route is on, so it stays listed",
+			"test.guide:{}: `task` in an `along` step never checks off: Northstar checks it only on the step the route is on, so it stays listed",
 			line_of(&text, "task \"Pick up any Tough Wolf Meat\"")
 		)]
 	);

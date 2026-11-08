@@ -14,12 +14,12 @@ pub fn root() -> &'static Path {
 	forge_addontest::run::root()
 }
 
-/// addon/Polestar.
+/// addon/Northstar.
 pub fn polestar() -> PathBuf {
-	root().join("addon/Polestar")
+	root().join("addon/Northstar")
 }
 
-/// The locales with a file in addon/Polestar/Locales.
+/// The locales with a file in addon/Northstar/Locales.
 pub fn shipped() -> Vec<String> {
 	forge_guide::locales::LOCALE_CODES.iter().filter(|l| polestar().join("Locales").join(format!("{l}.lua")).exists()).map(|l| l.to_string()).collect()
 }
@@ -35,7 +35,7 @@ pub fn write(dir: &Path, rel: &str, text: &str) -> PathBuf {
 pub fn mini_addon() -> forge_addontest::tmp::TempDir {
 	let t = forge_addontest::tmp::TempDir::new("polestar-i18n-");
 	std::fs::create_dir_all(t.path().join("Locales")).unwrap();
-	write(t.path(), "Main.lua", "local L = Polestar.L\nprint(L[\"Hello %s\"], L[\"Bye\"], L[\"New in Main\"], Polestar.LC(\"slot\", \"Back\"))\n-- L[\"In a comment\"]\n");
-	write(t.path(), "UI/Window.lua", "local L = Polestar.L\nprint(L[\"Close the window\"])\n");
+	write(t.path(), "Main.lua", "local L = Northstar.L\nprint(L[\"Hello %s\"], L[\"Bye\"], L[\"New in Main\"], Northstar.LC(\"slot\", \"Back\"))\n-- L[\"In a comment\"]\n");
+	write(t.path(), "UI/Window.lua", "local L = Northstar.L\nprint(L[\"Close the window\"])\n");
 	t
 }

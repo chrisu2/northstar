@@ -1,4 +1,4 @@
-//! The end of a leveling guide (addon/Polestar/UI/GuideEnd.lua, and the guide window's banners in
+//! The end of a leveling guide (addon/Northstar/UI/GuideEnd.lua, and the guide window's banners in
 //! UI/GuideFrame.lua) against the real Core + Theme + UI manifests and the fake Engine of tests/lua/stub_ui.lua,
 //! given GUIDE_END's info.
 
@@ -8,8 +8,8 @@ use serde_json::{json, Value};
 const FILES: [&str; 3] = ["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"];
 
 const HELPERS: &str = r#"
-local E = Polestar.Engine
-GE, GF = Polestar.UI.GuideEnd, Polestar.UI.GuideFrame
+local E = Northstar.Engine
+GE, GF = Northstar.UI.GuideEnd, Northstar.UI.GuideFrame
 ENDED, NEXT, CHOICE = {}, "forever/alliance/02-westfall", false
 E.GuideEnded = function(id) return ENDED[id] == true end
 E.NextGuide = function() return NEXT end
@@ -27,7 +27,7 @@ function lastCall(name)
 end
 function info(t) t.guideId = uistub.elwynn; return t end
 function view()
-	local F = PolestarGuideEnd
+	local F = NorthstarGuideEnd
 	stub.advance(1)
 	local point, rel, relPoint = F:GetPoint(1)
 	return {
@@ -40,7 +40,7 @@ end
 "#;
 
 fn run(script: &str) -> Value {
-	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Polestar", &FILES)], script: ["uistub.install()", "stub.login()", HELPERS, script].join("\n"), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Northstar", &FILES)], script: ["uistub.install()", "stub.login()", HELPERS, script].join("\n"), ..Default::default() })
 		.remove(0)
 }
 
@@ -69,12 +69,12 @@ fn plain(v: &Value) -> String {
 fn the_end_with_steps_left_open_names_the_guide_the_steps_and_the_next_guide_back_returns_to_the_live_step() {
 	let out = run(r#"
 		uistub.setGuide(uistub.elwynn, 5)
-		Polestar.Fire("GUIDE_END", uistub.elwynn, info({ undone = 3, live = 3, next = NEXT }))
+		Northstar.Fire("GUIDE_END", uistub.elwynn, info({ undone = 3, live = 3, next = NEXT }))
 		local r = view()
 		r.esc = false
-		for _, n in ipairs(UISpecialFrames or {}) do if n == "PolestarGuideEnd" then r.esc = true end end
-		PolestarGuideEnd.Later:Click()
-		r.goto, r.after = lastCall("Goto"), PolestarGuideEnd:IsShown()
+		for _, n in ipairs(UISpecialFrames or {}) do if n == "NorthstarGuideEnd" then r.esc = true end end
+		NorthstarGuideEnd.Later:Click()
+		r.goto, r.after = lastCall("Goto"), NorthstarGuideEnd:IsShown()
 		emit(r)"#);
 	// Too long for one line: the break goes before the guide, never inside its name.
 	assert_eq!(plain(&out["title"]), "You've reached the end of\nElwynn Forest (1–13)");
@@ -96,13 +96,13 @@ fn the_end_with_steps_left_open_names_the_guide_the_steps_and_the_next_guide_bac
 fn a_guide_done_whole_says_completed_start_loads_the_next_guide_not_now_only_closes() {
 	let out = run(r#"
 		uistub.setGuide(uistub.elwynn, 1); uistub.complete()
-		Polestar.Fire("GUIDE_END", uistub.elwynn, info({ undone = 0, next = NEXT }))
+		Northstar.Fire("GUIDE_END", uistub.elwynn, info({ undone = 0, next = NEXT }))
 		local r = view()
-		PolestarGuideEnd.Go:Click()
-		r.start, r.after = lastCall("StartNext"), PolestarGuideEnd:IsShown()
-		Polestar.Fire("GUIDE_END", uistub.elwynn, info({ undone = 0, next = NEXT }))
-		PolestarGuideEnd.Later:Click()
-		r.again = { shown = PolestarGuideEnd:IsShown(), goto = lastCall("Goto") }
+		NorthstarGuideEnd.Go:Click()
+		r.start, r.after = lastCall("StartNext"), NorthstarGuideEnd:IsShown()
+		Northstar.Fire("GUIDE_END", uistub.elwynn, info({ undone = 0, next = NEXT }))
+		NorthstarGuideEnd.Later:Click()
+		r.again = { shown = NorthstarGuideEnd:IsShown(), goto = lastCall("Goto") }
 		emit(r)"#);
 	assert_eq!(plain(&out["title"]), "You've completed\nElwynn Forest (1–13)");
 	assert_eq!(out["undone"], false);
@@ -117,17 +117,17 @@ fn a_route_choice_opens_the_route_choice_window_and_no_next_guide_offers_the_gui
 	let out = run(r#"
 		uistub.setGuide(uistub.elwynn, 1); uistub.complete()
 		CHOICE = true
-		Polestar.Fire("GUIDE_END", uistub.elwynn, info({ undone = 0, choose = true }))
+		Northstar.Fire("GUIDE_END", uistub.elwynn, info({ undone = 0, choose = true }))
 		local r = { choice = view() }
-		PolestarGuideEnd.Go:Click()
-		r.routeChoice = PolestarRouteChoice and PolestarRouteChoice:IsShown() or false
-		Polestar.UI.RouteChoice.Hide()
+		NorthstarGuideEnd.Go:Click()
+		r.routeChoice = NorthstarRouteChoice and NorthstarRouteChoice:IsShown() or false
+		Northstar.UI.RouteChoice.Hide()
 		CHOICE = false
 		local picked = false
-		Polestar.UI.ShowPicker = function() picked = true end
-		Polestar.Fire("GUIDE_END", uistub.elwynn, info({ undone = 0 }))
+		Northstar.UI.ShowPicker = function() picked = true end
+		Northstar.Fire("GUIDE_END", uistub.elwynn, info({ undone = 0 }))
 		r.none = view()
-		PolestarGuideEnd.Go:Click()
+		NorthstarGuideEnd.Go:Click()
 		r.picked = picked
 		emit(r)"#);
 	assert_eq!(out["choice"]["go"], "Choose where to go next");
@@ -154,7 +154,7 @@ fn back_on_the_guide_its_banner_offers_the_next_guide_until_dismissed_and_contin
 		B.Close:Click()
 		r.dismissed = B:IsShown()
 		uistub.setGuide("forever/alliance/02-westfall", 1)
-		Polestar.Fire("GUIDE_CONTINUED", uistub.elwynn, "forever/alliance/02-westfall")
+		Northstar.Fire("GUIDE_CONTINUED", uistub.elwynn, "forever/alliance/02-westfall")
 		r.continued = B:IsShown() and B.Text:GetText() or false
 		stub.advance(21)
 		r.gone = B:IsShown()

@@ -1,4 +1,4 @@
-//! Core plumbing (addon/Polestar/Core/Init.lua): message bus, settings, lifecycle, slash commands.
+//! Core plumbing (addon/Northstar/Core/Init.lua): message bus, settings, lifecycle, slash commands.
 
 use forge_addontest::{emitted, fake_locale, Addon, RunAddon};
 use serde_json::{json, Value};
@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua"])
+	Addon::files("Northstar", &["Core/Init.lua"])
 }
 
 #[test]
@@ -16,10 +16,10 @@ fn a_handler_removed_during_dispatch_does_not_make_the_bus_skip_the_next_one() {
 		script: r#"
 			local calls = {}
 			local a
-			a = Polestar.On("X", function() calls[#calls + 1] = "a"; Polestar.Off(a) end)
-			Polestar.On("X", function() calls[#calls + 1] = "b" end)
-			Polestar.Fire("X")
-			Polestar.Fire("X")
+			a = Northstar.On("X", function() calls[#calls + 1] = "a"; Northstar.Off(a) end)
+			Northstar.On("X", function() calls[#calls + 1] = "b" end)
+			Northstar.Fire("X")
+			Northstar.Fire("X")
 			emit(calls)"#
 			.into(),
 		..Default::default()
@@ -34,9 +34,9 @@ fn one_failing_handler_does_not_stop_the_others() {
 		script: r#"
 			local errors, calls = {}, {}
 			geterrorhandler = function() return function(e) errors[#errors + 1] = tostring(e) end end
-			Polestar.On("X", function() error("boom") end)
-			Polestar.On("X", function(v) calls[#calls + 1] = v end)
-			Polestar.Fire("X", 7)
+			Northstar.On("X", function() error("boom") end)
+			Northstar.On("X", function(v) calls[#calls + 1] = v end)
+			Northstar.Fire("X", 7)
 			emit({ errors = #errors, calls = calls })"#
 			.into(),
 		..Default::default()
@@ -49,14 +49,14 @@ fn settings_fall_back_to_defaults_store_only_non_default_values_and_announce_cha
 	let out = emitted(&RunAddon {
 		addons: vec![core()],
 		script: r#"
-			Polestar.RegisterDefaults("ui", { scale = 1, locked = false })
+			Northstar.RegisterDefaults("ui", { scale = 1, locked = false })
 			local seen = {}
-			Polestar.On("SETTING_CHANGED", function(p, v) seen[#seen + 1] = p .. "=" .. tostring(v) end)
-			local before = Polestar.Get("ui.scale")
-			Polestar.Set("ui.scale", 1.25)
-			local stored = PolestarDB.settings.ui.scale
-			Polestar.Set("ui.scale", 1)
-			emit({ before = before, stored = stored, cleared = PolestarDB.settings.ui.scale == nil, now = Polestar.Get("ui.scale"), seen = seen })"#
+			Northstar.On("SETTING_CHANGED", function(p, v) seen[#seen + 1] = p .. "=" .. tostring(v) end)
+			local before = Northstar.Get("ui.scale")
+			Northstar.Set("ui.scale", 1.25)
+			local stored = NorthstarDB.settings.ui.scale
+			Northstar.Set("ui.scale", 1)
+			emit({ before = before, stored = stored, cleared = NorthstarDB.settings.ui.scale == nil, now = Northstar.Get("ui.scale"), seen = seen })"#
 			.into(),
 		..Default::default()
 	});
@@ -68,12 +68,12 @@ fn settings_survive_savedvariables_coming_back_nil_after_a_cold_restart() {
 	let out = emitted(&RunAddon {
 		addons: vec![core()],
 		script: r#"
-			Polestar.RegisterDefaults("nav", { arrow = true })
-			Polestar.Set("nav.arrow", false)
-			PolestarDB = nil      -- the client failed to restore the file
-			PolestarCharDB = nil
-			local state = Polestar.CharState()
-			emit({ arrow = Polestar.Get("nav.arrow"), manual = type(state.manual), flags = type(state.flags) })"#
+			Northstar.RegisterDefaults("nav", { arrow = true })
+			Northstar.Set("nav.arrow", false)
+			NorthstarDB = nil      -- the client failed to restore the file
+			NorthstarCharDB = nil
+			local state = Northstar.CharState()
+			emit({ arrow = Northstar.Get("nav.arrow"), manual = type(state.manual), flags = type(state.flags) })"#
 			.into(),
 		..Default::default()
 	});
@@ -84,10 +84,10 @@ fn settings_survive_savedvariables_coming_back_nil_after_a_cold_restart() {
 fn restored_savedvariables_are_used_once_addon_loaded_fires() {
 	let out = emitted(&RunAddon {
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), "PolestarDB = { schema = 1, settings = { ui = { scale = 0.9 } } }".into())],
+		saved: vec![("Northstar".into(), "NorthstarDB = { schema = 1, settings = { ui = { scale = 0.9 } } }".into())],
 		script: r#"
-			Polestar.RegisterDefaults("ui", { scale = 1 })
-			emit(Polestar.Get("ui.scale"))"#
+			Northstar.RegisterDefaults("ui", { scale = 1 })
+			emit(Northstar.Get("ui.scale"))"#
 			.into(),
 		..Default::default()
 	});
@@ -98,10 +98,10 @@ fn restored_savedvariables_are_used_once_addon_loaded_fires() {
 fn init_and_login_callbacks_run_in_order_and_late_registrations_run_at_once() {
 	let out = emitted(&RunAddon {
 		before: "__order = {}".into(),
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua"])],
 		login: true,
 		script: r#"
-			Polestar.OnLogin(function() __order[#__order + 1] = "late-login" end)
+			Northstar.OnLogin(function() __order[#__order + 1] = "late-login" end)
 			emit(__order)"#
 			.into(),
 		..Default::default()
@@ -117,7 +117,7 @@ fn init_and_login_callbacks_run_in_order_and_late_registrations_run_at_once() {
 				if not chunk then return nil, err end
 				return function(...)
 					chunk(...)
-					local ns = Polestar
+					local ns = Northstar
 					ns.OnInit(function() __order[#__order + 1] = "init1" end)
 					ns.OnLogin(function() __order[#__order + 1] = "login1" end)
 					ns.OnInit(function() __order[#__order + 1] = "init2" end)
@@ -142,12 +142,12 @@ fn slash_command_bare_toggles_the_frame_names_dispatch_with_the_rest_of_the_line
 		addons: vec![core()],
 		script: r#"
 			local got = {}
-			Polestar.On("TOGGLE_FRAME", function() got[#got + 1] = "toggle" end)
-			Polestar.RegisterCommand("Goto", function(rest) got[#got + 1] = "goto:" .. rest end, "help text")
-			SlashCmdList.POLESTAR("")
-			SlashCmdList.POLESTAR("  goto   12 extra  ")
+			Northstar.On("TOGGLE_FRAME", function() got[#got + 1] = "toggle" end)
+			Northstar.RegisterCommand("Goto", function(rest) got[#got + 1] = "goto:" .. rest end, "help text")
+			SlashCmdList.NORTHSTAR("")
+			SlashCmdList.NORTHSTAR("  goto   12 extra  ")
 			local before = #stub.messages
-			SlashCmdList.POLESTAR("nope")
+			SlashCmdList.NORTHSTAR("nope")
 			local printed = table.concat(stub.messages, "\n", before + 1)
 			emit({ got = got, mentionsUnknown = printed:find("nope", 1, true) ~= nil, listsGoto = printed:find("/polestar goto", 1, true) ~= nil })"#
 			.into(),
@@ -170,9 +170,9 @@ fn polestar_help_prints_each_line_in_the_client_language_core_s_own_commands_too
 				("Look at the step before", "Vorherigen Schritt ansehen"),
 			],
 		),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: r#"
-			SlashCmdList.POLESTAR("help")
+			SlashCmdList.NORTHSTAR("help")
 			local lines = {}
 			for _, m in ipairs(stub.messages) do
 				local name, help = m:match("/polestar (%S+)  |cff8a8f98(.*)|r$")
@@ -201,7 +201,7 @@ fn lc_a_word_with_two_meanings_has_a_key_per_meaning_english_while_untranslated(
 		emitted(&RunAddon {
 			before: fake_locale("itIT", strings),
 			addons: vec![core()],
-			script: r#"emit({ button = Polestar.L["Back"], chest = Polestar.LC("boss", "Chest") })"#.into(),
+			script: r#"emit({ button = Northstar.L["Back"], chest = Northstar.LC("boss", "Chest") })"#.into(),
 			..Default::default()
 		})
 		.remove(0)
@@ -220,9 +220,9 @@ fn registering_an_event_the_client_does_not_know_returns_false_instead_of_errori
 				if ev == "NOT_A_FOREVER_EVENT" then error("Attempt to register unknown event") end
 				return real(self, ev)
 			end
-			local ok1 = Polestar.RegisterEvent("NOT_A_FOREVER_EVENT", function() end)
+			local ok1 = Northstar.RegisterEvent("NOT_A_FOREVER_EVENT", function() end)
 			local hits = 0
-			local ok2 = Polestar.RegisterEvent("QUEST_ACCEPTED", function(_, id) hits = hits + id end)
+			local ok2 = Northstar.RegisterEvent("QUEST_ACCEPTED", function(_, id) hits = hits + id end)
 			stub.fire("QUEST_ACCEPTED", 5)
 			emit({ ok1 = ok1, ok2 = ok2, hits = hits })"#
 			.into(),
@@ -262,11 +262,11 @@ fn formatdistance_yards_or_metres_rounding_kilometres_from_1000_m_and_the_rares_
 	let out = emitted(&RunAddon {
 		addons: vec![core()],
 		script: r#"
-			local F = Polestar.FormatDistance
-			Polestar.RegisterDefaults("nav", { distanceUnit = "yards" })
+			local F = Northstar.FormatDistance
+			Northstar.RegisterDefaults("nav", { distanceUnit = "yards" })
 			local rares = { round = 5, compact = true }
 			local yd = { F(120.4), F(0.6), F(1500), F(83, rares), F(998, rares), F(1500, rares) }
-			Polestar.Set("nav.distanceUnit", "metres")
+			Northstar.Set("nav.distanceUnit", "metres")
 			local m = { F(120.4), F(0.6), F(1093), F(1094), F(1500), F(83, rares), F(1092, rares), F(1500, rares) }
 			emit({ yd = yd, m = m })"#
 			.into(),
@@ -285,20 +285,20 @@ fn a_timer_or_onupdate_error_is_caught_noted_and_passed_on_once_per_half_minute_
 			local raised = 0
 			geterrorhandler = function() return function() raised = raised + 1 end end
 			local ran = 0
-			Polestar.After(0, function() error("tick broke", 0) end)
-			Polestar.After(0, function() ran = ran + 1 end)
+			Northstar.After(0, function() error("tick broke", 0) end)
+			Northstar.After(0, function() ran = ran + 1 end)
 			stub.runTimers()
 			local f = CreateFrame("Frame")
-			f:SetScript("OnUpdate", Polestar.Safe(function() error("tick broke", 0) end))
+			f:SetScript("OnUpdate", Northstar.Safe(function() error("tick broke", 0) end))
 			stub.RunScript(f, "OnUpdate", 0.1)
-			local first = { raised = raised, ran = ran, noted = Polestar.Errors()[1].count }
+			local first = { raised = raised, ran = ran, noted = Northstar.Errors()[1].count }
 			stub.advance(31)
 			stub.RunScript(f, "OnUpdate", 0.1)
 			local later = raised
-			for i = 1, 205 do Polestar.Debug("line", i) end
-			local log = Polestar.DebugLog()
+			for i = 1, 205 do Northstar.Debug("line", i) end
+			local log = Northstar.DebugLog()
 			emit({ first = first, later = later, logged = #log, oldest = log[1]:match("line %d+$"), newest = log[#log]:match("line %d+$"),
-				tail = #Polestar.DebugLog(3), safeNil = Polestar.Safe(nil) == nil })"#
+				tail = #Northstar.DebugLog(3), safeNil = Northstar.Safe(nil) == nil })"#
 			.into(),
 		..Default::default()
 	});

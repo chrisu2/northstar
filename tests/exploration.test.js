@@ -5,7 +5,7 @@
 // cached client tables and data/forever) that the real centres sit on known
 // places, every zone area is routed for both factions, and the generated
 // guides match the files on disk and compile cleanly. Playing them is
-// tests/guides.test.js's job (POLESTAR_GUIDES=exploration/).
+// tests/guides.test.js's job (NORTHSTAR_GUIDES=exploration/).
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');

@@ -132,7 +132,7 @@ fn itemdb_entries_what_is_left_out_and_the_build_offline_the_same_on_rerun() {
 	tables(&cache);
 	let mut o = Options::new(&root);
 	o.sources = root.join("sources");
-	o.out = root.join("Polestar_ItemDB");
+	o.out = root.join("Northstar_ItemDB");
 	o.offline = true;
 	let r = build(&o, &|_| panic!("offline: nothing is fetched")).unwrap();
 	assert_eq!((r.build.as_str(), r.count), ("1.15.9.1", 6));
@@ -160,8 +160,8 @@ fn itemdb_entries_what_is_left_out_and_the_build_offline_the_same_on_rerun() {
 		assert_eq!(&encode(&decode(*id as f64, s).unwrap()), s, "round trip");
 	}
 	assert!(lua.contains("DB.Register({ schema = 1, build = \"1.15.9.1\", count = 6 }, {\n"));
-	let toc = std::fs::read_to_string(o.out.join("Polestar_ItemDB.toc")).unwrap();
-	for line in ["## Interface: 16001", "## LoadOnDemand: 1", "## Dependencies: Polestar", "Items.lua"] {
+	let toc = std::fs::read_to_string(o.out.join("Northstar_ItemDB.toc")).unwrap();
+	for line in ["## Interface: 16001", "## LoadOnDemand: 1", "## Dependencies: Northstar", "Items.lua"] {
 		assert!(toc.lines().any(|l| l == line), "{line}");
 	}
 	build(&o, &|_| {}).unwrap();

@@ -1,7 +1,7 @@
 //! `forge nav pack --leffe` (maps format 5): Zephras Isle from Leffe's navigation maps on a real grid, opt-in.
 //!
 //! PACK_GRID=<grid> PACK_ROOT=<checkout: data/forever, data/sources/wago> PACK_LAYERS=<nav-layers>
-//! POLESTAR_LEFFE_NAV=<his Nav folder or the folder holding it> cargo test --profile quick -p forge-nav --test pack
+//! NORTHSTAR_LEFFE_NAV=<his Nav folder or the folder holding it> cargo test --profile quick -p forge-nav --test pack
 //! -- --ignored leffe
 
 use super::{files_under, tmp};
@@ -37,9 +37,9 @@ fn pack(leffe: Option<(&std::path::Path, &[u32])>, name: &str) -> PathBuf {
 }
 
 #[test]
-#[ignore = "needs PACK_GRID, PACK_ROOT, PACK_LAYERS and POLESTAR_LEFFE_NAV"]
+#[ignore = "needs PACK_GRID, PACK_ROOT, PACK_LAYERS and NORTHSTAR_LEFFE_NAV"]
 fn leffe_zephras_packs_his_maps_as_format_5_and_naming_no_map_of_his_packs_the_grids() {
-	let leffe = PathBuf::from(std::env::var("POLESTAR_LEFFE_NAV").expect("needs POLESTAR_LEFFE_NAV"));
+	let leffe = PathBuf::from(std::env::var("NORTHSTAR_LEFFE_NAV").expect("needs NORTHSTAR_LEFFE_NAV"));
 	let his = pack(Some((&leffe, &[2991])), "leffe");
 	let meta = std::fs::read_to_string(his.join("Nav/Nav2991.lua")).unwrap();
 	assert!(meta.lines().any(|l| l == "\tformat = 5,"), "maps format 5");

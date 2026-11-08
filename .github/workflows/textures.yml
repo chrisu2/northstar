@@ -17,7 +17,7 @@ on:
       - "tools/lib/data/csv.js"
       - "tools/lib/paths.js"
       - "tools/preview/font.js"
-      - "addon/Polestar/Theme/**"
+      - "addon/Northstar/Theme/**"
       - ".github/workflows/textures.yml"
   pull_request:
     paths:
@@ -28,7 +28,7 @@ on:
       - "tools/lib/data/csv.js"
       - "tools/lib/paths.js"
       - "tools/preview/font.js"
-      - "addon/Polestar/Theme/**"
+      - "addon/Northstar/Theme/**"
       - ".github/workflows/textures.yml"
 
 permissions:

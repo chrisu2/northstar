@@ -199,13 +199,13 @@ test('record draft inside a guide pack writes a pack-prefixed draft into <pack>/
 });
 
 // An hour of play recorded by the addon in the stub world (schema 2 chunks,
-// tests/fixtures/recordings/Polestar_Recorder.lua), through `forge record import`.
+// tests/fixtures/recordings/Northstar_Recorder.lua), through `forge record import`.
 test('forge record import turns the addon\'s chunks into a normalized schema 2 session', (t) => {
 	const dir = tmpdir('polestar-record-');
 	const svDir = path.join(dir, 'WTF', 'Account', 'TESTACCOUNT', 'SavedVariables');
 	fs.mkdirSync(svDir, { recursive: true });
 	fs.mkdirSync(path.join(dir, 'WTF', 'Account', 'TESTACCOUNT', 'Test Realm', 'Testchar'), { recursive: true });
-	fs.copyFileSync(path.join(__dirname, 'fixtures', 'recordings', 'Polestar_Recorder.lua'), path.join(svDir, 'Polestar_Recorder.lua'));
+	fs.copyFileSync(path.join(__dirname, 'fixtures', 'recordings', 'Northstar_Recorder.lua'), path.join(svDir, 'Northstar_Recorder.lua'));
 	const out = path.join(dir, 'recordings');
 	const r = forge(['record', 'import', '--wtf', path.join(dir, 'WTF'), '--out', out]);
 	if (!r) return t.skip('no forge binary (rust/target/release/forge or $FORGE)');
@@ -233,7 +233,7 @@ test('forge record import turns the addon\'s chunks into a normalized schema 2 s
 	assert.match(again.stdout, /0 chunk\(s\) archived; .*0 new, 0 updated, 1 unchanged/);
 
 	// The same file sent in loose (not inside this PC's game folders): it needs --vouch or --anonymize.
-	const loose = path.join(svDir, 'Polestar_Recorder.lua');
+	const loose = path.join(svDir, 'Northstar_Recorder.lua');
 	const refused = forge(['record', 'import', '--wtf', loose, '--out', out]);
 	assert.equal(refused.status, 2);
 	assert.match(refused.stderr, /--vouch <name>.*--anonymize/);

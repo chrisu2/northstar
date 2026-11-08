@@ -113,9 +113,9 @@ test('the shipped rules.json is valid against the synthetic shape check (fields 
 	assert.equal(new Set(rules.map((r) => r.id)).size, rules.length, 'rule ids are unique');
 });
 
-// The built worlds (POLESTAR_SIM_DIR, default the sim command's data/sim); a rule
+// The built worlds (NORTHSTAR_SIM_DIR, default the sim command's data/sim); a rule
 // for the other faction is checked against data/forever.
-const REAL_SIM = process.env.POLESTAR_SIM_DIR || path.join(__dirname, '..', 'data', 'sim');
+const REAL_SIM = process.env.NORTHSTAR_SIM_DIR || path.join(__dirname, '..', 'data', 'sim');
 for (const faction of ['horde', 'alliance']) {
 	const file = path.join(REAL_SIM, `world-${faction}.json`);
 	const skip = needs('quests.json', 'npcs.json', 'items.json') || (!fs.existsSync(file) && `no ${file}`);

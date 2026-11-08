@@ -1,11 +1,11 @@
-//! Our navigation grid as Polestar's walking maps (format 2; format 3 with the grid's area sidecars), the maps of Polestar's walking router
-//! (addon/Polestar_Nav Routing/), and the chokepoints: a port of tools/lib/nav/pack.js and
+//! Our navigation grid as Northstar's walking maps (format 2; format 3 with the grid's area sidecars), the maps of Northstar's walking router
+//! (addon/Northstar_Nav Routing/), and the chokepoints: a port of tools/lib/nav/pack.js and
 //! chokepoints.js with byte-identical output (docs/forge/nav.md, "forge nav pack").
 //!
 //! Ported from Shortest Path Forever v1.15.0 by Cillian Berragan (github.com/cjber/shortest-path-forever,
 //! GPL-3.0-or-later, used with his permission): the HPA* graph, the cluster encodings and the floor links of
 //! tools/baker/gen_nav.py, and the zlib + base64 parts of tools/pack_nav.py.
-//! Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15.
+//! Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.
 //!
 //! Stages: `cells::cell_grid` (the grid -> per cell its surfaces, ground classes and joins),
 //! `hpa::build_hpa` (the graph, each edge priced per profile), `encode::encode_maps` (the per-cluster
@@ -59,9 +59,9 @@ pub const SWIM: f64 = 3.0;
 /// The maps `forge nav pack` writes: Eastern Kingdoms, Kalimdor, Zephras Isle.
 pub const MAPS: [u32; 3] = [0, 1, 2991];
 /// The load-on-demand addon a continent's map parts ship in when its maps are Leffe's (maps format 5: too big
-/// to load both continents at login). Its metadata file stays in Polestar_Nav and names the part; the router
+/// to load both continents at login). Its metadata file stays in Northstar_Nav and names the part; the router
 /// loads the part the first time it searches that map (Routing/PathGrid.lua, out of combat).
-pub const PARTS: [(u32, &str); 2] = [(0, "Polestar_Nav_EK"), (1, "Polestar_Nav_Kalimdor")];
+pub const PARTS: [(u32, &str); 2] = [(0, "Northstar_Nav_EK"), (1, "Northstar_Nav_Kalimdor")];
 
 /// The part addon of map `map`'s parts, if it has one.
 pub fn part_of(map: u32) -> Option<&'static str> {
@@ -268,7 +268,7 @@ pub fn pack_nav(i: &PackIn) -> Result<Pack, String> {
 	// The WMOAreaTable names of the grid's area sidecars (forge nav grid's areas.json: { id: [name, AreaTableID] }).
 	// Only named rows are packed: the planner matches a surface's area by its name to the client's subzone
 	// (Walk.lua named; Path.AreaName gives none for ""), so an unnamed row is as no area, and the area field
-	// and areaNames of every map are half as big without them (Polestar_Nav's memory budget).
+	// and areaNames of every map are half as big without them (Northstar_Nav's memory budget).
 	let area_names = opt(&i.grid.join("areas.json"))?;
 	let named = |a: u32| area_names[a.to_string()][0].as_str().is_some_and(|n| !n.is_empty());
 	let grid = Arc::new(Grid::open(i.grid, 16)?);
@@ -389,7 +389,7 @@ pub fn pack_nav(i: &PackIn) -> Result<Pack, String> {
 		m.insert("chokepoints".into(), json!(chokes.len()));
 		by_map.push((c, chokes));
 		let part = leffe.and_then(|_| part_of(c));
-		let (mut out, packed_bytes) = encode::pack_files(c, &cg, &maps, "PolestarPathData", &gen, &hubs, Some(&area_names), part)?;
+		let (mut out, packed_bytes) = encode::pack_files(c, &cg, &maps, "NorthstarPathData", &gen, &hubs, Some(&area_names), part)?;
 		if let Some(p) = part {
 			m.insert("part".into(), json!(p));
 		}
@@ -492,7 +492,7 @@ pub fn nav_xml(addon_dir: &Path) -> String {
 	let doc: Value = std::fs::read(addon_dir.join(PACK_JSON)).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or(Value::Null);
 	let ours: Vec<String> = doc["files"].as_object().map(|m| m.keys().filter_map(|k| k.strip_prefix("Nav/").map(str::to_string)).collect()).unwrap_or_default();
 	let generator = doc["generator"].as_str().unwrap_or("forge nav pack");
-	let mut lines = vec!["<Ui xmlns=\"http://www.blizzard.com/wow/ui/\">".to_string(), format!("\t<!-- Written by {generator}: Polestar's walking maps (PACK.json), then the chokepoints. -->")];
+	let mut lines = vec!["<Ui xmlns=\"http://www.blizzard.com/wow/ui/\">".to_string(), format!("\t<!-- Written by {generator}: Northstar's walking maps (PACK.json), then the chokepoints. -->")];
 	for n in ours.iter().filter(|n| *n != "Chokepoints.lua").chain(ours.iter().filter(|n| *n == "Chokepoints.lua")) {
 		lines.push(format!("\t<Script file=\"{n}\"/>"));
 	}
@@ -519,31 +519,31 @@ fn own_part_file(name: &str) -> bool {
 	own_file(name) && name != "Chokepoints.lua" && name.contains('_')
 }
 
-/// The `## Interface` and `## Version` lines of Polestar_Nav's TOC, which a part's TOC repeats.
+/// The `## Interface` and `## Version` lines of Northstar_Nav's TOC, which a part's TOC repeats.
 fn toc_heads(addon_dir: &Path) -> Vec<String> {
 	let name = addon_dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
 	let text = std::fs::read_to_string(addon_dir.join(format!("{name}.toc"))).unwrap_or_default();
 	["## Interface:", "## Version:"].iter().filter_map(|h| text.lines().find(|l| l.starts_with(h)).map(str::to_string)).collect()
 }
 
-/// A part addon's TOC: load on demand after Polestar_Nav, its map parts in order.
+/// A part addon's TOC: load on demand after Northstar_Nav, its map parts in order.
 pub fn part_toc(part: &str, files: &[String], heads: &[String], generator: &str) -> String {
 	let continent = match PARTS.iter().find(|p| p.1 == part).map(|p| p.0) {
 		Some(0) => "the Eastern Kingdoms",
 		_ => "Kalimdor",
 	};
 	let mut lines: Vec<String> = heads.iter().filter(|h| h.starts_with("## Interface:")).cloned().collect();
-	lines.push(format!("## Title: Polestar Nav ({})", continent.trim_start_matches("the ")));
-	lines.push(format!("## Notes: Walking maps of {continent} for Polestar's arrow, from Leffe's navigation maps. Loaded on demand on that continent."));
+	lines.push(format!("## Title: Northstar Nav ({})", continent.trim_start_matches("the ")));
+	lines.push(format!("## Notes: Walking maps of {continent} for Northstar's arrow, from Leffe's navigation maps. Loaded on demand on that continent."));
 	lines.extend(forge_guide::toc::toc_lines(part));
-	lines.push("## Author: Polestar; walking maps: Leffe's navigation maps".into());
+	lines.push("## Author: Northstar; walking maps: Leffe's navigation maps".into());
 	lines.extend(heads.iter().filter(|h| h.starts_with("## Version:")).cloned());
-	lines.push("## Category: Polestar".into());
-	lines.push("## Group: Polestar".into());
+	lines.push("## Category: Northstar".into());
+	lines.push("## Group: Northstar".into());
 	lines.push("## LoadOnDemand: 1".into());
-	lines.push("## Dependencies: Polestar_Nav".into());
+	lines.push("## Dependencies: Northstar_Nav".into());
 	lines.push("## X-License: GPL-3.0-or-later".into());
-	lines.push(format!("# Written by {generator}: the map parts Polestar_Nav's router loads when it first searches {continent}."));
+	lines.push(format!("# Written by {generator}: the map parts Northstar_Nav's router loads when it first searches {continent}."));
 	lines.push(String::new());
 	lines.extend(files.iter().cloned());
 	lines.push(String::new());

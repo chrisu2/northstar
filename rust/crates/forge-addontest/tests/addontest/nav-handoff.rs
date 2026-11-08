@@ -1,5 +1,5 @@
-//! Hand-off to Shortest Path Forever (addon/Polestar/Nav/Handoff.lua): with it installed, Polestar's target goes
-//! to it through its public API and every guidance surface of Polestar's steps aside, so the two never guide at
+//! Hand-off to Shortest Path Forever (addon/Northstar/Nav/Handoff.lua): with it installed, Northstar's target goes
+//! to it through its public API and every guidance surface of Northstar's steps aside, so the two never guide at
 //! once. A fake ShortestPathForever.API, written to its docs/api.md (v1.16.0: version 1, minor 1 with Subscribe,
 //! false in combat, with Journeys off or for invalid input, Ended's reasons, Subscribe's next-frame callbacks),
 //! stands in for the addon. Runs the real Core/Init.lua, Core/Data.lua, Theme, Nav/Nav.xml, the route lines and
@@ -22,7 +22,7 @@ do
 	local load = loadfile
 	function loadfile(file)
 		local chunk, err = load(file)
-		if not chunk or not file:match("[/\\]Polestar[/\\]Core[/\\]Init%.lua$") then return chunk, err end
+		if not chunk or not file:match("[/\\]Northstar[/\\]Core[/\\]Init%.lua$") then return chunk, err end
 		return function(name, ns)
 			chunk(name, ns)
 			ns.Compat = stub.nav.Compat
@@ -32,7 +32,7 @@ do
 	end
 end
 finds = 0
-Polestar_NavEngine = {
+Northstar_NavEngine = {
 	Find = function(map, from, to, callback) finds = finds + 1; return {} end,
 	Cancel = function() end,
 	Busy = function() return false end,
@@ -174,9 +174,9 @@ fn spf_minor0() -> String {
 }
 
 const PRELUDE: &str = r#"
-local N, nav = Polestar.Nav, stub.nav
+local N, nav = Northstar.Nav, stub.nav
 local H = N.handoff
-local JP = Polestar.UI.JourneyPanel
+local JP = Northstar.UI.JourneyPanel
 local floor = math.floor
 nav.useTravelWorld()
 -- The player at Testshire Docks; Farland (map 9001) lies over the sea: the boat.
@@ -188,24 +188,24 @@ local function legs() local l = N.GetRoute(); return l and #l or 0 end
 local function sent() return spf and spf.routes() or 0 end
 local function stop() local c = spf.last(); return c and c.stops[1] end
 local function r4(v) return v and floor(v * 10000 + 0.5) / 10000 end
--- Polestar's own guidance, surface by surface.
+-- Northstar's own guidance, surface by surface.
 local function surfaces()
 	stub.advance(0.3)
-	local trail = Polestar.Pins.GetTrail()
+	local trail = Northstar.Pins.GetTrail()
 	return {
 		arrow = arrowShown(),
 		route = legs(),
-		lines = #Polestar.RouteLines.GetPaths(),
+		lines = #Northstar.RouteLines.GetPaths(),
 		journey = JP.Route() ~= nil,
 		trail = trail ~= nil,
 		walk = finds > 0,
-		pack = (function() for _, n in ipairs(loads) do if n == "Polestar_Nav" then return true end end return false end)(),
-		way = SLASH_POLESTARWAY1 == "/way",
+		pack = (function() for _, n in ipairs(loads) do if n == "Northstar_Nav" then return true end end return false end)(),
+		way = SLASH_NORTHSTARWAY1 == "/way",
 		shim = TomTom ~= nil and TomTom == N.tomtomShim,
 	}
 end
 local function option()
-	for _, spec in ipairs(Polestar.Widgets.OptionsRegistry) do
+	for _, spec in ipairs(Northstar.Widgets.OptionsRegistry) do
 		for _, c in ipairs(spec.controls) do if c.key == "nav.spfHandoff" then return c end end
 	end
 end
@@ -213,9 +213,9 @@ end
 
 // The TomTom stand-in ("Let other addons set waypoints") is off by default; it is on here so its stepping aside
 // is seen. Handing off is an option (off on a fresh profile); these tests hand off unless they say otherwise.
-const SAVED: &str = "PolestarDB = { schema = 1, settings = { nav = { answerTomTom = true, spfHandoff = true } } }";
+const SAVED: &str = "NorthstarDB = { schema = 1, settings = { nav = { answerTomTom = true, spfHandoff = true } } }";
 // A fresh profile: the defaults, the stand-in on to be seen.
-const FRESH: &str = "PolestarDB = { schema = 1, settings = { nav = { answerTomTom = true } } }";
+const FRESH: &str = "NorthstarDB = { schema = 1, settings = { nav = { answerTomTom = true } } }";
 
 struct Opts<'a> {
 	spf: Option<&'a str>,
@@ -233,8 +233,8 @@ fn run_all(script: &str, o: Opts) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
 		before: format!("{EARLY}{}", o.spf.unwrap_or("")),
-		addons: vec![Addon::files("Polestar", &o.files)],
-		saved: vec![("Polestar".into(), o.saved.into())],
+		addons: vec![Addon::files("Northstar", &o.files)],
+		saved: vec![("Northstar".into(), o.saved.into())],
 		login: true,
 		script: format!("{PRELUDE}{script}"),
 	})
@@ -254,7 +254,7 @@ fn without_shortest_path_forever_nothing_changes_polestar_guides_plans_walks_and
 		s.option = option() ~= nil
 		s.shown = option().needs()
 		s.alert = (function()
-			Polestar.Transit = { Now = function() return 0 end, Riding = function() return { kind = "boat", dock = "Farland Pier", arriveIn = 18, route = "r" } end }
+			Northstar.Transit = { Now = function() return 0 end, Riding = function() return { kind = "boat", dock = "Farland Pier", arriveIn = 18, route = "r" } end }
 			return N.alerts.Check()
 		end)()
 		emit(s)
@@ -283,7 +283,7 @@ fn h3_nav_qa_with_it_installed_the_target_goes_as_one_stop_and_every_polestar_gu
 		s.stops = #c.stops
 		s.stop = { map = c.stops[1].map, x = r4(c.stops[1].x), y = r4(c.stops[1].y), title = c.stops[1].title, kind = c.stops[1].kind or false, hold = c.stops[1].hold or false }
 		s.sent = sent()
-		Polestar.Transit = { Now = function() return 0 end, Riding = function() return { kind = "boat", dock = "Farland Pier", arriveIn = 18, route = "r" } end }
+		Northstar.Transit = { Now = function() return 0 end, Riding = function() return { kind = "boat", dock = "Farland Pier", arriveIn = 18, route = "r" } end }
 		s.alert = N.alerts.Check()
 		s.prompt = N.prompts and N.prompts.Wanted and N.prompts.Wanted() or false
 		-- A Shift-click on the world map plans nothing: Shortest Path Forever takes it.
@@ -300,7 +300,7 @@ fn h3_nav_qa_with_it_installed_the_target_goes_as_one_stop_and_every_polestar_gu
 		out,
 		json!({
 			"arrow": false, "route": 0, "lines": 0, "journey": false, "trail": false, "walk": false, "pack": false, "way": false, "shim": false,
-			"handedOff": true, "shown": true, "owner": "Polestar", "stops": 1,
+			"handedOff": true, "shown": true, "owner": "Northstar", "stops": 1,
 			"stop": { "map": 9001, "x": 0.5, "y": 0.2, "title": "Farland camp", "kind": false, "hold": false },
 			"sent": 1, "alert": false, "prompt": false, "click": false, "target": "Farland camp",
 		})
@@ -319,7 +319,7 @@ fn no_route_lines_while_handing_off_for_a_target_on_the_same_continent_too() {
 	"#
 	.replace("${NEAR}", NEAR);
 	let mine = run(&script, Opts { spf: None, ..Default::default() });
-	assert_eq!(mine, json!({ "handedOff": false, "lines": 1, "geometry": true }), "without it, Polestar draws the walk");
+	assert_eq!(mine, json!({ "handedOff": false, "lines": 1, "geometry": true }), "without it, Northstar draws the walk");
 	let handed = run(&script, Opts::default());
 	assert_eq!(handed, json!({ "handedOff": true, "lines": 0, "geometry": false }));
 }
@@ -328,16 +328,16 @@ fn no_route_lines_while_handing_off_for_a_target_on_the_same_continent_too() {
 fn mirrors_stay_out_while_handing_off_no_waypoint_in_its_tomtom_stand_in_no_blizzard_waypoint() {
 	let out = run(
 		r#"
-		Polestar.Compat.AddOnPresent = function(name) return name == "TomTom" end
+		Northstar.Compat.AddOnPresent = function(name) return name == "TomTom" end
 		nav.withTomTom()
-		Polestar.Set("nav.blizzardWaypoint", true)
+		Northstar.Set("nav.blizzardWaypoint", true)
 		nav.userWaypoints = {}
 		nav.setWaypoint(copy(FARLAND))
 		local adds = 0
 		for _, c in ipairs(TomTom.calls) do if c.op == "add" then adds = adds + 1 end end
 		local sets = 0
 		for _, w in ipairs(nav.userWaypoints) do if w[1] == "set" then sets = sets + 1 end end
-		Polestar.Set("nav.spfHandoff", false)
+		Northstar.Set("nav.spfHandoff", false)
 		local after = 0
 		for _, c in ipairs(TomTom.calls) do if c.op == "add" then after = after + 1 end end
 		emit({ adds = adds, sets = sets, after = after, sent = sent() })
@@ -394,7 +394,7 @@ fn its_tomtom_stand_in_gets_no_mirrored_waypoint_polestar_guides_and_does_not_st
 fn a_real_tomtom_beside_shortest_path_forever_still_gets_the_mirror() {
 	let out = run(
 		r#"
-		Polestar.Compat.AddOnPresent = function(name) return name == "TomTom" end
+		Northstar.Compat.AddOnPresent = function(name) return name == "TomTom" end
 		nav.withTomTom()
 		nav.setWaypoint(copy(FARLAND))
 		local adds = 0
@@ -506,7 +506,7 @@ fn no_churn_the_same_stop_is_sent_once_whatever_re_announces_it_a_moved_target_g
 		N.Refresh()
 		stub.advance(3)
 		local again = sent()
-		Polestar.Set("nav.arrowScale", 1.2)
+		Northstar.Set("nav.arrowScale", 1.2)
 		local settings = sent()
 		local moved = copy(FARLAND)
 		moved.x = 55
@@ -546,10 +546,10 @@ fn combat_nothing_is_sent_in_a_fight_and_a_stop_refused_because_one_began_goes_w
 		Opts::default(),
 	);
 	assert_eq!(out["inFight"], 0, "no call in combat");
-	assert_eq!(out["arrow"], false, "and Polestar's arrow stays out");
+	assert_eq!(out["arrow"], false, "and Northstar's arrow stays out");
 	assert_eq!(out["after"], json!([1, 0.6]));
 	assert_eq!(out["refused"], json!([2, true]), "refused in combat: still handed off, waiting");
-	assert_eq!(out["retried"], json!([3, 0.65, "Polestar"]));
+	assert_eq!(out["retried"], json!([3, 0.65, "Northstar"]));
 }
 
 #[test]
@@ -558,7 +558,7 @@ fn no_target_the_journey_is_cancelled() {
 		r#"
 		nav.setWaypoint(copy(FARLAND))
 		nav.setWaypoint(nil)
-		emit({ cancels = spf.cancels(), owner = spf.owner or false, ended = spf.ended.Polestar })
+		emit({ cancels = spf.cancels(), owner = spf.owner or false, ended = spf.ended.Northstar })
 	"#,
 		Opts::default(),
 	);
@@ -600,7 +600,7 @@ fn the_player_s_clear_another_addon_s_journey_and_an_arrival_stand_until_polesta
 		Opts::default(),
 	);
 	assert_eq!(out["cleared"], json!([0, false]), "cleared: the same target is not sent again");
-	assert_eq!(out["changed"], json!([1, "Polestar"]), "a new target is");
+	assert_eq!(out["changed"], json!([1, "Northstar"]), "a new target is");
 	assert_eq!(out["replaced"], json!([1, "Questie"]));
 	assert_eq!(out["cancels"], 0);
 	assert_eq!(out["arrived"], json!([2, false]));
@@ -644,7 +644,7 @@ fn a_corpse_run_is_never_sent_alive_again_the_same_target_is_not_sent_twice() {
 	"#,
 		Opts::default(),
 	);
-	assert_eq!(out["dead"], json!([0, 0, false]), "no hand-off call while dead, and no Polestar arrow");
+	assert_eq!(out["dead"], json!([0, 0, false]), "no hand-off call while dead, and no Northstar arrow");
 	assert_eq!(out["alive"], json!([0, 0, "Farland camp"]));
 	assert_eq!(out["after"], 1);
 }
@@ -667,8 +667,8 @@ fn refused_journeys_off_in_shortest_path_forever_polestar_guides_that_target_its
 	"#,
 		Opts::default(),
 	);
-	assert_eq!(out["off"], json!([false, true, 3, 1, 1]), "Polestar guides; the refused stop is not offered on every tick");
-	assert_eq!(out["back"], json!([true, 2, 0, "Polestar", false]));
+	assert_eq!(out["off"], json!([false, true, 3, 1, 1]), "Northstar guides; the refused stop is not offered on every tick");
+	assert_eq!(out["back"], json!([true, 2, 0, "Northstar", false]));
 }
 
 #[test]
@@ -681,12 +681,12 @@ fn no_way_there_235_a_stop_it_took_but_guides_nothing_to_is_guided_by_polestar_i
 		stub.runTimers()
 		stub.advance(0.3)
 		local noWay = { N.HandedOff(), arrowShown(), legs(), sent(), spf.owner, spf.cancels() }
-		-- Its guidance on again (its tracker's header): Polestar steps aside.
+		-- Its guidance on again (its tracker's header): Northstar steps aside.
 		spf.guide()
 		stub.runTimers()
 		stub.advance(0.3)
 		local back = { N.HandedOff(), arrowShown(), legs(), sent() }
-		-- No way again, and the player clears that journey: Polestar goes on guiding.
+		-- No way again, and the player clears that journey: Northstar goes on guiding.
 		spf.noWay()
 		stub.runTimers()
 		spf.clear()
@@ -711,9 +711,9 @@ fn no_way_there_235_a_stop_it_took_but_guides_nothing_to_is_guided_by_polestar_i
 		Opts::default(),
 	);
 	assert_eq!(out["before"], json!([true, false]));
-	assert_eq!(out["noWay"], json!([false, true, 3, 1, "Polestar", 0]), "Polestar guides; its journey is left in place, not resent");
+	assert_eq!(out["noWay"], json!([false, true, 3, 1, "Northstar", 0]), "Northstar guides; its journey is left in place, not resent");
 	assert_eq!(out["back"], json!([true, false, 0, 1]));
-	assert_eq!(out["cleared"], json!([false, true, 1]), "clearing its unguided journey leaves Polestar guiding");
+	assert_eq!(out["cleared"], json!([false, true, 1]), "clearing its unguided journey leaves Northstar guiding");
 	assert_eq!(out["taken"], json!([true, false, 2]));
 	assert_eq!(out["replaced"], json!([true, false, "Questie"]));
 }
@@ -776,7 +776,7 @@ fn no_way_the_journey_cleared_then_the_player_starts_one_in_it_polestar_steps_as
 		Opts::default(),
 	);
 	assert_eq!(out["cleared"], json!([false, true]));
-	assert_eq!(out["player"], json!([true, false, 1]), "one arrow: its journey guides, Polestar's steps aside");
+	assert_eq!(out["player"], json!([true, false, 1]), "one arrow: its journey guides, Northstar's steps aside");
 }
 
 #[test]
@@ -794,7 +794,7 @@ fn no_way_then_a_death_its_corpse_run_guides_and_polestar_s_arrow_steps_aside_al
 		stub.runTimers()
 		stub.advance(0.3)
 		local dead = { N.HandedOff(), arrowShown() }
-		-- Back in the body: the corpse run ends; its journey to Polestar's stop resumes and still finds no way.
+		-- Back in the body: the corpse run ends; its journey to Northstar's stop resumes and still finds no way.
 		stub.dead = false
 		N.ReleaseTarget()
 		spf.corpseRun(false)
@@ -818,7 +818,7 @@ fn off_by_default_235_with_it_installed_polestar_guides_and_sends_nothing_the_op
 		local s = surfaces()
 		s.handedOff = N.HandedOff()
 		s.shown = option().needs()
-		s.on = Polestar.Get("nav.spfHandoff")
+		s.on = Northstar.Get("nav.spfHandoff")
 		s.sent = sent()
 		emit(s)
 	"#,
@@ -838,15 +838,15 @@ fn the_hand_off_off_polestar_guides_again_and_its_journey_is_cancelled_on_again_
 	let out = run(
 		r#"
 		nav.setWaypoint(copy(FARLAND))
-		Polestar.Set("nav.spfHandoff", false)
+		Northstar.Set("nav.spfHandoff", false)
 		local off = surfaces()
 		off.cancels = spf.cancels()
 		off.owner = spf.owner or false
-		Polestar.Set("nav.spfHandoff", true)
+		Northstar.Set("nav.spfHandoff", true)
 		local on = { N.HandedOff(), sent(), spf.owner, legs() }
 		stub.advance(0.3)
 		on[5] = arrowShown()
-		-- Polestar_Nav loaded while it was off: still no search for a new target,
+		-- Northstar_Nav loaded while it was off: still no search for a new target,
 		-- even when its distance is asked (the target pin's tooltip).
 		finds = 0
 		local m, x, y = nav.mapPoint(-850, -300)
@@ -865,7 +865,7 @@ fn the_hand_off_off_polestar_guides_again_and_its_journey_is_cancelled_on_again_
 			"cancels": 1, "owner": false,
 		})
 	);
-	assert_eq!(out["on"], json!([true, 2, "Polestar", 0, false, 0]));
+	assert_eq!(out["on"], json!([true, 2, "Northstar", 0, false, 0]));
 }
 
 // The guidance options that do nothing while it guides, by settings key.
@@ -897,13 +897,13 @@ const GREYED: [&str; 24] = [
 ];
 
 const OPTIONS: &str = r#"
-Polestar.Set("nav.routeLines", false) -- trailDots' own condition out of the way
-Polestar.Set("nav.tomtom", true)
+Northstar.Set("nav.routeLines", false) -- trailDots' own condition out of the way
+Northstar.Set("nav.tomtom", true)
 -- The options window's own widgets, every page that holds a nav option.
-local O, W = Polestar.UI.Options, Polestar.Widgets
+local O, W = Northstar.UI.Options, Northstar.Widgets
 local function controls()
 	local out = {}
-	Polestar.UI.ShowOptions("guide")
+	Northstar.UI.ShowOptions("guide")
 	for _, at in ipairs({ { "guide", "Arrow & routes" }, { "appearance", "Arrow" }, { "map", "Guide & quests" }, { "integrations" } }) do
 		O.Select(at[1], at[2])
 		for key, w in pairs(O.Controls(at[1], at[2])) do out[key] = w end
@@ -924,7 +924,7 @@ local function said(text)
 end
 local function command(line)
 	stub.messages = {}
-	SlashCmdList.POLESTAR(line)
+	SlashCmdList.NORTHSTAR(line)
 	return said("Shortest Path Forever is guiding.")
 end
 "#;
@@ -964,12 +964,12 @@ fn while_it_guides_commands_that_would_show_polestar_s_arrow_or_route_say_why_in
 	let script = OPTIONS.to_string()
 		+ r#"
 		nav.setWaypoint(copy(FARLAND))
-		Polestar.Set("nav.arrow", false)
+		Northstar.Set("nav.arrow", false)
 		local r = {}
 		r.show = command("arrow show")
-		r.showSet = Polestar.Get("nav.arrow")
+		r.showSet = Northstar.Get("nav.arrow")
 		r.toggle = command("arrow")
-		r.toggleSet = Polestar.Get("nav.arrow")
+		r.toggleSet = Northstar.Get("nav.arrow")
 		r.route = command("route")
 		r.skip = command("skipleg")
 		r.hide = command("arrow hide")
@@ -992,8 +992,8 @@ fn no_arrival_chime_from_polestar_while_it_guides_its_own_arrival_says_so_withou
 	assert_eq!(json!(run_all(script, Opts { spf: None, ..Default::default() })), json!([1]));
 }
 
-// Pathing v2: Polestar guides by default with Shortest Path Forever installed; handing off is an option. While a
-// journey of Shortest Path Forever's own runs (one the player started there, or another addon's), Polestar steps
+// Pathing v2: Northstar guides by default with Shortest Path Forever installed; handing off is an option. While a
+// journey of Shortest Path Forever's own runs (one the player started there, or another addon's), Northstar steps
 // aside as it does when handing off, so the two never guide at once.
 
 #[test]
@@ -1003,7 +1003,7 @@ fn a_journey_the_player_starts_in_shortest_path_forever_polestar_steps_aside_unt
 		nav.setWaypoint(copy(FARLAND))
 		local r = {}
 		r.before = { N.HandedOff(), arrowShown(), legs() }
-		-- The player's own journey (his owner, not Polestar's).
+		-- The player's own journey (his owner, not Northstar's).
 		spf.replace("ShortestPathForever")
 		stub.runTimers()
 		local s = surfaces()
@@ -1027,12 +1027,12 @@ fn a_journey_the_player_starts_in_shortest_path_forever_polestar_steps_aside_unt
 	"#,
 		Opts { saved: FRESH, ..Default::default() },
 	);
-	assert_eq!(out["before"], json!([false, true, 3]), "Polestar guides");
+	assert_eq!(out["before"], json!([false, true, 3]), "Northstar guides");
 	assert_eq!(out["during"], json!([true, false, 0, 0, false]), "it steps aside while his journey runs");
 	assert_eq!(out["after"], json!([false, true, 3, 3, true]), "and guides again when it ends");
 	assert_eq!(out["fight"], json!([0, false]), "no call in combat");
 	assert_eq!(out["ended"], json!([true]), "after combat it steps aside");
-	assert_eq!(out["sent"], 0, "with the option off Polestar never sends");
+	assert_eq!(out["sent"], 0, "with the option off Northstar never sends");
 }
 
 #[test]
@@ -1053,12 +1053,12 @@ fn without_subscribe_minor_0_his_journey_is_noticed_on_nav_s_tick() {
 	assert_eq!(out, json!([true, false]));
 }
 
-// A journey of Polestar's left running in Shortest Path Forever from 0.2.4, which handed off by default (Ruling
+// A journey of Northstar's left running in Shortest Path Forever from 0.2.4, which handed off by default (Ruling
 // 27 of pathing v2).
 fn leftover() -> String {
 	SPF.to_string()
 		+ r#"
-spf.owner, spf.stops, spf.index, spf.guided = "Polestar", { { map = 9000, x = 0.5, y = 0.5 } }, 1, true
+spf.owner, spf.stops, spf.index, spf.guided = "Northstar", { { map = 9000, x = 0.5, y = 0.5 } }, 1, true
 "#
 }
 
@@ -1076,7 +1076,7 @@ fn a_polestar_journey_left_over_from_0_2_4_is_cancelled_once_at_login_with_the_o
 		emit(r)"#;
 	let left = leftover();
 	let off = run(script, Opts { saved: FRESH, spf: Some(&left), ..Default::default() });
-	assert_eq!(off, json!({ "cancels": 1, "owner": false, "after": 1, "guides": true, "handedOff": false }), "option off: one Cancel, Polestar guides");
+	assert_eq!(off, json!({ "cancels": 1, "owner": false, "after": 1, "guides": true, "handedOff": false }), "option off: one Cancel, Northstar guides");
 	let fight_spf = format!("{left}\nstub.inCombat = true\n");
 	let fight = run(script, Opts { saved: FRESH, spf: Some(&fight_spf), ..Default::default() });
 	assert_eq!(fight["cancels"], 0, "in combat at login: nothing called");
@@ -1107,8 +1107,8 @@ fn a_reload_in_combat_nothing_of_his_api_is_called_subscribe_included_and_an_opt
 		r#"
 		nav.setWaypoint(copy(FARLAND))
 		local r = {}
-		Polestar.Set("nav.spfHandoff", true)
-		Polestar.Set("nav.spfHandoff", false)
+		Northstar.Set("nav.spfHandoff", true)
+		Northstar.Set("nav.spfHandoff", false)
 		stub.runTimers()
 		r.fight = table.concat(spf.fight, ",")
 		r.subs = #spf.subs
@@ -1130,7 +1130,7 @@ fn the_hand_off_turned_off_in_a_fight_polestar_stays_stepped_aside_while_its_jou
 		nav.setWaypoint(copy(FARLAND))
 		local r = { owner = spf.owner or false }
 		stub.inCombat = true
-		Polestar.Set("nav.spfHandoff", false)
+		Northstar.Set("nav.spfHandoff", false)
 		local m, x, y = nav.mapPoint(-850, -300)
 		nav.setWaypoint({ map = m, x = x, y = y, label = "Docks road", stepIndex = 1, goalIndex = 2, kind = "goto", r = 8 })
 		stub.runTimers()
@@ -1145,7 +1145,7 @@ fn the_hand_off_turned_off_in_a_fight_polestar_stays_stepped_aside_while_its_jou
 		emit(r)"#,
 		Opts { spf: Some(&spf), ..Default::default() },
 	);
-	assert_eq!(out, json!({ "owner": "Polestar", "inFight": [true, false], "fight": "", "cancels": 1, "ownerAfter": false, "after": [false, true] }));
+	assert_eq!(out, json!({ "owner": "Northstar", "inFight": [true, false], "fight": "", "cancels": 1, "ownerAfter": false, "after": [false, true] }));
 }
 
 #[test]
@@ -1158,7 +1158,7 @@ fn no_way_there_then_the_hand_off_turned_off_in_a_fight_polestar_s_arrow_guiding
 		stub.advance(0.3)
 		local r = { before = { N.HandedOff(), arrowShown() } }
 		stub.inCombat = true
-		Polestar.Set("nav.spfHandoff", false)
+		Northstar.Set("nav.spfHandoff", false)
 		stub.runTimers()
 		stub.advance(0.3)
 		r.inFight = { N.HandedOff(), arrowShown() }
@@ -1170,7 +1170,7 @@ fn no_way_there_then_the_hand_off_turned_off_in_a_fight_polestar_s_arrow_guiding
 		Opts::default(),
 	);
 	assert_eq!(out["before"], json!([false, true]));
-	assert_eq!(out["inFight"], json!([false, true]), "its journey guides nothing: Polestar does not step aside");
+	assert_eq!(out["inFight"], json!([false, true]), "its journey guides nothing: Northstar does not step aside");
 	assert_eq!(out["after"], json!([false, true]));
 }
 
@@ -1190,6 +1190,6 @@ fn a_reload_in_combat_with_a_0_2_4_journey_left_over_polestar_steps_aside_until_
 		emit(r)"#,
 		Opts { saved: FRESH, spf: Some(&spf), ..Default::default() },
 	);
-	assert_eq!(out["fight"], json!([true, false, "Polestar", ""]), "in the fight: his leftover guides alone");
-	assert_eq!(out["after"], json!([false, true, false, 1]), "after it: cancelled once, Polestar guides");
+	assert_eq!(out["fight"], json!([true, false, "Northstar", ""]), "in the fight: his leftover guides alone");
+	assert_eq!(out["after"], json!([false, true, false, 1]), "after it: cancelled once, Northstar guides");
 }

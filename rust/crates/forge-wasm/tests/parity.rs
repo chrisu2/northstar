@@ -3,11 +3,11 @@
 //! (v1) Orc and Human and two written routes, from the same files the bundle carries; and the addon files
 //! the browser's pack_compile zips equal the native compile's.
 //!
-//! Inputs (local, not in the repository): `POLESTAR_SEED` (a checkout with guides/ and data/forever,
-//! data/sources), `POLESTAR_SIM` (world-{horde,alliance}.json and params.json), and optionally
-//! `POLESTAR_WRITTEN_ORC` / `POLESTAR_WRITTEN_HUMAN` (written guide trees).
+//! Inputs (local, not in the repository): `NORTHSTAR_SEED` (a checkout with guides/ and data/forever,
+//! data/sources), `NORTHSTAR_SIM` (world-{horde,alliance}.json and params.json), and optionally
+//! `NORTHSTAR_WRITTEN_ORC` / `NORTHSTAR_WRITTEN_HUMAN` (written guide trees).
 //!
-//! POLESTAR_SEED=... POLESTAR_SIM=... cargo test --release -p forge-wasm --features native --test parity -- --ignored --nocapture
+//! NORTHSTAR_SEED=... NORTHSTAR_SIM=... cargo test --release -p forge-wasm --features native --test parity -- --ignored --nocapture
 
 #![cfg(feature = "native")]
 
@@ -22,7 +22,7 @@ fn var(k: &str) -> PathBuf {
 }
 
 fn planner(guides: &Path) -> Planner {
-	let (seed, sim) = (var("POLESTAR_SEED"), var("POLESTAR_SIM"));
+	let (seed, sim) = (var("NORTHSTAR_SEED"), var("NORTHSTAR_SIM"));
 	let data = seed.join("data/forever");
 	let mut texts = FxHashMap::default();
 	for n in forge_guide::data::FILES.iter().chain(forge_guide::data::OPTIONAL.iter()) {
@@ -46,7 +46,7 @@ fn planner(guides: &Path) -> Planner {
 }
 
 fn native(guides: &Path, faction: &str, race: &str, to: f64) -> (f64, f64) {
-	let (seed, sim) = (var("POLESTAR_SEED"), var("POLESTAR_SIM"));
+	let (seed, sim) = (var("NORTHSTAR_SEED"), var("NORTHSTAR_SIM"));
 	let world = forge_sim::load_world(&sim, forge_core::Faction::parse(faction).unwrap()).unwrap();
 	let params: Option<serde_json::Value> = std::fs::read(sim.join("params.json")).ok().and_then(|b| serde_json::from_slice(&b).ok());
 	let lv = SimLevels::new(&world, race, params.as_ref()).unwrap();
@@ -58,15 +58,15 @@ fn native(guides: &Path, faction: &str, race: &str, to: f64) -> (f64, f64) {
 }
 
 #[test]
-#[ignore = "needs POLESTAR_SEED and POLESTAR_SIM (local inputs)"]
+#[ignore = "needs NORTHSTAR_SEED and NORTHSTAR_SIM (local inputs)"]
 fn planner_hours_equal_the_native_judge() {
-	let seed = var("POLESTAR_SEED");
+	let seed = var("NORTHSTAR_SEED");
 	let written = |k: &str| std::env::var(k).map(PathBuf::from).unwrap_or_default();
 	for (name, guides, faction, race) in [
 		("v1 Orc", seed.join("guides"), "Horde", "Orc"),
 		("v1 Human", seed.join("guides"), "Alliance", "Human"),
-		("written Orc", written("POLESTAR_WRITTEN_ORC"), "Horde", "Orc"),
-		("written Human", written("POLESTAR_WRITTEN_HUMAN"), "Alliance", "Human"),
+		("written Orc", written("NORTHSTAR_WRITTEN_ORC"), "Horde", "Orc"),
+		("written Human", written("NORTHSTAR_WRITTEN_HUMAN"), "Alliance", "Human"),
 	] {
 		let g = guides.as_path();
 		if !g.join("forever").is_dir() {
@@ -85,9 +85,9 @@ fn planner_hours_equal_the_native_judge() {
 
 /// The addon files the browser's pack_compile zips equal the native compile's (`build_pack`), for v1.
 #[test]
-#[ignore = "needs POLESTAR_SEED and POLESTAR_SIM (local inputs)"]
+#[ignore = "needs NORTHSTAR_SEED and NORTHSTAR_SIM (local inputs)"]
 fn pack_files_equal_the_native_compile() {
-	let seed = var("POLESTAR_SEED");
+	let seed = var("NORTHSTAR_SEED");
 	let guides = seed.join("guides");
 	let mut p = planner(&guides);
 	let data_dir = seed.join("data/forever");

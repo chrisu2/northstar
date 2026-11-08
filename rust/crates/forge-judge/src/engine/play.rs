@@ -540,7 +540,7 @@ impl<'a> Sim<'a> {
 		out
 	}
 
-	/// The login (Polestar opens the start guide in a tab and evaluates), the play script's first lines
+	/// The login (Northstar opens the start guide in a tab and evaluates), the play script's first lines
 	/// (quest log readable, settings, SetGuide, 0.6 s), then SIMULATE guide after guide.
 	pub(crate) fn play(&mut self, start: usize, on_stuck: OnStuck) -> Vec<Event> {
 		let mut out = Vec::new();
@@ -583,7 +583,7 @@ impl<'a> Sim<'a> {
 		out
 	}
 
-	/// playGuide's login and the play script's first lines: Polestar opens the start guide in a tab
+	/// playGuide's login and the play script's first lines: Northstar opens the start guide in a tab
 	/// and evaluates (OnLogin), then quest log readable, settings, SetGuide of the open guide.
 	pub(crate) fn login(&mut self, start: usize) {
 		self.open_tab(start);

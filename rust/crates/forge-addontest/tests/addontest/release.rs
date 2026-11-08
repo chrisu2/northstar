@@ -1,5 +1,5 @@
 //! The release's addons loading together the way the client loads them. Pointed at an unpacked release
-//! zip (POLESTAR_ADDON_DIR=<AddOns folder>), this is the release smoke test (docs/RELEASING.md, step 5):
+//! zip (NORTHSTAR_ADDON_DIR=<AddOns folder>), this is the release smoke test (docs/RELEASING.md, step 5):
 //! every addon of the release in client order, logged in, the guides registered, a guide opened, the data
 //! addons loaded, and every TOC carrying the release version.
 
@@ -7,19 +7,19 @@ use forge_addontest::run::{addons_dir, root};
 use forge_addontest::{emitted, truthy, Addon, RunAddon};
 use std::path::PathBuf;
 
-/// The AddOns folder under test: $POLESTAR_ADDON_DIR, else the checkout's addon/.
+/// The AddOns folder under test: $NORTHSTAR_ADDON_DIR, else the checkout's addon/.
 fn addons() -> PathBuf {
-	std::env::var_os("POLESTAR_ADDON_DIR").map_or_else(addons_dir, PathBuf::from)
+	std::env::var_os("NORTHSTAR_ADDON_DIR").map_or_else(addons_dir, PathBuf::from)
 }
 
 #[test]
 fn the_release_addons_load_together_log_in_and_find_their_guides_and_data() {
 	let dir = addons();
 	let product = forge_release::addons::release_addons(&dir);
-	let recorder = dir.join("Polestar_Recorder/Polestar_Recorder.toc").exists();
+	let recorder = dir.join("Northstar_Recorder/Northstar_Recorder.toc").exists();
 	let mut names = product.names.clone();
 	if recorder {
-		names.push("Polestar_Recorder".into());
+		names.push("Northstar_Recorder".into());
 	}
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
@@ -27,13 +27,13 @@ fn the_release_addons_load_together_log_in_and_find_their_guides_and_data() {
 		login: true,
 		script: r#"
 			stub.advance(0.5)
-			local g = Polestar.Engine.GetGuide()
+			local g = Northstar.Engine.GetGuide()
 			emit({
-				guides = #Polestar.Guides.List(),
+				guides = #Northstar.Guides.List(),
 				open = g and g.id or false,
-				questDB = Polestar.QuestDB.IsLoaded(),
-				itemDB = Polestar.ItemDB.IsLoaded(),
-				recorder = type(PolestarRecorderDB) == "table",
+				questDB = Northstar.QuestDB.IsLoaded(),
+				itemDB = Northstar.ItemDB.IsLoaded(),
+				recorder = type(NorthstarRecorderDB) == "table",
 			})"#
 		.into(),
 		..Default::default()
@@ -41,8 +41,8 @@ fn the_release_addons_load_together_log_in_and_find_their_guides_and_data() {
 	let got = &out[0];
 	assert!(got["guides"].as_i64().unwrap_or(0) > 0, "the guide pack registered its guides");
 	assert!(truthy(&got["open"]), "a guide opened at login");
-	assert_eq!(got["questDB"], product.names.iter().any(|n| n == "Polestar_QuestDB"));
-	assert_eq!(got["itemDB"], product.names.iter().any(|n| n == "Polestar_ItemDB"));
+	assert_eq!(got["questDB"], product.names.iter().any(|n| n == "Northstar_QuestDB"));
+	assert_eq!(got["itemDB"], product.names.iter().any(|n| n == "Northstar_ItemDB"));
 	assert_eq!(got["recorder"], recorder);
 }
 

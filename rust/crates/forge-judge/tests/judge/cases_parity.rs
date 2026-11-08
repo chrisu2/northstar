@@ -1,8 +1,8 @@
 //! Cases (src/cases.rs) against the removed tools/lib/sim/cases.js (git history at 734380d2a): the
 //! property semantics of its tests/sim-cases.test.js, the shipped fixture's integrity, and parity on v2 routes of the slice.
 //! References: rust/tests/golden/cases (its README and regen.sh: a dump of the removed JS cases, git history at 734380d2a, on greedy v2 routes
-//! in the golden slice worlds). Optional extra: the same on $POLESTAR_JSREF's dumps (its simdir) with the
-//! map frames from $POLESTAR_CHECKOUT; skipped with a note when unset.
+//! in the golden slice worlds). Optional extra: the same on $NORTHSTAR_JSREF's dumps (its simdir) with the
+//! map frames from $NORTHSTAR_CHECKOUT; skipped with a note when unset.
 
 use crate::common;
 use forge_core::{MapFrames, Projector};
@@ -255,8 +255,8 @@ fn slice_parity() {
 
 #[test]
 fn slice_parity_local() {
-	let (Some(refdir), Some(checkout)) = (std::env::var_os("POLESTAR_JSREF").map(PathBuf::from), std::env::var_os("POLESTAR_CHECKOUT").map(PathBuf::from)) else {
-		eprintln!("cases parity local: skipped (set POLESTAR_JSREF and POLESTAR_CHECKOUT)");
+	let (Some(refdir), Some(checkout)) = (std::env::var_os("NORTHSTAR_JSREF").map(PathBuf::from), std::env::var_os("NORTHSTAR_CHECKOUT").map(PathBuf::from)) else {
+		eprintln!("cases parity local: skipped (set NORTHSTAR_JSREF and NORTHSTAR_CHECKOUT)");
 		return;
 	};
 	let slice = refdir.join("simdir");
@@ -266,7 +266,7 @@ fn slice_parity_local() {
 		let file = refdir.join(format!("cases-{name}.json"));
 		let wfile = slice.join(format!("world-{faction}.json"));
 		if !file.exists() || !wfile.exists() || !frames.exists() {
-			eprintln!("cases parity {name}: skipped (POLESTAR_JSREF lacks cases-{name}.json or simdir/; dump them with the removed JS cases, git history at 734380d2a)");
+			eprintln!("cases parity {name}: skipped (NORTHSTAR_JSREF lacks cases-{name}.json or simdir/; dump them with the removed JS cases, git history at 734380d2a)");
 			continue;
 		}
 		let d: Dump = serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();

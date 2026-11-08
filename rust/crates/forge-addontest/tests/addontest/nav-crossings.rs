@@ -1,4 +1,4 @@
-//! Zone crossings in the travel planner (addon/Polestar/Nav/Travel.lua, Nav.RegisterCrossings): routes between
+//! Zone crossings in the travel planner (addon/Northstar/Nav/Travel.lua, Nav.RegisterCrossings): routes between
 //! zones go through crossing waypoints, captions follow the direction, open-ground pairs walk straight, approach
 //! chains are entered at their mouth, and the re-plan triggers. Runs the real Core/Init.lua + Nav/Nav.xml
 //! against tests/lua/stub_nav.lua's travel world.
@@ -10,11 +10,11 @@ use forge_addontest::{emitted, lua_value, Addon, RunAddon};
 use serde_json::{json, Value};
 
 fn nav() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])
+	Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])
 }
 
 const PRELUDE: &str = r#"
-local N = Polestar.Nav
+local N = Northstar.Nav
 local A = N.arrow
 local nav = stub.nav
 local function target(wx, wy, label)
@@ -31,7 +31,7 @@ local function route()
 	return out
 end
 local function known(...)
-	local flags = Polestar.CharState().flags
+	local flags = Northstar.CharState().flags
 	flags.taxi = {}
 	for _, id in ipairs({ ... }) do flags.taxi[id] = true end
 end
@@ -172,7 +172,7 @@ fn a_crossing_end_with_a_height_12_yd_away_is_already_walked_only_on_its_floor()
 			{ id = "hall", a = { map = 9002, c = 0, wx = 600, wy = 20, z = 63, r = 30 }, b = { map = 9003, c = 0, wx = 600, wy = -20, z = 60, r = 30 } } } })
 		local r = {}
 		for _, f in ipairs({ { -43, 32 }, { false, 32 }, { 62, 32 }, { false, 23 } }) do
-			Polestar.Nav.walk.Floor = function() return f[1] or nil end
+			Northstar.Nav.walk.Floor = function() return f[1] or nil end
 			nav.place(600, f[2])
 			target(-500, -500, "Kobolds")
 			local l = N.GetRoute()
@@ -198,7 +198,7 @@ fn a_chain_hop_between_two_floors_is_a_lift_ride_and_a_start_in_the_chains_hall_
 			{ map = 9003, c = 0, wx = 600, wy = -100, z = 55, r = 6 },
 			{ map = 9003, c = 0, wx = 600, wy = -108, z = -41, r = 6 },
 		} } } })
-		Polestar.Transit = { LiftNear = function() return "lift-x" end, NextDeparture = function() return 12, 4 end }
+		Northstar.Transit = { LiftNear = function() return "lift-x" end, NextDeparture = function() return 12, 4 end }
 		local function legs()
 			local l, ci = N.GetRoute()
 			local o = {}
@@ -206,26 +206,26 @@ fn a_chain_hop_between_two_floors_is_a_lift_ride_and_a_start_in_the_chains_hall_
 			return o
 		end
 		local r = {}
-		Polestar.Nav.walk.Floor = function() return -41 end
+		Northstar.Nav.walk.Floor = function() return -41 end
 		nav.place(600, -400)
 		target(600, 500, "Outside")
 		r.out = legs()
 		nav.place(600, 500)
 		target(600, -400, "Inside")
 		r.into = legs()
-		Polestar.Nav.walk.Floor = function() return 62 end
+		Northstar.Nav.walk.Floor = function() return 62 end
 		nav.place(600, -62)
 		target(600, 500, "Outside")
 		r.hall = legs()[1]
-		Polestar.Nav.walk.Floor = function() return -41 end
+		Northstar.Nav.walk.Floor = function() return -41 end
 		target(600, 499, "Outside")
 		r.under = legs()[1]
 		-- The floor unknown, the floors the player may be on known (Walk.Floors: the subzone's levels).
-		Polestar.Nav.walk.Floor = function() return nil end
-		Polestar.Nav.walk.Floors = function() return { 62, 100 } end
+		Northstar.Nav.walk.Floor = function() return nil end
+		Northstar.Nav.walk.Floors = function() return { 62, 100 } end
 		target(600, 498, "Outside")
 		r.upper = legs()[1]
-		Polestar.Nav.walk.Floors = function() return { 16, -52 } end
+		Northstar.Nav.walk.Floors = function() return { 16, -52 } end
 		target(600, 497, "Outside")
 		r.lower = legs()[1]
 		emit(r)"#);
@@ -243,7 +243,7 @@ fn a_crossing_set_that_is_not_complete_recorded_crossings_leaves_walking_as_befo
 		N.RegisterCrossings({ complete = false, zones = ZONES, crossings = { GATE } })
 		nav.place(-500, 500)
 		target(-500, -500)
-		emit({ route(), #(Polestar.Nav.travel.CrossingCounts()) })"#);
+		emit({ route(), #(Northstar.Nav.travel.CrossingCounts()) })"#);
 	assert_eq!(out, json!([["walk|Target"], 0]));
 }
 
@@ -251,8 +251,8 @@ fn a_crossing_set_that_is_not_complete_recorded_crossings_leaves_walking_as_befo
 fn the_arrow_shows_the_leg_caption_aims_at_the_waypoint_advances_inside_its_radius_and_re_plans_there() {
 	let out = run(r#"
 		local r, changes, advanced = {}, 0, 0
-		Polestar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
-		Polestar.On("ROUTE_ADVANCED", function() advanced = advanced + 1 end)
+		Northstar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
+		Northstar.On("ROUTE_ADVANCED", function() advanced = advanced + 1 end)
 		crossings()
 		nav.place(-500, 500)
 		target(-500, -500, "Kobolds")
@@ -285,7 +285,7 @@ fn the_arrow_shows_the_leg_caption_aims_at_the_waypoint_advances_inside_its_radi
 fn moving_more_than_50_yd_re_plans_once_the_plan_is_30_s_old_at_most_once_a_second_and_only_with_crossing_data() {
 	let out = run(r#"
 		local r, changes = {}, 0
-		Polestar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
+		Northstar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
 		local function walk(seconds)
 			for _ = 1, seconds do
 				local p = nav.player
@@ -326,9 +326,9 @@ fn learning_a_flight_path_saves_it_and_the_flight_out_stays() {
 		target(0, -780)
 		local before = route()
 		stub.fire("UI_INFO_MESSAGE", 0, "Something else")
-		local other = { route = route(), saved = Polestar.CharState().flags.taxi[1] == true }
+		local other = { route = route(), saved = Northstar.CharState().flags.taxi[1] == true }
 		stub.fire("UI_INFO_MESSAGE", 0, ERR_NEWTAXIPATH)
-		emit({ before = before, other = other, after = route(), saved = Polestar.CharState().flags.taxi[1] == true })"#);
+		emit({ before = before, other = other, after = route(), saved = Northstar.CharState().flags.taxi[1] == true })"#);
 	assert_eq!(out["before"], json!(["fly|Fly to East Hold", "walk|Target"]));
 	assert_eq!(out["other"], json!({ "route": ["fly|Fly to East Hold", "walk|Target"], "saved": false }));
 	assert_eq!(out["after"], json!(["fly|Fly to East Hold", "walk|Target"]));
@@ -349,12 +349,12 @@ fn a_flight_lands_in_the_right_zone_the_walk_after_it_crosses_at_the_gate() {
 	assert_eq!(out["east"], json!(["walk|Walk to the flight master", "fly|Fly to East Hold", "walk|Camp"]));
 }
 
-// The local crossings (addon/Polestar_Travel, built by `travel build` from the optional local crossings file)
+// The local crossings (addon/Northstar_Travel, built by `travel build` from the optional local crossings file)
 // with the committed TravelData.lua: real routes go through the real gates, and planning stays cheap.
 #[test]
 fn the_local_crossings_route_real_trips_through_their_gates_within_the_planner_budget() {
 	let root = forge_addontest::run::root();
-	let local = root.join("addon").join("Polestar_Travel").join("Crossings.lua");
+	let local = root.join("addon").join("Northstar_Travel").join("Crossings.lua");
 	let data = root.join("data").join("forever").join("map-frames.json");
 	if !(local.exists() && data.exists()) {
 		eprintln!("skipped: no local crossings built");
@@ -379,8 +379,8 @@ fn the_local_crossings_route_real_trips_through_their_gates_within_the_planner_b
 		["Alliance", world(1426, 47.0, 52.0), world(1432, 35.0, 47.0)],
 	]);
 	let script = r#"
-			assert(loadfile(__LOCAL__))("Polestar_Travel", {})
-			local N = Polestar.Nav
+			assert(loadfile(__LOCAL__))("Northstar_Travel", {})
+			local N = Northstar.Nav
 			local list, crossings, open, chains = N.travel.CrossingCounts()
 			local out = { covered = list, crossings = crossings, open = open, chains = chains, routes = {} }
 			local trips = __TRIPS__
@@ -439,7 +439,7 @@ fn skipping_a_crossing_s_near_end_walks_on_later_plans_near_the_crossing_walk_on
 		local r, changes = {}, 0
 		local ROAD = { id = "road", a = { map = 9002, c = 0, wx = 600, wy = 300, r = 15 }, b = { map = 9003, c = 0, wx = 600, wy = -300, r = 15 } }
 		crossings({ crossings = { ROAD } })
-		Polestar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
+		Northstar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
 		nav.place(-500, 500)
 		target(-500, -500, "Kobolds")
 		stub.advance(0.2)
@@ -476,7 +476,7 @@ fn thunder_bluff_to_camp_taurajo_walks_to_the_nearby_flight_master_without_leavi
 	let legs = run_raw(
 		r#"
 			-- The report's map positions, converted through the shipped frames.
-			local legs = Polestar.Nav.PlanRoute({
+			local legs = Northstar.Nav.PlanRoute({
 				c = 1, map = 1456,
 				wx = -850 + (-1545.833 + 850) * 0.5434,
 				wy = 516.667 + (-527.083 - 516.667) * 0.4384,
@@ -504,7 +504,7 @@ fn thunder_bluff_to_camp_taurajo_walks_to_the_nearby_flight_master_without_leavi
 fn the_barrens_to_ashenvale_road_plans_made_between_the_crossing_s_ends_keep_heading_north_237() {
 	let out = run_raw(
 		r#"
-			local N, nav = Polestar.Nav, stub.nav
+			local N, nav = Northstar.Nav, stub.nav
 			nav.faction = "Horde"
 			nav.maps[1413] = { name = "The Barrens", c = 1, top = 1612.5, bottom = -5143.75, left = 2622.917, right = -7510.417 }
 			nav.maps[1440] = { name = "Ashenvale", c = 1, top = 4672.917, bottom = 829.167, left = 1700, right = -4066.667 }

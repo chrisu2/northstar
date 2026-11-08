@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 # Byte parity of the Rust compiler against the JS one (this worktree's tools/lib).
-# usage: POLESTAR_JSREF=<scratch dir> [POLESTAR_CHECKOUT=<checkout>] rust/crates/forge-guide/tests/parity.sh [mini own main v2 ...] (default: all)
-#   POLESTAR_JSREF: references and Rust outputs go to $POLESTAR_JSREF/guide; v2 compiles $POLESTAR_JSREF/repaired.
-#   POLESTAR_CHECKOUT: main compiles a copy of its guides/ (needed for main only).
-# References: node rust/crates/forge-guide/tests/js-ref.js <guides> $POLESTAR_JSREF/guide/ref-<name>
+# usage: NORTHSTAR_JSREF=<scratch dir> [NORTHSTAR_CHECKOUT=<checkout>] rust/crates/forge-guide/tests/parity.sh [mini own main v2 ...] (default: all)
+#   NORTHSTAR_JSREF: references and Rust outputs go to $NORTHSTAR_JSREF/guide; v2 compiles $NORTHSTAR_JSREF/repaired.
+#   NORTHSTAR_CHECKOUT: main compiles a copy of its guides/ (needed for main only).
+# References: node rust/crates/forge-guide/tests/js-ref.js <guides> $NORTHSTAR_JSREF/guide/ref-<name>
 # (made when missing or with REF=1). Prints every differing file; exit 1 on any difference.
 set -u
-usage() { echo "usage: POLESTAR_JSREF=<scratch dir> [POLESTAR_CHECKOUT=<checkout>] $0 [mini own main v2 ...]" >&2; exit 2; }
-[ -n "${POLESTAR_JSREF:-}" ] || usage
+usage() { echo "usage: NORTHSTAR_JSREF=<scratch dir> [NORTHSTAR_CHECKOUT=<checkout>] $0 [mini own main v2 ...]" >&2; exit 2; }
+[ -n "${NORTHSTAR_JSREF:-}" ] || usage
 cd "$(dirname "$0")/../../../.."
-OUT=$POLESTAR_JSREF/guide
+OUT=$NORTHSTAR_JSREF/guide
 mkdir -p "$OUT"
 BIN="rust/target/release/forge guide"
-declare -A SRC=([mini]=rust/crates/forge-guide/tests/fixtures/mini [own]=guides [main]=$OUT/main-guides [v2]=$POLESTAR_JSREF/repaired)
+declare -A SRC=([mini]=rust/crates/forge-guide/tests/fixtures/mini [own]=guides [main]=$OUT/main-guides [v2]=$NORTHSTAR_JSREF/repaired)
 case " ${*:-mini own main v2} " in
 *" main "*)
 	if [ ! -d "$OUT/main-guides" ]; then
-		[ -n "${POLESTAR_CHECKOUT:-}" ] || usage
-		cp -r "$POLESTAR_CHECKOUT/guides" "$OUT/main-guides"
+		[ -n "${NORTHSTAR_CHECKOUT:-}" ] || usage
+		cp -r "$NORTHSTAR_CHECKOUT/guides" "$OUT/main-guides"
 	fi
 	;;
 esac

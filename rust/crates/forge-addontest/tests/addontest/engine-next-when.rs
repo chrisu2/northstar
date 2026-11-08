@@ -1,6 +1,6 @@
 //! Conditional hand-offs (`next <id> when ...`, a guide's `nextWhen`; Engine "Route choice"): an option whose
 //! `when` does not hold is hidden wherever the options are listed (routeOptions, ChooseRoute,
-//! Engine.RouteOffered, Guides.OfferedBy), checked on the character as they are then. One option left: Polestar
+//! Engine.RouteOffered, Guides.OfferedBy), checked on the character as they are then. One option left: Northstar
 //! continues to it without asking; none: the guide ends there. The chain of guides ahead (prerequisites kept by
 //! "Skip grey quests") leaves out an option that can no longer hold. Real Core manifest, stub world.
 
@@ -18,17 +18,17 @@ w.moveTo(1411, 52, 43)
 
 // Durotar goes on to the Barrens or Silverpine; @NEXTWHEN@ is Lua for its conditions.
 const GUIDES: &str = r#"
-Polestar.RegisterGuide({ id = "test/durotar", pack = "test", title = "Durotar", faction = "Horde", minLevel = 1, maxLevel = 10,
+Northstar.RegisterGuide({ id = "test/durotar", pack = "test", title = "Durotar", faction = "Horde", minLevel = 1, maxLevel = 10,
 	next = "test/barrens", nextChoices = { "test/barrens", "test/silverpine" }, nextWhen = @NEXTWHEN@, steps = {
 	{ goals = { { t = "accept", quest = 1, title = "Your Place In The World", map = 1411, x = 42, y = 68 } } },
 	{ goals = { { t = "turnin", quest = 1, title = "Your Place In The World", map = 1411, x = 52, y = 43 } } },
 } })
-Polestar.RegisterGuide({ id = "test/barrens", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 10, maxLevel = 20, zone = 1413,
+Northstar.RegisterGuide({ id = "test/barrens", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 10, maxLevel = 20, zone = 1413,
 	pitch = "Dense quests around a central hub.", steps = {
 	{ goals = { { t = "goto", map = 1413, x = 52, y = 30 } } },
 	{ goals = { { t = "level", level = 20 } } },
 } })
-Polestar.RegisterGuide({ id = "test/silverpine", pack = "test", title = "Silverpine Forest", faction = "Horde", minLevel = 10, maxLevel = 18, zone = 1421,
+Northstar.RegisterGuide({ id = "test/silverpine", pack = "test", title = "Silverpine Forest", faction = "Horde", minLevel = 10, maxLevel = 18, zone = 1421,
 	pitch = "A quiet zone next to Undercity.", steps = {
 	{ goals = { { t = "goto", map = 1421, x = 43, y = 41 } } },
 	{ goals = { { t = "level", level = 18 } } },
@@ -36,12 +36,12 @@ Polestar.RegisterGuide({ id = "test/silverpine", pack = "test", title = "Silverp
 "#;
 
 const HELPERS: &str = r#"
-E, G = Polestar.Engine, Polestar.Guides
+E, G = Northstar.Engine, Northstar.Guides
 w = stub.world
 function flush() stub.advance(0.25) end
 LOG = {}
 for _, m in ipairs({ "ROUTE_CHOICE", "GUIDE_CHANGED" }) do
-	Polestar.On(m, function(a) LOG[#LOG + 1] = m .. " " .. tostring(a) end)
+	Northstar.On(m, function(a) LOG[#LOG + 1] = m .. " " .. tostring(a) end)
 end
 function takeLog() local l = LOG; LOG = {}; return l end
 function finish()
@@ -67,12 +67,12 @@ end
 "#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 // The hand-off by itself (behavior.guideEnd "continue"); with "ask" the guide-end window offers it
 // (engine-guide-end.rs).
-const CONTINUE: &str = r#"Polestar.Set("behavior.guideEnd", "continue")"#;
+const CONTINUE: &str = r#"Northstar.Set("behavior.guideEnd", "continue")"#;
 
 fn run(next_when: &str, script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
@@ -109,7 +109,7 @@ fn an_option_whose_when_does_not_hold_is_hidden_everywhere_the_one_left_is_taken
 	);
 	// A hidden option cannot be chosen.
 	assert_eq!(out[1], false);
-	// No "Choose your path": Polestar goes on to the one option offered.
+	// No "Choose your path": Northstar goes on to the one option offered.
 	assert_eq!(out[2], json!({ "log": ["GUIDE_CHANGED test/silverpine"], "guide": "test/silverpine" }));
 }
 
@@ -199,12 +199,12 @@ fn a_guide_whose_nextwhen_is_malformed_or_names_a_guide_it_does_not_offer_is_ref
 fn the_chain_ahead_leaves_out_an_option_that_can_no_longer_be_offered() {
 	let chain_guides = |when: &str| {
 		r#"
-		Polestar.RegisterGuide({ id = "test/g1", pack = "test", title = "G1", faction = "Horde", minLevel = 1, maxLevel = 30,
+		Northstar.RegisterGuide({ id = "test/g1", pack = "test", title = "G1", faction = "Horde", minLevel = 1, maxLevel = 30,
 			next = "test/g2", nextChoices = { "test/g2" }, nextWhen = { ["test/g2"] = { @WHEN@ } }, steps = {
 			{ goals = { { t = "accept", quest = 103, title = "Grey prerequisite", qlvl = 4 } } },
 			{ goals = { { t = "accept", quest = 104, title = "Current", qlvl = 19 } } },
 		} })
-		Polestar.RegisterGuide({ id = "test/g2", pack = "test", title = "G2", faction = "Horde", minLevel = 20, maxLevel = 30, steps = {
+		Northstar.RegisterGuide({ id = "test/g2", pack = "test", title = "G2", faction = "Horde", minLevel = 20, maxLevel = 30, steps = {
 			{ goals = { { t = "accept", quest = 105, title = "Follow-up", qlvl = 20, pre = { 103 } } } },
 		} })"#
 			.replace("@WHEN@", when)
@@ -214,7 +214,7 @@ fn the_chain_ahead_leaves_out_an_option_that_can_no_longer_be_offered() {
 			stubs: vec!["stub_world.lua"],
 			before: format!("{WORLD}\nw.level = 20"),
 			addons: vec![core()],
-			saved: vec![("Polestar".into(), "PolestarDB = { schema = 1, settings = { behavior = { skipGrey = true } } }".into())],
+			saved: vec![("Northstar".into(), "NorthstarDB = { schema = 1, settings = { behavior = { skipGrey = true } } }".into())],
 			script: [TEST_PACK, TEST_SOURCE, &chain_guides(when), HELPERS, "stub.login()", r#"E.SetGuide("test/g1"); flush()"#, script].join("\n"),
 			..Default::default()
 		}))

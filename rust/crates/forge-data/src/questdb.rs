@@ -1,14 +1,14 @@
 //! `forge data questdb` (ported from the JS questdb build, now retired): data/forever (quests, npcs, objects, items,
-//! map-frames) -> the load-on-demand addon addon/Polestar_QuestDB: a compact quest database for Polestar's
-//! quest markers, available-quest markers, tooltips and nameplate icons (runtime: addon/Polestar/Quests).
+//! map-frames) -> the load-on-demand addon addon/Northstar_QuestDB: a compact quest database for Northstar's
+//! quest markers, available-quest markers, tooltips and nameplate icons (runtime: addon/Northstar/Quests).
 //! Same inputs give byte-identical files.
 //!
 //! Each kind's records are LuaChunks strings (forge-core luachunks: chunks of lines "<id>\t<payload>",
-//! registered with Polestar.QuestDB.AddChunk): nothing is built at load, a record is decoded when it is
+//! registered with Northstar.QuestDB.AddChunk): nothing is built at load, a record is decoded when it is
 //! read (QuestDB.lua). The payload is the record's fields ([`payload`]); decoded, a record is the positional
 //! table below, as the table files of schema 1 held it.
 //!
-//! Records (positional, read by addon/Polestar/Quests/QuestDB.lua):
+//! Records (positional, read by addon/Northstar/Quests/QuestDB.lua):
 //!
 //!   quests[id]  = { title, level, minLevel, races, classes, faction, start, finish,
 //!                   startItem, pre, excl, objectives, zone, events, skill, holiday,
@@ -44,7 +44,7 @@ use forge_guide::cluster::cluster_points;
 use forge_guide::js::{num_str, parse_json, V};
 use forge_guide::prereqs::blocking_prereqs;
 
-pub const ADDON: &str = "Polestar_QuestDB";
+pub const ADDON: &str = "Northstar_QuestDB";
 pub const SCHEMA: u32 = 2;
 pub const COMMAND: &str = "forge data questdb";
 const DATA_FILES: [&str; 5] = ["MapFrames.lua", "Quests.lua", "Npcs.lua", "Objects.lua", "Items.lua"];
@@ -546,7 +546,7 @@ pub fn payload(rec: &[Val]) -> String {
 }
 
 fn data_file(kind: &str, records: &BTreeMap<i64, Rec>, comment: &str) -> String {
-	let head = format!("{}\n-- {comment}\n-- One record a line, \"<id>\\t<fields>\" (forge-data questdb.rs payload), read on demand.\n\nlocal Q = Polestar and Polestar.QuestDB\nif not (Q and Q.AddChunk) then return end\n", header());
+	let head = format!("{}\n-- {comment}\n-- One record a line, \"<id>\\t<fields>\" (forge-data questdb.rs payload), read on demand.\n\nlocal Q = Northstar and Northstar.QuestDB\nif not (Q and Q.AddChunk) then return end\n", header());
 	let recs: Vec<(i64, String)> = records.iter().map(|(id, rec)| (*id, payload(rec))).collect();
 	let chunks = forge_core::luachunks::chunks(&recs, forge_core::luachunks::Options::default());
 	forge_core::luachunks::data_file(&head, "Q.AddChunk", kind, &chunks)
@@ -554,10 +554,10 @@ fn data_file(kind: &str, records: &BTreeMap<i64, Rec>, comment: &str) -> String 
 
 fn license_text(meta: &V) -> String {
 	let mut out: Vec<String> = [
-		"Polestar quest database: third-party notices",
+		"Northstar quest database: third-party notices",
 		"============================================",
 		"",
-		"The data in this folder was generated for Polestar from the reference data",
+		"The data in this folder was generated for Northstar from the reference data",
 		"sources below (quest, NPC, object and item facts, spawn positions, map frames).",
 		"",
 	]
@@ -587,17 +587,17 @@ fn emit_files(db: &Db, meta: &V, root: &Path) -> Vec<(String, String)> {
 	let mut files = Vec::new();
 	let mut toc = vec![
 		"## Interface: 16001".to_string(),
-		"## Title: Polestar Quest Database".into(),
-		"## Notes: Quest, NPC, object and item data for Polestar's quest markers and tooltips. Loaded on demand.".into(),
+		"## Title: Northstar Quest Database".into(),
+		"## Notes: Quest, NPC, object and item data for Northstar's quest markers and tooltips. Loaded on demand.".into(),
 	];
 	toc.extend(forge_guide::toc::toc_lines(ADDON));
 	toc.extend([
-		"## Author: Polestar".to_string(),
+		"## Author: Northstar".to_string(),
 		format!("## Version: {}", crate::gear::package_version(root)),
-		"## Category: Polestar".into(),
-		"## Group: Polestar".into(),
+		"## Category: Northstar".into(),
+		"## Group: Northstar".into(),
 		"## LoadOnDemand: 1".into(),
-		"## Dependencies: Polestar".into(),
+		"## Dependencies: Northstar".into(),
 		String::new(),
 	]);
 	toc.extend(DATA_FILES.iter().map(|s| s.to_string()));
@@ -607,14 +607,14 @@ fn emit_files(db: &Db, meta: &V, root: &Path) -> Vec<(String, String)> {
 		header(),
 		"-- Era map frames for every map this database places points on.".into(),
 		String::new(),
-		"local Q = Polestar and Polestar.QuestDB".into(),
+		"local Q = Northstar and Northstar.QuestDB".into(),
 		"if not (Q and Q.SetMeta) then return end".into(),
 		String::new(),
 	];
 	frame.push(format!("Q.SetMeta({{items={},npcs={},objects={},quests={},schema={SCHEMA}}})", db.items.len(), db.npcs.len(), db.objects.len(), db.quests.len()));
 	frame.push(String::new());
-	frame.push("if Polestar.RegisterMapFrames then".into());
-	frame.push("\tPolestar.RegisterMapFrames({ era = {".into());
+	frame.push("if Northstar.RegisterMapFrames then".into());
+	frame.push("\tNorthstar.RegisterMapFrames({ era = {".into());
 	for (map, f) in &db.map_frames {
 		let n = |k: &str| lua_num(f.get(k).num());
 		frame.push(format!("\t\t[{map}] = {{bottom={},c={},left={},right={},top={}}},", n("bottom"), n("c"), n("left"), n("right"), n("top")));

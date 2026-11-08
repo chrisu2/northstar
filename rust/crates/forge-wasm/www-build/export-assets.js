@@ -164,7 +164,7 @@ function exportNav({ out, nav, ws, roadsDir, hubsFile, log }) {
 	return summary;
 }
 
-// --- Polestar's own art, fonts, addon textures ----------------------------
+// --- Northstar's own art, fonts, addon textures ----------------------------
 
 function exportOwn({ out, copy }) {
 	const glyphs = require(path.join(TOOLS, 'planner', 'glyphs'));
@@ -176,7 +176,7 @@ function exportOwn({ out, copy }) {
 	writeFile(path.join(out, 'band.png'), band.band);
 	writeFile(path.join(out, 'band-stars.png'), band.stars);
 
-	const media = path.join(ROOT, 'addon', 'Polestar', 'Media');
+	const media = path.join(ROOT, 'addon', 'Northstar', 'Media');
 	const fontDir = path.join(out, 'fonts');
 	fresh(fontDir);
 	const fonts = fs.readdirSync(path.join(media, 'Fonts')).filter((f) => /^[A-Za-z0-9-]+\.ttf$/.test(f));

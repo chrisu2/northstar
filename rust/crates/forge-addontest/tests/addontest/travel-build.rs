@@ -6,12 +6,12 @@ use forge_addontest::{emitted, truthy, Addon, RunAddon};
 use serde_json::{json, Value};
 
 fn nav_run(script: &str) -> Value {
-	emitted(&RunAddon { stubs: vec!["stub_nav.lua"], addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])], script: script.into(), ..Default::default() }).remove(0)
+	emitted(&RunAddon { stubs: vec!["stub_nav.lua"], addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])], script: script.into(), ..Default::default() }).remove(0)
 }
 
 #[test]
 fn the_committed_traveldata_lua_is_loaded_by_the_addon_with_the_real_network() {
-	let counts = nav_run("emit({ Polestar.Nav.travel.Counts() })");
+	let counts = nav_run("emit({ Northstar.Nav.travel.Counts() })");
 	let (taxi, transports, inns) = (&counts[0], &counts[1], &counts[2]);
 	assert!(taxi.as_f64().is_some_and(|n| n >= 50.0), "{taxi} flight masters");
 	assert!(transports.as_f64().is_some_and(|n| n >= 8.0), "{transports} transports");
@@ -20,7 +20,7 @@ fn the_committed_traveldata_lua_is_loaded_by_the_addon_with_the_real_network() {
 	let names = nav_run(
 		r#"
 			local out = {}
-			for _, inn in ipairs(Polestar.Nav.GetTravelData().inns) do
+			for _, inn in ipairs(Northstar.Nav.GetTravelData().inns) do
 				if inn.npc == 6734 then out = inn.names end
 			end
 			emit(out)"#,
@@ -33,7 +33,7 @@ fn committed_inns() -> Vec<Value> {
 	let v = nav_run(
 		r#"
 			local out = {}
-			for _, inn in ipairs(Polestar.Nav.GetTravelData().inns) do out[#out + 1] = { npc = inn.npc, area = inn.area or false, names = inn.names } end
+			for _, inn in ipairs(Northstar.Nav.GetTravelData().inns) do out[#out + 1] = { npc = inn.npc, area = inn.area or false, names = inn.names } end
 			emit(out)"#,
 	);
 	v.as_array().cloned().unwrap_or_default()
@@ -53,7 +53,7 @@ fn the_committed_traveldata_lua_gives_the_tram_and_zeppelin_ends_their_floor_the
 	let ends = nav_run(
 		r#"
 			local out = {}
-			for _, t in ipairs(Polestar.Nav.GetTravelData().transports) do
+			for _, t in ipairs(Northstar.Nav.GetTravelData().transports) do
 				out[t.id] = { t.a.z or false, t.b.z or false }
 			end
 			emit(out)"#,
@@ -70,7 +70,7 @@ fn the_committed_traveldata_lua_has_the_forever_ships_on_their_dock_maps() {
 	let ships = nav_run(
 		r#"
 			local out = {}
-			for _, t in ipairs(Polestar.Nav.GetTravelData().transports) do
+			for _, t in ipairs(Northstar.Nav.GetTravelData().transports) do
 				out[t.id] = { t.faction, t.a.map, t.a.f, t.b.map, t.b.f, t.ab, t.ba, t.waitA, t.waitB }
 			end
 			emit(out)"#,

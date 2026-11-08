@@ -1,6 +1,6 @@
 'use strict';
 // Where the client keeps the retail art of the atlases the Blizzard skin draws
-// (Polestar.Theme, "Skins"): addon/Polestar/Theme/GameArt.lua.
+// (Northstar.Theme, "Skins"): addon/Northstar/Theme/GameArt.lua.
 //
 // The Forever client swaps many atlas names for its own art (the "-c60"
 // members of an atlas element), so SetAtlas draws Forever's bronze there. The

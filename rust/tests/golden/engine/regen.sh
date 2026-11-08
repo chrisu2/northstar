@@ -23,7 +23,7 @@ for (const [f, ls] of Object.entries(d.lines)) {
 	for (const n of ls) L[n - 1] = "";
 	fs.writeFileSync(p, L.join("\n"));
 }' "$G/honest/drop.json" "$T/slice"
-unset POLESTAR_GRID NAV4_PACK POLESTAR_CHECKOUT
+unset NORTHSTAR_GRID NAV4_PACK NORTHSTAR_CHECKOUT
 node "$JS/engine-chain.js" "$T/slice" forever/horde/orc-troll/01-durotar.guide Orc Horde WARRIOR "$T/forever" "$G/engine/orc.json" skip
 node "$JS/engine-chain.js" "$T/slice" forever/alliance/human/01-elwynn-forest.guide Human Alliance WARRIOR "$T/forever" "$G/engine/human.json" skip
 # (The slice_fixtures_* tests write the fixture guides first, then compare with the goldens this script

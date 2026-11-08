@@ -559,19 +559,19 @@ pub fn crossings_lua(set: &Set, frames: &Frames, complete: bool, live: &Live) ->
 	l
 }
 
-pub const TRAVEL_ADDON: &str = "Polestar_Travel";
+pub const TRAVEL_ADDON: &str = "Northstar_Travel";
 
 /// The local data addon: (file name, text), the TOC first.
 pub fn emit_travel_addon(set: &Set, frames: &Frames, live: &Live, version: &str) -> Vec<(String, String)> {
 	let toc = [
 		"## Interface: 16001",
-		"## Title: Polestar Travel (local)",
-		"## Notes: Zone crossings for Polestar's travel planner, built from an optional local crossings file. Local use only.",
-		"## Author: Polestar",
+		"## Title: Northstar Travel (local)",
+		"## Notes: Zone crossings for Northstar's travel planner, built from an optional local crossings file. Local use only.",
+		"## Author: Northstar",
 		&format!("## Version: {version}"),
-		"## Category: Polestar",
-		"## Group: Polestar",
-		"## Dependencies: Polestar",
+		"## Category: Northstar",
+		"## Group: Northstar",
+		"## Dependencies: Northstar",
 		"",
 		"Crossings.lua",
 		"",
@@ -582,7 +582,7 @@ pub fn emit_travel_addon(set: &Set, frames: &Frames, live: &Live, version: &str)
 		header("travel build", "the optional local crossings file (data/local/crossings.json)"),
 		format!("-- {counts}. Local use only: never committed or packaged."),
 		String::new(),
-		"local N = Polestar and Polestar.Nav".into(),
+		"local N = Northstar and Northstar.Nav".into(),
 		"if not (N and N.RegisterCrossings) then return end".into(),
 		String::new(),
 	];

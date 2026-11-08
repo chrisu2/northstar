@@ -1,4 +1,4 @@
-//! Polestar's corrections (forever-db/corrections/<section>.json) applied to the merged tables,
+//! Northstar's corrections (forever-db/corrections/<section>.json) applied to the merged tables,
 //! with or without Forever's quest data. A correction for a record the build does not have becomes
 //! that record when it carries enough fields to stand alone; otherwise it is reported as unused.
 //!

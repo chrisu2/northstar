@@ -1,4 +1,4 @@
-//! The guide window (addon/Polestar/UI/GuideFrame.lua) against the real Core + Theme + UI manifests and a
+//! The guide window (addon/Northstar/UI/GuideFrame.lua) against the real Core + Theme + UI manifests and a
 //! contract-faithful fake Engine (with tabs), Guides and Nav (tests/lua/stub_ui.lua).
 
 use std::collections::HashSet;
@@ -44,7 +44,7 @@ local function shownTabs()
 end
 local function menuPick(text)
 	GF.menuButton:Click()
-	for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == text then r:Click() return r end end
+	for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == text then r:Click() return r end end
 end
 local TABS = { { uistub.elwynn, 3 }, { uistub.tailoring, 2 }, { uistub.stormwindRep, 2 } }
 "#;
@@ -54,8 +54,8 @@ fn run_with(script: &str, before: &str, install: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: before.into(),
-		addons: vec![Addon::files("Polestar", &FILES)],
-		script: format!("uistub.install({install})\nstub.login()\nlocal GF, UI, W = Polestar.UI.GuideFrame, Polestar.UI, Polestar.Widgets\nlocal F = PolestarGuideFrame\n{HELPERS}\n{script}"),
+		addons: vec![Addon::files("Northstar", &FILES)],
+		script: format!("uistub.install({install})\nstub.login()\nlocal GF, UI, W = Northstar.UI.GuideFrame, Northstar.UI, Northstar.Widgets\nlocal F = NorthstarGuideFrame\n{HELPERS}\n{script}"),
 		..Default::default()
 	})
 }
@@ -115,9 +115,9 @@ fn a_field_step_reads_as_one_focus_the_step_title_its_few_objectives_with_counte
 			}
 		end
 		local P = GF.parts
-		emit({ rows = rows, lines = shownLines(), accent = { Polestar.Theme.Accent() }, success = { Polestar.Theme.Color("success") },
-			text = { Polestar.Theme.Color("text") }, muted = { Polestar.Theme.Color("textMuted") }, dim = { Polestar.Theme.Color("textDim") },
-			textHex = Polestar.Theme.Hex("text"), accentHex = Polestar.Theme.Hex("accent"),
+		emit({ rows = rows, lines = shownLines(), accent = { Northstar.Theme.Accent() }, success = { Northstar.Theme.Color("success") },
+			text = { Northstar.Theme.Color("text") }, muted = { Northstar.Theme.Color("textMuted") }, dim = { Northstar.Theme.Color("textDim") },
+			textHex = Northstar.Theme.Hex("text"), accentHex = Northstar.Theme.Hex("accent"),
 			person = P.person.Name:GetText(), where = P.person.Where:GetText(),
 			personIcon = P.person.Icon:GetTexture():match("([%w-]+)$"),
 			tip = P.tip:IsShown() and P.tip.Text:GetText(), count = P.nav.Steps.Count:GetText(),
@@ -163,7 +163,7 @@ fn a_hub_reads_one_person_at_a_time_name_in_npc_colour_the_others_on_a_line_each
 		local function snap()
 			local P = GF.parts
 			local names, subs, dimmed = {}, {}, {}
-			local dr, dg, db = Polestar.Theme.Color("textDim")
+			local dr, dg, db = Northstar.Theme.Color("textDim")
 			for _, r in ipairs(visibleRows()) do
 				names[#names + 1] = r.psGoal.subject
 				subs[#subs + 1] = r.Sub:IsShown() and r.Sub:GetText() or false
@@ -171,11 +171,11 @@ fn a_hub_reads_one_person_at_a_time_name_in_npc_colour_the_others_on_a_line_each
 				dimmed[#dimmed + 1] = tr == dr and tg == dg and tb == db
 			end
 			local nr, ng, nb = P.person.Name:GetTextColor()
-			return { person = P.person.Name:GetText(), color = { nr, ng, nb }, npc = { Polestar.Theme.Color("npc") },
+			return { person = P.person.Name:GetText(), color = { nr, ng, nb }, npc = { Northstar.Theme.Color("npc") },
 				icon = P.person.Icon:GetTexture():match("([%w-]+)$"), goals = names, subs = subs, dimmed = dimmed, lines = shownLines(),
 				after = P.after:IsShown() and P.after.Text:GetText() or false, persons = P.after.Count:GetText(), mark = P.person.Mark:IsShown(),
-				markW = P.person.Mark:GetWidth(), iconColor = { P.person.Icon:GetVertexColor() }, dim = { Polestar.Theme.Color("textDim") },
-				sliding = Polestar.Anim.IsRunning(P.card, "offset") }
+				markW = P.person.Mark:GetWidth(), iconColor = { P.person.Icon:GetVertexColor() }, dim = { Northstar.Theme.Color("textDim") },
+				sliding = Northstar.Anim.IsRunning(P.card, "offset") }
 		end
 		uistub.setGuide(uistub.elwynn, 4)
 		stub.advance(1)
@@ -204,7 +204,7 @@ fn a_hub_reads_one_person_at_a_time_name_in_npc_colour_the_others_on_a_line_each
 	assert!(is_match(text(&first["lines"][0]["text"]), r"^Then: \|c[0-9a-f]{8}Eagan Peltskinner\|r"), "the person in the NPC colour");
 	assert_eq!(first["after"], false, "the lines name the persons to come: no second \"Then:\", no \"Person 1 of 3\"");
 	assert_eq!(first["mark"], true, "the arrow points at this person");
-	assert_eq!(first["markW"], 2, "the 2px selection bar used across Polestar");
+	assert_eq!(first["markW"], 2, "the 2px selection bar used across Northstar");
 	assert_eq!(rgb(&first["iconColor"]), rgb(&first["dim"]), "the person glyph steps back; the name carries the colour");
 	assert_eq!(second["person"], "Eagan Peltskinner");
 	assert_eq!(second["goals"], json!(["Wolves Across the Border"]));
@@ -250,7 +250,7 @@ fn an_accept_the_game_does_not_confirm_says_so_on_its_line_first() {
 		uistub.update()
 		local r = rowFor("Investigate Echo Ridge")
 		local cr, cg, cb = r.Sub:GetTextColor()
-		emit({ sub = r.Sub:IsShown() and r.Sub:GetText() or false, color = { cr, cg, cb }, dim = { Polestar.Theme.Color("textDim") } })"#)
+		emit({ sub = r.Sub:IsShown() and r.Sub:GetText() or false, color = { cr, cg, cb }, dim = { Northstar.Theme.Color("textDim") } })"#)
 	.remove(0);
 	assert!(text(&out["sub"]).starts_with("Not offered by Marshal McBride? Report it with /polestar"), "{}", text(&out["sub"]));
 	assert_eq!(rgb(&out["color"]), rgb(&out["dim"]), "kept readable, like an unavailable quest's reason");
@@ -259,8 +259,8 @@ fn an_accept_the_game_does_not_confirm_says_so_on_its_line_first() {
 #[test]
 fn with_expand_step_tips_off_the_tip_is_one_line_until_clicked() {
 	let out = run(r#"
-		Polestar.Set("ui.width", 300)
-		Polestar.Set("ui.notesOpen", false)
+		Northstar.Set("ui.width", 300)
+		Northstar.Set("ui.notesOpen", false)
 		uistub.setGuide(uistub.elwynn, 3)
 		local tip = GF.parts.tip
 		local closed = { open = tip.psOpen, h = tip:GetHeight() }
@@ -279,16 +279,16 @@ fn with_expand_step_tips_off_the_tip_is_one_line_until_clicked() {
 #[test]
 fn step_tips_start_on_one_line_by_default_with_expand_step_tips_on_in_full() {
 	let out = run(r#"
-		Polestar.Set("ui.width", 300)
+		Northstar.Set("ui.width", 300)
 		uistub.setGuide(uistub.elwynn, 3)
 		local tip = GF.parts.tip
 		local byDefault = tip.psOpen
 		local closedH = tip:GetHeight()
-		Polestar.Set("ui.notesOpen", true)
+		Northstar.Set("ui.notesOpen", true)
 		local now = tip.psOpen
-		Polestar.Set("ui.notesOpen", false)
+		Northstar.Set("ui.notesOpen", false)
 		local off = tip.psOpen
-		Polestar.Set("ui.notesOpen", true)
+		Northstar.Set("ui.notesOpen", true)
 		tip:Click()
 		local clicked = tip.psOpen
 		uistub.setStep(4)
@@ -306,14 +306,14 @@ fn step_tips_start_on_one_line_by_default_with_expand_step_tips_on_in_full() {
 // A pack's picture on a sample step, as Guides.lua registers it.
 fn picture(step: i32, size: Option<(i32, i32)>) -> String {
 	let size = size.map(|(w, h)| format!(", w = {w}, h = {h}")).unwrap_or_default();
-	format!(r#"uistub.guides[uistub.elwynn].steps[{step}].image = {{ file = "media\\cave"{size}, texture = "Interface\\AddOns\\PolestarPack_Joe\\media\\cave" }}"#)
+	format!(r#"uistub.guides[uistub.elwynn].steps[{step}].image = {{ file = "media\\cave"{size}, texture = "Interface\\AddOns\\NorthstarPack_Joe\\media\\cave" }}"#)
 }
 
 #[test]
 fn a_step_picture_shows_under_the_opened_tip_as_wide_as_the_text_column_with_its_aspect_kept_and_folds_away_with_the_tip() {
 	let script = r#"
-		Polestar.Set("ui.width", 300)
-		Polestar.Set("ui.notesOpen", true)
+		Northstar.Set("ui.width", 300)
+		Northstar.Set("ui.notesOpen", true)
 		uistub.setGuide(uistub.elwynn, 3)
 		local tip, img = GF.parts.tip, GF.parts.tip.Image
 		local plain = { shown = img:IsShown(), h = tip:GetHeight() }
@@ -335,7 +335,7 @@ fn a_step_picture_shows_under_the_opened_tip_as_wide_as_the_text_column_with_its
 			"shown": true,
 			"w": w,
 			"h": h as i64,
-			"texture": r"Interface\AddOns\PolestarPack_Joe\media\cave",
+			"texture": r"Interface\AddOns\NorthstarPack_Joe\media\cave",
 			"tipH": num(f(&out["plain"]["h"]) + h + 6.0),
 			"text": "Kobolds wander the mine entrance. Pull them one at a time; the vermin hit softly but come in pairs.",
 		})
@@ -348,8 +348,8 @@ fn a_step_picture_shows_under_the_opened_tip_as_wide_as_the_text_column_with_its
 #[test]
 fn a_tall_picture_stops_at_160_high_one_with_no_tip_reads_picture_of_this_spot_one_without_a_size_is_drawn_2_1() {
 	let script = r#"
-		Polestar.Set("ui.width", 300)
-		Polestar.Set("ui.notesOpen", true)
+		Northstar.Set("ui.width", 300)
+		Northstar.Set("ui.notesOpen", true)
 		${PICTURE(5, 256, 256)}
 		uistub.setGuide(uistub.elwynn, 5)
 		local tip, img = GF.parts.tip, GF.parts.tip.Image
@@ -367,7 +367,7 @@ fn a_tall_picture_stops_at_160_high_one_with_no_tip_reads_picture_of_this_spot_o
 #[test]
 fn a_picture_the_client_cannot_load_or_with_step_tips_off_leaves_the_tip_as_it_is_without_one() {
 	let script = r#"
-		Polestar.Set("ui.width", 300)
+		Northstar.Set("ui.width", 300)
 		uistub.setGuide(uistub.elwynn, 3)
 		local tip, img = GF.parts.tip, GF.parts.tip.Image
 		local plainH = tip:GetHeight()
@@ -380,7 +380,7 @@ fn a_picture_the_client_cannot_load_or_with_step_tips_off_leaves_the_tip_as_it_i
 		uistub.setStep(5)
 		local alone = tip:IsShown()
 		img.SetTexture = set
-		Polestar.Set("ui.showNotes", false)
+		Northstar.Set("ui.showNotes", false)
 		emit({ plainH = plainH, broken = broken, alone = alone, off = { tip = tip:IsShown(), img = img:IsShown() } })"#
 		.replace("${PICTURE(3, 512, 256)}", &picture(3, Some((512, 256))))
 		.replace("${PICTURE(5, 512, 256)}", &picture(5, Some((512, 256))));
@@ -404,11 +404,11 @@ fn step_updated_refills_the_same_rows_in_place_and_a_newly_done_goal_pops() {
 		uistub.goal(3, 3).status = "done"
 		uistub.update()
 		local after = rowFor("Kobold Vermin")
-		local popping = Polestar.Anim.IsRunning(after.Icon, "size")
+		local popping = Northstar.Anim.IsRunning(after.Icon, "size")
 		stub.advance(1)
 		emit({ same = before == after, framesAdded = uistub.frameCount() - frames, text = text, doneText = after.Text:GetText(),
-			icon = after.Icon:GetTexture():match("([%w-]+)$"), popping = popping, settled = Polestar.Anim.Active(),
-			size = after.Icon:GetWidth(), successHex = Polestar.Theme.Hex("success") })"#)
+			icon = after.Icon:GetTexture():match("([%w-]+)$"), popping = popping, settled = Northstar.Anim.Active(),
+			size = after.Icon:GetWidth(), successHex = Northstar.Theme.Hex("success") })"#)
 	.remove(0);
 	assert_eq!(out["same"], true);
 	assert_eq!(out["framesAdded"], 0, "no frames are created for an update");
@@ -447,10 +447,10 @@ fn left_click_on_a_goal_of_the_step_aims_the_arrow_at_it_right_click_a_menu_on_a
 		local collect = rowFor("Tough Wolf Meat")
 		stub.RunScript(collect, "OnClick", "LeftButton")
 		local aimed = { lastCall("AimGoal"), lastCall("ReleaseTarget"), lastCall("SetTarget") or false }
-		local target = Polestar.Nav.GetTarget()
+		local target = Northstar.Nav.GetTarget()
 		local marked = collect.Mark:IsShown()
 		stub.RunScript(rowFor("Kobold Vermin"), "OnClick", "RightButton")
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Tick it done" then r:Click() end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Tick it done" then r:Click() end end
 		local tickedKill = { lastCall("ToggleGoal"), rowFor("Kobold Vermin").Check:IsShown() }
 		for g = 1, 3 do uistub.goal(4, g).status = "done" end
 		uistub.setStep(4)
@@ -483,10 +483,10 @@ fn right_click_on_a_quest_line_tick_it_done_or_skip_this_quest_the_banner_undo_o
 		local B = GF.parts.banner
 		local function menu()
 			local out = {}
-			for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then out[#out + 1] = r.Text:GetText() end end
+			for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then out[#out + 1] = r.Text:GetText() end end
 			return out
 		end
-		local function pick(text) for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == text then r:Click() end end end
+		local function pick(text) for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == text then r:Click() end end end
 		local echo = rowFor("Investigate Echo Ridge")
 		stub.RunScript(echo, "OnEnter")
 		local tip = GameTooltip.lines
@@ -497,24 +497,24 @@ fn right_click_on_a_quest_line_tick_it_done_or_skip_this_quest_the_banner_undo_o
 		B.Jump:Click()
 		local undone = { call = lastCall("SkipQuest"), banner = B:IsShown() }
 		-- Skipped again, with the rest of the step done: the card shows every line.
-		Polestar.Engine.SkipQuest(15, true)
+		Northstar.Engine.SkipQuest(15, true)
 		GF.DismissBanner()
-		uistub.goal(4, 4).status = "done"; Polestar.Fire("STEP_UPDATED", 4)
+		uistub.goal(4, 4).status = "done"; Northstar.Fire("STEP_UPDATED", 4)
 		echo = rowFor("Investigate Echo Ridge")
 		local line = { undo = echo.Skip:IsShown() and echo.Skip.Label:GetText() or false }
 		stub.RunScript(echo, "OnEnter")
 		line.tip = GameTooltip.lines
 		echo.Skip:Click()
 		line.call = lastCall("SkipQuest")
-		Polestar.Engine.SkipQuest(15, true)
+		Northstar.Engine.SkipQuest(15, true)
 		GF.DismissBanner()
 		stub.RunScript(rowFor("Investigate Echo Ridge"), "OnClick", "RightButton")
-		local back = { call = lastCall("SkipQuest"), menu = PolestarMenu:IsShown() }
+		local back = { call = lastCall("SkipQuest"), menu = NorthstarMenu:IsShown() }
 		-- Skipped again: every line shows; Brother Neals has no quest.
-		Polestar.Engine.SkipQuest(15, true)
+		Northstar.Engine.SkipQuest(15, true)
 		GF.DismissBanner()
 		stub.RunScript(rowFor("Brother Neals"), "OnClick", "RightButton")
-		emit({ tip = tip, items = items, skipped = skipped, undone = undone, line = line, back = back, neals = { lastCall("ToggleGoal"), PolestarMenu:IsShown() } })"#)
+		emit({ tip = tip, items = items, skipped = skipped, undone = undone, line = line, back = back, neals = { lastCall("ToggleGoal"), NorthstarMenu:IsShown() } })"#)
 	.remove(0);
 	assert!(has(&out["tip"], "Right-click to tick it done or skip this quest"), "{}", joined(&out["tip"]));
 	assert_eq!(out["items"], json!(["Tick it done", "Skip this quest"]));
@@ -554,19 +554,19 @@ fn hovering_a_goal_explains_it_detail_quest_npc_location_and_what_clicks_do() {
 #[test]
 fn the_step_navigator_and_the_up_next_list_drive_the_engine_a_step_change_animates_then_stops() {
 	let out = run(r#"
-		Polestar.Set("ui.upcoming", 3)
+		Northstar.Set("ui.upcoming", 3)
 		uistub.setGuide(uistub.elwynn, 3)
 		stub.advance(1)
 		local N = GF.parts.nav
 		N.Next:Click()
 		local count = N.Steps.Count:GetText()
-		local animating = Polestar.Anim.Active() > 0 and GF.parts.card:GetAlpha() < 1
+		local animating = Northstar.Anim.Active() > 0 and GF.parts.card:GetAlpha() < 1
 		stub.advance(1)
-		local settled = { Polestar.Anim.Active(), GF.parts.card:GetAlpha() }
+		local settled = { Northstar.Anim.Active(), GF.parts.card:GetAlpha() }
 		N.Prev:Click()
 		local collapsed = GF.parts.upnext:IsShown() and GF.parts.upnext.Toggle.Label:GetText()
 		GF.parts.upnext.Toggle:Click()
-		local open = Polestar.Get("ui.upcomingOpen")
+		local open = Northstar.Get("ui.upcomingOpen")
 		local shown = {}
 		for _, r in ipairs(GF.upRows) do if r:IsShown() then shown[#shown + 1] = r.psIndex end end
 		GF.upRows[1]:Click()
@@ -587,12 +587,12 @@ fn the_step_navigator_and_the_up_next_list_drive_the_engine_a_step_change_animat
 #[test]
 fn reduced_motion_a_step_change_lands_without_movement() {
 	let out = run(r#"
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("ui.reduceMotion", true)
 		uistub.setGuide(uistub.elwynn, 3)
 		stub.advance(1)
 		GF.parts.nav.Next:Click()
 		local p = GF.parts.card.points[#GF.parts.card.points]
-		emit({ y = p.y, offsetRunning = Polestar.Anim.IsRunning(GF.parts.card, "offset") })"#)
+		emit({ y = p.y, offsetRunning = Northstar.Anim.IsRunning(GF.parts.card, "offset") })"#)
 	.remove(0);
 	assert_eq!(out, json!({ "y": 0, "offsetRunning": false }));
 }
@@ -602,25 +602,25 @@ fn settings_apply_live_scale_opacity_lock_compact_upcoming_shown() {
 	let out = run(r#"
 		uistub.openTabs(TABS, 1)
 		local h0 = F:GetHeight()
-		Polestar.Set("ui.scale", 1.3)
-		Polestar.Set("ui.opacity", 0.5)
-		Polestar.Set("ui.locked", true)
+		Northstar.Set("ui.scale", 1.3)
+		Northstar.Set("ui.opacity", 0.5)
+		Northstar.Set("ui.locked", true)
 		stub.RunScript(GF.parts.nav, "OnDragStart")
 		local movedWhileLocked = F.moving == true
-		Polestar.Set("ui.compact", true)
+		Northstar.Set("ui.compact", true)
 		local P = GF.parts
 		local compact = { strip = P.strip:IsShown(), after = P.after:IsShown(), tip = P.tip:IsShown(), rows = #visibleRows(),
 			foot = P.foot:IsShown(), h = F:GetHeight() }
-		Polestar.Set("ui.compact", false)
-		Polestar.Set("ui.upcoming", 4)
-		Polestar.Set("ui.upcomingOpen", true)
+		Northstar.Set("ui.compact", false)
+		Northstar.Set("ui.upcoming", 4)
+		Northstar.Set("ui.upcomingOpen", true)
 		local upIdx = {}
 		for _, r in ipairs(GF.upRows) do if r:IsShown() then upIdx[#upIdx + 1] = r.psIndex end end
-		Polestar.Fire("TOGGLE_FRAME")
+		Northstar.Fire("TOGGLE_FRAME")
 		local afterToggle = F:IsShown()
-		Polestar.Fire("SHOW_FRAME")
+		Northstar.Fire("SHOW_FRAME")
 		emit({ scale = F:GetScale(), alpha = F:GetAlpha(), grip = GF.grip:IsShown(), movedWhileLocked = movedWhileLocked,
-			compact = compact, h0 = h0, upcoming = upIdx, afterToggle = afterToggle, shown = F:IsShown(), stored = Polestar.Get("ui.shown") })"#)
+			compact = compact, h0 = h0, upcoming = upIdx, afterToggle = afterToggle, shown = F:IsShown(), stored = Northstar.Get("ui.shown") })"#)
 	.remove(0);
 	assert_eq!(out["scale"], 1.3);
 	assert_eq!(out["alpha"], 0.5);
@@ -645,7 +645,7 @@ fn dragging_saves_the_position_the_grip_resizes_width_within_bounds() {
 		local moving = F.moving
 		local top = F:GetTop()
 		stub.RunScript(GF.parts.nav, "OnDragStop")
-		local pos = Polestar.Get("ui.pos")
+		local pos = Northstar.Get("ui.pos")
 		stub.cursor = { 100, 500 }
 		stub.RunScript(GF.grip, "OnMouseDown", "LeftButton")
 		stub.cursor = { 180, 500 }
@@ -654,7 +654,7 @@ fn dragging_saves_the_position_the_grip_resizes_width_within_bounds() {
 		stub.cursor = { 2000, 500 }
 		stub.advance(0.1)
 		stub.RunScript(GF.grip, "OnMouseUp", "LeftButton")
-		emit({ moving = moving, pos = pos, top = top, live = live, width = Polestar.Get("ui.width"),
+		emit({ moving = moving, pos = pos, top = top, live = live, width = Northstar.Get("ui.width"),
 			polling = GF.grip:GetScript("OnUpdate") ~= nil, point = { F:GetPoint(1) } })"#)
 	.remove(0);
 	assert_eq!(out["moving"], true);
@@ -670,22 +670,22 @@ fn grow_upward_pins_the_window_by_its_bottom_left_turning_it_on_or_off_keeps_the
 	let out = run(r#"
 		uistub.setGuide(uistub.elwynn, 3)
 		F.x, F.y = 1500, 300
-		Polestar.Set("ui.growUp", true)
-		local on, onPoint = Polestar.Get("ui.pos"), { F:GetPoint(1) }
+		Northstar.Set("ui.growUp", true)
+		local on, onPoint = Northstar.Get("ui.pos"), { F:GetPoint(1) }
 		F.x, F.y = 900, 120
 		stub.RunScript(GF.parts.nav, "OnDragStart")
 		stub.RunScript(GF.parts.nav, "OnDragStop")
-		local dragged = Polestar.Get("ui.pos")
+		local dragged = Northstar.Get("ui.pos")
 		stub.cursor = { 100, 500 }
 		stub.RunScript(GF.grip, "OnMouseDown", "LeftButton")
 		local resizePoint = { F:GetPoint(1) }
 		stub.RunScript(GF.grip, "OnMouseUp", "LeftButton")
-		Polestar.Set("ui.pos", nil)
+		Northstar.Set("ui.pos", nil)
 		local resetPoint = { F:GetPoint(1) }
 		F.x, F.y = 900, 120
-		Polestar.Set("ui.growUp", false)
+		Northstar.Set("ui.growUp", false)
 		emit({ on = on, onPoint = onPoint, dragged = dragged, resizePoint = resizePoint, resetPoint = resetPoint,
-			off = Polestar.Get("ui.pos"), offPoint = { F:GetPoint(1) }, top = F:GetTop() })"#)
+			off = Northstar.Get("ui.pos"), offPoint = { F:GetPoint(1) }, top = F:GetTop() })"#)
 	.remove(0);
 	assert_eq!(out["on"], json!([1500, 300]), "turning it on saves the bottom-left where the window stands");
 	assert_eq!(out["onPoint"][0], "BOTTOMLEFT");
@@ -703,11 +703,11 @@ fn bar_at_the_bottom_needs_grow_upward_then_the_tabs_navigator_and_progress_stac
 		uistub.setGuide(uistub.elwynn, 3)
 		local function at() return { strip = { GF.parts.strip:GetPoint(1) }, foot = { GF.parts.foot:GetPoint(1) }, nav = { GF.parts.nav:GetPoint(1) } } end
 		local normal = at()
-		Polestar.Set("ui.barsBottom", true)
+		Northstar.Set("ui.barsBottom", true)
 		local withoutGrow = at()
-		Polestar.Set("ui.growUp", true)
+		Northstar.Set("ui.growUp", true)
 		local flipped = at()
-		Polestar.Set("ui.barsBottom", false)
+		Northstar.Set("ui.barsBottom", false)
 		emit({ normal = normal, withoutGrow = withoutGrow, flipped = flipped, back = at() })"#)
 	.remove(0);
 	let pt = |o: &Value| json!([o["strip"][0].clone(), o["foot"][2].clone(), o["nav"][0].clone()]);
@@ -726,16 +726,16 @@ fn bar_at_the_bottom_needs_grow_upward_then_the_tabs_navigator_and_progress_stac
 fn grow_upward_the_window_ends_at_the_top_of_the_screen_and_keeps_its_bottom_edge_where_it_is_pinned() {
 	let out = run(r#"
 		uistub.setGuide(uistub.elwynn, 3)
-		Polestar.Set("ui.maxHeight", 0.9)
-		Polestar.Set("ui.growUp", true)
-		Polestar.Set("ui.barsBottom", true)
-		Polestar.Set("ui.pos", { 1500, 100 })
+		Northstar.Set("ui.maxHeight", 0.9)
+		Northstar.Set("ui.growUp", true)
+		Northstar.Set("ui.barsBottom", true)
+		Northstar.Set("ui.pos", { 1500, 100 })
 		local goals = GF.parts.goals
 		local full, fullOver = F:GetHeight(), goals.psOver
 		local clips = {}
 		GF.parts.body.SetClipsChildren = function(_, on) clips[#clips + 1] = on end
 		local function at(y)
-			Polestar.Set("ui.pos", { 1500, y })
+			Northstar.Set("ui.pos", { 1500, y })
 			local p, _, rp, _, py = F:GetPoint(1)
 			return { y = y, h = F:GetHeight(), point = { p, rp, py }, over = goals.psOver, cut = clips[#clips] }
 		end
@@ -765,8 +765,8 @@ fn grow_upward_the_window_ends_at_the_top_of_the_screen_and_keeps_its_bottom_edg
 #[test]
 fn bar_at_the_bottom_a_tab_opened_while_it_is_on_has_its_highlight_on_the_top_edge_from_the_render_that_makes_it() {
 	let out = run(r#"
-		Polestar.Set("ui.growUp", true)
-		Polestar.Set("ui.barsBottom", true)
+		Northstar.Set("ui.growUp", true)
+		Northstar.Set("ui.barsBottom", true)
 		local points, render = {}, GF.RenderTabs
 		GF.RenderTabs = function(...)
 			render(...)
@@ -792,14 +792,14 @@ fn combat_by_default_the_window_stays_as_it_is_fade_dims_it_hide_hides_it_both_r
 		local steady = F:GetAlpha()
 		stub.fire("PLAYER_REGEN_ENABLED")
 		stub.advance(1)
-		Polestar.Set("ui.combat", "fade")
+		Northstar.Set("ui.combat", "fade")
 		stub.fire("PLAYER_REGEN_DISABLED")
 		stub.advance(1)
 		local faded = F:GetAlpha()
 		stub.fire("PLAYER_REGEN_ENABLED")
 		stub.advance(1)
 		local restored = F:GetAlpha()
-		Polestar.Set("ui.combat", "hide")
+		Northstar.Set("ui.combat", "hide")
 		stub.fire("PLAYER_REGEN_DISABLED")
 		local hidden = not F:IsShown()
 		stub.fire("PLAYER_REGEN_ENABLED")
@@ -823,10 +823,10 @@ fn empty_states_no_guides_no_guide_open_with_suggestion_guide_complete() {
 		end
 		local order = uistub.order
 		uistub.order = {}
-		Polestar.Fire("GUIDES_REGISTERED")
+		Northstar.Fire("GUIDES_REGISTERED")
 		emit(state())
 		uistub.order = order
-		Polestar.Fire("GUIDES_REGISTERED")
+		Northstar.Fire("GUIDES_REGISTERED")
 		emit(state())
 		GF.parts.empty.Primary:Click()
 		uistub.complete()
@@ -862,12 +862,12 @@ fn tab_strip_one_tab_per_open_guide_select_close_move_and_opens_the_picker_for_a
 		local afterSelect = { title = GF.parts.nav.Title:GetText(), count = GF.parts.nav.Steps.Count:GetText(), bar = shownTabs()[2].Bar:IsShown() }
 		-- Right-click: tab options.
 		stub.RunScript(shownTabs()[1], "OnClick", "RightButton")
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Move right" then r:Click() end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Move right" then r:Click() end end
 		local moved = lastCall("MoveTab")
 		shownTabs()[3].Close:Click()
 		local closed = { n = #shownTabs(), call = lastCall("CloseTab") }
 		GF.parts.strip.Add:Click()
-		local pickerNewTab = PolestarPicker:IsShown() and Polestar.UI.Picker.IsNewTabMode()
+		local pickerNewTab = NorthstarPicker:IsShown() and Northstar.UI.Picker.IsNewTabMode()
 		emit({ titles = titles, ranges = ranges, widths = widths, activeBar = activeBar, titleInNav = titleInNav, afterSelect = afterSelect, moved = moved,
 			closed = closed, pickerNewTab = pickerNewTab })"#)
 	.remove(0);
@@ -887,8 +887,8 @@ fn a_tab_s_right_click_menu_has_choose_guide_it_makes_that_tab_active_and_opens_
 	let out = run(r#"
 		uistub.openTabs(TABS, 1)
 		stub.RunScript(shownTabs()[3], "OnClick", "RightButton")
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Choose guide" then r:Click() end end
-		emit({ select = lastCall("SelectTab"), picker = PolestarPicker:IsShown(), newTab = Polestar.UI.Picker.IsNewTabMode() })"#)
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Choose guide" then r:Click() end end
+		emit({ select = lastCall("SelectTab"), picker = NorthstarPicker:IsShown(), newTab = Northstar.UI.Picker.IsNewTabMode() })"#)
 	.remove(0);
 	assert_eq!(out["select"], json!(["SelectTab", 3]));
 	assert_eq!(out["picker"], true);
@@ -927,7 +927,7 @@ fn a_tab_s_close_button_shows_faintly_at_rest_and_in_full_under_the_pointer() {
 #[test]
 fn a_narrow_tab_truncates_its_title_and_keeps_its_level_range_whole_also_with_the_close_button_shown() {
 	let out = run(r#"
-		Polestar.Set("ui.width", 300)
+		Northstar.Set("ui.width", 300)
 		uistub.openTabs(TABS, 1)
 		local b = shownTabs()[1]
 		local function measure()
@@ -974,7 +974,7 @@ fn transparent_mode_no_fills_or_borders_outlined_text_chrome_only_while_the_curs
 			for i, c in ipairs(GF.chrome) do a[i] = c:GetAlpha() end
 			return a
 		end
-		Polestar.Set("ui.style", "transparent")
+		Northstar.Set("ui.style", "transparent")
 		local skin = F.psSkin
 		local bare = { bg = skin.bg:IsShown(), border = F.psBorder[1]:IsShown(), shadow = F.psShadow:IsShown(), band = GF.parts.band:IsShown() }
 		local _, _, flags = GF.parts.person.Name:GetFont()
@@ -992,12 +992,12 @@ fn transparent_mode_no_fills_or_borders_outlined_text_chrome_only_while_the_curs
 		F.IsMouseOver = function() return false end
 		stub.advance(0.5)
 		local left = chromeAlpha()
-		Polestar.Set("ui.style", "standard")
+		Northstar.Set("ui.style", "standard")
 		local _, _, flagsAfter = GF.parts.person.Name:GetFont()
 		emit({ bare = bare, flags = flags, goalFlags = goalFlags, rest = rest, hover = hover, watching = watching, left = left,
 			hovering = GF.IsHovering(), restored = { bg = skin.bg:IsShown(), band = GF.parts.band:IsShown(), alpha = chromeAlpha() },
 			flagsAfter = flagsAfter, count = #GF.chrome, steps = steps, clearTrack = clearTrack,
-			track = select(4, track:GetVertexColor()), progressWash = select(4, Polestar.Theme.Wash("progress")) })"#)
+			track = select(4, track:GetVertexColor()), progressWash = select(4, Northstar.Theme.Wash("progress")) })"#)
 	.remove(0);
 	let count = out["count"].as_u64().unwrap() as usize;
 	let all = |v: i32| Value::Array(vec![json!(v); count]);
@@ -1030,7 +1030,7 @@ fn a_goal_with_alternative_trainers_shows_where_it_is_and_cycles_to_the_next() {
 		local after = visibleRows()[1]
 		emit({ before = before, tip = tip, call = lastCall("CycleCandidate"), subject = after.psGoal.subject, sub = after.Sub:IsShown(),
 			person = GF.parts.person.Name:GetText(), where = GF.parts.person.Where:GetText(),
-			alone = Polestar.UI.GoalSubline(after.psGoal) })"#)
+			alone = Northstar.UI.GoalSubline(after.psGoal) })"#)
 	.remove(0);
 	assert_eq!(out["before"], json!({ "sub": false, "alt": true, "person": "Georgio Bolero", "where": "Stormwind City" }), "the person names the zone; the goal does not repeat it");
 	assert!(has(&out["tip"], "2 others nearby; the arrow button switches to the next."));
@@ -1051,7 +1051,7 @@ fn the_nearby_menu_opens_the_vendor_page_a_pick_goes_to_the_nearest_seller_of_it
 		local B = GF.nearbyButton
 		local function rows()
 			local out = {}
-			for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then out[#out + 1] = r end end
+			for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then out[#out + 1] = r end end
 			return out
 		end
 		local function pick(text)
@@ -1085,7 +1085,7 @@ fn the_nearby_menu_opens_a_page_of_weapons_known_ones_and_those_not_yet_at_this_
 		local B = GF.nearbyButton
 		local function rows()
 			local out = {}
-			for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then out[#out + 1] = r end end
+			for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then out[#out + 1] = r end end
 			return out
 		end
 		local function pick(text)
@@ -1096,7 +1096,7 @@ fn the_nearby_menu_opens_a_page_of_weapons_known_ones_and_those_not_yet_at_this_
 		local page = {}
 		for _, r in ipairs(rows()) do page[#page + 1] = { r.Text:GetText(), r.psItem.disabled and true or false } end
 		pick("Daggers (known)")
-		local stillOpen = PolestarMenu:IsShown()
+		local stillOpen = NorthstarMenu:IsShown()
 		pick("Swords")
 		local go = lastCall("NearbyGo")
 		B:Click()
@@ -1118,10 +1118,10 @@ fn on_the_way_to_a_nearby_service_a_banner_and_the_nearby_menu_offer_the_way_bac
 		local B = GF.parts.banner
 		local before = B:IsShown()
 		uistub.trip = { name = "Innkeeper Farley", label = "Innkeeper" }
-		Polestar.Fire("NEARBY_TRIP", uistub.trip)
+		Northstar.Fire("NEARBY_TRIP", uistub.trip)
 		local shown = { B:IsShown(), B.Text:GetText(), B.Jump.Label:GetText(), B.Close:IsShown() }
 		GF.nearbyButton:Click()
-		local first = PolestarMenu.rows[1].Text:GetText()
+		local first = NorthstarMenu.rows[1].Text:GetText()
 		W.HideMenu()
 		B.Jump:Click()
 		local ended = lastCall("NearbyEndTrip") ~= nil
@@ -1140,7 +1140,7 @@ fn guide_outleveled_a_dismissible_banner_offers_the_better_guide_in_the_same_tab
 		uistub.openTabs(TABS, 1)
 		local B = GF.parts.banner
 		local h0 = F:GetHeight()
-		Polestar.Fire("GUIDE_OUTLEVELED", uistub.elwynn, "forever/alliance/02-westfall")
+		Northstar.Fire("GUIDE_OUTLEVELED", uistub.elwynn, "forever/alliance/02-westfall")
 		local shown = { B:IsShown(), B.Jump.Label:GetText(), F:GetHeight() > h0 }
 		shownTabs()[2]:Click()
 		local otherTab = B:IsShown()
@@ -1148,7 +1148,7 @@ fn guide_outleveled_a_dismissible_banner_offers_the_better_guide_in_the_same_tab
 		local back = B:IsShown()
 		B.Close:Click()
 		local dismissed = B:IsShown()
-		Polestar.Fire("GUIDE_OUTLEVELED", uistub.elwynn, "forever/alliance/02-westfall")
+		Northstar.Fire("GUIDE_OUTLEVELED", uistub.elwynn, "forever/alliance/02-westfall")
 		B.Jump:Click()
 		emit({ shown = shown, otherTab = otherTab, back = back, dismissed = dismissed, jump = lastCall("SetGuide"),
 			after = B:IsShown(), header = GF.parts.nav.Title:GetText(), tabs = #shownTabs() })"#)
@@ -1183,7 +1183,7 @@ fn the_header_carries_nearby_services_between_skip_and_the_bug_its_menu_points_t
 		local nav, B = GF.parts.nav, GF.nearbyButton
 		local function rows()
 			local out = {}
-			for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then out[#out + 1] = r end end
+			for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then out[#out + 1] = r end end
 			return out
 		end
 		local function texts()
@@ -1208,13 +1208,13 @@ fn the_header_carries_nearby_services_between_skip_and_the_bug_its_menu_points_t
 		for _, r in ipairs(rows()) do if not r.psItem.disabled then disabled = disabled + 1 end end
 		W.HideMenu()
 		stub.inCombat = false
-		Polestar.Set("nav.nearbyButton", false)
+		Northstar.Set("nav.nearbyButton", false)
 		local off = B:IsShown()
 		-- Off, Skip moves up to the bug, and stays there on the next step.
 		local skipOff = { now = relOf(nav.Skip) == nav.Report }
 		uistub.setGuide(uistub.elwynn, 4)
 		skipOff.nextStep = relOf(nav.Skip) == nav.Report
-		Polestar.Set("nav.nearbyButton", true)
+		Northstar.Set("nav.nearbyButton", true)
 		skipOff.backOn = relOf(nav.Skip) == B
 		emit({ noGuide = noGuide, order = order, items = items, mining = mining, inn = inn, enabledInCombat = disabled, off = off, skipOff = skipOff })"#)
 	.remove(0);
@@ -1234,19 +1234,19 @@ fn the_header_menu_picker_new_tab_compact_transparent_lock_destructive_items_ask
 		uistub.setGuide(uistub.elwynn, 3)
 		GF.menuButton:Click()
 		local items = {}
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then items[#items + 1] = r.Text:GetText() end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then items[#items + 1] = r.Text:GetText() end end
 		GF.menuButton:Click()
 		menuPick("Lock window")
 		menuPick("Transparent")
-		local style = Polestar.Get("ui.style")
+		local style = Northstar.Get("ui.style")
 		local reset = menuPick("Reset guide progress")
-		local armed = { label = reset.Text:GetText(), open = PolestarMenu:IsShown() }
+		local armed = { label = reset.Text:GetText(), open = NorthstarMenu:IsShown() }
 		reset:Click()
 		menuPick("Choose guide")
-		local picker = PolestarPicker:IsShown()
+		local picker = NorthstarPicker:IsShown()
 		menuPick("Options")
-		emit({ items = items, locked = Polestar.Get("ui.locked"), style = style, armed = armed, reset = lastCall("ResetProgress"),
-			picker = picker, options = PolestarOptions:IsShown(), pickerAfter = PolestarPicker:IsShown() })"#)
+		emit({ items = items, locked = Northstar.Get("ui.locked"), style = style, armed = armed, reset = lastCall("ResetProgress"),
+			picker = picker, options = NorthstarOptions:IsShown(), pickerAfter = NorthstarPicker:IsShown() })"#)
 	.remove(0);
 	assert_eq!(
 		out["items"],
@@ -1266,22 +1266,22 @@ fn the_menu_offers_the_quest_log_cleanup_with_its_count_and_hides_it_when_there_
 	let out = run(r#"
 		uistub.setGuide(uistub.elwynn, 3)
 		local list = { { quest = 77, title = "Stray", status = "unplanned" }, { quest = 78, title = "Old", status = "grey" } }
-		Polestar.RoutePlan.Unneeded = function() return list end
+		Northstar.RoutePlan.Unneeded = function() return list end
 		local function items()
 			GF.menuButton:Click()
 			local out = {}
-			for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then out[#out + 1] = r.Text:GetText() end end
+			for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then out[#out + 1] = r.Text:GetText() end end
 			GF.menuButton:Click()
 			return out
 		end
 		local two = items()
-		local before = PolestarQuestRoom and PolestarQuestRoom:IsShown() or false
+		local before = NorthstarQuestRoom and NorthstarQuestRoom:IsShown() or false
 		menuPick("Clean up quest log (2)")
-		local opened = PolestarQuestRoom and PolestarQuestRoom:IsShown() or false
-		PolestarQuestRoom:Hide()
+		local opened = NorthstarQuestRoom and NorthstarQuestRoom:IsShown() or false
+		NorthstarQuestRoom:Hide()
 		list = {}
 		local none = items()
-		Polestar.RoutePlan.Unneeded = function() return nil end
+		Northstar.RoutePlan.Unneeded = function() return nil end
 		emit({ two = two, before = before, opened = opened, none = none, unsettled = items() })"#)
 	.remove(0);
 	assert_eq!(out["two"][4], "Clean up quest log (2)", "right after Report a problem");
@@ -1299,17 +1299,17 @@ fn the_catch_up_shows_every_step_up_to_the_one_placed_each_time_a_guide_opened_i
 	let out = run(r#"
 		uistub.setGuide(uistub.elwynn, 4)
 		local nav, Count = GF.parts.nav, GF.parts.nav.Steps.Count
-		Polestar.Fire("GUIDE_PLACED", uistub.elwynn, 4, {})
+		Northstar.Fire("GUIDE_PLACED", uistub.elwynn, 4, {})
 		local rolling = { GF.catchingUp, GF.ShownStep() }
 		stub.advance(0.6)
 		GF.Render()
-		local mid = { count = Count:GetText(), shown = GF.ShownStep(), engine = Polestar.Engine.GetStepIndex() }
+		local mid = { count = Count:GetText(), shown = GF.ShownStep(), engine = Northstar.Engine.GetStepIndex() }
 		stub.advance(3)
 		local done = { GF.catchingUp or false, Count:GetText(), GF.parts.card:GetAlpha(), GF.ShownStep() }
-		Polestar.Fire("GUIDE_PLACED", uistub.elwynn, 4, {})
+		Northstar.Fire("GUIDE_PLACED", uistub.elwynn, 4, {})
 		local again = GF.catchingUp ~= nil
 		stub.advance(3)
-		Polestar.Fire("GUIDE_PLACED", uistub.elwynn, 2, {})
+		Northstar.Fire("GUIDE_PLACED", uistub.elwynn, 2, {})
 		local single = GF.catchingUp ~= nil
 		emit({ rolling = rolling, mid = mid, done = done, again = again, single = single })"#)
 	.remove(0);
@@ -1354,7 +1354,7 @@ fn profession_reputation_and_achievement_goals_own_colours_icons_progress_bars()
 		emit(snapshot())
 		local s = {}
 		local hex = {}
-		for _, k in ipairs({ "skill", "spell", "faction", "area", "achievement" }) do hex[k] = Polestar.Theme.Hex(k) end
+		for _, k in ipairs({ "skill", "spell", "faction", "area", "achievement" }) do hex[k] = Northstar.Theme.Hex(k) end
 		s.hex = hex
 		stub.RunScript(rowFor("Stormwind"), "OnEnter")
 		s.tip = GameTooltip.lines
@@ -1388,28 +1388,28 @@ fn profession_reputation_and_achievement_goals_own_colours_icons_progress_bars()
 fn xp_pace_from_the_qol_tracker_rate_and_time_to_level_hidden_when_off_or_maxed() {
 	let out = run(r#"
 		local stats = { rate = 3400, timeToLevel = 3900, maxed = false }
-		Polestar.QoL = {
+		Northstar.QoL = {
 			GetXPStats = function() return stats end,
 			Duration = function(s) return string.format("%dh %02dm", math.floor(s / 3600), math.floor(s % 3600 / 60)) end,
 			XP = { Short = function(n) return string.format("%.1fk", n / 1000) end, Summary = function() return "Level 12 45.3%" end },
 		}
 		uistub.setGuide(uistub.elwynn, 3)
 		local h0 = F:GetHeight()
-		Polestar.Fire("QOL_XP_UPDATED", stats)
+		Northstar.Fire("QOL_XP_UPDATED", stats)
 		local xp = GF.xp
 		local on = { shown = xp:IsShown(), text = xp.Text:GetText(), taller = F:GetHeight() > h0 }
 		stub.RunScript(xp, "OnEnter")
 		local tip = GameTooltip.lines
-		Polestar.Set("ui.compact", true)
+		Northstar.Set("ui.compact", true)
 		local compact = xp:IsShown()
-		Polestar.Set("ui.compact", false)
+		Northstar.Set("ui.compact", false)
 		local back = xp:IsShown()
 		stats.maxed = true
-		Polestar.Fire("QOL_XP_UPDATED", stats)
+		Northstar.Fire("QOL_XP_UPDATED", stats)
 		local maxed = xp:IsShown()
-		Polestar.Fire("QOL_XP_UPDATED", nil)
-		Polestar.QoL.GetXPStats = function() return nil end
-		Polestar.Fire("QOL_XP_UPDATED", nil)
+		Northstar.Fire("QOL_XP_UPDATED", nil)
+		Northstar.QoL.GetXPStats = function() return nil end
+		Northstar.Fire("QOL_XP_UPDATED", nil)
 		emit({ on = on, tip = tip, compact = compact, back = back, maxed = maxed, off = xp:IsShown(), h = F:GetHeight() == h0 })"#)
 	.remove(0);
 	assert_eq!(out["on"], json!({ "shown": true, "text": "3.4k XP/h  \u{b7}  1h 05m to level", "taller": true }));
@@ -1429,14 +1429,14 @@ fn xp_pace_from_the_qol_tracker_rate_and_time_to_level_hidden_when_off_or_maxed(
 fn the_pace_line_says_on_pace_behind_with_a_grind_coming_behind_with_none_and_names_a_quest_too_hard() {
 	let out = run(r#"
 		local stats = { rate = 3400, maxed = false }
-		Polestar.QoL = {
+		Northstar.QoL = {
 			GetXPStats = function() return stats end,
 			Duration = function(s) return string.format("%dh %02dm", math.floor(s / 3600), math.floor(s % 3600 / 60)) end,
 			XP = { Short = function(n) return string.format("%.1fk", n / 1000) end, Summary = function() return "" end },
 		}
 		uistub.setGuide(uistub.elwynn, 3)
 		local pace
-		Polestar.Levels.Pace = function() return pace end
+		Northstar.Levels.Pace = function() return pace end
 		local function line(p, s) pace = p; return GF.PaceText(s) or false end
 		local out = {}
 		out.onPace = line({ target = 20, step = 32, reach = 20.1, bars = 0, short = 0, xp = 0, kind = "goal", live = 30 }, stats)
@@ -1455,10 +1455,10 @@ fn the_pace_line_says_on_pace_behind_with_a_grind_coming_behind_with_none_and_na
 		hard.live = 20
 		out.hardNow = line(hard, stats)
 		pace = grind
-		Polestar.Fire("QOL_XP_UPDATED", stats)
+		Northstar.Fire("QOL_XP_UPDATED", stats)
 		out.row = GF.xp:IsShown() and GF.xp.Text:GetText()
 		out.nothing = line(nil, stats)
-		out.warn = Polestar.Theme.Hex("warning")
+		out.warn = Northstar.Theme.Hex("warning")
 		emit(out)"#)
 	.remove(0);
 	let warn = |s: &str| format!("|c{}{s}|r", text(&out["warn"]));
@@ -1492,7 +1492,7 @@ fn a_step_with_a_quest_well_over_your_level_says_so_under_its_header() {
 		local red = { shown = hint:IsShown(), text = hint:GetText(), color = { hint:GetTextColor() } }
 		uistub.setStep(7)
 		local none = hint:IsShown()
-		emit({ red = red, none = none, danger = { Polestar.Theme.Color("danger") } })"#)
+		emit({ red = red, none = none, danger = { Northstar.Theme.Color("danger") } })"#)
 	.remove(0);
 	assert_eq!(out["red"]["shown"], true);
 	assert_eq!(out["red"]["text"], "Level 9 quest: you're 4.1", "level 4, 16% in: cut to one place");
@@ -1503,8 +1503,8 @@ fn a_step_with_a_quest_well_over_your_level_says_so_under_its_header() {
 #[test]
 fn goal_lines_render_the_engine_text_author_overrides_and_counts_survive_the_subject_keeps_its_colour() {
 	let out = run(r#"
-		local UI = Polestar.UI
-		local hex = Polestar.Theme.Hex("npc")
+		local UI = Northstar.UI
+		local hex = Northstar.Theme.Hex("npc")
 		emit({
 			override = UI.GoalText({ t = "train", verb = "Train at", subject = "your trainer", subjectKind = "text", text = "Learn Charge and Rend", status = "active" }),
 			count = UI.GoalText({ t = "kill", verb = "Kill", subject = "Young Wolf", subjectKind = "npc", text = "Kill 5 Young Wolf", status = "active" }),
@@ -1531,8 +1531,8 @@ fn a_dismissed_nav_target_marks_no_row_no_fall_back_to_the_engine_waypoint() {
 			return n
 		end
 		local before = marked()
-		Polestar.Nav.GetTarget = function() return nil end
-		Polestar.Fire("WAYPOINT_CHANGED", nil)
+		Northstar.Nav.GetTarget = function() return nil end
+		Northstar.Fire("WAYPOINT_CHANGED", nil)
 		emit({ before = before, after = marked() })"#)
 	.remove(0);
 	assert_eq!(out, json!({ "before": 1, "after": 0 }));
@@ -1542,15 +1542,15 @@ fn a_dismissed_nav_target_marks_no_row_no_fall_back_to_the_engine_waypoint() {
 fn combat_state_is_read_at_login_so_a_reload_mid_fight_still_fades_or_hides_the_window() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", &FILES)],
+		addons: vec![Addon::files("Northstar", &FILES)],
 		script: r#"uistub.install()
 			stub.inCombat = true
-			Polestar.Set("ui.combat", "hide")
+			Northstar.Set("ui.combat", "hide")
 			stub.login()
-			local hidden = not PolestarGuideFrame:IsShown()
+			local hidden = not NorthstarGuideFrame:IsShown()
 			stub.inCombat = false
 			stub.fire("PLAYER_REGEN_ENABLED")
-			emit({ hidden = hidden, shown = PolestarGuideFrame:IsShown() })"#
+			emit({ hidden = hidden, shown = NorthstarGuideFrame:IsShown() })"#
 			.into(),
 		..Default::default()
 	});
@@ -1579,7 +1579,7 @@ fn in_dungeons_and_battlegrounds_a_fresh_profile_hides_the_window_in_a_dungeon_r
 		ENTER,
 		r#"
 		uistub.setGuide(uistub.elwynn, 3)
-		local stored = PolestarDB.settings.ui and PolestarDB.settings.ui.instance
+		local stored = NorthstarDB.settings.ui and NorthstarDB.settings.ui.instance
 		local hidden = {}
 		for _, kind in ipairs({ "party", "raid", "pvp", "arena" }) do
 			enter(kind)
@@ -1590,7 +1590,7 @@ fn in_dungeons_and_battlegrounds_a_fresh_profile_hides_the_window_in_a_dungeon_r
 		enter("scenario")
 		local scenario = F:IsShown()
 		enter(nil)
-		emit({ stored = stored or false, hidden = hidden, scenario = scenario, shown = Polestar.Get("ui.shown") })"#,
+		emit({ stored = stored or false, hidden = hidden, scenario = scenario, shown = Northstar.Get("ui.shown") })"#,
 	]
 	.concat())
 	.remove(0);
@@ -1612,12 +1612,12 @@ fn in_dungeons_and_battlegrounds_a_stored_keep_visible_choice_is_kept_and_the_wi
 		local dungeon = F:IsShown()
 		enter("pvp")
 		local battleground = F:IsShown()
-		Polestar.Set("ui.instance", "hide")
+		Northstar.Set("ui.instance", "hide")
 		local turnedOn = F:IsShown()
 		emit({ dungeon = dungeon, battleground = battleground, turnedOn = turnedOn, told = told() })"#,
 		]
 		.concat(),
-		r#"PolestarDB = { schema = 1, settings = { ui = { instance = "show" } } }"#,
+		r#"NorthstarDB = { schema = 1, settings = { ui = { instance = "show" } } }"#,
 		"",
 	)
 	.remove(0);
@@ -1632,14 +1632,14 @@ fn in_dungeons_and_battlegrounds_what_goes_with_the_guide_goes_while_it_waits_an
 		ENTER,
 		r#"
 		local fired = {}
-		Polestar.On("GUIDE_SHOWN", function(shown) fired[#fired + 1] = shown end)
-		local outside = Polestar.GuideShown()
+		Northstar.On("GUIDE_SHOWN", function(shown) fired[#fired + 1] = shown end)
+		local outside = Northstar.GuideShown()
 		enter("pvp")
-		local inside = Polestar.GuideShown()
-		Polestar.Fire("TOGGLE_FRAME")
-		local opened = Polestar.GuideShown()
+		local inside = Northstar.GuideShown()
+		Northstar.Fire("TOGGLE_FRAME")
+		local opened = Northstar.GuideShown()
 		enter(nil)
-		emit({ outside = outside, inside = inside, opened = opened, left = Polestar.GuideShown(), fired = fired })"#,
+		emit({ outside = outside, inside = inside, opened = opened, left = Northstar.GuideShown(), fired = fired })"#,
 	]
 	.concat())
 	.remove(0);
@@ -1654,23 +1654,23 @@ fn in_dungeons_and_battlegrounds_the_first_hide_on_the_account_says_once_how_to_
 	let out = run(&[
 		ENTER,
 		r#"
-		local function last() return (stub.messages[#stub.messages] or ""):gsub("^.-Polestar|r: ", "") end
-		Polestar.Set("ui.instance", "show")
+		local function last() return (stub.messages[#stub.messages] or ""):gsub("^.-Northstar|r: ", "") end
+		Northstar.Set("ui.instance", "show")
 		enter("party")
 		enter(nil)
 		local keptVisible = told()
-		Polestar.Set("ui.instance", "hide")
-		Polestar.Fire("HIDE_FRAME")
+		Northstar.Set("ui.instance", "hide")
+		Northstar.Fire("HIDE_FRAME")
 		enter("party")
 		enter(nil)
 		local windowOff = told()
-		Polestar.Fire("SHOW_FRAME")
+		Northstar.Fire("SHOW_FRAME")
 		enter("party")
 		local first, text = told(), last()
 		enter(nil)
 		enter("pvp")
 		enter("raid")
-		emit({ keptVisible = keptVisible, windowOff = windowOff, first = first, text = text, after = told(), saved = PolestarDB.instanceHideTold })"#,
+		emit({ keptVisible = keptVisible, windowOff = windowOff, first = first, text = text, after = told(), saved = NorthstarDB.instanceHideTold })"#,
 	]
 	.concat())
 	.remove(0);
@@ -1679,7 +1679,7 @@ fn in_dungeons_and_battlegrounds_the_first_hide_on_the_account_says_once_how_to_
 
 #[test]
 fn in_dungeons_and_battlegrounds_the_line_is_not_said_again_on_an_account_already_told() {
-	let out = run_with(&[ENTER, r#"enter("party"); emit({ hidden = not F:IsShown(), told = told() })"#].concat(), r#"PolestarDB = { schema = 1, instanceHideTold = true }"#, "").remove(0);
+	let out = run_with(&[ENTER, r#"enter("party"); emit({ hidden = not F:IsShown(), told = told() })"#].concat(), r#"NorthstarDB = { schema = 1, instanceHideTold = true }"#, "").remove(0);
 	assert_eq!(out, json!({ "hidden": true, "told": 0 }));
 }
 
@@ -1688,15 +1688,15 @@ fn in_dungeons_polestar_the_key_binding_or_the_minimap_button_opens_the_window_t
 	let out = run(&[
 		ENTER,
 		r#"
-		Polestar.Set("ui.instance", "hide")
+		Northstar.Set("ui.instance", "hide")
 		enter("party")
-		Polestar.Fire("TOGGLE_FRAME")
-		local opened, storedOpen = F:IsShown(), Polestar.Get("ui.shown")
+		Northstar.Fire("TOGGLE_FRAME")
+		local opened, storedOpen = F:IsShown(), Northstar.Get("ui.shown")
 		enter("party")
 		local loadingScreen = F:IsShown()
-		Polestar.Fire("TOGGLE_FRAME")
-		local closed, storedClosed = F:IsShown(), Polestar.Get("ui.shown")
-		Polestar.Fire("TOGGLE_FRAME")
+		Northstar.Fire("TOGGLE_FRAME")
+		local closed, storedClosed = F:IsShown(), Northstar.Get("ui.shown")
+		Northstar.Fire("TOGGLE_FRAME")
 		enter(nil)
 		local outside = F:IsShown()
 		enter("party")
@@ -1714,14 +1714,14 @@ fn in_dungeons_a_guide_picked_there_polestar_show_or_the_show_the_window_switch_
 	let out = run(&[
 		ENTER,
 		r#"
-		Polestar.Set("ui.instance", "hide")
+		Northstar.Set("ui.instance", "hide")
 		enter("party")
-		Polestar.Fire("SHOW_FRAME")
+		Northstar.Fire("SHOW_FRAME")
 		local shown = F:IsShown()
 		enter(nil)
 		enter("party")
-		Polestar.Set("ui.shown", false)
-		Polestar.Set("ui.shown", true)
+		Northstar.Set("ui.shown", false)
+		Northstar.Set("ui.shown", true)
 		emit({ shown = shown, switched = F:IsShown() })"#,
 	]
 	.concat())
@@ -1734,11 +1734,11 @@ fn in_dungeons_a_window_hidden_by_hand_stays_hidden_after_leaving() {
 	let out = run(&[
 		ENTER,
 		r#"
-		Polestar.Set("ui.instance", "hide")
-		Polestar.Fire("HIDE_FRAME")
+		Northstar.Set("ui.instance", "hide")
+		Northstar.Fire("HIDE_FRAME")
 		enter("party")
 		enter(nil)
-		emit({ shown = F:IsShown(), stored = Polestar.Get("ui.shown") })"#,
+		emit({ shown = F:IsShown(), stored = Northstar.Get("ui.shown") })"#,
 	]
 	.concat())
 	.remove(0);
@@ -1750,15 +1750,15 @@ fn in_dungeons_a_window_off_on_the_way_in_opened_and_closed_there_with_polestar_
 	let out = run(&[
 		ENTER,
 		r#"
-		Polestar.Set("ui.instance", "hide")
-		Polestar.Fire("HIDE_FRAME")
+		Northstar.Set("ui.instance", "hide")
+		Northstar.Fire("HIDE_FRAME")
 		enter("party")
-		Polestar.Fire("TOGGLE_FRAME")
+		Northstar.Fire("TOGGLE_FRAME")
 		local opened = F:IsShown()
-		Polestar.Fire("TOGGLE_FRAME")
+		Northstar.Fire("TOGGLE_FRAME")
 		local closed = F:IsShown()
 		enter(nil)
-		emit({ opened = opened, closed = closed, shown = F:IsShown(), stored = Polestar.Get("ui.shown") })"#,
+		emit({ opened = opened, closed = closed, shown = F:IsShown(), stored = Northstar.Get("ui.shown") })"#,
 	]
 	.concat())
 	.remove(0);
@@ -1770,14 +1770,14 @@ fn in_dungeons_a_fight_there_does_not_bring_the_window_back_and_in_combat_still_
 	let out = run(&[
 		ENTER,
 		r#"
-		Polestar.Set("ui.instance", "hide")
-		Polestar.Set("ui.combat", "hide")
+		Northstar.Set("ui.instance", "hide")
+		Northstar.Set("ui.combat", "hide")
 		enter("party")
 		stub.fire("PLAYER_REGEN_DISABLED")
 		local fight = F:IsShown()
 		stub.fire("PLAYER_REGEN_ENABLED")
 		local afterFight = F:IsShown()
-		Polestar.Fire("TOGGLE_FRAME")
+		Northstar.Fire("TOGGLE_FRAME")
 		stub.fire("PLAYER_REGEN_DISABLED")
 		local openedFight = F:IsShown()
 		stub.fire("PLAYER_REGEN_ENABLED")
@@ -1792,15 +1792,15 @@ fn in_dungeons_a_fight_there_does_not_bring_the_window_back_and_in_combat_still_
 fn in_dungeons_a_reload_inside_still_hides_the_window() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", &FILES)],
+		addons: vec![Addon::files("Northstar", &FILES)],
 		script: r#"uistub.install()
 			uistub.instance = "party"
-			Polestar.Set("ui.instance", "hide")
+			Northstar.Set("ui.instance", "hide")
 			stub.login()
-			local hidden = not PolestarGuideFrame:IsShown()
+			local hidden = not NorthstarGuideFrame:IsShown()
 			uistub.instance = nil
 			stub.fire("PLAYER_ENTERING_WORLD", false, false)
-			emit({ hidden = hidden, shown = PolestarGuideFrame:IsShown() })"#
+			emit({ hidden = hidden, shown = NorthstarGuideFrame:IsShown() })"#
 			.into(),
 		..Default::default()
 	});
@@ -1817,8 +1817,8 @@ fn an_unavailable_quest_stays_readable_but_muted_says_why_and_drops_its_counters
 		local r = rowFor("Kobold Vermin")
 		local _, _, _, a = r.Text:GetTextColor()
 		emit({ text = r.Text:GetText(), detail = r.Sub:GetText(), progress = false, mark = r.Mark:IsShown(),
-			color = { r.Text:GetTextColor() }, muted = { Polestar.Theme.Color("textMuted") }, alpha = a,
-			fallback = Polestar.UI.GoalDetail({ unavailable = "offer" }) })"#)
+			color = { r.Text:GetTextColor() }, muted = { Northstar.Theme.Color("textMuted") }, alpha = a,
+			fallback = Northstar.UI.GoalDetail({ unavailable = "offer" }) })"#)
 	.remove(0);
 	assert_eq!(out["text"], "Kill Kobold Vermin", "plain, no subject colour");
 	assert_eq!(out["detail"], "Needs The Demon Seed first");
@@ -1837,8 +1837,8 @@ fn a_grey_accept_skip_grey_quests_keeps_says_which_quest_it_opens_on_its_row_and
 		g.keptGrey, g.keptGreyText = 18, "Grey, kept: opens Brotherhood of Thieves"
 		uistub.update()
 		local r = rowFor("Investigate Echo Ridge")
-		emit({ sub = r and r.Sub:GetText() or false, line = Polestar.UI.GoalSubline(g), detail = Polestar.UI.GoalDetail(g),
-			plain = Polestar.UI.GoalSubline(uistub.goal(4, 4)) or false })"#)
+		emit({ sub = r and r.Sub:GetText() or false, line = Northstar.UI.GoalSubline(g), detail = Northstar.UI.GoalDetail(g),
+			plain = Northstar.UI.GoalSubline(uistub.goal(4, 4)) or false })"#)
 	.remove(0);
 	assert_eq!(out["line"], "Grey, kept: opens Brotherhood of Thieves");
 	assert_eq!(out["sub"], out["line"], "shown under the goal in the window");
@@ -1860,7 +1860,7 @@ fn a_farm_spot_collect_goal_names_its_mobs_their_levels_and_zone_and_cycles_to_t
 		uistub.update()
 		local r = rowFor("Tough Wolf Meat")
 		local before = { detail = r.Sub:GetText(), alt = r.Alt:IsShown(), progress = r.Text:GetText():gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):match("(%d+/%d+)$") }
-		local elsewhere = Polestar.UI.GoalSubline(r.psGoal, 1453)
+		local elsewhere = Northstar.UI.GoalSubline(r.psGoal, 1453)
 		r.Alt:Click()
 		emit({ before = before, call = lastCall("CycleCandidate"), elsewhere = elsewhere })"#)
 	.remove(0);
@@ -1881,8 +1881,8 @@ fn an_area_objective_says_its_mobs_are_all_over_the_area_and_its_row_button_move
 		stub.RunScript(r.Alt, "OnEnter")
 		local tip = GameTooltip.lines
 		r.Alt:Click()
-		local collect = Polestar.UI.GoalSubline({ t = "collect", spots = 5, spread = true, status = "active" })
-		local camp = Polestar.UI.GoalSubline({ t = "kill", subject = "Kobold Vermin", spots = 3, status = "active" })
+		local collect = Northstar.UI.GoalSubline({ t = "collect", spots = 5, spread = true, status = "active" })
+		local camp = Northstar.UI.GoalSubline({ t = "kill", subject = "Kobold Vermin", spots = 3, status = "active" })
 		emit({ before = before, tip = tip, call = lastCall("CycleSpot"), collect = collect, camp = camp or false })"#)
 	.remove(0);
 	assert_eq!(out["before"], json!({ "sub": "Kobold Vermin all over this area: 12 spots", "alt": true }));
@@ -1909,7 +1909,7 @@ fn a_quest_started_by_a_dropped_item_reads_as_one_line_the_quest_the_go_to_namin
 		} }
 		uistub.guides[fog.id] = fog
 		uistub.setGuide(fog.id, 1)
-		Polestar.Nav.SetTarget(1429, 44.7, 70.7, "Field of Giants")
+		Northstar.Nav.SetTarget(1429, 44.7, 70.7, "Field of Giants")
 		uistub.update()
 		local rows = {}
 		for _, r in ipairs(visibleRows()) do
@@ -1979,15 +1979,15 @@ fn train_due_shows_a_training_banner_after_the_out_levelled_offer_show_points_th
 		uistub.openTabs(TABS, 1)
 		local B = GF.parts.banner
 		local trainer = { npc = 914, npcName = "Ander Germaine", map = 1453, x = 79.6, y = 70.2, z = 96.5 }
-		Polestar.Fire("GUIDE_OUTLEVELED", uistub.elwynn, "forever/alliance/02-westfall")
-		Polestar.Fire("TRAIN_DUE", 12, trainer)
+		Northstar.Fire("GUIDE_OUTLEVELED", uistub.elwynn, "forever/alliance/02-westfall")
+		Northstar.Fire("TRAIN_DUE", 12, trainer)
 		local first = B.Jump.Label:GetText()
 		B.Close:Click()
 		local second = { text = B.Text:GetText(), show = B.Jump.Label:GetText(), later = B.Later:IsShown(), close = B.Close:IsShown() }
 		B.Jump:Click()
 		local target = lastCall("SetTarget")
 		local afterShow, aimed = B:IsShown(), { uistub.target.stop, uistub.target.z }
-		Polestar.Fire("TRAIN_DUE", 14, trainer)
+		Northstar.Fire("TRAIN_DUE", 14, trainer)
 		B.Later:Click()
 		emit({ first = first, second = second, target = target, aimed = aimed, afterShow = afterShow, afterLater = B:IsShown() })"#)
 	.remove(0);
@@ -2014,7 +2014,7 @@ fn the_training_banner_says_how_many_steps_ahead_the_guide_trains_the_class_or_t
 		local B = GF.parts.banner
 		local trainer = { npc = 914, npcName = "Ander Germaine", map = 1453, x = 79.6, y = 70.2 }
 		uistub.trainStop = { 5, "Thunderbrew Distillery" }
-		Polestar.Fire("TRAIN_DUE", 12, trainer)
+		Northstar.Fire("TRAIN_DUE", 12, trainer)
 		local ahead = B.Text:GetText()
 		uistub.trainStop = { 2 }
 		GF.Layout()
@@ -2056,7 +2056,7 @@ fn an_optional_goal_is_tagged_in_the_warning_colour_and_skips_in_one_click_then_
 		local after = { text = r.Text:GetText(), skip = r.Skip:IsShown() and r.Skip.Label:GetText(), check = r.Check:IsShown(),
 			icon = r.Icon:GetTexture():match("([%w-]+)$") }
 		r.Skip:Click()
-		emit({ warning = Polestar.Theme.Hex("warning"), muted = Polestar.Theme.Hex("textMuted"), before = before, call = call, after = after,
+		emit({ warning = Northstar.Theme.Hex("warning"), muted = Northstar.Theme.Hex("textMuted"), before = before, call = call, after = after,
 			back = rowFor("Tough Wolf Meat").psGoal.status })"#)
 	.remove(0);
 	let before_text = text(&out["before"]["text"]);
@@ -2079,7 +2079,7 @@ fn the_current_goal_is_the_one_the_engine_names_past_the_required_goals_an_optio
 		g4.optional = true
 		uistub.goal(3, 3).status = "done"
 		uistub.update()
-		local accent = Polestar.Theme.Hex("accent")
+		local accent = Northstar.Theme.Hex("accent")
 		local function hex(t) local r, g, b = t:GetVertexColor(); return string.format("ff%02x%02x%02x", r * 255 + 0.5, g * 255 + 0.5, b * 255 + 0.5) end
 		emit({ accent = accent, wolf = hex(rowFor("Tough Wolf Meat").Icon), kobold = hex(rowFor("Kobold Vermin").Icon) })"#)
 	.remove(0);
@@ -2094,9 +2094,9 @@ fn skip_in_the_navigator_skips_the_step_shown_and_the_banner_undoes_it() {
 		local N, B = GF.parts.nav, GF.parts.banner
 		local shown = { N.Skip:IsShown(), N.Skip.Label:GetText() }
 		N.Skip:Click()
-		local skipped = { lastCall("Skip"), Polestar.Engine.GetStepIndex(), B:IsShown(), B.Text:GetText(), B.Jump.Label:GetText() }
+		local skipped = { lastCall("Skip"), Northstar.Engine.GetStepIndex(), B:IsShown(), B.Text:GetText(), B.Jump.Label:GetText() }
 		B.Jump:Click()
-		emit({ shown = shown, skipped = skipped, undo = lastCall("Unskip"), at = Polestar.Engine.GetStepIndex(), banner = B:IsShown() })"#)
+		emit({ shown = shown, skipped = skipped, undo = lastCall("Unskip"), at = Northstar.Engine.GetStepIndex(), banner = B:IsShown() })"#)
 	.remove(0);
 	assert_eq!(out["shown"], json!([true, "Skip"]));
 	assert_eq!(out["skipped"], json!([["Skip"], 4, true, "Skipped Step 3  \u{b7}  Kobold Camp", "Undo"]));
@@ -2159,9 +2159,9 @@ fn the_next_spot_of_an_area_objective_takes_the_arrow_there_over_a_point_picked_
 		local g = uistub.goal(3, 3)
 		g.spots, g.spread = 12, true
 		uistub.update()
-		Polestar.Nav.SetTarget(1429, 50, 50, "By hand")
+		Northstar.Nav.SetTarget(1429, 50, 50, "By hand")
 		rowFor("Kobold Vermin").Alt:Click()
-		emit({ cycle = lastCall("CycleSpot"), release = lastCall("ReleaseTarget"), target = Polestar.Nav.GetTarget().label })"#)
+		emit({ cycle = lastCall("CycleSpot"), release = lastCall("ReleaseTarget"), target = Northstar.Nav.GetTarget().label })"#)
 	.remove(0);
 	assert_eq!(out["cycle"], json!(["CycleSpot", 3, 3]));
 	assert_eq!(out["release"], json!(["ReleaseTarget"]));
@@ -2174,8 +2174,8 @@ fn labels_kept_in_tables_are_in_the_client_language_the_group_line_and_the_guide
 		r#"
 		UI.ShowPicker()
 		local tabs = {}
-		for _, b in ipairs(PolestarPicker.tabButtons) do if b:IsShown() then tabs[#tabs + 1] = b.Label:GetText() end end
-		emit({ elite = UI.GroupLine({ party = { kind = "elite", rank = 2 } }), tabs = tabs, title = PolestarPicker.Title:GetText() })"#,
+		for _, b in ipairs(NorthstarPicker.tabButtons) do if b:IsShown() then tabs[#tabs + 1] = b.Label:GetText() end end
+		emit({ elite = UI.GroupLine({ party = { kind = "elite", rank = 2 } }), tabs = tabs, title = NorthstarPicker.Title:GetText() })"#,
 		&fake_locale("itIT", &[("Rare elite: group advised", "Rarer Elite: Gruppe empfohlen"), ("Home", "Start"), ("Browse", "Stöbern"), ("Current", "Aktuell"), ("Recent", "Zuletzt")]),
 		"",
 	)
@@ -2193,7 +2193,7 @@ fn an_escort_quest_s_open_goal_says_the_npc_may_have_to_respawn_in_the_dungeon_c
 		emit({
 			open = line(open),
 			again = line(open, true),
-			hex = Polestar.Theme.Hex("dungeon"),
+			hex = Northstar.Theme.Hex("dungeon"),
 			done = line({ t = "accept", quest = 309, status = "done", escort = true }),
 			skipped = line({ t = "complete", quest = 309, status = "skipped", escort = true }),
 			plain = line({ t = "accept", quest = 7, status = "active" }),
@@ -2242,11 +2242,11 @@ fn guide_complete_up_next_names_where_the_hand_off_goes_now_and_asks_for_a_guide
 			return { text = e.Text:GetText(), primary = e.Primary:IsShown() and e.Primary.Label:GetText() or false }
 		end
 		GF.parts.empty.Primary:Click()
-		Polestar.Engine.NextGuide = function() return "forever/alliance/03-darkshore" end
+		Northstar.Engine.NextGuide = function() return "forever/alliance/03-darkshore" end
 		uistub.complete()
 		emit(state())
-		Polestar.Engine.NextGuide = function() return nil end
-		Polestar.Fire("STEP_CHANGED", nil)
+		Northstar.Engine.NextGuide = function() return nil end
+		Northstar.Fire("STEP_CHANGED", nil)
 		emit(state())"#);
 	let (next, none) = (&out[0], &out[1]);
 	assert!(is_match(text(&next["text"]), r"Darkshore"));
@@ -2260,7 +2260,7 @@ fn the_wheel_over_the_step_number_scrubs_through_the_steps_shift_by_ten_back_on_
 		uistub.setGuide(uistub.elwynn, 3)
 		uistub.live = 3
 		local hit = GF.parts.nav.Steps.Hit
-		local function at() return Polestar.Engine.GetStepIndex() end
+		local function at() return Northstar.Engine.GetStepIndex() end
 		stub.RunScript(hit, "OnMouseWheel", -1)
 		local seen = { at() }
 		stub.RunScript(hit, "OnMouseWheel", 1); stub.RunScript(hit, "OnMouseWheel", 1)
@@ -2273,7 +2273,7 @@ fn the_wheel_over_the_step_number_scrubs_through_the_steps_shift_by_ten_back_on_
 		seen[#seen + 1] = at()
 		stub.RunScript(hit, "OnMouseUp", "LeftButton")
 		local rows = {}
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then rows[#rows + 1] = r.Text:GetText():match("^%d+") end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then rows[#rows + 1] = r.Text:GetText():match("^%d+") end end
 		emit({ seen = seen, rows = rows })
 	"#);
 	assert_eq!(out[0]["seen"], json!([4, 2, 3, 8]), "down looks on, up back; after the pause the live step; Shift goes ten, to the last");

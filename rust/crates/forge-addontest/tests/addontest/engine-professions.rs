@@ -13,7 +13,7 @@ w.addAchievement(9001, "Legacy: Northshire", { { "Kill wolves", 10 }, { "Find Go
 w.addAchievement(9002, "Legacy: Elwynn", { { "A", 1 }, { "B", 1 }, { "C", 1 } })
 "#;
 
-const REGISTER: &str = r#"Polestar.RegisterGuide({
+const REGISTER: &str = r#"Northstar.RegisterGuide({
 	id = "test/alchemy", pack = "test", title = "Alchemy 1-60", category = "Professions", minLevel = 5, maxLevel = 60,
 	steps = {
 		{ goals = { { t = "skill", skill = "Alchemy", skillLine = 171, level = 50 } } },
@@ -32,19 +32,19 @@ const REGISTER: &str = r#"Polestar.RegisterGuide({
 
 const SETUP: &str = r#"
 			stub.login()
-			E = Polestar.Engine
+			E = Northstar.Engine
 			E.SetGuide("test/alchemy")
 			function flush() stub.advance(0.25) end
 			LOG = {}
-			Polestar.On("STEP_CHANGED", function(i) LOG[#LOG + 1] = "C" .. tostring(i) end)
-			Polestar.On("STEP_UPDATED", function(i) LOG[#LOG + 1] = "U" .. tostring(i) end)
+			Northstar.On("STEP_CHANGED", function(i) LOG[#LOG + 1] = "C" .. tostring(i) end)
+			Northstar.On("STEP_UPDATED", function(i) LOG[#LOG + 1] = "U" .. tostring(i) end)
 			function goal(i) local v = E.GetStepView(i).goals[1]; return v end
 			function brief(g) return { status = g.status, text = g.text, verb = g.verb, subject = g.subject, kind = g.subjectKind,
 				detail = g.detail or false, progress = g.progress or false, manual = g.manual } end
 			"#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 fn run(before: &str, script: &str) -> Value {
@@ -200,7 +200,7 @@ fn explore_completes_on_arrival_polled_only_while_active_and_stays_done_after_le
 			w.moveTo(1429, 20, 80)
 			stub.advance(1)
 			emit({ before = before, arrived = arrived, after = E.GetStepIndex(), s6 = E.GetStepView(6).status, tickers = tickers(),
-				latched = PolestarCharDB.manual["test/alchemy"]["6:1"] })
+				latched = NorthstarCharDB.manual["test/alchemy"]["6:1"] })
 		"#,
 	);
 	assert_eq!(
@@ -225,7 +225,7 @@ fn registerguide_accepts_the_new_verbs_and_rejects_malformed_ones() {
 			TEST_PACK,
 			TEST_SOURCE,
 			r#"			local function try(goal)
-				local ok, err = Polestar.RegisterGuide({ id = "test/v", pack = "test", title = "V", steps = { { goals = { goal } } } })
+				local ok, err = Northstar.RegisterGuide({ id = "test/v", pack = "test", title = "V", steps = { { goals = { goal } } } })
 				return ok and "ok" or err
 			end
 			emit({
@@ -272,12 +272,12 @@ fn suggest_only_picks_leveling_guides_other_categories_are_left_to_the_player() 
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,
-			r#"			local function g(id, cat) Polestar.RegisterGuide({ id = "test/" .. id, pack = "test", title = id, category = cat, minLevel = 1, maxLevel = 60,
+			r#"			local function g(id, cat) Northstar.RegisterGuide({ id = "test/" .. id, pack = "test", title = id, category = cat, minLevel = 1, maxLevel = 60,
 				steps = { { goals = { { t = "level", level = 60 } } } } }) end
 			g("prof", "Professions"); g("legacy", "Legacy")
-			local none = Polestar.Guides.Suggest()
+			local none = Northstar.Guides.Suggest()
 			g("lvl", nil)
-			emit({ none = none or false, pick = Polestar.Guides.Suggest() })
+			emit({ none = none or false, pick = Northstar.Guides.Suggest() })
 		"#,
 		]
 		.join("\n"),

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// The Polestar bug bot: watches the Discord #bugs forum and files each new
+// The Northstar bug bot: watches the Discord #bugs forum and files each new
 // post as a GitHub issue (tools/discord-bot/README.md). Runs until stopped;
 // settings come from the environment (.env.example).
 //

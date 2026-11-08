@@ -20,9 +20,9 @@ const ROOT = path.join(fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'si
 fs.cpSync(path.join(GOLDEN, 'world/root'), ROOT, { recursive: true });
 const JS = path.resolve(process.env.JS_ROOT);
 const GUIDES = path.join(GOLDEN, 'guide/slice');
-process.env.POLESTAR_GRID = path.join(ROOT, 'data/local/nav4');
-process.env.POLESTAR_CAS = 'off';
-process.env.POLESTAR_CAS_SKIP = 'walks';
+process.env.NORTHSTAR_GRID = path.join(ROOT, 'data/local/nav4');
+process.env.NORTHSTAR_CAS = 'off';
+process.env.NORTHSTAR_CAS_SKIP = 'walks';
 
 const sim = require(path.join(JS, 'tools/lib/sim/index'));
 const { walkChain } = require(path.join(JS, 'tools/lib/judge/walk'));

@@ -2,7 +2,7 @@
 	"class": "PALADIN",
 	"source": "ForeverDB",
 	"sourceUrl": "https://foreverdb.net/class/Paladin/talents",
-	"credit": "Builds adapted from ForeverDB's Paladin talent guides (https://foreverdb.net/class/Paladin/talents). Notes rewritten for Polestar.",
+	"credit": "Builds adapted from ForeverDB's Paladin talent guides (https://foreverdb.net/class/Paladin/talents). Notes rewritten for Northstar.",
 	"checkedOn": "WoW: Forever beta 1.60.1.70450",
 	"summary": "Level as Retribution (quickest solo, with a two-hander and Seal of Command) or Protection (safe group pulls, dungeon-tank ready). Holy suits raids; it can level through its melee build, more slowly, if you want to heal dungeons on the way.",
 	"order": [

@@ -28,7 +28,7 @@ end
 for _, name in ipairs({ "SetSize", "SetWidth", "SetHeight", "SetParent", "SetFrameStrata", "SetFrameLevel", "EnableMouse" }) do
 	local original = M[name]
 	M[name] = function(self, ...)
-		local nt = Polestar and Polestar.UI and Polestar.UI.NameTargets
+		local nt = Northstar and Northstar.UI and Northstar.UI.NameTargets
 		local owned = nt and nt.holder and (self == nt.holder or self:GetParent() == nt.holder)
 		if owned and self.secure and stub.inCombat then error("protected call in combat: " .. name, 2) end
 		if original then return original(self, ...) end
@@ -61,8 +61,8 @@ end
 `;
 
 const HELPERS = `
-local GF, NT, q = Polestar.UI.GuideFrame, Polestar.UI.NameTargets, stub.qol
-local F = PolestarGuideFrame
+local GF, NT, q = Northstar.UI.GuideFrame, Northstar.UI.NameTargets, stub.qol
+local F = NorthstarGuideFrame
 local function settle() stub.advance(0.1) end
 local function rowFor(subject)
 	for _, row in ipairs(GF.rows) do if row:IsShown() and row.psGoal and row.psGoal.subject == subject then return row end end
@@ -90,16 +90,16 @@ local function postClick(button, mouse, down)
 end
 local function menuItems()
 	local items = {}
-	if PolestarMenu and PolestarMenu:IsShown() then
-		for _, row in ipairs(PolestarMenu.rows) do
+	if NorthstarMenu and NorthstarMenu:IsShown() then
+		for _, row in ipairs(NorthstarMenu.rows) do
 			if row:IsShown() then items[#items + 1] = row.Text:GetText() end
 		end
 	end
 	return items
 end
 local function pickMenu(text)
-	assert(PolestarMenu and PolestarMenu:IsShown(), "missing context menu")
-	for _, row in ipairs(PolestarMenu.rows) do
+	assert(NorthstarMenu and NorthstarMenu:IsShown(), "missing context menu")
+	for _, row in ipairs(NorthstarMenu.rows) do
 		if row:IsShown() and row.Text:GetText() == text then row:Click(); return end
 	end
 	error("missing menu item: " .. text)
@@ -131,8 +131,8 @@ function run(script, { before = '', enabled = true } = {}) {
 	return runAddon({
 		stubs: ['stub_ui.lua', 'stub_qol.lua'],
 		before: `${SECURE_VISIBILITY}\n${before}`,
-		addons: [{ name: 'Polestar', files: ['Core/Core.xml', 'Theme/Theme.xml', 'UI/UI.xml', 'QoL/QoL.xml'] }],
-		script: `uistub.install()\nstub.login()\n${enabled ? 'Polestar.Set("qol.guideNameTarget", true)' : ''}\n${HELPERS}\n${script}`,
+		addons: [{ name: 'Northstar', files: ['Core/Core.xml', 'Theme/Theme.xml', 'UI/UI.xml', 'QoL/QoL.xml'] }],
+		script: `uistub.install()\nstub.login()\nNorthstar.Set("ui.journal", false)\n${enabled ? 'Northstar.Set("qol.guideNameTarget", true)' : ''}\n${HELPERS}\n${script}`,
 	}).emitted;
 }
 
@@ -142,10 +142,10 @@ test('each enabled mob or item-source objective uses the shared target macro wit
 		settle()
 		local kill = targetFor(rowFor("Kobold Vermin"))
 		local collect = targetFor(rowFor("Tough Wolf Meat"))
-		emit({ enabled = Polestar.GetDefault("qol.guideNameTarget"), marking = Polestar.GetDefault("qol.markTarget"),
+		emit({ enabled = Northstar.GetDefault("qol.guideNameTarget"), marking = Northstar.GetDefault("qol.markTarget"),
 			kill = kill and { name = kill.psName, kind = kill.psKind, macro = kill:GetAttribute("macrotext1"), type = kill:GetAttribute("type1") },
 			collect = collect and { name = collect.psName, kind = collect.psKind, macro = collect:GetAttribute("macrotext1") },
-			expected = Polestar.QoL.Buttons.TargetMacro({ "Kobold Vermin" }, 1),
+			expected = Northstar.QoL.Buttons.TargetMacro({ "Kobold Vermin" }, 1),
 			header = targetFor(GF.parts.person) ~= nil })`);
 	assert.equal(out.enabled, false);
 	assert.equal(out.marking, false);
@@ -192,16 +192,16 @@ test('shared mob and NPC mark settings update overlays and their hovered tooltip
 		local b = assert(targetFor(rowFor("Kobold Vermin")))
 		stub.RunScript(b, "OnEnter")
 		local unmarked = GameTooltip.lines[#GameTooltip.lines]
-		Polestar.Set("qol.markTarget", true)
-		Polestar.Set("qol.markMob", "7")
+		Northstar.Set("qol.markTarget", true)
+		Northstar.Set("qol.markMob", "7")
 		local marked = { macro = b.psMacro, hint = GameTooltip.lines[#GameTooltip.lines], hover = b.psOwner.Hover:IsShown() }
 		uistub.setStep(4)
 		settle()
-		Polestar.Set("qol.markNpc", "6")
+		Northstar.Set("qol.markNpc", "6")
 		local npc = assert(targetFor(GF.parts.person))
 		local header = { kind = npc.psKind, macro = npc.psMacro }
 		stub.RunScript(npc, "OnEnter")
-		Polestar.Set("qol.markTarget", false)
+		Northstar.Set("qol.markTarget", false)
 		emit({ unmarked = unmarked, marked = marked, header = header,
 			off = { macro = npc.psMacro, hint = GameTooltip.lines[#GameTooltip.lines], hover = GF.parts.person.Hover:IsShown() } })`);
 	assert.match(out.unmarked, /target Kobold Vermin/);
@@ -219,8 +219,8 @@ test('shared mob and NPC mark settings update overlays and their hovered tooltip
 
 test('the NPC header wash responds to delegated hover, survives cycle refresh, and clears on every exit', () => {
 	const [out] = run(`
-		Polestar.Set("qol.markTarget", true)
-		Polestar.Set("qol.markNpc", "cycle")
+		Northstar.Set("qol.markTarget", true)
+		Northstar.Set("qol.markNpc", "cycle")
 		uistub.setGuide(uistub.elwynn, 4)
 		settle()
 		local header = GF.parts.person
@@ -242,14 +242,14 @@ test('the NPC header wash responds to delegated hover, survives cycle refresh, a
 		local combat = not wash:IsShown()
 		q.combat(false)
 		stub.RunScript(assert(targetFor(header)), "OnEnter")
-		Polestar.Set("qol.guideNameTarget", false)
+		Northstar.Set("qol.guideNameTarget", false)
 		local disabled = not wash:IsShown()
 		-- Native header hover still works with the opt-in feature disabled.
 		stub.RunScript(header, "OnEnter")
 		local ordinary = wash:IsShown()
 		stub.RunScript(header, "OnLeave")
 		local ordinaryLeft = not wash:IsShown()
-		Polestar.Set("qol.guideNameTarget", true)
+		Northstar.Set("qol.guideNameTarget", true)
 		stub.RunScript(assert(targetFor(header)), "OnEnter")
 		uistub.goal(4, 1).status, uistub.goal(4, 2).status = "done", "done"
 		uistub.update()
@@ -266,15 +266,15 @@ test('the NPC header wash responds to delegated hover, survives cycle refresh, a
 
 test('left release advances the clicked kind after navigation even when navigation reuses its overlay', () => {
 	const [out] = run(`
-		Polestar.Set("qol.markTarget", true)
-		Polestar.Set("qol.markMob", "cycle")
-		Polestar.Set("qol.markNpc", "4")
+		Northstar.Set("qol.markTarget", true)
+		Northstar.Set("qol.markMob", "cycle")
+		Northstar.Set("qol.markNpc", "4")
 		uistub.setGuide(uistub.elwynn, 3)
 		settle()
 		local row = rowFor("Kobold Vermin")
 		local b = assert(targetFor(row))
 		local events = {}
-		Polestar.On("QOL_TARGET_MARK_CHANGED", function(kind) events[#events + 1] = { kind, callCount("AimGoal") } end)
+		Northstar.On("QOL_TARGET_MARK_CHANGED", function(kind) events[#events + 1] = { kind, callCount("AimGoal") } end)
 		local click = row:GetScript("OnClick")
 		row:SetScript("OnClick", function(self, mouse)
 			click(self, mouse)
@@ -290,8 +290,8 @@ test('left release advances the clicked kind after navigation even when navigati
 		-- line), so the clicked overlay is the first; on step 4 the first is the
 		-- header's, Marshal McBride.
 		emit({ pressed = pressed, released = released, events = events, aimed = aimed,
-			reused = b.psOwner == Polestar.UI.GuideFrame.parts.person, kind = b.psKind, name = b.psName,
-			macro = b.psMacro, nextMob = Polestar.QoL.Buttons.MarkLine("mob") })`);
+			reused = b.psOwner == Northstar.UI.GuideFrame.parts.person, kind = b.psKind, name = b.psName,
+			macro = b.psMacro, nextMob = Northstar.QoL.Buttons.MarkLine("mob") })`);
 	assert.equal(out.pressed, 0);
 	assert.equal(out.released, 1);
 	assert.equal(out.events.length, 1, 'right release does not advance marking');
@@ -328,7 +328,7 @@ test('targeting is off by default and ordinary row actions remain available with
 		row:Click("RightButton")
 		local items, beforePick = menuItems(), callCount("ToggleGoal")
 		pickMenu("Tick it done")
-		emit({ enabled = Polestar.Get("qol.guideNameTarget"), count = #NT.buttons, holder = NT.holder ~= nil,
+		emit({ enabled = Northstar.Get("qol.guideNameTarget"), count = #NT.buttons, holder = NT.holder ~= nil,
 			items = items, beforePick = beforePick, aim = lastCall("AimGoal"), tick = lastCall("ToggleGoal") })`, { enabled: false });
 	assert.equal(out.enabled, false);
 	assert.equal(out.count, 0);
@@ -392,9 +392,9 @@ test('icon, text, subline and whitespace target the row while checkbox, Skip and
 
 test('the real gear-reward link remains above the objective overlay and keeps its item click', () => {
 	const [out] = run(`
-		Polestar.Gear = { IsEnabled = function() return true end,
+		Northstar.Gear = { IsEnabled = function() return true end,
 			QuestPick = function() return { entry = { id = 750 }, upgrade = false } end }
-		Polestar.Set("gear.rewards", true)
+		Northstar.Set("gear.rewards", true)
 		uistub.setGuide(uistub.elwynn, 4)
 		local row = assert(rowFor("Kobold Camp Cleanup"))
 		local gear = assert(row.psGearPick, "real GearPick frame missing")
@@ -406,7 +406,7 @@ test('the real gear-reward link remains above the objective overlay and keeps it
 		local b = assert(targetFor(row))
 		local hit = rowHit(row, 160, 223)
 		local clicked
-		Polestar.Widgets.ItemClick = function(id) clicked = id end
+		Northstar.Widgets.ItemClick = function(id) clicked = id end
 		local before = callCount("AimGoal")
 		hit:Click("LeftButton")
 		emit({ gear = hit == gear, above = gear:GetFrameLevel() > b:GetFrameLevel(), clicked = clicked,
@@ -465,7 +465,7 @@ test('a non-quest objective still toggles completion directly through the overla
 		local row = assert(rowFor("Kobold Vermin"))
 		assert(not row.psGoal.quest, "fixture should have no quest")
 		postClick(assert(targetFor(row)), "RightButton", false)
-		emit({ tick = lastCall("ToggleGoal"), menu = PolestarMenu and PolestarMenu:IsShown() or false })`);
+		emit({ tick = lastCall("ToggleGoal"), menu = NorthstarMenu and NorthstarMenu:IsShown() or false })`);
 	assert.deepEqual(out.tick, ['ToggleGoal', 3, 3]);
 	assert.equal(out.menu, false);
 });
@@ -535,14 +535,14 @@ test('a failed name click reports the NPC once; successful clicks, right clicks 
 
 test('a Shift-, Ctrl- or Alt-click runs no macro: it navigates like a row click, with no "not found" and no mark advance', () => {
 	const [out] = run(`
-		Polestar.Set("qol.markTarget", true)
-		Polestar.Set("qol.markMob", "cycle")
+		Northstar.Set("qol.markTarget", true)
+		Northstar.Set("qol.markMob", "cycle")
 		uistub.setGuide(uistub.elwynn, 3)
 		settle()
 		local button = assert(targetFor(rowFor("Kobold Vermin")), "missing mob overlay")
 		local messages, marks = {}, 0
 		UIErrorsFrame.AddMessage = function(_, text) messages[#messages + 1] = text end
-		Polestar.On("QOL_TARGET_MARK_CHANGED", function() marks = marks + 1 end)
+		Northstar.On("QOL_TARGET_MARK_CHANGED", function() marks = marks + 1 end)
 		local before = callCount("AimGoal")
 		q.target = false
 		for _, key in ipairs({ "shift", "ctrl", "alt" }) do
@@ -563,7 +563,7 @@ test('a failed name click falls back to chat when the error display is unavailab
 		settle()
 		local button = assert(targetFor(rowFor("Kobold Vermin")), "missing mob overlay")
 		local messages = {}
-		Polestar.Print = function(text) messages[#messages + 1] = text end
+		Northstar.Print = function(text) messages[#messages + 1] = text end
 		UIErrorsFrame = nil
 		q.target = false
 		postClick(button, "LeftButton", false)
@@ -580,10 +580,10 @@ test('combat hides secure overlays while the unprotected guide updates, then use
 		for i, button in ipairs(NT.buttons) do old[i] = button:GetAttribute("macrotext1") end
 		q.combat(true)
 		uistub.setStep(4)
-		Polestar.Set("ui.width", 420)
-		Polestar.Set("ui.scale", 1.2)
-		Polestar.Set("qol.markTarget", true)
-		Polestar.Set("qol.markNpc", "6")
+		Northstar.Set("ui.width", 420)
+		Northstar.Set("ui.scale", 1.2)
+		Northstar.Set("qol.markTarget", true)
+		Northstar.Set("qol.markNpc", "6")
 		uistub.update()
 		settle()
 		rowFor("Kobold Camp Cleanup"):Click("LeftButton")
@@ -619,14 +619,14 @@ test('disabling clickable names leaves normal row actions and prevents overlays 
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		settle()
-		Polestar.Set("qol.guideNameTarget", false)
+		Northstar.Set("qol.guideNameTarget", false)
 		local hidden = #targets()
 		rowFor("Kobold Vermin"):Click("LeftButton")
 		local aim = lastCall("AimGoal")
-		Polestar.Set("qol.guideNameTarget", true)
+		Northstar.Set("qol.guideNameTarget", true)
 		local enabled = #targets()
 		q.combat(true)
-		Polestar.Set("qol.guideNameTarget", false)
+		Northstar.Set("qol.guideNameTarget", false)
 		uistub.setStep(4)
 		q.combat(false)
 		settle()

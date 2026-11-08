@@ -1,0 +1,48 @@
+## Interface: 16001
+## Title: Northstar
+## Notes: Northstar for World of Warcraft: Forever (Interface 16001). Routes and guide text are from Polestar.
+## Title-deDE: Northstar
+## Notes-deDE: Leveling-Guides für World of Warcraft: Forever.
+## Title-esES: Northstar
+## Notes-esES: Guías para subir de nivel en World of Warcraft: Forever.
+## Title-esMX: Northstar
+## Notes-esMX: Guías para subir de nivel en World of Warcraft: Forever.
+## Title-frFR: Northstar
+## Notes-frFR: Guides de montée en niveau pour World of Warcraft: Forever.
+## Title-koKR: Northstar
+## Notes-koKR: World of Warcraft: Forever 레벨업 가이드.
+## Title-ptBR: Northstar
+## Notes-ptBR: Guias de evolução para World of Warcraft: Forever.
+## Title-ruRU: Northstar
+## Notes-ruRU: Гайды по прокачке для World of Warcraft: Forever.
+## Title-zhCN: Northstar
+## Notes-zhCN: 魔兽世界：Forever 练级指南。
+## Title-zhTW: Northstar
+## Notes-zhTW: World of Warcraft: Forever 的升級指南。
+## Author: Northstar
+## X-License: GPL-3.0-only
+## X-Website: https://github.com/chrisu2/northstar
+## X-Northstar-Origin: https://github.com/fitzforge/polestar
+## Version: 0.3.4
+## Category: Northstar
+## IconTexture: Interface\AddOns\Northstar\Media\UI\logo
+## AddonCompartmentFunc: Northstar_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Northstar_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Northstar_OnAddonCompartmentLeave
+## OptionalDeps: EllesmereUI, TomTom, OpenMap
+## SavedVariables: NorthstarDB
+## SavedVariablesPerCharacter: NorthstarCharDB
+
+Core\Core.xml
+Theme\Theme.xml
+Nav\Nav.xml
+Quests\Quests.xml
+Gear\Gear.xml
+Maps\Maps.xml
+QoL\QoL.xml
+Lookup\Lookup.xml
+Dungeons\Dungeons.xml
+UI\UI.xml
+Rares\Rares.xml
+Talents\Talents.xml
+Alts\Alts.xml

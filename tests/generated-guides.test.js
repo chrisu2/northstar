@@ -1,6 +1,6 @@
 'use strict';
 // The leveling guides under guides/forever/{horde,alliance} are written by
-// Polestar Forge (`forge build`, then `forge guide publish`) and listed with
+// Northstar Forge (`forge build`, then `forge guide publish`) and listed with
 // their SHA-256 in guides/GENERATED.json; the seed Forge starts from is
 // forge/seed/guides, listed in forge/seed/SEED.json. A hand edit to either is
 // undone by the next build, so it fails here, saying where the fix goes.

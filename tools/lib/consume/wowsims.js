@@ -25,12 +25,12 @@
 //
 // Units: Classic sims count hit/crit/dodge/parry/block as straight percent
 // (sim/core/base_stats_auto_gen.go: *RatingPer*Chance = 1), so their EP is
-// already per 1%, as Polestar wants. Defense is per point. Many specs still
+// already per 1%, as Northstar wants. Defense is per point. Many specs still
 // carry the WotLK sim's per-rating defaults (hit/crit worth ~1 AP); those sets
 // are rejected (see `rejected`), not converted: they were never Classic EP.
 //
 // Spell power: a wowsims StatSpellPower item raises damage and healing, which
-// Polestar items carry as both `sp` and `heal` (the ForeverLevelingBiS reader, rust/crates/forge-data/src/gear/flb.rs),
+// Northstar items carry as both `sp` and `heal` (the ForeverLevelingBiS reader, rust/crates/forge-data/src/gear/flb.rs),
 // so its weight lands on `heal` for healers and on `sp` for everyone else;
 // StatHealingPower is `heal`. StatSpellDamage (damage-only, a SoD item stat)
 // is not mapped.
@@ -58,7 +58,7 @@ const SNAPSHOTS = [
 	{ repo: 'classic', commit: CLASSIC_HEAD, date: '2026-07-24', level: 60, phase: 'era', season: 'era' },
 ];
 
-// wowsims sim directory -> Polestar class/spec targets. One sim per class
+// wowsims sim directory -> Northstar class/spec targets. One sim per class
 // covers every talent tree for hunters, mages, warlocks and rogues, so its
 // numbers are shared (`sim` on each entry says which). `dirs` lists the
 // directory names in the order tried (protection_warrior became tank_warrior
@@ -101,7 +101,7 @@ const MAIN_STAT = {
 };
 const HEALER_SIMS = new Set(['holy_paladin', 'healing_priest', 'restoration_shaman', 'restoration_druid']);
 
-// wowsims Stat / PseudoStat enum names (proto/common.proto) -> Polestar keys.
+// wowsims Stat / PseudoStat enum names (proto/common.proto) -> Northstar keys.
 const STAT_MAP = {
 	StatStrength: 'str', StatAgility: 'agi', StatStamina: 'sta', StatIntellect: 'int', StatSpirit: 'spi',
 	StatArmor: 'armor', StatHealth: 'health', StatMana: 'mana',
@@ -114,27 +114,27 @@ const STAT_MAP = {
 	StatDefense: 'defense', StatDodge: 'dodge', StatParry: 'parry', StatBlock: 'block', StatBlockValue: 'blockValue',
 	PseudoStatMainHandDps: 'dps', PseudoStatRangedDps: 'rdps',
 };
-// Stats with no Polestar key, and why (others: "no Polestar key").
+// Stats with no Northstar key, and why (others: "no Northstar key").
 const UNMAPPED_REASON = {
-	StatSpellDamage: 'damage-only spell power (SoD item stat); Polestar sp is damage+healing power',
-	StatBonusArmor: 'non-base armor; Polestar armor takes the StatArmor weight',
-	StatFeralAttackPower: 'feral-form attack power; no Polestar key',
-	StatExpertise: 'expertise/weapon skill; no Polestar key',
+	StatSpellDamage: 'damage-only spell power (SoD item stat); Northstar sp is damage+healing power',
+	StatBonusArmor: 'non-base armor; Northstar armor takes the StatArmor weight',
+	StatFeralAttackPower: 'feral-form attack power; no Northstar key',
+	StatExpertise: 'expertise/weapon skill; no Northstar key',
 	StatMeleeHaste: 'haste %: SoD-only item stat',
 	StatSpellHaste: 'haste %: SoD-only item stat',
-	StatArmorPenetration: 'armor penetration; no Polestar key',
-	StatSpellPenetration: 'spell penetration; no Polestar key',
+	StatArmorPenetration: 'armor penetration; no Northstar key',
+	StatSpellPenetration: 'spell penetration; no Northstar key',
 	StatArcaneResistance: 'resistances are not scored',
 	StatFireResistance: 'resistances are not scored',
 	StatFrostResistance: 'resistances are not scored',
 	StatNatureResistance: 'resistances are not scored',
 	StatShadowResistance: 'resistances are not scored',
-	PseudoStatOffHandDps: 'off-hand weapon DPS; Polestar dps takes the main-hand weight',
+	PseudoStatOffHandDps: 'off-hand weapon DPS; Northstar dps takes the main-hand weight',
 	PseudoStatMeleeSpeedMultiplier: 'attack-speed multiplier pseudo-stat',
 	PseudoStatRangedSpeedMultiplier: 'attack-speed multiplier pseudo-stat',
 	PseudoStatCastSpeedMultiplier: 'cast-speed multiplier pseudo-stat',
-	BonusPhysicalDamage: 'flat physical damage pseudo-stat; no Polestar key',
-	PseudoStatBonusPhysicalDamage: 'flat physical damage pseudo-stat; no Polestar key',
+	BonusPhysicalDamage: 'flat physical damage pseudo-stat; no Northstar key',
+	PseudoStatBonusPhysicalDamage: 'flat physical damage pseudo-stat; no Northstar key',
 	PseudoStatTimewornBonus: 'SoD Timeworn item bonus pseudo-stat',
 	PseudoStatSanctifiedBonus: 'SoD Sanctified item bonus pseudo-stat',
 };
@@ -143,7 +143,7 @@ const SCALE_STATS = ['StatMeleeHit', 'StatMeleeCrit', 'StatSpellHit', 'StatSpell
 // the inherited WotLK defaults value one rating point at ~1 (all below 3).
 const MIN_PERCENT_EP = 3;
 
-// wowsims ItemSlot order (proto/common.proto) -> Polestar slot names.
+// wowsims ItemSlot order (proto/common.proto) -> Northstar slot names.
 const SLOTS = ['head', 'neck', 'shoulder', 'back', 'chest', 'wrist', 'hands', 'waist', 'legs', 'feet',
 	'finger1', 'finger2', 'trinket1', 'trinket2', 'mainhand', 'offhand', 'ranged'];
 
@@ -185,7 +185,7 @@ function referenceKey(reference, healer) {
 	return STAT_MAP[reference] || null;
 }
 
-// wowsims raw EP -> { weights (Polestar keys, zeroes dropped), dropped (raw
+// wowsims raw EP -> { weights (Northstar keys, zeroes dropped), dropped (raw
 // names with no key -> value) }.
 function mapWeights(raw, { healer = false } = {}) {
 	const weights = {};
@@ -340,7 +340,7 @@ async function readWowsims({ cacheDir = 'data/sources/wowsims', fetch = false, l
 			lastRaw[sim] = { key, phase: snap.phase };
 			const { weights: mapped, dropped } = mapWeights(raw, { healer });
 			for (const [name, value] of Object.entries(dropped)) {
-				const u = (unmapped[name] = unmapped[name] || { stat: name, reason: UNMAPPED_REASON[name] || 'no Polestar key', sets: 0, examples: [] });
+				const u = (unmapped[name] = unmapped[name] || { stat: name, reason: UNMAPPED_REASON[name] || 'no Northstar key', sets: 0, examples: [] });
 				u.sets++;
 				if (u.examples.length < 3) u.examples.push({ sim, phase: snap.phase, value });
 			}
@@ -388,13 +388,13 @@ async function readWowsims({ cacheDir = 'data/sources/wowsims', fetch = false, l
 			commits: { classic: CLASSIC_HEAD, classicCutover: CLASSIC_CUTOVER, sod: Object.fromEntries(SNAPSHOTS.filter(s => s.repo === 'sod').map(s => [s.phase, s.commit])) },
 			fetched: src.manifest.fetched,
 			notes: [
-				'Weights: wowsims default EP (ui/<sim>/sim.ts epWeights), mapped to Polestar keys, zero weights dropped, scaled so the spec main stat (normalizedTo) is 1.',
+				'Weights: wowsims default EP (ui/<sim>/sim.ts epWeights), mapped to Northstar keys, zero weights dropped, scaled so the spec main stat (normalizedTo) is 1.',
 				'Hit/crit/dodge/parry/block weights are per 1% (Classic sims count these stats in percent); defense per point.',
 				'season sod / origin sod-carryover: tuned with SoD runes and set bonuses. origin era: re-derived in the Era fork after 2024-11-21.',
 				'Sets still holding the WotLK per-rating defaults are listed in rejected, not converted.',
 				'sameAs: identical raw weights to an earlier band (not retuned for this level).',
 				`Not read (SoD-only roles): ${Object.entries(SKIPPED_SIMS).map(([k, v]) => `${k} (${v})`).join(', ')}.`,
-				'Gear sets: Classic Era level 60 raid-phase presets (phase 0 = pre-raid), item ids by Polestar slot; one-sim classes share sets across specs.',
+				'Gear sets: Classic Era level 60 raid-phase presets (phase 0 = pre-raid), item ids by Northstar slot; one-sim classes share sets across specs.',
 			],
 		},
 		weights,

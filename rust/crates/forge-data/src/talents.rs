@@ -1,7 +1,7 @@
 //! `forge data talents build|check` (port of tools/lib/talents/build.js and commands/talents.js):
 //! the talent plans in talents/forever/<class>.json (picks by talent name, one per level) resolved
 //! against the Forever client's trait tables, replayed point by point under the client's rules,
-//! and written as addon/Polestar/Talents/Builds.lua with a snapshot of each tree.
+//! and written as addon/Northstar/Talents/Builds.lua with a snapshot of each tree.
 //!
 //! Forever's three-column trees are one C_Traits tree per class:
 //!   SkillLineXTraitTree  SkillLineID (class skill line) -> TraitTreeID
@@ -417,7 +417,7 @@ impl Options {
 	pub fn new(root: &Path) -> Options {
 		Options {
 			plans: root.join("talents").join("forever"),
-			out: root.join("addon").join("Polestar").join("Talents"),
+			out: root.join("addon").join("Northstar").join("Talents"),
 			sources: root.join("data").join("sources"),
 			build: BUILD.to_string(),
 			offline: false,

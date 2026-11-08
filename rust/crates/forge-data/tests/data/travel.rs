@@ -1,4 +1,4 @@
-//! `travel build` (travel.json, TravelData.lua, FlightPaths.lua, Polestar_Travel/*) against the
+//! `travel build` (travel.json, TravelData.lua, FlightPaths.lua, Northstar_Travel/*) against the
 //! JavaScript's output on the data golden, client table slices, the shipped and a synthetic local
 //! crossings file and synthetic walks, without a navigation grid: rust/tests/golden/travel (README).
 
@@ -25,9 +25,9 @@ fn travel_matches_golden() {
 		check.file(&name, text, &want.join(&name));
 		names.push(name);
 	}
-	assert!(out.travel_addon.is_some(), "the local crossings file builds Polestar_Travel");
-	check.all_of(&want.join("Polestar_Travel"), &names.iter().filter_map(|n| n.strip_prefix("Polestar_Travel/").map(String::from)).collect::<Vec<_>>());
-	names.push("Polestar_Travel".into());
+	assert!(out.travel_addon.is_some(), "the local crossings file builds Northstar_Travel");
+	check.all_of(&want.join("Northstar_Travel"), &names.iter().filter_map(|n| n.strip_prefix("Northstar_Travel/").map(String::from)).collect::<Vec<_>>());
+	names.push("Northstar_Travel".into());
 	check.all_of(&want, &names);
 	check.finish("travel build");
 }

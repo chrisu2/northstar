@@ -4,7 +4,7 @@
 //   const { Canvas, sdf } = require('./tga');
 //   const c = new Canvas(64, 64);
 //   c.fill(sdf.circle(32, 32, 20), [1, 1, 1, 1]);
-//   c.write('addon/Polestar/Media/UI/dot.tga');
+//   c.write('addon/Northstar/Media/UI/dot.tga');
 //
 // Shapes are signed distance functions in pixel units (negative inside). Each
 // pixel is sampled at its centre and covered by clamp(0.5 - d / feather), which

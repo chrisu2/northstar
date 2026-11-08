@@ -48,7 +48,7 @@ const TABLES = [
 ];
 
 // curated: the cited reputation gate table (data/codex/repgates.json);
-// guides: Polestar's own curated guides (a collectible's `rep` before its
+// guides: Northstar's own curated guides (a collectible's `rep` before its
 // `buy`). A gate from the client beats the table, the table a guide's.
 const RANK = { recordings: 0, client: 1, curated: 2, guides: 3, questie: 4, rarescanner: 4, dungeons: 4, journal: 4, forever: 4, pfquest: 5, atlasloot: 5, web: 6 };
 const RANK_UNKNOWN = 7;
@@ -995,7 +995,7 @@ function mergeCodex(inputs) {
 	// its summon spell is flagged hidden until known (Mount.Flags 0x40: the
 	// client keeps it only for those who already have it; Black Stallion,
 	// still sold, is not flagged), or, in a --local-extras build, when
-	// AtlasLoot's collection lists do not name it. Polestar's own curated
+	// AtlasLoot's collection lists do not name it. Northstar's own curated
 	// guides (`collects`) name collectibles the game hands out: never retired.
 	// Forever-only rows (Questie without pfQuest) are trusted. Companions have
 	// no such client flag, so a release build retires none.
@@ -1354,12 +1354,12 @@ function luaString(s) {
 // files: absolute pack files in TOC order -> { rawKB, decodedKB }
 function measureMemory(files) {
 	const { findLua } = require('../lua');
-	const codexLua = path.join(ROOT, 'addon', 'Polestar', 'Lookup', 'Codex.lua');
+	const codexLua = path.join(ROOT, 'addon', 'Northstar', 'Lookup', 'Codex.lua');
 	const program = `
 local ns = {}
-Polestar = ns
+Northstar = ns
 function ns.RegisterMapFrames() end
-loadfile(${luaString(codexLua)})("Polestar", ns)
+loadfile(${luaString(codexLua)})("Northstar", ns)
 local C = ns.Codex
 collectgarbage("collect"); collectgarbage("collect")
 local base = collectgarbage("count")

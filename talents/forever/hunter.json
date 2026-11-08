@@ -1,8 +1,8 @@
 {
 	"class": "HUNTER",
-	"source": "Polestar, with ForeverDB's builds to level 20",
+	"source": "Northstar, with ForeverDB's builds to level 20",
 	"sourceUrl": "https://foreverdb.net/class/Hunter/talents",
-	"credit": "Beast Mastery and Marksmanship follow ForeverDB's Hunter builds (https://foreverdb.net/class/Hunter/talents) through level 20, its \"Pet damage for dungeons\" and \"Careful Aim dungeon shooter\", and were written for Polestar on Forever's tree after that. Survival is written for Polestar on Forever's tree throughout; no ForeverDB Survival build matches it. Every pick is checked against Forever's own tree. Notes rewritten for Polestar.",
+	"credit": "Beast Mastery and Marksmanship follow ForeverDB's Hunter builds (https://foreverdb.net/class/Hunter/talents) through level 20, its \"Pet damage for dungeons\" and \"Careful Aim dungeon shooter\", and were written for Northstar on Forever's tree after that. Survival is written for Northstar on Forever's tree throughout; no ForeverDB Survival build matches it. Every pick is checked against Forever's own tree. Notes rewritten for Northstar.",
 	"checkedOn": "WoW: Forever beta 1.60.1.70450",
 	"summary": "Level as Beast Mastery: your pet tanks and does much of the damage, so you rarely stop. Marksmanship hits harder from range with Careful Aim and Sniper Shot; Survival fights in melee with Predator's Edge and Lacerating Strikes.",
 	"order": [

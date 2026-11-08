@@ -1032,7 +1032,7 @@ pub fn resolve_guide(ast: &V, data: &Data, diag: &mut Diagnostics, pack: Option<
 	} else if let Some(a) = author.filter(|a| !a.is_empty()) {
 		a.into()
 	} else {
-		"Polestar".into()
+		"Northstar".into()
 	};
 	guide.set("author", author_v);
 	guide.set("version", if !h.get("version").is_undef() { h.get("version") } else { 1.into() });
@@ -1328,7 +1328,7 @@ fn check_along_goals(steps: &[V], r: &mut R) {
 			};
 			r.warn(
 				&goal.hidden("_line"),
-				format!("{what} in an `along` step never checks off: Polestar checks it only on the step the route is on, so it stays listed{until}"),
+				format!("{what} in an `along` step never checks off: Northstar checks it only on the step the route is on, so it stays listed{until}"),
 				Some("put it in a step of its own, or track something the game counts (a quest objective, a bag count)"),
 			);
 		}

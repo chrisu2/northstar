@@ -1,4 +1,4 @@
-//! The Addons page's backend: checking GitHub for Polestar's addons,
+//! The Addons page's backend: checking GitHub for Northstar's addons,
 //! installing, updating, repairing and removing them, announcing updates in
 //! the tray and (when the player asked for it) installing them unattended.
 //! Every change lands in the Activity log.
@@ -117,7 +117,7 @@ impl Engine {
 			updates.iter().map(|(_, name, v)| format!("{name} {v}")).filter(|key| state.notified.insert(key.clone())).collect()
 		};
 		if !fresh.is_empty() {
-			let _ = self.app().notification().builder().title("Polestar addon updates").body(format!("{} ready to install. Open Polestar Client to update.", fresh.join(", "))).show();
+			let _ = self.app().notification().builder().title("Northstar addon updates").body(format!("{} ready to install. Open Polestar Client to update.", fresh.join(", "))).show();
 		}
 	}
 

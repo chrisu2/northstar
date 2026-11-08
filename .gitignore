@@ -1,7 +1,7 @@
 # Data addons built on the developer's machine from local reference data.
-addon/Polestar_Codex/
-addon/Polestar_QuestDB/
-addon/Polestar_Travel/
+addon/Northstar_Codex/
+addon/Northstar_QuestDB/
+addon/Northstar_Travel/
 
 # Local data: game client tables, downloaded sources and their builds.
 data/sources/

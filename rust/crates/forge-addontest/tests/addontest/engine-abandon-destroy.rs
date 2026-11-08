@@ -1,4 +1,4 @@
-//! Abandon and destroy (addon/Polestar/Core/Engine.lua): an `abandon` goal is done once its quest is out of
+//! Abandon and destroy (addon/Northstar/Core/Engine.lua): an `abandon` goal is done once its quest is out of
 //! the log, a `destroy` goal once its item is out of the bags, and both stay done for the rest of the step.
 //! Real Core manifest, stub world (a level 1 Human Warrior in Elwynn Forest).
 
@@ -14,7 +14,7 @@ w.titles[783] = "A Threat Within"
 
 // Step 2 holds GOALS (Lua) and, when given, WHEN; steps 1 and 3 are plain.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/abandon", pack = "test", title = "Abandon", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Deputy Willem", goals = {
@@ -33,7 +33,7 @@ fn guide(goals: &str, when: Option<&str>) -> String {
 }
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 -- The live step and step 2's goals as status:text.
 function state()
@@ -64,8 +64,8 @@ fn run(r: Run) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before,
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/abandon" }"#.into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/abandon" }"#.into())],
 		script: [TEST_PACK, TEST_SOURCE, &guide, HELPERS, "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, r.script].join("\n"),
 		..Default::default()
 	})
@@ -129,7 +129,7 @@ fn route(kinds: &[&str]) -> String {
 		_ => r#"{ t = "turnin", quest = 783, title = "A Threat Within", npc = 197, npcName = "Marshal McBride", map = 1429, x = 48.9, y = 41.6 }"#,
 	};
 	let steps = kinds.iter().enumerate().map(|(i, k)| format!("{{ title = \"Step {}\", goals = {{ {} }} }}", i + 1, goal(k))).collect::<Vec<_>>().join(",\n\t\t");
-	format!("\nPolestar.RegisterGuide({{\n\tid = \"test/abandon\", pack = \"test\", title = \"Abandon\", minLevel = 1, maxLevel = 10,\n\tsteps = {{\n\t\t{steps}\n\t}},\n}})\n")
+	format!("\nNorthstar.RegisterGuide({{\n\tid = \"test/abandon\", pack = \"test\", title = \"Abandon\", minLevel = 1, maxLevel = 10,\n\tsteps = {{\n\t\t{steps}\n\t}},\n}})\n")
 }
 
 #[test]

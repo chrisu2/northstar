@@ -178,5 +178,5 @@ fn a_pack_using_label_or_along_is_written_in_format_4_one_without_stays_in_forma
 	assert_eq!(format_for(&pack(&["step One", "  accept 783"]).0), FORMAT);
 	let files = pack(&["step One", "  along", "  kill 6", "step Two", "  accept 783"]).1;
 	assert_match(&files["Pack.lua"], r"format = 4,");
-	assert!(file_ending(&files, ".toc").contains(&format!("## X-Polestar-Format: 4\n## X-Polestar-Needs: {}\n", needs(WHEN_FORMAT).unwrap())));
+	assert!(file_ending(&files, ".toc").contains(&format!("## X-Northstar-Format: 4\n## X-Northstar-Needs: {}\n", needs(WHEN_FORMAT).unwrap())));
 }

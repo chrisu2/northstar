@@ -1,4 +1,4 @@
-//! What a list of quests is worth in levels (addon/Polestar/Core/Levels.lua): the quests still to do in turn-in
+//! What a list of quests is worth in levels (addon/Northstar/Core/Levels.lua): the quests still to do in turn-in
 //! order, with the client's reduction for quests far below, against the tools' own XP rules
 //! (tools/lib/game/xp.js); and a guide's turn-ins for this character, their XP from the Codex.
 //! ui-dungeons.rs and ui-picker-levels.rs cover the chips and their tooltip.
@@ -10,13 +10,13 @@ use serde_json::{json, Value};
 const FILES: &[&str] = &["Core/Core.xml"];
 
 fn lua(script: &str) -> Vec<Value> {
-	emitted(&RunAddon { stubs: vec!["stub_world.lua"], addons: vec![Addon::files("Polestar", FILES)], script: format!("stub.login()\nlocal Lv = Polestar.Levels\n{script}"), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_world.lua"], addons: vec![Addon::files("Northstar", FILES)], script: format!("stub.login()\nlocal Lv = Northstar.Levels\n{script}"), ..Default::default() })
 }
 
 // quests: { id, level, xp (null: none known), classes } in turn-in order; done: the ids done.
 fn run(player: Value, quests: Value, done: &[i64]) -> Value {
 	let script = format!(
-		"local done = {{}}\nfor _, id in ipairs({}) do done[id] = true end\nPolestar.Compat.IsQuestCompleted = function(id) return done[id] or false end\nemit(Lv.Run({}, {}))",
+		"local done = {{}}\nfor _, id in ipairs({}) do done[id] = true end\nNorthstar.Compat.IsQuestCompleted = function(id) return done[id] or false end\nemit(Lv.Run({}, {}))",
 		lua_value(&json!(done)),
 		lua_value(&quests),
 		lua_value(&player)
@@ -133,9 +133,9 @@ local guide = { id = "sample", steps = {
 	{ only = { classes = { "WARRIOR" } }, goals = { { t = "turnin", quest = 3 } } },
 	{ goals = { { t = "turnin", quest = 4 }, { t = "turnin", quest = 1 }, { t = "turnin", quest = 9 } } },
 } }
-Polestar.Guides.Get = function(id) return id == "sample" and guide or nil end
+Northstar.Guides.Get = function(id) return id == "sample" and guide or nil end
 local CODEX = { [1] = { level = 10, xp = 1000 }, [2] = { level = 10, xp = 2000 }, [3] = { level = 10, xp = 4000 }, [4] = { level = 12, xp = 500 }, [9] = { level = 12 } }
-Polestar.Codex = { IsLoaded = function() return true end, Load = function() return true end, Quest = function(id) return CODEX[id] end }
+Northstar.Codex = { IsLoaded = function() return true end, Load = function() return true end, Quest = function(id) return CODEX[id] end }
 "#;
 
 #[test]
@@ -148,8 +148,8 @@ emit(brief(Lv.ForGuide("sample", p("Orc", "SHAMAN"))))
 emit(brief(Lv.ForGuide("sample", p("Tauren", "DRUID"))))
 emit(brief(Lv.ForGuide("sample", p("Orc", "WARRIOR"))))
 emit(Lv.ForGuide("nowhere", p("Orc", "SHAMAN")) == nil)
-Polestar.Codex.IsLoaded = function() return false end
-Polestar.Codex.Load = function() return false, "missing" end
+Northstar.Codex.IsLoaded = function() return false end
+Northstar.Codex.Load = function() return false, "missing" end
 emit(Lv.ForGuide("sample", p("Orc", "SHAMAN")) == nil)"#,
 	]
 	.join("\n"));
@@ -222,15 +222,15 @@ local guide = { id = "hunt", minLevel = 10, steps = {
 	{ goals = { { t = "collect", quest = 23, oi = 1, item = 501, count = 6 } } },
 	{ goals = { { t = "kill", quest = 24, oi = 1, npc = 999, count = 2 } } },
 } }
-Polestar.Guides.Get = function(id) return id == "hunt" and guide or nil end
+Northstar.Guides.Get = function(id) return id == "hunt" and guide or nil end
 local NPCS = { [100] = { level = 10, levelMax = 12 }, [101] = { level = 10, elite = true }, [102] = { level = 10 } }
 local ITEMS = {
 	[500] = { sources = { { type = "drop", npc = 102, chance = 90 }, { type = "drop", npc = 101, chance = 50 } } },
 	[501] = { sources = { { type = "drop", npc = 102, chance = 50 }, { type = "object", object = 7 } } },
 }
-Polestar.Codex = { IsLoaded = function() return true end, Quest = function() return nil end,
+Northstar.Codex = { IsLoaded = function() return true end, Quest = function() return nil end,
 	Npc = function(id) return NPCS[id] end, Item = function(id) return ITEMS[id] end }
-Polestar.Compat.IsQuestCompleted = function(id) return id == 21 end
+Northstar.Compat.IsQuestCompleted = function(id) return id == 21 end
 "#;
 
 #[test]
@@ -257,7 +257,7 @@ emit({ below = s.below, from = s.from.level, now = s.now.level })"#,
 fn pace_the_route_from_the_live_step_to_the_next_level_target_says_how_many_bars_short_or_on_pace() {
 	let out = lua(&[
 		GUIDE,
-		r#"local E = Polestar.Engine
+		r#"local E = Northstar.Engine
 local target, frac = 11, nil
 E.GetGuide = function() return { id = "sample" } end
 E.GetLiveStep = function() return 1 end
@@ -289,10 +289,10 @@ local guide = { id = "ridge", category = "Leveling", minLevel = 20, maxLevel = 2
 	{ goals = { { t = "accept", quest = 25, qlvl = 25, title = "Missing In Action" }, { t = "complete", quest = 25, title = "Missing In Action" } } },
 	{ goals = { { t = "turnin", quest = 25 } } },
 } }
-Polestar.Guides.Get = function(id) return id == "ridge" and guide or nil end
+Northstar.Guides.Get = function(id) return id == "ridge" and guide or nil end
 local CODEX = { [11] = { level = 20, xp = 2000 }, [12] = { level = 21, xp = 2500 }, [25] = { level = 25, xp = 3000 } }
-Polestar.Codex = { IsLoaded = function() return true end, Load = function() return true end, Quest = function(id) return CODEX[id] end }
-local E = Polestar.Engine
+Northstar.Codex = { IsLoaded = function() return true end, Load = function() return true end, Quest = function(id) return CODEX[id] end }
+local E = Northstar.Engine
 local target, frac
 E.GetGuide = function() return guide end
 E.GetLiveStep = function() return 1 end
@@ -300,7 +300,7 @@ E.LevelTarget = function() if target then return target, 4, frac end end
 E.Applies = function() return true end
 E.StepNumber = function(i) return i, false end
 local done = {}
-Polestar.Compat.IsQuestCompleted = function(id) return done[id] or false end
+Northstar.Compat.IsQuestCompleted = function(id) return done[id] or false end
 local p = { level = 19, xp = 14550, xpMax = 19400, class = "WARRIOR", race = "Human", faction = "Alliance" }
 "#;
 

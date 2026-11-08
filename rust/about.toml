@@ -16,5 +16,5 @@ accepted = [
     "CC0-1.0",
     "Unlicense",
 ]
-# Polestar's own crates (publish = false): GPL-3.0, in LICENSE.
+# Northstar's own crates (publish = false): GPL-3.0, in LICENSE.
 private = { ignore = true }

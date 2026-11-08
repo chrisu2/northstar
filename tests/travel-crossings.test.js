@@ -2,7 +2,7 @@
 // Zone crossings in the toolchain (tools/lib/travel/crossings.js, `travel
 // build`): validation of the crossings file with errors naming the entry,
 // crossings learned from recordings (TravelData.lua), the local data addon
-// Polestar_Travel built from the optional local crossings file, and that the
+// Northstar_Travel built from the optional local crossings file, and that the
 // addon planner routes through them.
 
 const { test } = require('node:test');
@@ -118,7 +118,7 @@ test('the crossings file is optional; a broken one stops the build with its erro
 		fs.writeFileSync(bad, '{ not json');
 		await assert.rejects(buildTravel(opts({ crossingsFile: bad })), /crossings\.json: .*JSON/);
 		const { travelAddon } = await buildTravel(opts());
-		assert.equal(travelAddon, null, 'no local file next to the data: no Polestar_Travel');
+		assert.equal(travelAddon, null, 'no local file next to the data: no Northstar_Travel');
 	} finally {
 		fs.rmSync(dir, { recursive: true, force: true });
 	}
@@ -136,30 +136,30 @@ test('zone changes in recordings become crossings in TravelData.lua, which only 
 	assert.match(lua, /learned path nodes: continent, wx, wy, gateway \(1 = zone-border crossing\), uiMap/);
 });
 
-test('the local crossings file builds Polestar_Travel (never TravelData.lua), and the planner walks through it', async () => {
+test('the local crossings file builds Northstar_Travel (never TravelData.lua), and the planner walks through it', async () => {
 	const dir = tmpdir('polestar-crossings-');
 	try {
 		const result = await buildTravel(opts({ crossingsFile: CROSSINGS }));
 		assert.ok(!result.lua.includes('elwynn-stormwind') && !result.lua.includes('Test Cave'), 'local crossings stay out of TravelData.lua');
 		const files = result.travelAddon;
-		assert.deepEqual(Object.keys(files).sort(), ['Crossings.lua', 'Polestar_Travel.toc']);
-		assert.match(files['Polestar_Travel.toc'], /^## Dependencies: Polestar$/m);
-		assert.doesNotMatch(files['Polestar_Travel.toc'], /LoadOnDemand/);
-		assert.match(files['Crossings.lua'], /local N = Polestar and Polestar\.Nav\nif not \(N and N\.RegisterCrossings\) then return end/);
+		assert.deepEqual(Object.keys(files).sort(), ['Crossings.lua', 'Northstar_Travel.toc']);
+		assert.match(files['Northstar_Travel.toc'], /^## Dependencies: Northstar$/m);
+		assert.doesNotMatch(files['Northstar_Travel.toc'], /LoadOnDemand/);
+		assert.match(files['Crossings.lua'], /local N = Northstar and Northstar\.Nav\nif not \(N and N\.RegisterCrossings\) then return end/);
 		assert.match(files['Crossings.lua'], /complete = true,/);
 		assert.deepEqual(result.localCounts, { 0: { crossings: 1, open: 1, chains: 1, chainNodes: 3 } });
 
-		writeTravel(result, { jsonOut: path.join(dir, 'travel.json'), luaOut: path.join(dir, 'TravelData.lua'), travelAddonDir: path.join(dir, 'Polestar_Travel') });
+		writeTravel(result, { jsonOut: path.join(dir, 'travel.json'), luaOut: path.join(dir, 'TravelData.lua'), travelAddonDir: path.join(dir, 'Northstar_Travel') });
 		for (const f of ['map-frames.json', 'zones.json']) fs.copyFileSync(path.join(FIX, 'data', f), path.join(dir, f));
 		const common = { dataDir: dir, travelLua: path.join(dir, 'TravelData.lua'), from: { map: 1436, x: 56, y: 47 }, to: { map: 1453, x: 60, y: 60 } };
 		const plain = planRoute(common);
-		const crossed = planRoute({ ...common, crossingsLua: path.join(dir, 'Polestar_Travel', 'Crossings.lua') });
+		const crossed = planRoute({ ...common, crossingsLua: path.join(dir, 'Northstar_Travel', 'Crossings.lua') });
 		assert.deepEqual(plain.map((l) => l.label), ['Stormwind City 60, 60']);
 		assert.deepEqual(crossed.map((l) => l.label), ['Enter Stormwind City', 'Enter Stormwind City', 'Stormwind City 60, 60'], 'Westfall -> Elwynn is open ground, then the gate');
 		assert.deepEqual([crossed[0].radius, crossed[0].waypoint, crossed[0].to.map], [20, true, 1429]);
-		const back = planRoute({ ...common, from: common.to, to: common.from, crossingsLua: path.join(dir, 'Polestar_Travel', 'Crossings.lua') });
+		const back = planRoute({ ...common, from: common.to, to: common.from, crossingsLua: path.join(dir, 'Northstar_Travel', 'Crossings.lua') });
 		assert.deepEqual(back.map((l) => l.label), ['Leave Stormwind City', 'Leave Stormwind City', 'Westfall 56, 47']);
-		const cave = planRoute({ ...common, to: { map: 1436, x: 38.3, y: 77.4 }, crossingsLua: path.join(dir, 'Polestar_Travel', 'Crossings.lua') });
+		const cave = planRoute({ ...common, to: { map: 1436, x: 38.3, y: 77.4 }, crossingsLua: path.join(dir, 'Northstar_Travel', 'Crossings.lua') });
 		assert.deepEqual(cave.map((l) => l.label), ['Enter the cave', 'Follow the path', 'Westfall 38.3, 77.4']);
 
 		// The CLI writes the addon where it is told and reports the counts.
@@ -177,17 +177,17 @@ test('the local crossings file builds Polestar_Travel (never TravelData.lua), an
 	}
 });
 
-test('Polestar_Travel installs when built and is never a release addon', async () => {
+test('Northstar_Travel installs when built and is never a release addon', async () => {
 	const { RELEASE_ADDONS, RELEASE_DATA_ADDONS } = require('../tools/lib/dsl/project');
-	assert.ok(![...RELEASE_ADDONS, ...RELEASE_DATA_ADDONS].includes('Polestar_Travel'));
+	assert.ok(![...RELEASE_ADDONS, ...RELEASE_DATA_ADDONS].includes('Northstar_Travel'));
 	const src = fakeAddons(tmpdir('polestar-crossings-'));
 	const dest = tmpdir('polestar-crossings-');
 	try {
 		const before = await quiet(() => install.run(['--dest', dest, '--addons', src, '--dry-run'], {}));
-		assert.match(before.out, /note: Polestar_Travel not built \(no Polestar_Travel\/Polestar_Travel\.toc\); skipping it/);
-		fakeAddons(src, ['Polestar_Travel']);
+		assert.match(before.out, /note: Northstar_Travel not built \(no Northstar_Travel\/Northstar_Travel\.toc\); skipping it/);
+		fakeAddons(src, ['Northstar_Travel']);
 		const after = await quiet(() => install.run(['--dest', dest, '--addons', src, '--dry-run'], {}));
-		assert.match(after.out, /would add Polestar_Travel/);
+		assert.match(after.out, /would add Northstar_Travel/);
 	} finally {
 		fs.rmSync(src, { recursive: true, force: true });
 		fs.rmSync(dest, { recursive: true, force: true });
@@ -270,7 +270,7 @@ test('shipped crossings: from the Barrens to Astranaar the walk from Sun Rock Re
 const legText = (legs) => legs.map((l) => `${l.kind} ${l.label} -> ${l.to.map}`).join(' | ');
 
 // Ioney (#371): leaving Sven's camp on the Duskwood bank of the Westfall river
-// for a Stormwind trainer, Polestar said to hearth to Darkshire and fly, when
+// for a Stormwind trainer, Northstar said to hearth to Darkshire and fly, when
 // a swim across the river and a short walk to Sentinel Hill saves the stone.
 test('shipped crossings: from Sven\'s camp the walk crosses the river to Sentinel Hill; the Hearthstone stays (#371)', { skip: realData === true ? false : realData }, () => {
 	const legs = planRoute({ from: { map: 1431, x: 7.8, y: 34.1 }, to: { map: 1453, x: 78.6, y: 45.8 }, known: ['Sentinel Hill', 'Darkshire', 'Stormwind'], hearth: 'Darkshire' });

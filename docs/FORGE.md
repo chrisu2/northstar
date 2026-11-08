@@ -1,7 +1,7 @@
-# Polestar Forge
+# Northstar Forge
 
-Forge is the tool that makes Polestar's leveling routes. From the game installed on your computer
-and Polestar's guides it builds the reference data and the world model (elite and group quests
+Forge is the tool that makes Northstar's leveling routes. From the game installed on your computer
+and Northstar's guides it builds the reference data and the world model (elite and group quests
 included, each with a solo way past), works out how long every walk takes, searches each start's
 route from level 1 to 60 (each race's own start zone, then one shared route per faction from the
 Barrens and Westfall), writes the leveling guides from it and checks the result the way a player
@@ -74,7 +74,7 @@ flowchart LR
 ## Requirements
 
 - World of Warcraft: Forever installed on the same computer (Forge reads its files, read only).
-- A checkout of the Polestar repository: Forge reads its `guides/` folder and its tools' data.
+- A checkout of the Northstar repository: Forge reads its `guides/` folder and its tools' data.
 - Memory: about 5 to 6 GB of RAM per faction for the walks stage, at the default 8 threads; lower
   `--threads` on a smaller machine.
 - Disk: several GB for `forge-out/` (the walking grid and the walk stores are the largest parts).
@@ -163,11 +163,11 @@ A new Forge may change what a stage writes; the stages it affects run again on t
    quest data addon is installed, the data or the data pack, whether the install is complete for
    the leveling maps, Leffe's navigation maps and the walking grid, with a fix for anything
    missing; optional things are shown as a note. It exits 1 when `forge build` could not run.
-3. **Get the data.** In a Polestar checkout that has its own `data/sources`, Forge uses those.
+3. **Get the data.** In a Northstar checkout that has its own `data/sources`, Forge uses those.
    Everyone else will download the public data pack with `forge data fetch`; it has not been
    published yet ([The data pack](#the-data-pack)).
 
-4. **Build.** From the Polestar checkout (its `guides/` folder holds the current guides):
+4. **Build.** From the Northstar checkout (its `guides/` folder holds the current guides):
 
    ```sh
    forge build --out forge-out
@@ -184,7 +184,7 @@ A new Forge may change what a stage writes; the stages it affects run again on t
    |---|---|
    | `--starts Orc,Human` | only these starts (default `all`: Orc, Troll, Tauren, Undead, Skyborne-horde, Human, Dwarf, Gnome, NightElf, Skyborne-alliance) |
    | `--wow <folder>` | the game folder, when Forge does not find it (remembered for next time) |
-   | `--grid <folder>` | a walking grid already built (or `$POLESTAR_GRID`); without it Forge builds one from the game into `forge-out/grid` |
+   | `--grid <folder>` | a walking grid already built (or `$NORTHSTAR_GRID`); without it Forge builds one from the game into `forge-out/grid` |
    | `--allow-incomplete` | build the walking grid even when the install lacks files ([Troubleshooting](#troubleshooting)) |
    | `--no-questie` | build the data without QuestieDB. Without this flag the build stops when no client's AddOns folder holds QuestieDB's Forever store (the live `_forever_` client first, then a `_classic_beta_` one, a test install under `~/Games/*/World of Warcraft`, any other client; `$WOW_FOREVER_ADDONS` names one): without it about a sixth of the quests are missing |
    | `--accept-fewer-quests` | take a data build with over 5% fewer quests than the previous build's (else the build stops, naming the missing quests by source) |
@@ -232,10 +232,10 @@ Forge needs the folder that holds `.build.info` and `Data/` (for example
 first of:
 
 1. `--wow <folder>` on the command line,
-2. the `POLESTAR_WOW_DIR` environment variable,
+2. the `NORTHSTAR_WOW_DIR` environment variable,
 3. the folder it remembered: whenever you pass `--wow`, Forge saves that folder in its config file
    (`polestar-forge/config.toml` in your config folder: `~/.config` on Linux, `~/Library/Application
-   Support` on macOS, `%APPDATA%` on Windows; `POLESTAR_FORGE_CONFIG` names another file),
+   Support` on macOS, `%APPDATA%` on Windows; `NORTHSTAR_FORGE_CONFIG` names another file),
 4. a search: Wine, Proton, Lutris, Bottles and Steam prefixes under your home folder, then the usual
    Windows and macOS install folders.
 
@@ -251,7 +251,7 @@ because the files on disk are that version's.
 ## The data pack
 
 Some inputs are not in the game: Forever's quest data from other projects, the quest facts players
-and tools have gathered, the walks already priced. Polestar maintainers keep them in the checkout's
+and tools have gathered, the walks already priced. Northstar maintainers keep them in the checkout's
 `data/sources`. Everyone else will get the **data pack**, a release asset holding only data we may
 share, with every source, licence and credit in its `manifest.json`.
 
@@ -267,7 +267,7 @@ forge data fetch --dest ~/forge-data  # somewhere else
 It downloads the pack, checks its size and BLAKE3 hash and every file against the manifest, and
 only then replaces the previous pack. The default place is `polestar/data-pack` in your data folder
 (`~/.local/share` on Linux, `~/Library/Application Support` on macOS, `%LOCALAPPDATA%` on Windows),
-or `$POLESTAR_DATA_PACK`. `forge build` uses the pack automatically when the checkout has no
+or `$NORTHSTAR_DATA_PACK`. `forge build` uses the pack automatically when the checkout has no
 `data/sources`. The walking grid is not in the pack: Forge builds it from your own game (or takes
 `--grid`). [data.md](forge/data.md) has what is in it and how maintainers build it
 (`forge data pack`).
@@ -277,14 +277,14 @@ Without it, Forge still builds, with fewer quest facts; the report says so.
 
 ## Leffe's navigation maps
 
-Leffe made navigation maps of Azeroth's continents and lets Polestar use what they give: thank
+Leffe made navigation maps of Azeroth's continents and lets Northstar use what they give: thank
 you, Leffe. **His maps are private**: they are not in the repository or the data pack, and only
-people Leffe gives access to have them (`--leffe <folder>` / `$POLESTAR_LEFFE_NAV`).
+people Leffe gives access to have them (`--leffe <folder>` / `$NORTHSTAR_LEFFE_NAV`).
 
 What is shared is the walks his maps answered. The data pack's walk stores hold, for every walk a
 maintainer build asked of his maps, its length and time, plus the zone of each place on his maps
 (numbers, no map geometry). So everyone builds with the **hybrid**: Leffe's walks first, and
-Polestar's own walking grid wherever his maps have no way or a much longer one (a few city parts),
+Northstar's own walking grid wherever his maps have no way or a much longer one (a few city parts),
 and wherever the pack holds no walk of his (a place that is new since the pack was built).
 
 | You have | Walks | Legs |
@@ -293,7 +293,7 @@ and wherever the pack holds no walk of his (a place that is new since the pack w
 | the data pack, not his maps | hybrid on his saved walks, our grid for the walks they lack | our grid |
 | neither | our grid | our grid |
 
-`forge build --nav grid|leffe|hybrid` forces one (`leffe` needs his maps; `POLESTAR_NAV` does the
+`forge build --nav grid|leffe|hybrid` forces one (`leffe` needs his maps; `NORTHSTAR_NAV` does the
 same for `forge walks walks` only). [nav.md](forge/nav.md) explains both and when each wins.
 
 ### Building as a contributor
@@ -383,7 +383,7 @@ code.
 
 When a route is wrong for a reason the model cannot see, write an override in the checkout's
 `data/route-fixes.json`, under `overrides`. Every build reads that file from the checkout it builds
-(it is never built into `forge`); `POLESTAR_ROUTE_FIXES` names another file for a try-out:
+(it is never built into `forge`); `NORTHSTAR_ROUTE_FIXES` names another file for a try-out:
 
 ```json
 "overrides": {
@@ -539,10 +539,10 @@ Start with `forge doctor`: it names the problem and the fix for most setups.
 
 | Message | Fix |
 |---|---|
-| `no data/sources above here: pass --root` and no data pack | run from inside a Polestar checkout with `data/sources`; once the public data pack is published, `forge data fetch` |
+| `no data/sources above here: pass --root` and no data pack | run from inside a Northstar checkout with `data/sources`; once the public data pack is published, `forge data fetch` |
 | `forge data fetch` says no public data pack has been published yet | build from your own game client: `forge build --wow <path>` |
 | `the data pack has no navigation grid ... no client ... was found` | install the game (Forge builds the grid from it), or pass `--grid <a built grid>` |
-| the game is not found | pass `--wow <folder>` once (it is remembered), or set `POLESTAR_WOW_DIR` |
+| the game is not found | pass `--wow <folder>` once (it is remembered), or set `NORTHSTAR_WOW_DIR` |
 | `forge doctor` says the install is not complete, or `... is not in the local storage` | the launcher has not downloaded those files, or reused their space for others: run **Scan and Repair** in the launcher, let it finish, then `forge doctor` again (`forge gamedata check` lists the files per map). `forge build` refuses to build the walking grid from such an install (it would be wrong where files are missing) unless given `--allow-incomplete` |
 | `encrypted with TACT key ...; N records skipped` | a note, not an error: those rows are encrypted in the client and are left out |
 | a stage runs every time | its outputs were removed or edited; delete `forge-out/.forge/<stage>.key` to force one stage, the whole `forge-out` to start over |
@@ -561,7 +561,7 @@ print the forge command to run):
 | `forge data build`, `sources`, `check`, `check-corrections` | the reference data, its sources and its gates |
 | `forge data questdb`, `names`, `itemdb`, `codex`, `gear`, `talents`, `maps`, `trainers`, `travel`, `professions`, `dungeons` | the data addons and the generated Lua |
 | `forge data pack`, `fetch`, `publish` | the data pack for contributors, and the open Forever database |
-| `forge nav grid`, `prepare`, `pack`, `check`, `layers` | the walking grid, the walk graphs, Polestar_Nav's maps and their ground layers |
+| `forge nav grid`, `prepare`, `pack`, `check`, `layers` | the walking grid, the walk graphs, Northstar_Nav's maps and their ground layers |
 | `forge release version`, `pack`, `notes`, `credits` | the version, the release zips, the release notes, the Guiding Stars page |
 | `forge changelog add`, `check`, `show`, `build` | the changelog fragments in `changes/` |
 

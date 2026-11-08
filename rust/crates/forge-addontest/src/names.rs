@@ -1,6 +1,6 @@
-//! A language folder (Polestar_<locale>) holding only a Names.lua as `forge data names` writes it, built
+//! A language folder (Northstar_<locale>) holding only a Names.lua as `forge data names` writes it, built
 //! from a few names, for the addon's tests (tests/helpers/names.js): the stubbed client loads it when
-//! Polestar asks (C_AddOns.LoadAddOn), the way the game loads a load-on-demand addon, and counts every
+//! Northstar asks (C_AddOns.LoadAddOn), the way the game loads a load-on-demand addon, and counts every
 //! language folder it is asked for in `__namesLoads`.
 //!
 //! ```no_run
@@ -41,7 +41,7 @@ pub fn names_pack(locale: &str, names: &[(&str, &[(i64, &str)])]) -> NamesPack {
 do
   local __load = C_AddOns.LoadAddOn
   function C_AddOns.LoadAddOn(name)
-    if type(name) == "string" and name:find("^Polestar_%l%l%u%u$") then __namesLoads = __namesLoads + 1 end
+    if type(name) == "string" and name:find("^Northstar_%l%l%u%u$") then __namesLoads = __namesLoads + 1 end
     if name ~= {} then return __load(name) end
     if not stub.addonsLoaded[name] then
       dofile({})

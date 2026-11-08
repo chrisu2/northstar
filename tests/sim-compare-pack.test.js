@@ -13,7 +13,7 @@ const { quiet } = require('./helpers/cli');
 const { tmpdir } = require('./helpers/tmp');
 const { compareCommand } = require('../tools/lib/sim/compare');
 const { parseArgs } = require('../tools/commands/sim');
-const { loadPolestarRoutes } = require('../tools/lib/sim/baselines/polestar');
+const { loadNorthstarRoutes } = require('../tools/lib/sim/baselines/polestar');
 const { readManifest } = require('../tools/lib/pack/manifest');
 
 const write = (dir, rel, text) => {
@@ -43,7 +43,7 @@ function fixture() {
 test('the pack chain starting at level 5 plays our starting zone first', () => {
 	const f = fixture();
 	const { manifest } = readManifest(f.pack);
-	const r = loadPolestarRoutes({ guidesDir: f.ours, dataDir: f.dataDir, race: 'Orc', pack: { dir: f.pack, manifest } });
+	const r = loadNorthstarRoutes({ guidesDir: f.ours, dataDir: f.dataDir, race: 'Orc', pack: { dir: f.pack, manifest } });
 	assert.deepEqual(r.prefix, ['forever/horde/orc/01-start']);
 	assert.deepEqual(r.default.guides.map((g) => [g.id, g.file]), [
 		['forever/horde/orc/01-start', 'forever/horde/orc/01-start.guide'],
@@ -52,7 +52,7 @@ test('the pack chain starting at level 5 plays our starting zone first', () => {
 	assert.equal(r.default.label, 'joe 1-10 default');
 	assert.deepEqual(r.graph.nodes.map((n) => n.id), ['joe/field']);
 	// Ours alone is unchanged.
-	const ours = loadPolestarRoutes({ guidesDir: f.ours, dataDir: f.dataDir, race: 'Orc' });
+	const ours = loadNorthstarRoutes({ guidesDir: f.ours, dataDir: f.dataDir, race: 'Orc' });
 	assert.deepEqual(ours.default.guides.map((g) => g.id), ['forever/horde/orc/01-start']);
 	assert.deepEqual(ours.prefix, []);
 });
@@ -72,7 +72,7 @@ test('a pack chain starting inside our second guide\'s levels plays our first tw
 		'step Deep', '  accept 505', '  kill 13 x10 quest 505.1', '  turnin 505',
 	]);
 	const { manifest } = readManifest(f.pack);
-	const r = loadPolestarRoutes({ guidesDir: f.ours, dataDir: f.dataDir, race: 'Orc', pack: { dir: f.pack, manifest } });
+	const r = loadNorthstarRoutes({ guidesDir: f.ours, dataDir: f.dataDir, race: 'Orc', pack: { dir: f.pack, manifest } });
 	assert.deepEqual(r.prefix, ['forever/horde/orc/01-start', 'forever/horde/orc/02-field']);
 	assert.deepEqual(r.default.guides.map((g) => g.id), ['forever/horde/orc/01-start', 'forever/horde/orc/02-field', 'joe/field']);
 	assert.equal(r.default.label, 'joe 1-10 default');
@@ -81,7 +81,7 @@ test('a pack chain starting inside our second guide\'s levels plays our first tw
 		'guide joe/field', 'title Joe Deep Field', 'faction Horde', 'race Orc', 'levels 5-10', 'zone Farfield', '',
 		'step Deep', '  accept 505', '  kill 13 x10 quest 505.1', '  turnin 505',
 	]);
-	assert.deepEqual(loadPolestarRoutes({ guidesDir: f.ours, dataDir: f.dataDir, race: 'Orc', pack: { dir: f.pack, manifest } }).prefix, ['forever/horde/orc/01-start']);
+	assert.deepEqual(loadNorthstarRoutes({ guidesDir: f.ours, dataDir: f.dataDir, race: 'Orc', pack: { dir: f.pack, manifest } }).prefix, ['forever/horde/orc/01-start']);
 });
 
 test('a pack chain whose guides name no race is scored for every race of the faction', async () => {
@@ -91,7 +91,7 @@ test('a pack chain whose guides name no race is scored for every race of the fac
 		'step Warden', '  turnin 503', '  accept 504', '  kill 12 x10 quest 504.1', '  turnin 504', '  accept 505', '  kill 13 x10 quest 505.1', '  turnin 505',
 	]);
 	const { manifest } = readManifest(f.pack);
-	const r = loadPolestarRoutes({ guidesDir: f.ours, dataDir: f.dataDir, race: 'Orc', pack: { dir: f.pack, manifest } });
+	const r = loadNorthstarRoutes({ guidesDir: f.ours, dataDir: f.dataDir, race: 'Orc', pack: { dir: f.pack, manifest } });
 	assert.ok(r, 'the faction-wide chain is found');
 	assert.deepEqual(r.default.guides.map((g) => g.id), ['forever/horde/orc/01-start', 'joe/field']);
 	const o = { dataDir: f.dataDir, simDir: f.simDir, sourcesDir: f.sourcesDir, benchDir: f.benchDir, offline: true, extraStarts: syn.START, log: () => {} };

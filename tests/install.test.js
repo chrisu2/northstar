@@ -1,6 +1,6 @@
 'use strict';
 // install: destination choice (flag, env, Wine-prefix auto-detection by
-// .flavor.info), dry runs, copies and symlinks that touch only Polestar folders.
+// .flavor.info), dry runs, copies and symlinks that touch only Northstar folders.
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -14,18 +14,18 @@ const { detectAddonsDirs } = require('../tools/lib/addons');
 
 function compiledAddons() {
 	const root = fakeAddons(tmpdir());
-	fs.writeFileSync(path.join(root, 'Polestar_Guides', 'Guides.lua'), 'do\n\tlocal function register()\n\t\tPolestar.RegisterGuide({ id = "forever/a" })\n\tend\n\tregister()\nend\n');
+	fs.writeFileSync(path.join(root, 'Northstar_Guides', 'Guides.lua'), 'do\n\tlocal function register()\n\t\tNorthstar.RegisterGuide({ id = "forever/a" })\n\tend\n\tregister()\nend\n');
 	return root;
 }
 
-// An AddOns folder with someone else's addon and an old Polestar.
+// An AddOns folder with someone else's addon and an old Northstar.
 function liveAddOns() {
 	const dir = tmpdir();
 	fs.mkdirSync(path.join(dir, 'OtherAddon'));
 	fs.writeFileSync(path.join(dir, 'OtherAddon', 'OtherAddon.toc'), 'other\n');
-	fs.mkdirSync(path.join(dir, 'Polestar'));
-	fs.writeFileSync(path.join(dir, 'Polestar', 'old-file.lua'), '-- from the previous version\n');
-	fs.writeFileSync(path.join(dir, 'Polestar', 'Polestar.toc'), '## Version: 0.0.1\n');
+	fs.mkdirSync(path.join(dir, 'Northstar'));
+	fs.writeFileSync(path.join(dir, 'Northstar', 'old-file.lua'), '-- from the previous version\n');
+	fs.writeFileSync(path.join(dir, 'Northstar', 'Northstar.toc'), '## Version: 0.0.1\n');
 	return dir;
 }
 
@@ -57,53 +57,53 @@ test('--dry-run reports the plan and changes nothing', async () => {
 	const before = snapshot(dest);
 	const { result, out } = await quiet(() => install.run(['--dest', dest, '--addons', src, '--dry-run', '--recorder'], {}));
 	assert.equal(result, 0, out);
-	assert.match(out, /would replace Polestar \(copy from/);
-	assert.match(out, /would add Polestar_Guides/);
-	assert.match(out, /would add Polestar_Recorder/);
+	assert.match(out, /would replace Northstar \(copy from/);
+	assert.match(out, /would add Northstar_Guides/);
+	assert.match(out, /would add Northstar_Recorder/);
 	assert.deepEqual(snapshot(dest), before);
 });
 
-test('the built data addons (Polestar_QuestDB, Polestar_ItemDB, Polestar_Codex) install by default; a missing one is skipped', async () => {
+test('the built data addons (Northstar_QuestDB, Northstar_ItemDB, Northstar_Codex) install by default; a missing one is skipped', async () => {
 	const src = compiledAddons();
-	fakeAddons(src, ['Polestar_QuestDB']);
+	fakeAddons(src, ['Northstar_QuestDB']);
 	const dest = liveAddOns();
 	const { result, out } = await quiet(() => install.run(['--dest', dest, '--addons', src], {}));
 	assert.equal(result, 0, out);
-	assert.match(out, /note: Polestar_ItemDB not built \(no Polestar_ItemDB\/Polestar_ItemDB\.toc\); skipping it/);
-	assert.match(out, /note: Polestar_Codex not built \(no Polestar_Codex\/Polestar_Codex\.toc\); skipping it/);
-	assert.deepEqual(fs.readdirSync(dest).sort(), ['Polestar', 'Polestar_Guides', 'Polestar_Nav', 'Polestar_QuestDB', 'OtherAddon'].sort());
-	fakeAddons(src, ['Polestar_ItemDB', 'Polestar_Codex']);
+	assert.match(out, /note: Northstar_ItemDB not built \(no Northstar_ItemDB\/Northstar_ItemDB\.toc\); skipping it/);
+	assert.match(out, /note: Northstar_Codex not built \(no Northstar_Codex\/Northstar_Codex\.toc\); skipping it/);
+	assert.deepEqual(fs.readdirSync(dest).sort(), ['Northstar', 'Northstar_Guides', 'Northstar_Nav', 'Northstar_QuestDB', 'OtherAddon'].sort());
+	fakeAddons(src, ['Northstar_ItemDB', 'Northstar_Codex']);
 	const dry = await quiet(() => install.run(['--dest', dest, '--addons', src, '--dry-run'], {}));
-	assert.match(dry.out, /would replace Polestar_QuestDB[\s\S]*would add Polestar_ItemDB[\s\S]*would add Polestar_Codex/);
+	assert.match(dry.out, /would replace Northstar_QuestDB[\s\S]*would add Northstar_ItemDB[\s\S]*would add Northstar_Codex/);
 });
 
-test('--dest copies only the Polestar folders, replacing old copies and leaving everything else alone', async () => {
+test('--dest copies only the Northstar folders, replacing old copies and leaving everything else alone', async () => {
 	const src = compiledAddons();
 	const dest = liveAddOns();
 	const { result, out } = await quiet(() => install.run(['--dest', dest, '--addons', src], {}));
 	assert.equal(result, 0, out);
-	assert.deepEqual(fs.readdirSync(dest).sort(), ['Polestar', 'Polestar_Guides', 'Polestar_Nav', 'OtherAddon'].sort());
+	assert.deepEqual(fs.readdirSync(dest).sort(), ['Northstar', 'Northstar_Guides', 'Northstar_Nav', 'OtherAddon'].sort());
 	const after = snapshot(dest);
 	assert.equal(after['OtherAddon/OtherAddon.toc'], 'other\n');
-	assert.equal(after['Polestar/old-file.lua'], undefined, 'old copy replaced, not merged');
-	assert.equal(after['Polestar/Polestar.toc'], fs.readFileSync(path.join(src, 'Polestar', 'Polestar.toc'), 'utf8'));
-	assert.equal(after['Polestar/.hidden'], undefined, 'hidden files are not installed');
-	assert.ok(after['Polestar_Guides/Guides.lua']);
-	assert.equal(fs.existsSync(path.join(dest, 'Polestar_Recorder')), false, 'recorder only on request');
+	assert.equal(after['Northstar/old-file.lua'], undefined, 'old copy replaced, not merged');
+	assert.equal(after['Northstar/Northstar.toc'], fs.readFileSync(path.join(src, 'Northstar', 'Northstar.toc'), 'utf8'));
+	assert.equal(after['Northstar/.hidden'], undefined, 'hidden files are not installed');
+	assert.ok(after['Northstar_Guides/Guides.lua']);
+	assert.equal(fs.existsSync(path.join(dest, 'Northstar_Recorder')), false, 'recorder only on request');
 });
 
 test('--link symlinks the folders, and a later copy replaces the links without touching the sources', async () => {
 	const src = compiledAddons();
 	const dest = liveAddOns();
 	assert.equal((await quiet(() => install.run(['--dest', dest, '--addons', src, '--link', '--recorder'], {}))).result, 0);
-	for (const n of ['Polestar', 'Polestar_Guides', 'Polestar_Recorder']) {
+	for (const n of ['Northstar', 'Northstar_Guides', 'Northstar_Recorder']) {
 		assert.ok(fs.lstatSync(path.join(dest, n)).isSymbolicLink(), n);
 		assert.equal(fs.realpathSync(path.join(dest, n)), fs.realpathSync(path.join(src, n)));
 	}
 	assert.equal((await quiet(() => install.run(['--dest', dest, '--addons', src], {}))).result, 0);
-	assert.ok(fs.lstatSync(path.join(dest, 'Polestar')).isDirectory());
-	assert.ok(fs.existsSync(path.join(src, 'Polestar', 'Polestar.toc')), 'source survives replacing its link');
-	assert.ok(fs.lstatSync(path.join(dest, 'Polestar_Recorder')).isSymbolicLink(), 'not reinstalled without --recorder');
+	assert.ok(fs.lstatSync(path.join(dest, 'Northstar')).isDirectory());
+	assert.ok(fs.existsSync(path.join(src, 'Northstar', 'Northstar.toc')), 'source survives replacing its link');
+	assert.ok(fs.lstatSync(path.join(dest, 'Northstar_Recorder')).isSymbolicLink(), 'not reinstalled without --recorder');
 });
 
 test('$WOW_FOREVER_ADDONS is used when --dest is absent; --dest wins over it', async () => {
@@ -111,9 +111,9 @@ test('$WOW_FOREVER_ADDONS is used when --dest is absent; --dest wins over it', a
 	const envDest = tmpdir();
 	const flagDest = tmpdir();
 	assert.equal((await quiet(() => install.run(['--addons', src], { WOW_FOREVER_ADDONS: envDest, HOME: tmpdir() }))).result, 0);
-	assert.ok(fs.existsSync(path.join(envDest, 'Polestar', 'Polestar.toc')));
+	assert.ok(fs.existsSync(path.join(envDest, 'Northstar', 'Northstar.toc')));
 	assert.equal((await quiet(() => install.run(['--addons', src, '--dest', flagDest], { WOW_FOREVER_ADDONS: envDest }))).result, 0);
-	assert.ok(fs.existsSync(path.join(flagDest, 'Polestar', 'Polestar.toc')));
+	assert.ok(fs.existsSync(path.join(flagDest, 'Northstar', 'Northstar.toc')));
 	const missing = await quiet(() => install.run(['--addons', src, '--dest', path.join(flagDest, 'nope')], {}));
 	assert.equal(missing.result, 1);
 	assert.match(missing.out, /is not a folder/);
@@ -168,7 +168,7 @@ test('auto-detected installs create Interface/AddOns when the client has none ye
 	const src = compiledAddons();
 	const { result, out } = await quiet(() => install.run(['--addons', src], { HOME: home }, NO_NATIVE));
 	assert.equal(result, 0, out);
-	assert.deepEqual(fs.readdirSync(path.join(client, 'Interface', 'AddOns')).sort(), ['Polestar', 'Polestar_Guides', 'Polestar_Nav']);
+	assert.deepEqual(fs.readdirSync(path.join(client, 'Interface', 'AddOns')).sort(), ['Northstar', 'Northstar_Guides', 'Northstar_Nav']);
 	const none = await quiet(() => install.run(['--addons', src], { HOME: tmpdir() }, NO_NATIVE));
 	assert.equal(none.result, 1);
 	assert.match(none.out, /no World of Warcraft: Forever client found/);
@@ -202,8 +202,8 @@ test('install with beta + wowf clients installs into both; --client picks one; u
 	// Installs for real into both.
 	const real = await quiet(() => install.run(['--addons', src], { HOME: home }, NO_NATIVE));
 	assert.equal(real.result, 0, real.out);
-	assert.deepEqual(fs.readdirSync(path.join(beta, 'Interface', 'AddOns')).sort(), ['Polestar', 'Polestar_Guides', 'Polestar_Nav']);
-	assert.deepEqual(fs.readdirSync(path.join(stress, 'Interface', 'AddOns')).sort(), ['Polestar', 'Polestar_Guides', 'Polestar_Nav']);
+	assert.deepEqual(fs.readdirSync(path.join(beta, 'Interface', 'AddOns')).sort(), ['Northstar', 'Northstar_Guides', 'Northstar_Nav']);
+	assert.deepEqual(fs.readdirSync(path.join(stress, 'Interface', 'AddOns')).sort(), ['Northstar', 'Northstar_Guides', 'Northstar_Nav']);
 
 	// --client _forever_ picks only the stress-test client.
 	const pickFolder = await quiet(() => install.run(['--addons', src, '--dry-run', '--client', '_forever_'], { HOME: home }, NO_NATIVE));
@@ -233,8 +233,8 @@ test('install refuses to replace its own source, install into the source, or rep
 	const src = compiledAddons();
 	const intoSource = await quiet(() => install.run(['--dest', src, '--addons', src], {}));
 	assert.equal(intoSource.result, 1);
-	assert.match(intoSource.out, /refusing to install: .*Polestar is \(or contains\) the source/);
-	const nested = await quiet(() => install.run(['--dest', path.join(src, 'Polestar'), '--addons', src, '--link'], {}));
+	assert.match(intoSource.out, /refusing to install: .*Northstar is \(or contains\) the source/);
+	const nested = await quiet(() => install.run(['--dest', path.join(src, 'Northstar'), '--addons', src, '--link'], {}));
 	assert.equal(nested.result, 1);
 	assert.match(nested.out, /is inside the source/);
 	// An AddOns folder symlinked to the source tree.
@@ -243,14 +243,14 @@ test('install refuses to replace its own source, install into the source, or rep
 	assert.equal((await quiet(() => install.run(['--dest', linked, '--addons', src, '--link'], {}))).result, 1);
 	// A same-named folder that is not that addon is left alone.
 	const dest = tmpdir();
-	fs.mkdirSync(path.join(dest, 'Polestar'));
-	fs.writeFileSync(path.join(dest, 'Polestar', 'notes.txt'), 'mine\n');
+	fs.mkdirSync(path.join(dest, 'Northstar'));
+	fs.writeFileSync(path.join(dest, 'Northstar', 'notes.txt'), 'mine\n');
 	const foreign = await quiet(() => install.run(['--dest', dest, '--addons', src], {}));
 	assert.equal(foreign.result, 1);
-	assert.match(foreign.out, /has no Polestar\.toc; not an installed Polestar/);
-	assert.equal(fs.readFileSync(path.join(dest, 'Polestar', 'notes.txt'), 'utf8'), 'mine\n');
+	assert.match(foreign.out, /has no Northstar\.toc; not an installed Northstar/);
+	assert.equal(fs.readFileSync(path.join(dest, 'Northstar', 'notes.txt'), 'utf8'), 'mine\n');
 	// Sources are untouched by all of the above.
-	for (const n of ['Polestar', 'Polestar_Guides']) assert.ok(fs.existsSync(path.join(src, n, `${n}.toc`)), n);
+	for (const n of ['Northstar', 'Northstar_Guides']) assert.ok(fs.existsSync(path.join(src, n, `${n}.toc`)), n);
 });
 
 // Pack mode: a temp copy of the mini fixture pack, built with the fixture data
@@ -272,20 +272,20 @@ test('inside a pack, install builds it and installs its folder; a second install
 	const dest = liveAddOns();
 	const first = await quiet(() => install.run([...packArgs(pack), '--dest', dest], {}));
 	assert.equal(first.result, 0, first.out);
-	assert.match(first.out, /added PolestarPack_MiniPack/);
-	const folder = path.join(dest, 'PolestarPack_MiniPack');
-	assert.deepEqual(fs.readdirSync(folder).sort(), ['Guides.lua', 'LICENSE-DATA.txt', 'PolestarPack_MiniPack.toc', 'MapFrames.lua', 'Pack.lua'].sort());
-	assert.match(fs.readFileSync(path.join(folder, 'PolestarPack_MiniPack.toc'), 'utf8'), /^## Title: Polestar Community: Mini Pack$/m);
-	assert.ok(fs.existsSync(path.join(pack, 'dist', 'PolestarPack_MiniPack', 'Guides.lua')), 'built into the pack\'s dist/');
-	assert.deepEqual(fs.readdirSync(dest).sort(), ['Polestar', 'PolestarPack_MiniPack', 'OtherAddon'].sort(), 'only the pack folder is installed');
+	assert.match(first.out, /added NorthstarPack_MiniPack/);
+	const folder = path.join(dest, 'NorthstarPack_MiniPack');
+	assert.deepEqual(fs.readdirSync(folder).sort(), ['Guides.lua', 'LICENSE-DATA.txt', 'NorthstarPack_MiniPack.toc', 'MapFrames.lua', 'Pack.lua'].sort());
+	assert.match(fs.readFileSync(path.join(folder, 'NorthstarPack_MiniPack.toc'), 'utf8'), /^## Title: Northstar Community: Mini Pack$/m);
+	assert.ok(fs.existsSync(path.join(pack, 'dist', 'NorthstarPack_MiniPack', 'Guides.lua')), 'built into the pack\'s dist/');
+	assert.deepEqual(fs.readdirSync(dest).sort(), ['Northstar', 'NorthstarPack_MiniPack', 'OtherAddon'].sort(), 'only the pack folder is installed');
 	fs.writeFileSync(path.join(pack, 'guides', 'b.guide'), fs.readFileSync(path.join(pack, 'guides', 'b.guide'), 'utf8').replace('title Mini B', 'title Mini B2'));
 	const second = await quiet(() => install.run([...packArgs(pack), '--dest', dest], {}));
 	assert.equal(second.result, 0, second.out);
-	assert.match(second.out, /replaced PolestarPack_MiniPack/);
+	assert.match(second.out, /replaced NorthstarPack_MiniPack/);
 	assert.match(fs.readFileSync(path.join(folder, 'Guides.lua'), 'utf8'), /Mini B2/);
 	const dry = await quiet(() => install.run([...packArgs(pack), '--dest', dest, '--dry-run'], {}));
 	assert.equal(dry.result, 0, dry.out);
-	assert.match(dry.out, /would replace PolestarPack_MiniPack/);
+	assert.match(dry.out, /would replace NorthstarPack_MiniPack/);
 });
 
 test('install of a pack without reference data stops with one error and touches nothing', async () => {
@@ -309,35 +309,35 @@ test('install of a pack without reference data stops with one error and touches 
 test('install refuses to replace a hand-made folder with the pack folder\'s name', async () => {
 	const pack = miniCopy();
 	const dest = tmpdir();
-	fs.mkdirSync(path.join(dest, 'PolestarPack_MiniPack'));
-	fs.writeFileSync(path.join(dest, 'PolestarPack_MiniPack', 'PolestarPack_MiniPack.toc'), '## Title: mine\n');
+	fs.mkdirSync(path.join(dest, 'NorthstarPack_MiniPack'));
+	fs.writeFileSync(path.join(dest, 'NorthstarPack_MiniPack', 'NorthstarPack_MiniPack.toc'), '## Title: mine\n');
 	const before = snapshot(dest);
 	const { result, out } = await quiet(() => install.run([...packArgs(pack), '--dest', dest], {}));
 	assert.equal(result, 1, out);
-	assert.match(out, /refusing to install: .*PolestarPack_MiniPack: it is not a generated community addon/);
+	assert.match(out, /refusing to install: .*NorthstarPack_MiniPack: it is not a generated community addon/);
 	assert.deepEqual(snapshot(dest), before);
 });
 
 test('install replaces an empty folder with the pack folder\'s name (the one folder rule)', async () => {
 	const pack = miniCopy();
 	const dest = tmpdir();
-	fs.mkdirSync(path.join(dest, 'PolestarPack_MiniPack'));
+	fs.mkdirSync(path.join(dest, 'NorthstarPack_MiniPack'));
 	const { result, out } = await quiet(() => install.run([...packArgs(pack), '--dest', dest], {}));
 	assert.equal(result, 0, out);
-	assert.match(out, /replaced PolestarPack_MiniPack/);
-	assert.ok(fs.existsSync(path.join(dest, 'PolestarPack_MiniPack', 'Guides.lua')));
+	assert.match(out, /replaced NorthstarPack_MiniPack/);
+	assert.ok(fs.existsSync(path.join(dest, 'NorthstarPack_MiniPack', 'Guides.lua')));
 });
 
 test('install refuses a generated folder of another pack with the same folder name, pointing to "folder" in pack.json', async () => {
 	const dest = tmpdir();
 	// Another pack titled "Mini Pack" (its own id) was installed into the same default folder.
-	const other = path.join(dest, 'PolestarPack_MiniPack');
+	const other = path.join(dest, 'NorthstarPack_MiniPack');
 	fs.mkdirSync(other);
-	fs.writeFileSync(path.join(other, 'PolestarPack_MiniPack.toc'), `## Title: Mini Pack\n${TOC_MARKER}\n## X-Polestar-Pack: other-mini\n`);
+	fs.writeFileSync(path.join(other, 'NorthstarPack_MiniPack.toc'), `## Title: Mini Pack\n${TOC_MARKER}\n## X-Northstar-Pack: other-mini\n`);
 	const before = snapshot(dest);
 	const { result, out } = await quiet(() => install.run([...packArgs(miniCopy()), '--dest', dest], {}));
 	assert.equal(result, 1, out);
-	assert.match(out, /refusing to install: .*PolestarPack_MiniPack: it holds the community addon "other-mini", not "mini"; set "folder" in pack\.json/);
+	assert.match(out, /refusing to install: .*NorthstarPack_MiniPack: it holds the community addon "other-mini", not "mini"; set "folder" in pack\.json/);
 	assert.deepEqual(snapshot(dest), before);
 });
 
@@ -348,7 +348,7 @@ test('install <dir> works on that pack: a dry run plans only its folder; two fol
 	const ctx = ['--data', DATA_DIR, '--context', path.join(PACKS, 'context'), '--context-data', DATA_DIR];
 	const dry = await quiet(() => install.run([pack, ...ctx, '--dest', dest, '--dry-run'], {}));
 	assert.equal(dry.result, 0, dry.out);
-	assert.deepEqual(dry.out.split('\n').filter((l) => /^\s+would (add|replace)/.test(l)).map((l) => l.trim().split(' ').slice(0, 3).join(' ')), ['would add PolestarPack_MiniPack']);
+	assert.deepEqual(dry.out.split('\n').filter((l) => /^\s+would (add|replace)/.test(l)).map((l) => l.trim().split(' ').slice(0, 3).join(' ')), ['would add NorthstarPack_MiniPack']);
 	assert.deepEqual(snapshot(dest), before);
 	const two = await quiet(() => install.run([pack, miniCopy(), '--dest', dest, '--dry-run'], {}));
 	assert.equal(two.result, 2, two.out);
@@ -394,7 +394,7 @@ test('auto-detect finds native Windows and macOS installs by .flavor.info (platf
 	// install itself takes the same injection.
 	const { result, out } = await quiet(() => install.run(['--addons', compiledAddons()], { HOME: home }, { platform: 'win32', root: winRoot }));
 	assert.equal(result, 0, out);
-	assert.deepEqual(fs.readdirSync(path.join(win, 'Interface', 'AddOns')).sort(), ['Polestar', 'Polestar_Guides', 'Polestar_Nav']);
+	assert.deepEqual(fs.readdirSync(path.join(win, 'Interface', 'AddOns')).sort(), ['Northstar', 'Northstar_Guides', 'Northstar_Nav']);
 	const macRoot = tmpdir();
 	const mac = flavorClient(path.join(macRoot, 'Applications', 'World of Warcraft'), '_classic_era_', 'wow_forever');
 	assert.deepEqual(detectAddonsDirs(home, { platform: 'darwin', root: macRoot }).map((f) => f.client), [mac]);
@@ -408,12 +408,12 @@ test('install --link of a pack links its built dist/ folder, so a later compile 
 	const dest = liveAddOns();
 	const r = await quiet(() => install.run([...packArgs(pack), '--dest', dest, '--link'], {}));
 	assert.equal(r.result, 0, r.out);
-	const folder = path.join(dest, 'PolestarPack_MiniPack');
+	const folder = path.join(dest, 'NorthstarPack_MiniPack');
 	assert.ok(fs.lstatSync(folder).isSymbolicLink());
-	assert.equal(fs.realpathSync(folder), fs.realpathSync(path.join(pack, 'dist', 'PolestarPack_MiniPack')));
-	assert.deepEqual(fs.readdirSync(dest).sort(), ['Polestar', 'PolestarPack_MiniPack', 'OtherAddon'].sort());
+	assert.equal(fs.realpathSync(folder), fs.realpathSync(path.join(pack, 'dist', 'NorthstarPack_MiniPack')));
+	assert.deepEqual(fs.readdirSync(dest).sort(), ['Northstar', 'NorthstarPack_MiniPack', 'OtherAddon'].sort());
 	// A copy later replaces the link and leaves the build alone.
 	assert.equal((await quiet(() => install.run([...packArgs(pack), '--dest', dest], {}))).result, 0);
 	assert.ok(fs.lstatSync(folder).isDirectory());
-	assert.ok(fs.existsSync(path.join(pack, 'dist', 'PolestarPack_MiniPack', 'Guides.lua')));
+	assert.ok(fs.existsSync(path.join(pack, 'dist', 'NorthstarPack_MiniPack', 'Guides.lua')));
 });

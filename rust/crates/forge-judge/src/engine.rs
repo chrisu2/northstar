@@ -1,4 +1,4 @@
-//! A headless copy of addon/Polestar/Core/Engine.lua's step selection and done rules, played the way
+//! A headless copy of addon/Northstar/Core/Engine.lua's step selection and done rules, played the way
 //! tools/lib/playtest.js plays a guide on tests/lua/stub_world.lua (SIMULATE).
 //!
 //! - Steps: `only` (class/race/faction, `!x` excludes), `when` (every WHEN_KEYS predicate, stored once

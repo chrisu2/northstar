@@ -15,7 +15,7 @@
 //              second mouth ("both")
 //
 // Sources: an optional local crossings file (data/local/crossings.json,
-// gitignored; built into the local data addon Polestar_Travel, never
+// gitignored; built into the local data addon Northstar_Travel, never
 // committed or packaged) and zone changes in recorded play (learned paths,
 // written into TravelData.lua). Every entry is validated here; errors name
 // the entry. `recordedChain` drafts a chain from recorded walks for a person
@@ -513,19 +513,19 @@ function crossingsLua(set, frames, { complete, live }) {
 	return L;
 }
 
-const TRAVEL_ADDON = 'Polestar_Travel';
+const TRAVEL_ADDON = 'Northstar_Travel';
 
-// The local data addon: { 'Polestar_Travel.toc': text, 'Crossings.lua': text }.
+// The local data addon: { 'Northstar_Travel.toc': text, 'Crossings.lua': text }.
 function emitTravelAddon(set, frames, live) {
 	const toc = [
 		'## Interface: 16001',
-		'## Title: Polestar Travel (local)',
-		'## Notes: Zone crossings for Polestar\'s travel planner, built from an optional local crossings file. Local use only.',
-		'## Author: Polestar',
+		'## Title: Northstar Travel (local)',
+		'## Notes: Zone crossings for Northstar\'s travel planner, built from an optional local crossings file. Local use only.',
+		'## Author: Northstar',
 		`## Version: ${packageVersion()}`,
-		'## Category: Polestar',
-		'## Group: Polestar',
-		'## Dependencies: Polestar',
+		'## Category: Northstar',
+		'## Group: Northstar',
+		'## Dependencies: Northstar',
 		'',
 		'Crossings.lua',
 		'',
@@ -535,7 +535,7 @@ function emitTravelAddon(set, frames, live) {
 		header('lua', 'travel build', 'the optional local crossings file (data/local/crossings.json)'),
 		`-- ${counts}. Local use only: never committed or packaged.`,
 		'',
-		'local N = Polestar and Polestar.Nav',
+		'local N = Northstar and Northstar.Nav',
 		'if not (N and N.RegisterCrossings) then return end',
 		'',
 		...crossingsLua(set, frames, { complete: true, live }),

@@ -1,6 +1,6 @@
 //! `forge data itemdb` (port of tools/lib/itemdb/{build,stats}.js): the Classic Era client's item
-//! tables -> the load-on-demand data addon addon/Polestar_ItemDB (Items.lua + TOC) that
-//! Polestar.Gear scores items from. Same inputs give byte-identical output.
+//! tables -> the load-on-demand data addon addon/Northstar_ItemDB (Items.lua + TOC) that
+//! Northstar.Gear scores items from. Same inputs give byte-identical output.
 //!
 //! Columns read (wow_classic_era 1.15.9.70003):
 //!   ItemSparse   ID, Display_lang, ItemLevel, RequiredLevel, InventoryType, OverallQualityID,
@@ -25,7 +25,7 @@ use crate::gear::leveling::{encode, Rec};
 use crate::jsv::{col_str, Row, Rows};
 
 pub const TABLES: [&str; 4] = ["ItemSparse", "Item", "ItemEffect", "SpellEffect"];
-pub const ADDON: &str = "Polestar_ItemDB";
+pub const ADDON: &str = "Northstar_ItemDB";
 pub const SCHEMA: u32 = 1;
 /// The data addon is loaded on demand into every player's client: keep it small.
 pub const SIZE_BUDGET: usize = 1024 * 1024;
@@ -251,7 +251,7 @@ pub fn emit_lua(items: &[Rec], build: &str) -> String {
 		"-- Entry: \"<inventoryType> <itemLevel> <requiredLevel> <quality> <classID> <subclassID>".into(),
 		"-- [<stat><n> ...] [dmin<n> dmax<n> speed<ms>] [cls<classMask>] [uniq1]\"; mpr = mp5, hpr = hp5.".into(),
 		String::new(),
-		"local DB = Polestar and Polestar.ItemDB".into(),
+		"local DB = Northstar and Northstar.ItemDB".into(),
 		"if not (DB and DB.Register) then return end".into(),
 		String::new(),
 		format!("DB.Register({{ schema = {SCHEMA}, build = {}, count = {} }}, {{", lua_str(build), items.len()),

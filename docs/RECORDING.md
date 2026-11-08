@@ -1,12 +1,12 @@
 # Recording (schema 2): what the Recorder collects and how it travels
 
-This is the contract between the four parts of Polestar's recording program,
+This is the contract between the four parts of Northstar's recording program,
 and the public statement of what it collects. Everything here is open source
 in this repository.
 
 | Part | Where | Job |
 |---|---|---|
-| Recorder addon | `addon/Polestar_Recorder/` | Writes compact records into `PolestarRecorderDB` while the player plays: off until `/psrec on` or Polestar Client's share flag, which is on by default in the client (see "Ack file"). |
+| Recorder addon | `addon/Northstar_Recorder/` | Writes compact records into `NorthstarRecorderDB` while the player plays: off until `/psrec on` or Polestar Client's share flag, which is on by default in the client (see "Ack file"). |
 | Recording library | `rust/crates/polestar-recording/` | Reads the SavedVariables file, decodes and validates records, finds WoW installs, scrubs text, writes the ack file, summarises. Shared by the three below. |
 | Polestar Client | `apps/client/` (Tauri) | Desktop app for Windows, macOS and Linux: finds the game, installs the Recorder, uploads new chunks, shows exactly what was sent. |
 | Ingest server | `services/ingest/` | Receives uploads, validates them with the library, stores them, serves stats, deletion and the maintainer export. |
@@ -23,10 +23,10 @@ creature GUIDs, the player's typed text other than `/psrec mark` notes and
 Quest and gossip text has the player's name replaced with `$N` (and race and
 class with `$R`, `$C`) in the addon, and again in Polestar Client.
 
-## SavedVariables (`PolestarRecorderDB`, per account)
+## SavedVariables (`NorthstarRecorderDB`, per account)
 
 ```lua
-PolestarRecorderDB = {
+NorthstarRecorderDB = {
 	schema = 2,
 	enabled = true,            -- recording on (/psrec on, or Polestar Client's share flag); nothing is written while false
 	optout = true,             -- only after /psrec off: the client's share flag does not turn recording on; /psrec on clears it
@@ -38,7 +38,7 @@ PolestarRecorderDB = {
 }
 ```
 
-Per character (`PolestarRecorderCharDB`, SavedVariablesPerCharacter):
+Per character (`NorthstarRecorderCharDB`, SavedVariablesPerCharacter):
 `{ id = "<10 random base-36 characters>", textSeen = { [questID] = true } }`.
 The character id lets records from one character be followed across sessions
 without its name.
@@ -57,29 +57,29 @@ without its name.
 - The addon keeps at most 4 MiB of chunks; the oldest unacknowledged ones go
   first and a `dropped` record counts them.
 - At login the addon deletes every chunk with
-  `seq <= PolestarRecorderAck[PolestarRecorderDB.install]`.
+  `seq <= NorthstarRecorderAck[NorthstarRecorderDB.install]`.
 
 ### Ack file (written by Polestar Client)
 
-`Interface/AddOns/Polestar_Recorder/Ack.lua`, loaded first by the TOC. One
+`Interface/AddOns/Northstar_Recorder/Ack.lua`, loaded first by the TOC. One
 entry per install, because several WoW accounts share one AddOns folder,
 then whether the player shares:
 
 ```lua
-PolestarRecorderAck = { ["k3j9x0q2m7ab"] = 37 }
-PolestarRecorderShare = true
+NorthstarRecorderAck = { ["k3j9x0q2m7ab"] = 37 }
+NorthstarRecorderShare = true
 ```
 
-The release zip ships it as `PolestarRecorderAck = nil` with no share flag;
+The release zip ships it as `NorthstarRecorderAck = nil` with no share flag;
 Polestar Client merges its entry into whatever the file holds. A lost ack
 only means a chunk is uploaded twice; the server ignores a repeated
 `(install, seq)`.
 
-`PolestarRecorderShare` is written only once sharing has been on in Polestar
+`NorthstarRecorderShare` is written only once sharing has been on in Northstar
 Client at least once (before that the file has no flag, so a `/psrec on` of
 someone whose client never shared is left alone). Sharing is on by default in
 the client: once it has found the game, a player who never chose shares, as
-if they had pressed Start sharing, unless an account's `PolestarRecorderDB`
+if they had pressed Start sharing, unless an account's `NorthstarRecorderDB`
 says `optout` (`/psrec off`), and a notice in the client says once what is
 shared, with Stop sharing. A player who stopped sharing in the client stays
 off; it never turns back on by itself. From then on the flag is `true` while
@@ -125,7 +125,7 @@ Context
 | Kind | Fields after `dt` | When |
 |---|---|---|
 | `chunk` | seq, serverEpoch, charId | first record of each chunk |
-| `session` | charId, race, class, faction, sex, level, locale, build, interface, region, ruleset, recorderVersion, polestarVersion, packs | login, reload, every new chunk's second record. `race`/`class` are the client's file tokens (`Scourge`, `WARRIOR`); `faction` `Horde`/`Alliance`; `build` the build number only (`70532`); `region` from `GetCurrentRegion`; `ruleset` flags `h` hardcore, `p` PvP joined (the client has no API for RP realms); `packs` = `id:version;...` of Polestar guide packs loaded, plus `guide:<id>` of the active guide |
+| `session` | charId, race, class, faction, sex, level, locale, build, interface, region, ruleset, recorderVersion, polestarVersion, packs | login, reload, every new chunk's second record. `race`/`class` are the client's file tokens (`Scourge`, `WARRIOR`); `faction` `Horde`/`Alliance`; `build` the build number only (`70532`); `region` from `GetCurrentRegion`; `ruleset` flags `h` hardcore, `p` PvP joined (the client has no API for RP realms); `packs` = `id:version;...` of Northstar guide packs loaded, plus `guide:<id>` of the active guide |
 | `map` | id, type, parent, continent, top, left, bottom, right | once per install per map seen (also kept in `maps`) |
 | `level` | level, P, playedSeconds | level up |
 | `xp` | xp, xpMax, rested | every 5 minutes and at level up |
@@ -152,7 +152,7 @@ Quests
 
 | Kind | Fields | When |
 |---|---|---|
-| `offer` | npcKind, npcId, P, available, active, log, done, notOffered | a gossip, quest greeting or quest detail window opens. `available`/`active` = quest ids shown; `log` = quest ids in the log; `done`/`notOffered` = among the quests Polestar's data says this NPC starts (when Polestar is loaded), those flagged completed and those neither offered, in the log, nor completed |
+| `offer` | npcKind, npcId, P, available, active, log, done, notOffered | a gossip, quest greeting or quest detail window opens. `available`/`active` = quest ids shown; `log` = quest ids in the log; `done`/`notOffered` = among the quests Northstar's data says this NPC starts (when Northstar is loaded), those flagged completed and those neither offered, in the log, nor completed |
 | `detail` | q, npcKind, npcId, P, startItem | quest detail shown |
 | `text` | q, title, objectiveText, detailText | first time this character sees a quest's text (`textSeen`) |
 | `accept` | q, npcKind, npcId, P, level, rewardXp, rewardMoney, items, choices | quest accepted. `items`/`choices` = `itemId:count` |
@@ -195,7 +195,7 @@ Guide
 
 | Kind | Fields | When |
 |---|---|---|
-| `step` | guide, step, reason, P | Polestar's step or guide changes (`reason` `next`, `skip`, `back`, `auto` (also at login and reload), `pick`, `done`) |
+| `step` | guide, step, reason, P | Northstar's step or guide changes (`reason` `next`, `skip`, `back`, `auto` (also at login and reload), `pick`, `done`) |
 
 ## Upload API (`https://data.polestar.guide/v1`)
 
@@ -299,7 +299,7 @@ their own client, so nothing trusts a single upload.
   drop chance) changes only on the evidence of 3 distinct counted voters
   (for a drop chance, each with 10 kills of their own), or of `local` or
   `sent-*`; one counted voter fills only gaps no other source has. Nothing
-  a recording says overrides one of Polestar's own corrections
+  a recording says overrides one of Northstar's own corrections
   (`forever-db/corrections`): the build keeps the corrected value and lists
   the disagreement for review.
   Objectives are added or reordered only on trusted evidence, except by the

@@ -1,6 +1,6 @@
 'use strict';
-// Our navigation grid as Polestar's walking maps (format 2), the maps of
-// Polestar's walking router (Routing/PathGrid.lua, Path.lua, PathJobs.lua),
+// Our navigation grid as Northstar's walking maps (format 2), the maps of
+// Northstar's walking router (Routing/PathGrid.lua, Path.lua, PathJobs.lua),
 // grown from Shortest Path Forever's walking-map format (docs/ARCHITECTURE.md,
 // "Navigation grid", "Packing for the in-game engine").
 //
@@ -9,7 +9,7 @@
 // permission): the HPA* graph, the cluster encodings and the floor links of
 // tools/baker/gen_nav.py, and the zlib + base64 parts of tools/pack_nav.py.
 // The format is written down in each generated NavN.lua's header (HEADER).
-// Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15.
+// Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.
 //
 // The walking-map writer is `forge nav pack` (rust/crates/forge-nav/src/pack, the port of this file:
 // docs/forge/nav.md). What stays here is what `nav eval` and its tests still load: the CellGrid,
@@ -470,7 +470,7 @@ function clusterMoves(cg, k) {
 // gen_nav.py grid_hpa: regions per cluster, entrances per border group (the crossings between one region on
 // each side) every `run` crossings (ENTRANCE_YD in cells; a cell crosses straight and both ways diagonally, so on
 // open ground that is an entrance about every ENTRANCE_YD / 3), plus one on each road crossing the border away
-// from those and one on each dry run of crossings none of them crosses dry (Polestar's, 2026-10-16 and -17),
+// from those and one on each dry run of crossings none of them crosses dry (Northstar's, 2026-10-16 and -17),
 // intra-cluster edges by Dijkstra per profile, pruned.
 // An edge is { a, b, ab, ba, yab, yba }: ab the costs from a to b (Costs.PROFILES order: Alliance, Horde, none),
 // each priced as the router prices a grid step (its length times Costs.mult of the node it enters, times SWIM in
@@ -1027,10 +1027,10 @@ const FIELDS = ['graph', 'grid', 'height', 'floor'];
 const CLASS_FIELDS = [...FIELDS, 'class'];
 const PART_NOTE = '-- Compressed terrain for on-demand decoding (Shortest Path Forever\'s pack_nav.py layout).';
 const CREDIT = [
-	'-- Polestar\'s walking maps (format 2: ground classes and per-faction costs) of the navigation grid, written by',
+	'-- Northstar\'s walking maps (format 2: ground classes and per-faction costs) of the navigation grid, written by',
 	'-- tools/lib/nav/pack.js, started from Shortest Path Forever\'s walking-map format (github.com/cjber/shortest-path-forever):',
 	'-- a port of his tools/baker/gen_nav.py and tools/pack_nav.py, used with his permission.',
-	'-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15.',
+	'-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.',
 ];
 
 // A Lua string literal.

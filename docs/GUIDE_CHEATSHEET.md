@@ -47,12 +47,12 @@ Before the first `step`. `guide`, `title`, `levels` and `zone` are required.
 | `when <predicate>` | Inside a step: the step is only for characters in that state when the route gets there (see Conditions checked during play) | `when level<6` |
 | `along [until <label>]` | Inside a step: the route never stops there; its goals are done along the way, listed under the next steps until done (or until the labelled step) | `along until camp` |
 | `background` | Inside an `along until` step: its goals are slow, zone-wide collections worked over the whole stay; each needs a finish step before its hand-in (GUIDE_FORMAT, "Background goals") | `background` |
-| `skipto <label> when <predicate>` | Inside a step: if the predicate holds when the route gets there, this step and the ones up to the labelled step are skipped, for good (GUIDE_FORMAT, "Jumps"; needs Polestar 0.3.0) | `skipto camp when turnedin 783` |
+| `skipto <label> when <predicate>` | Inside a step: if the predicate holds when the route gets there, this step and the ones up to the labelled step are skipped, for good (GUIDE_FORMAT, "Jumps"; needs Northstar 0.3.0) | `skipto camp when turnedin 783` |
 | `label <name>` | Inside a step: names it for an `along until` or `skipto` before it, or a `when done` | `label camp` |
 | `loop` | Inside a step: its `goto` points are the places to search, in order, for the step's kill, collect and interact goals without `@x,y` | `loop` |
 | `note <text>` | A line of information; never holds the player up | `note The camp is busy at night.` |
 | `level <N>` | Reach level N, grinding if need be | `level 2` |
-| `level <N>.<fraction>` / `level <N>+<XP>` | Reach a point inside level N: 12.5 is halfway through 12, 12+2500 is 2500 XP into it (to whole percent; needs Polestar 0.2.6) | `level 12.5` |
+| `level <N>.<fraction>` / `level <N>+<XP>` | Reach a point inside level N: 12.5 is halfway through 12, 12+2500 is 2500 XP into it (to whole percent; needs Northstar 0.2.6) | `level 12.5` |
 | `# <text>` | A note for you and other authors; players never see it | `# check the patrol route` |
 | `<goal> -- <text>` | Shows the text under that goal | `accept 783 -- He stands at the abbey gate` |
 
@@ -72,7 +72,7 @@ Before the first `step`. `guide`, `title`, `levels` and `zone` are required.
 | `die "<Graveyard>" @x,y` | Deathskip: die and take the resurrection at that graveyard's Spirit Healer; done back alive there | `die "Sen'jin Village" @57.2,73.3` |
 | `getfp "<Flight point>"` | Learn a flight path from its flight master | `getfp "Stormwind"` |
 | `fly "<Town>"` | Take a flight; done on landing there | `fly "Stormwind"` |
-| `enter "<Place>"` | Be in that zone or area (the zone or subzone text); `@x,y` points the arrow (needs Polestar 0.3.0) | `enter "Goldshire"` |
+| `enter "<Place>"` | Be in that zone or area (the zone or subzone text); `@x,y` points the arrow (needs Northstar 0.3.0) | `enter "Goldshire"` |
 
 `polestar find --kind inn` and `polestar find --kind flight` list the names
 `sethome`, `hearth`, `getfp` and `fly` take.
@@ -84,7 +84,7 @@ Before the first `step`. `guide`, `title`, `levels` and `zone` are required.
 | `accept <quest> ["Title"]` | Take a quest; the giver and title come from the data | `accept 783` |
 | `turnin <quest> ["Title"]` | Hand a quest in | `turnin 783` |
 | `lvl <N>` | On `accept`: the level the quest needs, shown beside it | `accept 7 lvl 2` |
-| `abandon <quest> ["Title"]` | Drop a quest from the log; done once it is out, and its `accept` stays done (needs Polestar 0.3.0) | `abandon 783` |
+| `abandon <quest> ["Title"]` | Drop a quest from the log; done once it is out, and its `accept` stays done (needs Northstar 0.3.0) | `abandon 783` |
 | `complete <quest> ["Title"]` | Finish every objective of a quest; give it a place (`@x,y`, or a `goto` before it) when its objectives have one, or the arrow has nowhere to point | `complete 7 @48.5,31.0` |
 | `npc <id>` | Which NPC gives or takes the quest, when the data knows several | `accept 5261 npc 196` |
 | `object <id>` / `item <id>` | The same for a quest started or ended at an object, or started by an item | `accept 9400 object 1617` |
@@ -113,12 +113,12 @@ Before the first `step`. `guide`, `title`, `levels` and `zone` are required.
 | `train class` | Visit the nearest trainer of the player's class | `train class only Warrior,Mage` |
 | `train <npc>` | Visit that trainer | `train 911 only Warrior,Paladin` |
 | `vendor nearest` / `vendor <npc>` | Sell and repair, at the closest vendor or that one | `vendor nearest` |
-| `gossip <id>` | On `talk`, `vendor` and `train`: the gossip option (the client's `gossipOptionID`) Polestar picks at that NPC on this step | `talk 197 gossip 1` |
+| `gossip <id>` | On `talk`, `vendor` and `train`: the gossip option (the client's `gossipOptionID`) Northstar picks at that NPC on this step | `talk 197 gossip 1` |
 | `buy <item> ["Name"]` | Buy an item; `nearest` picks the closest vendor selling it | `buy 159 x5 nearest` |
-| `money <amount>` | Hold that much money (`1g50s`, `7s`, `25c` or copper); stays done for the rest of the step (needs Polestar 0.3.0) | `money 1s` |
-| `destroy <item> ["Name"]` | Delete an item from the bags; done once the bags hold none (needs Polestar 0.3.0) | `destroy 6948 "Hearthstone"` |
-| `wait <seconds> ["text"]` | A countdown that starts once the goals before it in the step are done: a boat, an event or a speech to sit through (needs Polestar 0.3.0) | `wait 30 "the boat docks"` |
-| `task "<text>"` | Something Polestar cannot see: the player ticks it, and it holds the step until then unless `optional` (needs Polestar 0.3.0) | `task "Tame a Venomtail Scorpid"` |
+| `money <amount>` | Hold that much money (`1g50s`, `7s`, `25c` or copper); stays done for the rest of the step (needs Northstar 0.3.0) | `money 1s` |
+| `destroy <item> ["Name"]` | Delete an item from the bags; done once the bags hold none (needs Northstar 0.3.0) | `destroy 6948 "Hearthstone"` |
+| `wait <seconds> ["text"]` | A countdown that starts once the goals before it in the step are done: a boat, an event or a speech to sit through (needs Northstar 0.3.0) | `wait 30 "the boat docks"` |
+| `task "<text>"` | Something Northstar cannot see: the player ticks it, and it holds the step until then unless `optional` (needs Northstar 0.3.0) | `task "Tame a Venomtail Scorpid"` |
 
 ## Professions
 
@@ -127,7 +127,7 @@ Before the first `step`. `guide`, `title`, `levels` and `zone` are required.
 | `train <Profession> [Rank]` | Learn a profession or its next rank (`Apprentice`, `Journeyman`, `Expert`, `Artisan`) at the nearest trainer | `train Mining Journeyman` |
 | `skill <Profession> <N>` | Reach skill N (quote names of two words) | `skill "First Aid" 40` |
 | `learn <spell> ["Name"]` | Learn a recipe; from a trainer, or with `nearest` from the closest vendor of its recipe | `learn 3276` |
-| `cast <spellId> ["Name"]` | Cast that spell while the goal is open (needs Polestar 0.3.0) | `cast 818 "Basic Campfire"` |
+| `cast <spellId> ["Name"]` | Cast that spell while the goal is open (needs Northstar 0.3.0) | `cast 818 "Basic Campfire"` |
 | `craft <spell> ["Name"]` | Craft a recipe, `x<N>` times | `craft 3275 x5` |
 | `until <N>` | On `craft`: until the profession reaches N | `craft 3275 until 40` |
 
@@ -162,28 +162,28 @@ the outcome stays.
 | Line | The step applies while | Example |
 |---|---|---|
 | `when level<N` (`<=`, `>`, `>=`) | the character's level compares so; N may be a point inside a level (`12.5`, `12+2500`) | `when level>=10` |
-| `when money<A` (`<=`, `>`, `>=`) | the character's money compares so (`1g50s`, `7s`, `25c` or copper); no `!` (needs Polestar 0.3.0) | `when money>=1s` |
+| `when money<A` (`<=`, `>`, `>=`) | the character's money compares so (`1g50s`, `7s`, `25c` or copper); no `!` (needs Northstar 0.3.0) | `when money>=1s` |
 | `when onquest <quest>, ...` | any of the quests is in the log | `when onquest 783` |
 | `when complete <quest>` | the quest is ready to turn in | `when complete 7` |
 | `when turnedin <quest>` | the quest is handed in | `when !turnedin 9201` |
 | `when available <quest>` | the quest can be taken now | `when available 9200` |
 | `when has <item> [xN]` | the bags hold N or more | `when !has 159 x5` |
-| `when upgrade <item>` | Polestar's gear advice rates the item an upgrade now (an item it cannot judge counts as one; needs Polestar 0.3.0) | `when upgrade 2488` |
+| `when upgrade <item>` | Northstar's gear advice rates the item an upgrade now (an item it cannot judge counts as one; needs Northstar 0.3.0) | `when upgrade 2488` |
 | `when zone "<Name>"` / `when subzone "<Name>"` | the player is there | `when subzone "Goldshire"` |
 | `when bound "<Location>"` | the hearthstone is bound there | `when !bound "Goldshire"` |
-| `when dungeon "<Name>"` | the player chose to run that dungeon (Options, Discovery, Dungeons; all off at first); `!dungeon` is the route without it (needs Polestar 0.3.0) | `when dungeon "Ragefire Chasm"` |
-| `when done <label>` | the labelled step of this guide was completed, not skipped or jumped over; not on a `next` line (needs Polestar 0.3.0) | `when done camp` |
-| `when skill <Profession> <N>` | the profession's rank is N or more; not learned counts as 0 (needs Polestar 0.3.0) | `when !skill Cooking 50` |
-| `when cooldown item <item>` / `when cooldown spell <spell>` | the item or spell is on cooldown, the global cooldown aside (needs Polestar 0.3.0) | `when !cooldown item 6948` |
-| `when knows <spell>` | the character knows the spell (spellbook or recipe; needs Polestar 0.3.0) | `when !knows 100` |
-| `when group <quest>` | the player chose to do that group quest; unanswered, the route waits and asks "Skip it" or "Do it with a group"; `!group` is the solo way; not on `next` or `skipto` (needs Polestar 0.3.0) | `when group 7` |
+| `when dungeon "<Name>"` | the player chose to run that dungeon (Options, Discovery, Dungeons; all off at first); `!dungeon` is the route without it (needs Northstar 0.3.0) | `when dungeon "Ragefire Chasm"` |
+| `when done <label>` | the labelled step of this guide was completed, not skipped or jumped over; not on a `next` line (needs Northstar 0.3.0) | `when done camp` |
+| `when skill <Profession> <N>` | the profession's rank is N or more; not learned counts as 0 (needs Northstar 0.3.0) | `when !skill Cooking 50` |
+| `when cooldown item <item>` / `when cooldown spell <spell>` | the item or spell is on cooldown, the global cooldown aside (needs Northstar 0.3.0) | `when !cooldown item 6948` |
+| `when knows <spell>` | the character knows the spell (spellbook or recipe; needs Northstar 0.3.0) | `when !knows 100` |
+| `when group <quest>` | the player chose to do that group quest; unanswered, the route waits and asks "Skip it" or "Do it with a group"; `!group` is the solo way; not on `next` or `skipto` (needs Northstar 0.3.0) | `when group 7` |
 
 ## Route choices and optional steps
 
 | Header line | What it does | Example |
 |---|---|---|
 | `next <id>, <id>, ...` | Several guides after this one: the player picks one, the first is your suggestion | `next joe-routes/westfall, joe-routes/redridge` |
-| `next <id> when <predicate>` | One guide per line, offered only while the predicate (as on a step's `when`) holds when this guide ends; `next` lines add up. One option left: Polestar goes on to it; none: the guide ends there | `next joe-routes/redridge when level>=15` |
+| `next <id> when <predicate>` | One guide per line, offered only while the predicate (as on a step's `when`) holds when this guide ends; `next` lines add up. One option left: Northstar goes on to it; none: the guide ends there | `next joe-routes/redridge when level>=15` |
 | `pitch <text>` | On a guide offered as a choice: one line on its card | `pitch Short walks between quests.` |
 | `pro <text>` / `con <text>` | One advantage or drawback per line, under the pitch | `pro Ends at a flight point` |
 
@@ -196,4 +196,4 @@ the outcome stays.
 
 | Header line | What it does | Example |
 |---|---|---|
-| `next <id>` | The guide that follows when this one ends: one of yours or one of Polestar's (`polestar find --kind guide <zone>` lists them with who can follow them) | `next joe-routes/westfall` |
+| `next <id>` | The guide that follows when this one ends: one of yours or one of Northstar's (`polestar find --kind guide <zone>` lists them with who can follow them) | `next joe-routes/westfall` |

@@ -1,6 +1,6 @@
 'use strict';
 // What a walking step costs on each kind of ground, for each faction: the
-// packer's copy of the router's table (addon/Polestar_Nav/Routing/Costs.lua),
+// packer's copy of the router's table (addon/Northstar_Nav/Routing/Costs.lua),
 // which prices the walking maps' graph edges (pack.js) as the router prices
 // its grid steps. Tune the two together; tests/navmesh-pack.test.js checks
 // they agree. The slope bands are the packer's alone: they choose a node's

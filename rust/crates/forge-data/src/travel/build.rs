@@ -58,11 +58,11 @@ impl Options {
 pub struct Output {
 	/// data/forever/travel.json.
 	pub travel_json: String,
-	/// addon/Polestar/Nav/TravelData.lua.
+	/// addon/Northstar/Nav/TravelData.lua.
 	pub travel_lua: String,
-	/// addon/Polestar/Maps/FlightPaths.lua.
+	/// addon/Northstar/Maps/FlightPaths.lua.
 	pub flight_lua: String,
-	/// Polestar_Travel's files (name, text), only with a local crossings file.
+	/// Northstar_Travel's files (name, text), only with a local crossings file.
 	pub travel_addon: Option<Vec<(String, String)>>,
 	pub warnings: Vec<String>,
 	/// The command's report lines ("travel: build ...", local crossings counts).
@@ -71,7 +71,7 @@ pub struct Output {
 }
 
 impl Output {
-	/// Every file: name -> text (the local addon's under "Polestar_Travel/").
+	/// Every file: name -> text (the local addon's under "Northstar_Travel/").
 	pub fn files(&self) -> Vec<(String, &str)> {
 		let mut out = vec![("travel.json".to_string(), self.travel_json.as_str()), ("TravelData.lua".to_string(), self.travel_lua.as_str()), ("FlightPaths.lua".to_string(), self.flight_lua.as_str())];
 		for (name, text) in self.travel_addon.iter().flatten() {
@@ -95,8 +95,8 @@ impl Targets {
 		let addon = root.join("addon");
 		Targets {
 			json: data_dir.join("travel.json"),
-			lua: addon.join("Polestar").join("Nav").join("TravelData.lua"),
-			flight_lua: addon.join("Polestar").join("Maps").join("FlightPaths.lua"),
+			lua: addon.join("Northstar").join("Nav").join("TravelData.lua"),
+			flight_lua: addon.join("Northstar").join("Maps").join("FlightPaths.lua"),
 			travel_addon_dir: addon.join(TRAVEL_ADDON),
 		}
 	}
@@ -109,7 +109,7 @@ fn write_file(file: &Path, text: &str) -> Result<(), String> {
 	std::fs::write(file, text).map_err(|e| format!("{}: {e}", file.display()))
 }
 
-/// writeTravel: Polestar_Travel only when the build read a local crossings file.
+/// writeTravel: Northstar_Travel only when the build read a local crossings file.
 pub fn write(out: &Output, to: &Targets) -> Result<(), String> {
 	write_file(&to.json, &out.travel_json)?;
 	write_file(&to.lua, &out.travel_lua)?;
@@ -467,7 +467,7 @@ fn emit_lua(t: &Emit) -> Result<String, String> {
 	lines.push(format!("-- {}), CMaNGOS classic-db {} (spawns, areatrigger_teleport,", t.transit_build.unwrap_or("none"), t.cmangos_rev.map(|r| &r[..7]).unwrap_or("none")));
 	lines.push("-- spell_target_position, sniffed transport periods) and the CMaNGOS transport model, after".into());
 	lines.push("-- Shortest Path Forever by Cillian Berragan (GPL-3.0-or-later, used with permission).".into());
-	lines.push("-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15.".into());
+	lines.push("-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.".into());
 	lines.push(String::new());
 	lines.push("local ADDON, ns = ...".into());
 	lines.push("local N = ns.Nav".into());

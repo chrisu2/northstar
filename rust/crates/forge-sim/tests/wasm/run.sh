@@ -3,16 +3,16 @@
 # the wasm32-wasip1 build under node's WASI. Run from rust/; it builds forge-sim's sim-hash bin both
 # ways first (target dir: $CARGO_TARGET_DIR, else target/).
 # Default inputs: the goldens (rust/tests/golden/world and sim: the slice's Horde world, params.json,
-# v1's Orc chain), walks off. POLESTAR_SIMDIR (world-horde.json, params.json, walks-horde.bin) and
-# POLESTAR_SIM_JS (v1-horde-orc-on.json) select a local sim dir and seed instead, walks on as well.
+# v1's Orc chain), walks off. NORTHSTAR_SIMDIR (world-horde.json, params.json, walks-horde.bin) and
+# NORTHSTAR_SIM_JS (v1-horde-orc-on.json) select a local sim dir and seed instead, walks on as well.
 set -e
 export RAYON_NUM_THREADS=${RAYON_NUM_THREADS:-4}
 T=${CARGO_TARGET_DIR:-target}
 cargo build -q --release -p forge-sim --bin sim-hash
 cargo build -q --release -p forge-sim --bin sim-hash --no-default-features --target wasm32-wasip1
-if [ -n "${POLESTAR_SIMDIR:-}" ]; then
-	SIM=$POLESTAR_SIMDIR
-	SEEDS=${POLESTAR_SIM_JS:?POLESTAR_SIM_JS: the seed dir}
+if [ -n "${NORTHSTAR_SIMDIR:-}" ]; then
+	SIM=$NORTHSTAR_SIMDIR
+	SEEDS=${NORTHSTAR_SIM_JS:?NORTHSTAR_SIM_JS: the seed dir}
 	SEED=v1-horde-orc-on.json
 	RUNS="off 2000 0|on 2000 0|on 2000 1"
 else

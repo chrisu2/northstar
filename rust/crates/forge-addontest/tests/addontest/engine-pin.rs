@@ -1,4 +1,4 @@
-//! Pinned quests at runtime (#644; addon/Polestar/Core/Engine.lua, "Pinned quests"): the player pins a quest of
+//! Pinned quests at runtime (#644; addon/Northstar/Core/Engine.lua, "Pinned quests"): the player pins a quest of
 //! the log as along the way (Engine.PinQuest); its open objectives join Engine.GetAlong under whatever step is
 //! current, the guide's own goal for a line when it has one, else one built from the quest log; the arrow can
 //! lead to one (Engine.AimAlong); a step that turns the quest in while they are open marks its turn-in
@@ -17,7 +17,7 @@ w.titles[783] = "A Threat Within"; w.titles[7] = "Kobold Camp Cleanup"; w.titles
 // 1 accept 7 · 2 accept 783 · 3 kill 10 vermin for 7 (placed) · 4 turn in 7 · 5 turn in 783.
 // Quest 33 is in no step.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/pin", pack = "test", title = "Pin", minLevel = 1, maxLevel = 6,
 	steps = {
 		{ title = "McBride", goals = { { t = "accept", quest = 7, title = "Kobold Camp Cleanup", npc = 197, npcName = "Marshal McBride", map = 1429, x = 48.9, y = 41.6 } } },
@@ -30,7 +30,7 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 -- "<pin or step>|<step>:<goal>[:<progress>]" for each goal Engine.GetAlong lists.
 function along()
@@ -48,7 +48,7 @@ function wp()
 end
 function pins()
 	local out = {}
-	for q in pairs(PolestarCharDB.pinnedQuests or {}) do out[#out + 1] = q end
+	for q in pairs(NorthstarCharDB.pinnedQuests or {}) do out[#out + 1] = q end
 	table.sort(out)
 	return table.concat(out, ",")
 end
@@ -58,8 +58,8 @@ fn run_saved(script: &str, saved: &str) -> Value {
 	json!(emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: vec![("Polestar".into(), format!("PolestarCharDB = {saved}"))],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: vec![("Northstar".into(), format!("NorthstarCharDB = {saved}"))],
 		script: [TEST_PACK, TEST_SOURCE, GUIDE, HELPERS, "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 		..Default::default()
 	}))

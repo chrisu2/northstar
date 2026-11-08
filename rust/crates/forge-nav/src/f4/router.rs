@@ -2,7 +2,7 @@
 //! router (his Routing/Path.lua: endpoint connections, the abstract Dijkstra over the PMG4 entrance graph, replay
 //! of the selected motion traces, drawing; Routing/PathGrid.lua: surfaces, snapping, neighbour, sight, string
 //! pulling; Routing/Costs.lua). Path.lua and PathGrid.lua started from Shortest Path Forever v1.16.0 by Cillian
-//! Berragan. Copyright (C) 2026 Cillian Berragan; Copyright (c) 2026 The Polestar authors (Leffe's reader).
+//! Berragan. Copyright (C) 2026 Cillian Berragan; Copyright (c) 2026 The Northstar authors (Leffe's reader).
 //! GPL-3.0-or-later.
 //!
 //! Faithful to the JS port step for step: the same heap (and so the same ties), expansion order, map insertion

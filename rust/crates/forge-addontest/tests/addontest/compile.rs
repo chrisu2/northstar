@@ -14,15 +14,15 @@ use std::path::Path;
 
 const LOAD_HEAD: &str = r#"
 			local packs, guides, frames = {}, {}, {}
-			Polestar.RegisterPack = function(m) packs[#packs + 1] = m end
-			Polestar.RegisterGuide = function(g) guides[#guides + 1] = g; return true end
-			Polestar.RegisterMapFrames = function(f, p) frames[#frames + 1] = { frames = f, pack = p } end
+			Northstar.RegisterPack = function(m) packs[#packs + 1] = m end
+			Northstar.RegisterGuide = function(g) guides[#guides + 1] = g; return true end
+			Northstar.RegisterMapFrames = function(f, p) frames[#frames + 1] = { frames = f, pack = p } end
 			local ns = {}
 			for _, f in ipairs({ "#;
 
 const LOAD_TAIL: &str = r#" }) do
 				local chunk = assert(loadfile(f))
-				chunk("Polestar_Guides", ns)
+				chunk("Northstar_Guides", ns)
 			end
 			emit({ packs = packs, guides = guides, frames = frames, globals = { ADDON = rawget(_G, "ADDON") == nil, ns = rawget(_G, "ns") == nil } })"#;
 
@@ -30,7 +30,7 @@ const LOAD_TAIL: &str = r#" }) do
 // the registration functions; return what got registered.
 fn load_pack(pack: &TestPack) -> Value {
 	let files: Vec<String> = pack.scripts.iter().map(|f| serde_json::to_string(f).unwrap()).collect();
-	emitted(&RunAddon { addons: vec![Addon::files("Polestar", &["Core/Init.lua"])], script: format!("{LOAD_HEAD}{}{LOAD_TAIL}", files.join(", ")), ..Default::default() }).remove(0)
+	emitted(&RunAddon { addons: vec![Addon::files("Northstar", &["Core/Init.lua"])], script: format!("{LOAD_HEAD}{}{LOAD_TAIL}", files.join(", ")), ..Default::default() }).remove(0)
 }
 
 fn rel(base: &Path, p: &Path) -> String {
@@ -49,7 +49,7 @@ fn read_tree(base: &Path, dir: &Path, out: &mut Vec<String>) {
 	}
 }
 
-// A compiled guide as Polestar's own pack writes it (format 8): each goal's spawn spots as one string.
+// A compiled guide as Northstar's own pack writes it (format 8): each goal's spawn spots as one string.
 fn packed(mut g: Value) -> Value {
 	for step in g["steps"].as_array_mut().into_iter().flatten() {
 		for goal in step["goals"].as_array_mut().into_iter().flatten() {
@@ -76,14 +76,14 @@ fn the_compiled_pack_loads_under_lua_5_1_with_core_init_lua_and_round_trips_to_t
 	assert_eq!(
 		loaded["packs"],
 		json!([{
-			"addon": "Polestar_Guides",
+			"addon": "Northstar_Guides",
 			"id": "guides",
 			"format": 8,
-			"title": "Polestar Guides",
-			"author": "Polestar",
+			"title": "Northstar Guides",
+			"author": "Northstar",
 			"version": manifest.get("version").to_js_string(),
 			"license": "GPL-3.0-only",
-			"notes": "Leveling, profession, reputation and collectible guides for Polestar.",
+			"notes": "Leveling, profession, reputation and collectible guides for Northstar.",
 		}])
 	);
 	// Guides.lua and the faction part hold the guides as compiled, their texts with name tokens (tokens.js),
@@ -95,7 +95,7 @@ fn the_compiled_pack_loads_under_lua_5_1_with_core_init_lua_and_round_trips_to_t
 	assert_eq!(Value::Array(packs), json!(["guides", "guides"]));
 	// Era bounds only for maps the guides reference (all fixture goals are in Elwynn Forest).
 	assert_eq!(loaded["frames"], json!([{ "frames": { "era": { "1429": { "c": 1415, "left": 1535.4166, "right": -1941.6666, "top": 1300, "bottom": -1060.4166 } } }, "pack": "guides" }]));
-	// Files leak no globals beyond Polestar's registration calls.
+	// Files leak no globals beyond Northstar's registration calls.
 	assert_eq!(loaded["globals"], json!({ "ADDON": true, "ns": true }));
 	// The TOC lists every Lua file in the folder, Pack.lua first (then the faction part's Guides.lua).
 	let mut tree = Vec::new();

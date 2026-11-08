@@ -1,4 +1,4 @@
-//! `forge i18n`: Polestar's translations (docs/TRANSLATING.md; forge_i18n): the interface strings
+//! `forge i18n`: Northstar's translations (docs/TRANSLATING.md; forge_i18n): the interface strings
 //! (status, check, sync, keys, import), a pack's guide texts (guides sync|check|stats) and the English
 //! left on a non-English client (leaks), and the translations against the client's names (audit). Port of tools/commands/i18n.js; `i18n fit` still runs there,
 //! and the names addons are `forge data names`.
@@ -20,10 +20,10 @@ pub fn usage_text() -> String {
 	format!(
 		"usage: forge i18n <status|check|sync|keys|import|leaks|audit|guides> [options]
 
-Polestar's interface translations (docs/TRANSLATING.md): one file per
-locale, addon/Polestar/Locales/<locale>.lua, and the same for the Recorder,
-addon/Polestar_Recorder/Locales/<locale>.lua. Locales: {}.
-check and sync read both addons; status, keys and import read Polestar's
+Northstar's interface translations (docs/TRANSLATING.md): one file per
+locale, addon/Northstar/Locales/<locale>.lua, and the same for the Recorder,
+addon/Northstar_Recorder/Locales/<locale>.lua. Locales: {}.
+check and sync read both addons; status, keys and import read Northstar's
 unless --addon names the other. (`i18n fit` still runs on node
 tools/polestar.js; the names addons are forge data names.)
 
@@ -64,7 +64,7 @@ tools/polestar.js; the names addons are forge data names.)
                              data/i18n/leaks-allow.json does not allow,
                              grouped by where it came from (an untranslated
                              interface string or guide text, a name missing
-                             from the names pack, a name Polestar.Names was
+                             from the names pack, a name Northstar.Names was
                              not asked for, English in the code). Fails (exit
                              1) on any, or on a scene that errors. Scenes
                              (--scene; default all):
@@ -124,8 +124,8 @@ options:
   --pack <dir>      guides: the pack (default our guides/)
   --data <dir>      guides: the reference data (default data/forever)
   --markdown        status: a Markdown table
-  --addon <name>    status, check, sync, keys, import: Polestar or
-                    Polestar_Recorder only
+  --addon <name>    status, check, sync, keys, import: Northstar or
+                    Northstar_Recorder only
   --root <dir>      the checkout (default: the one above here, else above the forge binary)",
 		LOCALE_CODES.join(", "),
 		wrap_words(&format!("{}.", scenes.join(", ")), 29)
@@ -218,7 +218,7 @@ fn locales(positional: &[String]) -> Result<Vec<String>, Fail> {
 	positional.iter().map(|l| if locale(l).is_some() { Ok(l.clone()) } else { Err(usage(format!("unknown locale \"{l}\": one of {}", LOCALE_CODES.join(", ")))) }).collect()
 }
 
-/// --addon <name> -> that addon; else every addon, or Polestar's alone for the commands that read one.
+/// --addon <name> -> that addon; else every addon, or Northstar's alone for the commands that read one.
 fn addons<'a>(o: &Opts, one: bool) -> Result<Vec<&'a Addon>, Fail> {
 	if let Some(a) = o.opt("--addon") {
 		return match ADDONS.iter().find(|x| x.name == a) {
@@ -335,7 +335,7 @@ fn check(o: &Opts, positional: &[String]) -> Result<u8, Fail> {
 		}
 		if positional.is_empty() {
 			for f in stray_files(&dir) {
-				fail(format!("{}: not a locale Polestar ships (LOCALES in rust/crates/forge-guide/src/locales.rs)", rel(&f)));
+				fail(format!("{}: not a locale Northstar ships (LOCALES in rust/crates/forge-guide/src/locales.rs)", rel(&f)));
 			}
 		}
 		for (l, s) in &st.locales {
@@ -388,7 +388,7 @@ fn check(o: &Opts, positional: &[String]) -> Result<u8, Fail> {
 
 /// The Core/Core.xml line that loads a locale file, added after the last one.
 fn load_in_core_xml(o: &Opts, locale: &str) -> Result<bool, String> {
-	let xml = o.root.join("addon/Polestar/Core/Core.xml");
+	let xml = o.root.join("addon/Northstar/Core/Core.xml");
 	let text = std::fs::read_to_string(&xml).map_err(|e| format!("{}: {e}", xml.display()))?;
 	let line = format!("\t<Script file=\"..\\Locales\\{locale}.lua\"/>");
 	if text.contains(&line) {
@@ -402,10 +402,10 @@ fn load_in_core_xml(o: &Opts, locale: &str) -> Result<bool, String> {
 	Ok(true)
 }
 
-/// Writes the files that changed. A new Polestar locale file is loaded from Core/Core.xml; another
+/// Writes the files that changed. A new Northstar locale file is loaded from Core/Core.xml; another
 /// addon's TOC lists its files. -> how many were written.
 fn write_sync(o: &Opts, files: &[(PathBuf, String)]) -> Result<usize, String> {
-	let own = o.root.join("addon/Polestar/Locales");
+	let own = o.root.join("addon/Northstar/Locales");
 	let mut written = 0;
 	for (file, text) in files {
 		if std::fs::read_to_string(file).is_ok_and(|t| t == *text) {

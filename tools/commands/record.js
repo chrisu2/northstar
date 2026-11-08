@@ -17,7 +17,7 @@ const IMPORT_HINT = 'run "forge record import" (or "forge record pull")';
 
 const usage = `usage: node tools/polestar.js record <subcommand> [options]
 
-Sessions come from the Polestar Recorder through forge (docs/RECORDING.md):
+Sessions come from the Northstar Recorder through forge (docs/RECORDING.md):
 "forge record import" reads this PC's game, "forge record pull" the recording
 server; both write data/recordings/<session>.json.
 
@@ -30,7 +30,7 @@ server; both write data/recordings/<session>.json.
                          [{ label, start, end, reason, points: [{ t, map, x, y,
                          speed, mounted, swimming, falling, indoors, flying }] }],
                          to stdout or --out <file.json>
-  report                 Measure the guides from recorded play (Polestar + Recorder):
+  report                 Measure the guides from recorded play (Northstar + Recorder):
                          per step passes, median/p75 time, XP, XP/hr, combat share,
                          deaths, turn-ins, travel; per guide time, levels, XP/hr;
                          the slowest steps, steps far over the guide's median step

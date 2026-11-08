@@ -1,0 +1,1145 @@
+-- Action buttons: the quest item button, the Hearthstone button and the
+-- target button and the rare button. Each is a named secure button (bindable as
+-- `CLICK <name>:LeftButton`); what it does is set through attributes, and
+-- every attribute, Show/Hide, scale or position change goes through
+-- QoL.Secure, so in combat it waits for PLAYER_REGEN_ENABLED while the button
+-- keeps doing what it did. Icon, count, cooldown and range tint are plain
+-- textures and update at any time.
+--
+--   Quest item: the active tab's current `use` goal item; else the quest log
+--     item of a quest in the current step; else a usable quest item in the
+--     bags that one of the step's open quests handed over when taken
+--     (Northstar.QuestDB; none without it), never one left from another quest.
+--   Hearthstone: while the current step has an open `hearth` goal.
+--   Target: /targetexact for the current step's kill targets and the mobs
+--     that drop its collect items: the ones the guide sends you to for that
+--     goal (`fromNpcs`), then the item's own droppers (Northstar.QuestDB when
+--     loaded), passing over corpses; every click moves the next name to the
+--     front.
+--   Rare: /targetexact for the rares in range (Northstar.Rares.Nearby): the
+--     button comes up when the addon spots one and goes when it dies or is
+--     out of sight; every click moves the next name to the front.
+--   Bag: while the bags are nearly full (QoL/Space.lua), the cheapest junk
+--     in them with the free slot count; a press arms it, a second press
+--     within a few seconds deletes it. It has no secure action: the delete
+--     runs in its PostClick, on the press itself.
+--   Step key: no button on screen, only a binding: the first open goal it can
+--     act on, in guide order (a use goal's item, a hearth goal's Hearthstone,
+--     a kill or collect's mobs, an NPC goal's NPC by name), else the quest
+--     item. While the flight map is open on the live step, it takes the
+--     marked flight instead (QoL/Flight.lua, Flight.Take). Independent of
+--     the buttons' settings.
+--   Mark target (off by default): the target button and the step key clear
+--     the target first (out of combat) and end their macro with /tm, an icon
+--     on a live hostile target (skull unless set) or an NPC (star), or a new
+--     one each press (Buttons.MarkLine).
+--
+-- All of them go with the guide window (ns.GuideShown); the step key stays.
+--
+-- The buttons hang off one holder: the bag and hearth above the item, target and rare
+-- below. A left-drag on any of them moves the set (out of combat; with
+-- ui.lockHud on, only a Shift-drag); the position is per character, so the
+-- Hearthstone button, shown only for hearth goals, appears in its slot of the
+-- moved set.
+
+local ADDON, ns = ...
+local L = ns.L
+local QoL = ns.QoL
+local Client = QoL.Client
+
+local type, pairs, ipairs, tostring = type, pairs, ipairs, tostring
+local concat, wipe = table.concat, wipe or function(t) for k in pairs(t) do t[k] = nil end return t end
+
+local SIZE = 36
+local RANGE_INTERVAL = 0.2
+local MAX_NAMES = 5
+local MACRO_LIMIT = 255
+
+local Buttons = {}
+QoL.Buttons = Buttons
+
+-- The holder's spot (it sits where the quest item button does) and each
+-- button's slot above (+) or below (-) it, GAP button units apart.
+local DEFAULT_POS = { "CENTER", "CENTER", 260, -140 }
+local GAP = 44
+local SLOT = { NorthstarBagButton = 2, NorthstarHearthButton = 1, NorthstarQuestItemButton = 0, NorthstarTargetButton = -1, NorthstarRareButton = -2 }
+
+local function Theme() return ns.Theme end
+
+local function color(region, name, alpha)
+	local T = Theme()
+	local r, g, b, a = 1, 1, 1, 1
+	if T and T.Color then r, g, b, a = T.Color(name) end
+	a = (a or 1) * (alpha or 1)
+	if region.SetVertexColor and region:GetObjectType() == "Texture" then
+		region:SetVertexColor(r, g, b, a)
+	elseif region.SetTextColor then
+		region:SetTextColor(r, g, b, a)
+	end
+end
+
+local function media(name)
+	local T = Theme()
+	return T and T.Media and T.Media(name) or ("Interface\\AddOns\\" .. ADDON .. "\\Media\\UI\\" .. name)
+end
+
+local function font(fs, role)
+	local T = Theme()
+	if T and T.Font then T.Font(fs, role) end
+end
+
+local function paintBorder(b, hover)
+	local T = Theme()
+	if not (T and T.Border) then return end
+	if hover then
+		local r, g, bl = T.Accent()
+		T.Border(b, r, g, bl, 1)
+	else
+		local r, g, bl, a = T.Color("border")
+		T.Border(b, r, g, bl, (a or 0.08) * 2.5)
+	end
+end
+
+---------------------------------------------------------------------------
+-- Position and scale (secure)
+---------------------------------------------------------------------------
+
+local holder, set
+
+local function savedPos()
+	local p = QoL.State().buttonPos
+	return type(p) == "table" and p or DEFAULT_POS
+end
+
+-- Holder position and scale, and the buttons in their slots. The holder takes
+-- the button scale too, so the saved offsets and the slot spacing scale with
+-- the buttons.
+local function place()
+	QoL.Secure("place", function()
+		local p, s = savedPos(), ns.Get("qol.buttonScale") or 1
+		holder:SetScale(s)
+		holder:ClearAllPoints()
+		holder:SetPoint(p[1], UIParent, p[2], p[3], p[4])
+		for i = 1, #set do
+			local b = set[i]
+			b:SetScale(s)
+			b:ClearAllPoints()
+			b:SetPoint("CENTER", holder, "CENTER", 0, SLOT[b:GetName()] * GAP)
+		end
+	end)
+end
+
+local moving = false
+local function stopMoving()
+	if not moving then return end
+	moving = false
+	holder:StopMovingOrSizing()
+	local point, _, relPoint, x, y = holder:GetPoint(1)
+	if point then QoL.State().buttonPos = { point, relPoint, x, y } end
+end
+-- Fires before lockdown begins: a drag still going stops while the set may move.
+ns.RegisterEvent("PLAYER_REGEN_DISABLED", stopMoving)
+
+-- Mouse clicks and drags. The secure click handler (SecureActionButton_OnClick)
+-- acts on the press when the button's useOnKeyDown attribute (nil: the
+-- ActionButtonUseKeyDown CVar) says so, else on the release; key bindings
+-- (CLICK <name>:LeftButton) go through the same handler. Hovering a button
+-- out of combat sets it to false before any press, so a mouse click acts on
+-- its release whatever order the client runs OnMouseDown and the down-click
+-- in, and a drag can start before anything fired. A drag sets it to true, so
+-- the drag's release does nothing either. Leaving puts it back to nil (the
+-- CVar again, for key bindings); a drag's end does so a frame later, after
+-- the release's click, or back to false while the cursor is still on it.
+local function useOnKeyDown(b, v)
+	QoL.Secure("press:" .. b:GetName(), function() b:SetAttribute("useOnKeyDown", v) end)
+end
+
+local function hoverStart(b)
+	if not QoL.InLockdown() then useOnKeyDown(b, false) end
+end
+
+local function hoverEnd(b)
+	if not b.dragging then useOnKeyDown(b, nil) end
+end
+
+local function onDragStart(b)
+	if QoL.InLockdown() then return end
+	b.dragging = true
+	useOnKeyDown(b, true)
+	-- Locked: still a drag, so its release uses nothing, but the set stays.
+	if ns.DragLocked() then return end
+	moving = true
+	holder:StartMoving()
+end
+
+local function onDragStop(b)
+	stopMoving()
+	ns.After(0, function()
+		b.dragging = nil
+		local over = b:IsMouseOver() and not QoL.InLockdown()
+		if over then useOnKeyDown(b, false) else useOnKeyDown(b, nil) end
+	end)
+end
+
+---------------------------------------------------------------------------
+-- The shared look: night panel, hairline (accent on hover), inset icon
+---------------------------------------------------------------------------
+
+-- A key's short label on a button, the way the game's action bars read: modifiers as one letter
+-- (a, c, s, m), mouse buttons M4, the wheel MwU/MwD; any other key is the client's own (abbreviated)
+-- name. The client spells mouse buttons out ("Mouse Button 4"), which ran across the icon (#1211).
+local MOD_SHORT = { ALT = "a", CTRL = "c", SHIFT = "s", META = "m" }
+function Buttons.KeyText(key)
+	if type(key) ~= "string" or key == "" then return nil end
+	local mods, base = "", key
+	while true do
+		local mod, rest = base:match("^(%u+)%-(.+)$")
+		if not (mod and MOD_SHORT[mod]) then break end
+		mods, base = mods .. MOD_SHORT[mod], rest
+	end
+	local n = base:match("^BUTTON(%d+)$")
+	local text
+	if n then
+		text = "M" .. n
+	elseif base == "MOUSEWHEELUP" then
+		text = "MwU"
+	elseif base == "MOUSEWHEELDOWN" then
+		text = "MwD"
+	else
+		text = GetBindingText and GetBindingText(base, true) or base
+		if type(text) ~= "string" or text == "" then text = base end
+	end
+	return mods .. text
+end
+
+local function bindingText(b)
+	if not GetBindingKey then return nil end
+	return Buttons.KeyText(GetBindingKey("CLICK " .. b:GetName() .. ":LeftButton"))
+end
+
+local function refreshHotkey(b)
+	local t = bindingText(b)
+	b.Hotkey:SetText(t or "")
+end
+
+-- The label's anchor pair for each qol.buttonTextSide: label point, button point, x, y.
+local LABEL_SIDE = {
+	right = { "LEFT", "RIGHT", 8, 0 },
+	left = { "RIGHT", "LEFT", -8, 0 },
+	above = { "BOTTOM", "TOP", 0, 4 },
+	below = { "TOP", "BOTTOM", 0, -4 },
+}
+
+-- Above sits over the shown buttons stacked on top of b (the quest item
+-- button over the target button, the Hearthstone over that), not in the 8 px
+-- gap between them, where it would run into the button above.
+local function placeLabel(b)
+	local a = LABEL_SIDE[ns.Get("qol.buttonTextSide")] or LABEL_SIDE.right
+	-- The rare button sits under the target button, whose name has the space
+	-- above: a rare's name goes below instead.
+	if a == LABEL_SIDE.above and b:GetName() == "NorthstarRareButton" then a = LABEL_SIDE.below end
+	local to = b
+	if a == LABEL_SIDE.above and set then
+		local slot, moved = SLOT[b:GetName()], true
+		while moved do
+			moved = false
+			for i = 1, #set do
+				local o = set[i]
+				if SLOT[o:GetName()] == slot + 1 and o:IsShown() then
+					to, slot, moved = o, slot + 1, true
+					break
+				end
+			end
+		end
+	end
+	b.Label:ClearAllPoints()
+	b.Label:SetPoint(a[1], to, a[2], a[3], a[4])
+end
+
+local function newButton(name, onEnter)
+	local b = CreateFrame("Button", name, UIParent, "SecureActionButtonTemplate")
+	b:SetSize(SIZE, SIZE)
+	b:SetFrameStrata("MEDIUM")
+	b:RegisterForClicks("AnyUp", "AnyDown")
+	b:RegisterForDrag("LeftButton")
+	-- A /reload in combat creates the buttons under lockdown.
+	QoL.Secure("init:" .. name, function() if not b.itemID and not b.applied then b:Hide() end end)
+
+	local bg = b:CreateTexture(nil, "BACKGROUND")
+	bg:SetTexture(media("white"))
+	bg:SetAllPoints(b)
+	color(bg, "panel")
+	b.Bg = bg
+
+	local icon = b:CreateTexture(nil, "ARTWORK")
+	icon:SetPoint("TOPLEFT", b, "TOPLEFT", 2, -2)
+	icon:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -2, 2)
+	icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+	b.Icon = icon
+
+	local hl = b:CreateTexture(nil, "HIGHLIGHT")
+	hl:SetTexture(media("white"))
+	hl:SetAllPoints(icon)
+	local T = Theme()
+	if T and T.Wash then hl:SetVertexColor(T.Wash("hover")) else hl:SetVertexColor(1, 1, 1, 0.07) end
+
+	local cd = CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate")
+	cd:SetAllPoints(icon)
+	b.Cooldown = cd
+
+	local count = b:CreateFontString(nil, "OVERLAY")
+	font(count, "number")
+	color(count, "text")
+	count:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -3, 3)
+	b.Count = count
+
+	local hotkey = b:CreateFontString(nil, "OVERLAY")
+	font(hotkey, "small")
+	color(hotkey, "textDim")
+	-- One line inside the button: a long key name is cut at the edge, never drawn across the label (#1211).
+	hotkey:SetPoint("TOPLEFT", b, "TOPLEFT", 3, -3)
+	hotkey:SetPoint("TOPRIGHT", b, "TOPRIGHT", -3, -3)
+	hotkey:SetJustifyH("LEFT")
+	hotkey:SetWordWrap(false)
+	b.Hotkey = hotkey
+
+	local label = b:CreateFontString(nil, "OVERLAY")
+	font(label, "small")
+	color(label, "textDim")
+	b.Label = label
+	placeLabel(b)
+
+	paintBorder(b, false)
+	local T = Theme()
+	if T and T.OnChanged then
+		T.OnChanged(function()
+			color(bg, "panel")
+			color(count, "text")
+			color(hotkey, "textDim")
+			color(label, "textDim")
+			paintBorder(b, false)
+		end)
+	end
+
+	b:SetScript("OnEnter", function(self)
+		paintBorder(self, true)
+		hoverStart(self)
+		if GameTooltip and onEnter then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			onEnter(self, GameTooltip)
+			GameTooltip:Show()
+		end
+	end)
+	b:SetScript("OnLeave", function(self)
+		paintBorder(self, false)
+		hoverEnd(self)
+		if GameTooltip and GameTooltip:GetOwner() == self then GameTooltip:Hide() end
+	end)
+	b:SetScript("OnDragStart", onDragStart)
+	b:SetScript("OnDragStop", onDragStop)
+	-- A step that ends mid-drag hides the button the drag started on.
+	b:SetScript("OnHide", function(self) if self.dragging then onDragStop(self) end end)
+
+	refreshHotkey(b)
+	return b
+end
+
+---------------------------------------------------------------------------
+-- Item buttons (quest item, Hearthstone)
+---------------------------------------------------------------------------
+
+local function paintItem(b)
+	local id = b.itemID
+	if not id then return end
+	b.Icon:SetTexture(Client.ItemIcon(id) or media("icon-use"))
+	local n = Client.ItemCount(id)
+	b.Count:SetText(n > 1 and tostring(n) or "")
+	local start, duration = Client.ItemCooldown(id)
+	if duration and duration > 0 then b.Cooldown:SetCooldown(start, duration) else b.Cooldown:Clear() end
+	b.Icon:SetDesaturated(n == 0 or not Client.ItemUsable(id))
+end
+
+-- Range tint: red out of range, white otherwise. Runs only while shown.
+local function rangeUpdate(b, elapsed)
+	b.rangeElapsed = (b.rangeElapsed or 0) + elapsed
+	if b.rangeElapsed < RANGE_INTERVAL then return end
+	b.rangeElapsed = 0
+	local id = b.itemID
+	if not id then return end
+	local inRange = Client.ItemInRange(id)
+	if inRange == false then
+		if b.tint ~= "far" then
+			b.tint = "far"
+			color(b.Icon, "danger")
+		end
+	elseif b.tint ~= "near" then
+		b.tint = "near"
+		b.Icon:SetVertexColor(1, 1, 1, 1)
+	end
+end
+
+local function itemTooltip(b, tip)
+	if b.itemID and tip.SetItemByID then tip:SetItemByID(b.itemID) end
+	tip:AddLine(ns.Get("ui.lockHud") and L["Shift-drag to move."] or L["Drag to move."], 0.6, 0.6, 0.6)
+end
+
+local function newItemButton(name)
+	local b = newButton(name, itemTooltip)
+	b:SetScript("OnUpdate", ns.Safe(rangeUpdate))
+	return b
+end
+
+-- Apply the wanted item (secure) and repaint.
+local function applyItem(b, itemID)
+	b.wantID = itemID
+	QoL.Secure("item:" .. b:GetName(), function()
+		local id = b.wantID
+		b:SetAttribute("type", id and "item" or nil)
+		b:SetAttribute("item", id and ("item:" .. id) or nil)
+		b.itemID = id
+		b.tint = nil
+		if id then
+			paintItem(b)
+			b:Show()
+		else
+			b:Hide()
+		end
+	end)
+	if b.itemID then paintItem(b) end
+end
+
+-- Usable item from a quest's log entry (e.g. a quest's special item).
+local function logItem(questID)
+	local Q = C_QuestLog
+	if not (Q and Q.GetLogIndexForQuestID and GetQuestLogSpecialItemInfo) then return nil end
+	local index = Q.GetLogIndexForQuestID(questID)
+	if not index then return nil end
+	return Client.ItemIDFromLink((GetQuestLogSpecialItemInfo(index)))
+end
+
+-- The open quests of the current step (reused).
+local openQuests, openCount = {}, 0
+
+-- First usable quest-class item in the bags that one of the step's open
+-- quests handed over (Bethor's Potion, Thule Ravenclaw's reward, is none of
+-- them); nil without Northstar.QuestDB, which knows what each quest hands over.
+local function bagQuestItem()
+	local QDB = ns.QuestDB
+	if openCount == 0 or not (QDB and QDB.IsLoaded and QDB.IsLoaded() and QDB.HandsOver) then return nil end
+	for bag = 0, Client.NumBags() do
+		for slot = 1, Client.NumSlots(bag) do
+			local info = Client.SlotInfo(bag, slot)
+			local id = info and info.itemID
+			if id and Client.ItemClass(id) == Client.CLASS_QUEST and Client.ItemSpell(id) then
+				for i = 1, openCount do
+					if QDB.HandsOver(openQuests[i], id) then return id end
+				end
+			end
+		end
+	end
+	return nil
+end
+
+-- Item for the quest item button, or nil. view, raw: QoL.CurrentStep()'s,
+-- when the caller has them. When the step has none: the "While you're here"
+-- line's (Engine.GetWhileHere), its use goal's item or its quest's log item.
+function Buttons.ChooseQuestItem(view, raw)
+	if not view then view, raw = QoL.CurrentStep() end
+	if not view then return nil end
+	local goals = view.goals or {}
+	for g = 1, #goals do
+		local gv = goals[g]
+		if gv.t == "use" and QoL.Open(gv) then
+			local item = gv.item or (raw and raw[g] and raw[g].item)
+			if item and Client.ItemCount(item) > 0 then return item end
+		end
+	end
+	openCount = 0
+	for g = 1, #goals do
+		local gv = goals[g]
+		if gv.quest and QoL.Open(gv) and gv.t ~= "accept" then
+			openCount = openCount + 1
+			openQuests[openCount] = gv.quest
+			local item = logItem(gv.quest)
+			if item and Client.ItemCount(item) > 0 then return item end
+		end
+	end
+	local bag = bagQuestItem()
+	if bag then return bag end
+	local E = ns.Engine
+	local here = E and E.GetWhileHere and E.GetWhileHere()
+	if not (here and here.quest) then return nil end
+	local rg = E.AlongGoal and E.AlongGoal(here.step, here.index)
+	local item = here.t == "use" and (here.item or (rg and rg.item)) or nil
+	if item and Client.ItemCount(item) > 0 then return item end
+	item = logItem(here.quest)
+	if item and Client.ItemCount(item) > 0 then return item end
+	return nil
+end
+
+function Buttons.WantsHearth(view)
+	if not view then view = QoL.CurrentStep() end
+	if not view then return false end
+	local goals = view.goals or {}
+	for g = 1, #goals do
+		if goals[g].t == "hearth" and QoL.Open(goals[g]) then
+			return Client.ItemCount(Client.HEARTHSTONE) > 0
+		end
+	end
+	return false
+end
+
+---------------------------------------------------------------------------
+-- Target button
+---------------------------------------------------------------------------
+
+local names, nameSeen = {}, {}
+-- Each open goal's names, in its own order, and how far each has been taken
+-- (reused).
+local goalNames, goalPos, goalCount = {}, {}, 0
+
+-- A name the button may put after "/targetexact": a string with no control
+-- characters. Names come from guide packs, which anyone can write, and a line
+-- break would start a second macro line ("/run ...") that runs on the click.
+function Buttons.MacroSafeName(n)
+	return type(n) == "string" and n ~= "" and not n:find("%c")
+end
+
+local function addName(n)
+	if not Buttons.MacroSafeName(n) then return end
+	local list = goalNames[goalCount]
+	list[#list + 1] = n
+end
+
+local function addDroppers(list)
+	if type(list) ~= "table" then return end
+	for i = 1, #list do
+		local e = list[i]
+		addName(type(e) == "table" and e.name or e)
+	end
+end
+
+-- Names for the target button (reused list): one from each open goal in
+-- guide order, then the next from each, up to MAX_NAMES, so a goal with many
+-- mobs (five creatures drop the Nightsaber Fang) cannot crowd out the goals
+-- after it. view, raw: QoL.CurrentStep()'s, when the caller has them.
+function Buttons.TargetNames(view, raw)
+	wipe(names)
+	wipe(nameSeen)
+	goalCount = 0
+	if not view then view, raw = QoL.CurrentStep() end
+	if not view then return names end
+	local QDB = ns.QuestDB
+	local qdb = QDB and QDB.IsLoaded and QDB.IsLoaded()
+	-- The step's goals, then the Along the way list's (along steps and
+	-- pinned quests, #644: Engine.GetAlong), each with its raw goal.
+	local goals, raws = view.goals or {}, raw
+	local E = ns.Engine
+	if E and E.GetAlong and E.AlongGoal then
+		local all, allRaw = {}, {}
+		for g = 1, #goals do all[g], allRaw[g] = goals[g], raw and raw[g] or goals[g] end
+		for _, s in ipairs(E.GetAlong()) do
+			for _, gv in ipairs(s.goals) do
+				all[#all + 1] = gv
+				allRaw[#all] = E.AlongGoal(gv.step, gv.index) or gv
+			end
+		end
+		goals, raws = all, allRaw
+	end
+	for g = 1, #goals do
+		local gv = goals[g]
+		local rg = raws and raws[g] or gv
+		if QoL.Open(gv) then
+			goalCount = goalCount + 1
+			goalNames[goalCount] = wipe(goalNames[goalCount] or {})
+			goalPos[goalCount] = 1
+			if gv.t == "kill" then
+				-- /targetexact needs the name as the client writes it.
+				local N = ns.Names
+				addName((N and N.Npc(rg.npc or gv.npc)) or rg.target or gv.subject)
+			elseif gv.t == "collect" then
+				-- The mobs the arrow leads to come first: the farm spot the engine
+				-- chose (`collect … nearest`), then the guide's own sources for this
+				-- point (`fromNpcs`). The item's droppers follow, and stand alone for
+				-- a goal with neither: they are ranked by drop chance over the whole
+				-- world, so for an item many creatures drop the best of them are
+				-- mostly in other zones.
+				local N = ns.Names
+				local npc = gv.npc or rg.npc
+				if npc then addName((N and N.Npc(npc)) or gv.npcName or rg.npcName) end
+				local src = rg.fromNpcs or gv.fromNpcs
+				for i = 1, src and #src or 0 do
+					addName((N and N.Npc(src[i].npc)) or src[i].npcName)
+				end
+				if qdb then
+					if gv.quest and rg.oi and QDB.GetObjectiveMobs then
+						addDroppers(QDB.GetObjectiveMobs(gv.quest, rg.oi))
+					elseif (gv.item or rg.item) and QDB.GetItemDroppers then
+						addDroppers(QDB.GetItemDroppers(gv.item or rg.item))
+					end
+				end
+			end
+		end
+	end
+	local more = true
+	while more and #names < MAX_NAMES do
+		more = false
+		for i = 1, goalCount do
+			local list, p = goalNames[i], goalPos[i]
+			while list[p] and nameSeen[list[p]] do p = p + 1 end
+			if list[p] and #names < MAX_NAMES then
+				nameSeen[list[p]] = true
+				names[#names + 1] = list[p]
+				p = p + 1
+				more = true
+			end
+			goalPos[i] = p
+		end
+	end
+	return names
+end
+
+-- NPCs: "exists" out of combat, not "help": a neutral NPC (Booty Bay,
+-- Gadgetzan) is no unit you can assist, and /cleartarget then /targetexact
+-- have made the target that NPC. In a fight the target is not cleared, so
+-- only one you cannot attack is marked, never the mob you are fighting.
+local MARK_UNIT = { mob = "[@target,harm,nodead]", npc = "[@target,exists,nodead,nocombat][@target,noharm,nodead]" }
+local MARK_KEY = { mob = "qol.markMob", npc = "qol.markNpc" }
+local MARK_DEFAULT = { mob = 8, npc = 1 }
+local OTHER = { mob = "npc", npc = "mob" }
+-- Presses with a cycling mark: one count for both kinds, so when both cycle
+-- an NPC's icon is not the next mob's.
+local presses = 0
+
+-- A mark setting as an icon 1-8, "cycle", or the kind's default.
+local function markSetting(kind)
+	local v = ns.Get(MARK_KEY[kind])
+	if v == "cycle" then return v end
+	v = tonumber(v)
+	return v and v >= 1 and v <= 8 and v == math.floor(v) and v or MARK_DEFAULT[kind]
+end
+
+-- The /tm line for kind ("mob" or "npc"), nil while marking is off. A fixed
+-- icon uses "!", so pressing again never takes it off. "cycle" puts the next
+-- icon on at each press, skipping the one the other kind keeps, with "~": a
+-- unit that already has an icon keeps it. In combat the macro cannot change,
+-- so until the fight ends each press puts on the same icon.
+function Buttons.MarkLine(kind)
+	if not kind or not QoL.On("markTarget") then return nil end
+	local icon = markSetting(kind)
+	if icon ~= "cycle" then return "/tm " .. MARK_UNIT[kind] .. " !" .. icon end
+	local other, icons = markSetting(OTHER[kind]), {}
+	for i = 1, 8 do
+		if i ~= other then icons[#icons + 1] = i end
+	end
+	return "/tm " .. MARK_UNIT[kind] .. " ~" .. icons[presses % #icons + 1]
+end
+
+-- After a press with kind's mark: true when the next press puts on a new icon.
+local function nextMark(kind)
+	if not kind or not QoL.On("markTarget") or markSetting(kind) ~= "cycle" then return false end
+	presses = presses + 1
+	return true
+end
+
+-- The macro for names, tried from names[preferred] on in click order. Out of
+-- combat it starts from nothing ("/cleartarget [nocombat]"), so a target that
+-- is none of the names -- a mob clicked by hand, the quest giver just turned
+-- in to -- cannot stop the chain, and a press that finds no name marks
+-- nothing; in a fight the target is left alone, since clearing it would cut
+-- melee swings and Auto Shot. A plain /targetexact takes the nearest match,
+-- corpse or not, so each line is followed by "/cleartarget [dead]", and every
+-- later name is tried only while nothing is targeted ("[noexists]"): the
+-- first living match is kept. A name that is not MacroSafeName never becomes
+-- a line. mark: a /tm line (Buttons.MarkLine) for the end. Names past
+-- MACRO_LIMIT are dropped from the end; the preferred name and the mark stay.
+function Buttons.TargetMacro(list, preferred, mark)
+	local n = #list
+	if n == 0 then return nil end
+	local order = {}
+	for k = 0, n - 1 do
+		local name = list[(preferred - 1 + k) % n + 1]
+		if Buttons.MacroSafeName(name) then order[#order + 1] = name end
+	end
+	local count = #order
+	if count == 0 then return nil end
+	local tail = mark and ("\n" .. mark) or ""
+	local text
+	repeat
+		local lines = { "/cleartarget [nocombat]" }
+		for k = 1, count do
+			lines[#lines + 1] = (k == 1 and "/targetexact " or "/targetexact [noexists] ") .. order[k]
+			lines[#lines + 1] = "/cleartarget [dead]"
+		end
+		text = concat(lines, "\n") .. tail
+		count = count - 1
+	until #text <= MACRO_LIMIT or count == 0
+	return text
+end
+
+local target = { list = {}, sig = nil, cycle = 1 }
+
+local function applyTarget(b)
+	QoL.Secure("target", function()
+		local list = target.list
+		local text = Buttons.TargetMacro(list, target.cycle, Buttons.MarkLine("mob"))
+		b:SetAttribute("type", text and "macro" or nil)
+		b:SetAttribute("macrotext", text)
+		b.applied = list[target.cycle]
+		b.Label:SetText(b.applied or "")
+		if text then b:Show() else b:Hide() end
+	end)
+end
+
+local function targetTooltip(b, tip)
+	tip:SetText(L["Target"])
+	for i = 1, #target.list do tip:AddLine(target.list[i], 1, 1, 1) end
+	tip:AddLine(ns.Get("ui.lockHud") and L["Click again for the next name. Shift-drag to move."]
+		or L["Click again for the next name. Drag to move."], 0.6, 0.6, 0.6)
+end
+
+---------------------------------------------------------------------------
+-- Rare button
+---------------------------------------------------------------------------
+
+local rare = { list = {}, sig = nil, cycle = 1 }
+
+local function applyRare(b)
+	QoL.Secure("rare", function()
+		local list = rare.list
+		local text = Buttons.TargetMacro(list, rare.cycle)
+		b:SetAttribute("type", text and "macro" or nil)
+		b:SetAttribute("macrotext", text)
+		b.applied = list[rare.cycle]
+		b.Label:SetText(b.applied or "")
+		if text then b:Show() else b:Hide() end
+	end)
+end
+
+local function rareTooltip(b, tip)
+	tip:SetText(L["Target rare"])
+	for i = 1, #rare.list do tip:AddLine(rare.list[i], 1, 1, 1) end
+	tip:AddLine(ns.Get("ui.lockHud") and L["Click again for the next name. Shift-drag to move."]
+		or L["Click again for the next name. Drag to move."], 0.6, 0.6, 0.6)
+end
+
+---------------------------------------------------------------------------
+-- Bag button (QoL/Space.lua)
+---------------------------------------------------------------------------
+
+local function applyBag(b)
+	local Space = QoL.Space
+	local j = ns.GuideShown() and Space and Space.Low() and Space.Junk()
+	b.junk = j or nil
+	if j then
+		b.Icon:SetTexture(Client.ItemIcon(j.id) or media("icon-use"))
+		b.Icon:SetDesaturated(not Space.Armed())
+		b.Count:SetText(tostring((Space.Free())))
+		b.Label:SetText(Space.Armed() and L["Press again to delete"] or "")
+	end
+	QoL.Secure("bag", function()
+		if b.junk then b:Show() else b:Hide() end
+	end)
+end
+
+local function bagTooltip(b, tip)
+	local Space = QoL.Space
+	local j = b.junk
+	local f, t = Space.Free()
+	tip:SetText(L["Bag space"])
+	tip:AddLine(string.format(L["Free slots: %d of %d"], f, t), 1, 1, 1)
+	if j then
+		tip:AddLine(string.format(L["Cheapest junk: %s (%s)"], Space.ItemText(j), j.value < math.huge and QoL.Money(j.value) or "?"), 1, 1, 1)
+		tip:AddLine(L["Press twice to delete it."], 0.6, 0.6, 0.6)
+	end
+	tip:AddLine(ns.Get("ui.lockHud") and L["Shift-drag to move."] or L["Drag to move."], 0.6, 0.6, 0.6)
+end
+
+---------------------------------------------------------------------------
+-- Step key
+---------------------------------------------------------------------------
+
+-- Goals done with an NPC, whom the step key targets by name.
+local NPC_VERBS = { accept = true, turnin = true, talk = true, train = true, vendor = true, buy = true, sethome = true, getfp = true, learn = true }
+
+-- One clicked guide name, using the target button's macro and mark settings.
+-- The view's chosen NPC wins over the raw goal;
+-- collect subjects are items, so only their chosen or named NPC source can
+-- be targeted. No world-wide dropper lookup or other goal is consulted.
+function Buttons.GuideNameMacro(goal, raw)
+	if not QoL.On("guideNameTarget") or type(goal) ~= "table" then return nil end
+	raw = type(raw) == "table" and raw or goal
+	local t = goal.t
+	if t ~= "kill" and t ~= "collect" and not NPC_VERBS[t] then return nil end
+	local N = ns.Names
+	-- Keep a chosen name with its chosen ID: an unnamed/raw candidate must
+	-- not replace the view's named candidate with another localized NPC.
+	local chosen = goal.npc ~= nil or goal.npcName ~= nil
+	local npc, name
+	if chosen then npc, name = goal.npc, goal.npcName else npc, name = raw.npc, raw.npcName end
+	name = (npc and N and N.Npc and N.Npc(npc)) or name
+	if chosen and not name and t ~= "kill" then return nil end
+	if not name then
+		if t == "kill" then
+			name = goal.subject or raw.target
+		elseif t == "collect" then
+			local source = goal.source
+			if type(source) == "table" then
+				if source.kind == "npc" then name = source.name end
+			elseif raw.from and (raw.fromKind == nil or raw.fromKind == "npc") then
+				name = (raw.fromId and N and N.Npc and N.Npc(raw.fromId)) or raw.from
+			end
+		end
+	end
+	if not Buttons.MacroSafeName(name) then return nil end
+	local kind = (t == "kill" or t == "collect") and "mob" or "npc"
+	local macro = Buttons.TargetMacro({ name }, 1, Buttons.MarkLine(kind))
+	-- TargetMacro drops extra names to fit; a single long name cannot be trimmed.
+	if not macro or #macro > MACRO_LIMIT then return nil end
+	return macro, name, kind
+end
+
+-- What the step key does now. view, raw: QoL.CurrentStep()'s, when the
+-- caller has them. -> "item", itemID | "target", names (reused list) |
+-- "npc", name | nil. The route's own goals come first, in guide order, then
+-- the optional ones, so an optional accept never takes the key.
+local function stepGoal(view, raw, goals, optional)
+	for g = 1, #goals do
+		local gv = goals[g]
+		local rg = raw and raw[g] or gv
+		local isOptional = (rg.optional or gv.optional) and true or false
+		if isOptional == optional and QoL.Open(gv) then
+			local t = gv.t
+			if t == "use" then
+				local item = gv.item or rg.item
+				if item and Client.ItemCount(item) > 0 then return "item", item end
+			elseif t == "hearth" then
+				if Client.ItemCount(Client.HEARTHSTONE) > 0 then return "item", Client.HEARTHSTONE end
+			elseif t == "kill" or t == "collect" then
+				-- This goal's own mobs decide; the key then cycles all the step's.
+				if #Buttons.TargetNames({ goals = { gv } }, { rg }) > 0 then return "target", Buttons.TargetNames(view, raw) end
+			elseif NPC_VERBS[t] then
+				-- A name that is not MacroSafeName is passed over, like no name.
+				local name = gv.npcName or rg.npcName
+				if Buttons.MacroSafeName(name) then return "npc", name end
+			end
+		end
+	end
+end
+
+function Buttons.StepAction(view, raw)
+	-- The open flight map's marked node first: the press flies there.
+	local F = QoL.Flight
+	local slot = F and F.TakeSlot and F.TakeSlot()
+	if slot then return "fly", slot end
+	if not view then view, raw = QoL.CurrentStep() end
+	if not view then return nil end
+	local goals = view.goals or {}
+	local kind, value = stepGoal(view, raw, goals, false)
+	if not kind then kind, value = stepGoal(view, raw, goals, true) end
+	if kind then return kind, value end
+	local item = Buttons.ChooseQuestItem(view, raw)
+	if item then return "item", item end
+	return nil
+end
+
+local step = { kind = nil, value = nil, list = {}, sig = nil, cycle = 1 }
+-- The mark each kind of step key press puts on.
+local STEP_MARK = { target = "mob", npc = "npc" }
+
+local function applyStep(b)
+	QoL.Secure("step", function()
+		local text, item
+		if step.kind == "target" then
+			text = Buttons.TargetMacro(step.list, step.cycle, Buttons.MarkLine("mob"))
+		elseif step.kind == "npc" then
+			text = Buttons.TargetMacro({ step.value }, 1, Buttons.MarkLine("npc"))
+		elseif step.kind == "item" then
+			item = "item:" .. step.value
+		end
+		b:SetAttribute("type", item and "item" or text and "macro" or nil)
+		b:SetAttribute("item", item)
+		b:SetAttribute("macrotext", text)
+	end)
+end
+
+---------------------------------------------------------------------------
+-- Wiring
+---------------------------------------------------------------------------
+
+local itemButton, hearthButton, targetButton, rareButton, stepButton, bagButton
+
+---------------------------------------------------------------------------
+-- The step key's interact stage (qol.stepInteract, off by default)
+---------------------------------------------------------------------------
+
+-- The quest window open now ("detail", "progress", "complete") and its quest.
+local questWin, questWinQuest
+-- The quest frame's button each stage presses (Blizzard's QuestFrame).
+local QUEST_BUTTONS = { accept = "QuestFrameAcceptButton", continue = "QuestFrameCompleteButton", complete = "QuestFrameCompleteQuestButton" }
+local STEP_BINDING = "CLICK NorthstarStepButton:LeftButton"
+
+-- An open goal of the step for which test(view goal, raw goal) holds.
+local function openGoal(view, raw, test)
+	local goals = view.goals or {}
+	for g = 1, #goals do
+		if QoL.Open(goals[g]) and test(goals[g], raw and raw[g] or goals[g]) then return goals[g] end
+	end
+	return nil
+end
+
+-- What the step key's next press does in place of its own action, or nil:
+-- in a quest window of the live step's quest, "accept" (its accept),
+-- "continue" or "complete" (its turn-in; with several rewards to choose
+-- from, the player picks); else "interact" while the target is the live
+-- step's NPC, or the corpse of one of its mobs (loot). Only with the
+-- setting, the client's interact binding (BINDING_NAME_INTERACTTARGET), the
+-- live step on screen, and never with the gamepad interface.
+function Buttons.InteractStage(view, raw)
+	if not (QoL.On("stepInteract") and BINDING_NAME_INTERACTTARGET) or ns.GamepadUI() then return nil end
+	if not view then view, raw = QoL.CurrentStep() end
+	local E = ns.Engine
+	if not view or (E and E.GetLiveStep and E.GetLiveStep() ~= E.GetStepIndex()) then return nil end
+	if questWin then
+		local q = questWinQuest
+		if questWin == "detail" then
+			return openGoal(view, raw, function(gv) return gv.t == "accept" and gv.quest == q end) and "accept" or nil
+		end
+		if not openGoal(view, raw, function(gv) return gv.t == "turnin" and gv.quest == q end) then return nil end
+		if questWin == "progress" then return "continue" end
+		return (GetNumQuestChoices and GetNumQuestChoices() or 0) <= 1 and "complete" or nil
+	end
+	if not (UnitExists and UnitExists("target")) or (UnitIsPlayer and UnitIsPlayer("target")) then return nil end
+	local name = UnitName and UnitName("target")
+	if UnitIsDead and UnitIsDead("target") then
+		local list = Buttons.TargetNames(view, raw)
+		for i = 1, #list do
+			if list[i] == name then return "interact" end
+		end
+		return nil
+	end
+	if UnitCanAttack and UnitCanAttack("player", "target") then return nil end
+	local npc = ns.Compat.GetNpcID("target")
+	return openGoal(view, raw, function(gv, rg)
+		return NPC_VERBS[gv.t] and ((npc ~= nil and (gv.npc or rg.npc) == npc) or (name ~= nil and (gv.npcName or rg.npcName) == name))
+	end) and "interact" or nil
+end
+
+-- The step key's keys bound over to the stage's action (override bindings
+-- owned by the step button), or back to the step key; out of combat only.
+local interactSig = ""
+local function applyInteract(stage)
+	local keys = { GetBindingKey and GetBindingKey(STEP_BINDING) }
+	local sig = stage and (stage .. "\n" .. concat(keys, "\n")) or ""
+	if sig == interactSig or not stepButton then return end
+	QoL.Secure("stepInteract", function()
+		interactSig = sig
+		ClearOverrideBindings(stepButton)
+		if not stage then return end
+		for i = 1, #keys do
+			if stage == "interact" then
+				SetOverrideBinding(stepButton, true, keys[i], "INTERACTTARGET")
+			elseif _G[QUEST_BUTTONS[stage]] then
+				SetOverrideBindingClick(stepButton, true, keys[i], QUEST_BUTTONS[stage], "LeftButton")
+			end
+		end
+	end)
+end
+local refreshInteract = QoL.Coalesce(function() applyInteract(Buttons.InteractStage()) end)
+
+for event, kind in pairs({ QUEST_DETAIL = "detail", QUEST_PROGRESS = "progress", QUEST_COMPLETE = "complete", QUEST_FINISHED = false }) do
+	ns.RegisterEvent(event, function()
+		questWin = kind or nil
+		questWinQuest = kind and GetQuestID and GetQuestID() or nil
+		refreshInteract()
+	end)
+end
+for _, event in ipairs({ "PLAYER_TARGET_CHANGED", "PLAYER_REGEN_ENABLED", "UPDATE_BINDINGS", "LOOT_CLOSED" }) do
+	ns.RegisterEvent(event, refreshInteract)
+end
+
+-- Every targeting entry point shares one mark cycle. Prepared secure macros
+-- change only when safe; guide name overlays listen for the new selection.
+function Buttons.AdvanceMark(kind)
+	if not nextMark(kind) then return false end
+	if targetButton then applyTarget(targetButton) end
+	if stepButton then applyStep(stepButton) end
+	ns.Fire("QOL_TARGET_MARK_CHANGED", kind)
+	return true
+end
+
+local function refresh()
+	if not itemButton then return end
+	-- One view of the current step for all three buttons.
+	local view, raw = QoL.CurrentStep()
+	local guideShown = ns.GuideShown()
+	applyItem(itemButton, QoL.On("itemButton") and guideShown and view and Buttons.ChooseQuestItem(view, raw) or nil)
+	applyItem(hearthButton, QoL.On("hearthButton") and guideShown and view and Buttons.WantsHearth(view) and Client.HEARTHSTONE or nil)
+
+	local list = QoL.On("targetButton") and guideShown and view and Buttons.TargetNames(view, raw) or {}
+	-- The mark settings are part of both signatures, so changing one re-applies.
+	local mark = QoL.On("markTarget") and (markSetting("mob") .. " " .. markSetting("npc") .. "\n") or ""
+	local sig = mark .. concat(list, "\n")
+	if sig ~= target.sig then
+		target.sig = sig
+		local copy = {}
+		for i = 1, #list do copy[i] = list[i] end
+		target.list = copy
+		target.cycle = 1
+		applyTarget(targetButton)
+	end
+
+	-- Not tied to the step: a rare can turn up on any of them.
+	local R = ns.Rares
+	local rares = QoL.On("rareButton") and guideShown and R and R.Nearby and R.Nearby() or {}
+	local raresSig = concat(rares, "\n")
+	if raresSig ~= rare.sig then
+		rare.sig = raresSig
+		local copy = {}
+		for i = 1, #rares do
+			if Buttons.MacroSafeName(rares[i]) then copy[#copy + 1] = rares[i] end
+		end
+		rare.list = copy
+		rare.cycle = 1
+		applyRare(rareButton)
+	end
+
+	local kind, value = nil, nil
+	if view then kind, value = Buttons.StepAction(view, raw) end
+	local stepSig = mark .. (kind == "target" and ("target\n" .. concat(value, "\n")) or (tostring(kind) .. "\n" .. tostring(value)))
+	if stepSig ~= step.sig then
+		step.sig, step.kind, step.cycle = stepSig, kind, 1
+		local copy = {}
+		if kind == "target" then
+			for i = 1, #value do copy[i] = value[i] end
+		else
+			step.value = value
+		end
+		step.list = copy
+		applyStep(stepButton)
+	end
+	applyInteract(Buttons.InteractStage(view, raw))
+
+	applyBag(bagButton)
+end
+local refreshSoon = QoL.Coalesce(refresh)
+Buttons.Refresh = refresh
+
+local function repaintItems()
+	if not itemButton then return end
+	if itemButton.itemID then paintItem(itemButton) end
+	if hearthButton.itemID then paintItem(hearthButton) end
+end
+
+local function create()
+	if itemButton then return end
+	-- Not named: the client's layout cache would save it as well.
+	holder = CreateFrame("Frame", nil, UIParent)
+	holder:SetSize(SIZE, SIZE)
+	holder:SetMovable(true)
+	holder:SetClampedToScreen(true)
+	-- The clamp covers the bag, hearth, target and rare slots too.
+	holder:SetClampRectInsets(0, 0, 2 * GAP, -2 * GAP)
+	itemButton = newItemButton("NorthstarQuestItemButton")
+	hearthButton = newItemButton("NorthstarHearthButton")
+	targetButton = newButton("NorthstarTargetButton", targetTooltip)
+	targetButton.Icon:SetTexture(media("qol-target"))
+	targetButton.Icon:SetTexCoord(0, 1, 0, 1)
+	color(targetButton.Icon, "danger")
+	targetButton:HookScript("PostClick", function(self, _, down)
+		if down or self.dragging then return end
+		local n = #target.list
+		if n > 1 then target.cycle = target.cycle % n + 1 end
+		local marked = Buttons.AdvanceMark("mob")
+		if n > 1 and not marked then applyTarget(targetButton) end
+	end)
+	rareButton = newButton("NorthstarRareButton", rareTooltip)
+	rareButton.Icon:SetTexture(media("qol-target"))
+	rareButton.Icon:SetTexCoord(0, 1, 0, 1)
+	color(rareButton.Icon, "quest")
+	rareButton:HookScript("PostClick", function(self, _, down)
+		if down or self.dragging then return end
+		local n = #rare.list
+		if n > 1 then
+			rare.cycle = rare.cycle % n + 1
+			applyRare(rareButton)
+		end
+	end)
+	bagButton = newButton("NorthstarBagButton", bagTooltip)
+	bagButton:HookScript("PostClick", function(self, _, down)
+		if down or self.dragging then return end
+		local Space = QoL.Space
+		if Space then Space.Press() end
+		applyBag(self)
+	end)
+	-- The step key: a binding only, never shown.
+	stepButton = CreateFrame("Button", "NorthstarStepButton", UIParent, "SecureActionButtonTemplate")
+	stepButton:RegisterForClicks("AnyUp", "AnyDown")
+	QoL.Secure("init:NorthstarStepButton", function() stepButton:Hide() end)
+	stepButton:HookScript("PostClick", function(self, _, down)
+		if down then return end
+		-- No secure action while it flies: the press takes the marked node.
+		if step.kind == "fly" then
+			QoL.Flight.Take()
+			return
+		end
+		local n = #step.list
+		local names = step.kind == "target" and n > 1
+		if names then step.cycle = step.cycle % n + 1 end
+		local marked = Buttons.AdvanceMark(STEP_MARK[step.kind])
+		if names and not marked then applyStep(self) end
+	end)
+	Buttons.item, Buttons.hearth, Buttons.target, Buttons.rare, Buttons.step, Buttons.bag = itemButton, hearthButton, targetButton, rareButton, stepButton, bagButton
+	set = { bagButton, hearthButton, itemButton, targetButton, rareButton }
+	-- An Above name moves when a button over it comes or goes.
+	local function placeLabels() for i = 1, #set do placeLabel(set[i]) end end
+	for i = 1, #set do
+		set[i]:HookScript("OnShow", placeLabels)
+		set[i]:HookScript("OnHide", placeLabels)
+	end
+	placeLabels()
+	place()
+end
+
+ns.OnLogin(function()
+	create()
+	refresh()
+end)
+
+QoL.OnStep(refreshSoon)
+ns.RegisterEvent("BAG_UPDATE_DELAYED", function()
+	repaintItems()
+	refreshSoon()
+end)
+ns.RegisterEvent("QUEST_LOG_UPDATE", refreshSoon)
+ns.RegisterEvent("BAG_UPDATE_COOLDOWN", repaintItems)
+ns.RegisterEvent("UPDATE_BINDINGS", function()
+	if not itemButton then return end
+	refreshHotkey(itemButton)
+	refreshHotkey(hearthButton)
+	refreshHotkey(targetButton)
+	refreshHotkey(rareButton)
+	refreshHotkey(bagButton)
+end)
+ns.On("RARE_NEARBY", refreshSoon)
+ns.On("FLIGHT_MARK_CHANGED", refreshSoon)
+ns.On("QUESTDB_LOADED", refreshSoon)
+ns.On("BAG_SPACE", refreshSoon)
+ns.On("WHILE_HERE_CHANGED", refreshSoon)
+ns.On("SETTING_CHANGED", function(path)
+	if not itemButton or type(path) ~= "string" then return end
+	if path == "qol.buttonScale" or path == "qol" or path == "" then
+		place()
+	end
+	if path == "qol.buttonTextSide" or path == "qol" or path == "" then
+		for i = 1, #set do placeLabel(set[i]) end
+	end
+	if path:sub(1, 4) == "qol." or path == "qol" or path == "ui.shown" or path == "ui" or path == "" then refreshSoon() end
+end)
+ns.On("GUIDE_SHOWN", function() if itemButton then refreshSoon() end end) -- an instance hide (ns.GuideShown)
+
+-- Back to the default spot (options button).
+function Buttons.ResetPositions()
+	QoL.State().buttonPos = nil
+	if itemButton then place() end
+end

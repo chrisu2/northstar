@@ -7,13 +7,13 @@ use forge_addontest::{emitted, Addon, RunAddon};
 use serde_json::{json, Value};
 
 const SPARKLE_PRELUDE: &str = r#"
-local S, Sp = Polestar.RouteStrokes, Polestar.RouteSparkle
+local S, Sp = Northstar.RouteStrokes, Northstar.RouteSparkle
 local function path(kind, pts, later) return S.Path(kind, pts, later) end
 "#;
 
 fn sparkle(script: &str) -> Value {
 	emitted(&RunAddon {
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Maps/RouteStrokes.lua", "Maps/RouteSparkle.lua"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Maps/RouteStrokes.lua", "Maps/RouteSparkle.lua"])],
 		script: format!("{SPARKLE_PRELUDE}{script}"),
 		..Default::default()
 	})
@@ -145,11 +145,11 @@ fn the_style_brings_hand_edited_settings_into_range_and_subtlety_calms_every_spa
 
 // The painters with Nav, as tests/nav-route-lines.rs (map 9000: 2000 yd across, origin at its centre).
 fn lines() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml", "Maps/FlightPaths.lua", "Maps/RouteStrokes.lua", "Maps/RouteSparkle.lua", "Maps/RouteLines.lua"])
+	Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml", "Maps/FlightPaths.lua", "Maps/RouteStrokes.lua", "Maps/RouteSparkle.lua", "Maps/RouteLines.lua"])
 }
 
 const PAINTED_PRELUDE: &str = r#"
-local N, R, Pins, nav = Polestar.Nav, Polestar.RouteLines, Polestar.Pins, stub.nav
+local N, R, Pins, nav = Northstar.Nav, Northstar.RouteLines, Northstar.Pins, stub.nav
 local function target(wx, wy)
 	local m, x, y = nav.mapPoint(wx, wy)
 	N.SetTarget(m, x, y, "Target")
@@ -168,7 +168,7 @@ local function stars(owner)
 	return out
 end
 local function walkTo(wy)
-	Polestar.Set("nav.travel", false)
+	Northstar.Set("nav.travel", false)
 	nav.viewRadius = 200
 	nav.place(0, 0)
 	target(0, wy)
@@ -188,7 +188,7 @@ fn the_sparkle_style_paints_both_surfaces_instead_of_the_dots_still_standing_in_
 	let out = painted(
 		r#"
 		walkTo(-600)
-		Polestar.Set("nav.lineStyle", "sparkle")
+		Northstar.Set("nav.lineStyle", "sparkle")
 		nav.showWorldMap(9000)
 		stub.advance(0.5)
 		local world = R.GetWorldFrame()
@@ -197,7 +197,7 @@ fn the_sparkle_style_paints_both_surfaces_instead_of_the_dots_still_standing_in_
 		r.lines = shownLines(world)
 		r.strokes = R.GetStrokes("minimap").n
 		r.active, r.trail = R.Active(), Pins.GetTrail() ~= nil
-		Polestar.Set("nav.lineStyle", "dots")
+		Northstar.Set("nav.lineStyle", "dots")
 		stub.advance(0.3)
 		r.dotsWorld, r.dotsMinimap = R.GetSparkles("world"), R.GetSparkles("minimap")
 		r.dotLines = shownLines(world)
@@ -219,15 +219,15 @@ fn the_sparkles_drift_toward_the_goal_while_they_flow_and_hold_still_at_no_flow(
 	let out = painted(
 		r#"
 		walkTo(-600)
-		Polestar.Set("nav.lineStyle", "sparkle")
-		Polestar.Set("nav.sparkleSubtlety", 1) -- no jitter or spin: only the flow moves them
+		Northstar.Set("nav.lineStyle", "sparkle")
+		Northstar.Set("nav.sparkleSubtlety", 1) -- no jitter or spin: only the flow moves them
 		nav.showWorldMap(9000)
 		stub.advance(0.5)
 		local world = R.GetWorldFrame()
 		local a = stars(world)
 		stub.advance(0.1)
 		local b = stars(world)
-		Polestar.Set("nav.sparkleFlow", 0)
+		Northstar.Set("nav.sparkleFlow", 0)
 		stub.advance(0.1)
 		local c = stars(world)
 		stub.advance(0.5)
@@ -264,7 +264,7 @@ fn openmap_s_stitched_world_map_places_the_sparkles_through_its_api_above_its_ar
 	let out = painted_with(
 		r#"
 		walkTo(-600)
-		Polestar.Set("nav.lineStyle", "sparkle")
+		Northstar.Set("nav.lineStyle", "sparkle")
 		stub.stitched = true
 		nav.showWorldMap(9000)
 		stub.advance(0.5)
@@ -287,9 +287,9 @@ fn the_most_sparkles_shown_bounds_each_surface_a_preset_sets_the_look_and_nothin
 	let out = painted(
 		r#"
 		walkTo(-900)
-		Polestar.Set("nav.lineStyle", "sparkle")
-		Polestar.Set("nav.sparkleDensity", 10)
-		Polestar.Set("nav.sparkleMax", 10)
+		Northstar.Set("nav.lineStyle", "sparkle")
+		Northstar.Set("nav.sparkleDensity", 10)
+		Northstar.Set("nav.sparkleMax", 10)
 		nav.viewRadius = 900
 		Minimap:SetSize(400, 400)
 		nav.showWorldMap(9000)
@@ -297,7 +297,7 @@ fn the_most_sparkles_shown_bounds_each_surface_a_preset_sets_the_look_and_nothin
 		local r = { world = R.GetSparkles("world"), minimap = R.GetSparkles("minimap") }
 		r.preset = R.ApplySparklePreset("dazzling")
 		r.unknown = R.ApplySparklePreset("loud")
-		r.intensity, r.max, r.style = Polestar.Get("nav.sparkleIntensity"), Polestar.Get("nav.sparkleMax"), Polestar.Get("nav.lineStyle")
+		r.intensity, r.max, r.style = Northstar.Get("nav.sparkleIntensity"), Northstar.Get("nav.sparkleMax"), Northstar.Get("nav.lineStyle")
 		emit(r)"#,
 	);
 	assert_eq!(out["world"], 10);
@@ -320,14 +320,14 @@ fn a_long_route_costs_a_draw_only_the_sparkles_near_the_view_not_its_length() {
 		for i = 0, 59 do flight[#flight + 1] = { 0, i * 8000 / 59, -2985 - i * 9000 / 59 } end
 		local geom = { legs = { { kind = "walk", pts = walk, current = true }, { kind = "flight", pts = flight } } }
 		N.GetRouteGeometry = function() return geom end
-		Polestar.Set("nav.lineStyle", "sparkle")
-		Polestar.Set("nav.sparkleLater", true)
+		Northstar.Set("nav.lineStyle", "sparkle")
+		Northstar.Set("nav.sparkleLater", true)
 		nav.viewRadius = 150
 		Minimap:SetSize(140, 140)
 		nav.showWorldMap(9000)
-		Polestar.Fire("NAV_ROUTE_GEOMETRY")
+		Northstar.Fire("NAV_ROUTE_GEOMETRY")
 		stub.advance(0.5)
-		local Sp = Polestar.RouteSparkle
+		local Sp = Northstar.RouteSparkle
 		local twinkle, looked = Sp.Twinkle, 0
 		Sp.Twinkle = function(...) looked = looked + 1; return twinkle(...) end
 		stub.advance(0.05) -- one draw on each surface
@@ -344,16 +344,16 @@ fn the_whole_route_sparkles_the_later_legs_too_fainter() {
 	let out = painted(
 		r#"
 		walkTo(-600)
-		Polestar.Set("nav.lineStyle", "sparkle")
+		Northstar.Set("nav.lineStyle", "sparkle")
 		local geom = { legs = {
 			{ kind = "walk", pts = { { 0, 0, 0 }, { 0, 0, -300 } }, current = true },
 			{ kind = "tram", pts = { { 0, 0, -300 }, { 0, 0, -600 } } },
 		} }
 		N.GetRouteGeometry = function() return geom end
-		Polestar.Fire("NAV_ROUTE_GEOMETRY")
+		Northstar.Fire("NAV_ROUTE_GEOMETRY")
 		local _, runs = R.GetSparkles("minimap")
 		local now = #runs
-		Polestar.Set("nav.sparkleLater", true)
+		Northstar.Set("nav.sparkleLater", true)
 		_, runs = R.GetSparkles("minimap")
 		emit({ now = now, all = #runs, later = runs[2] and runs[2].later })"#,
 	);
@@ -366,19 +366,19 @@ fn the_whole_route_sparkles_the_later_legs_too_fainter() {
 fn the_route_lines_option_has_a_gear_that_opens_the_line_style_window_the_sparkle_settings_wait_for_the_sparkle_style() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Maps/RouteSparkle.lua", "UI/UI.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Maps/RouteSparkle.lua", "UI/UI.xml"])],
 		script: r#"
-Polestar.RegisterDefaults("nav", { routeLines = true, lineStyle = "dots" })
-Polestar.RegisterDefaults("nav", Polestar.RouteSparkle.DEFAULTS)
+Northstar.RegisterDefaults("nav", { routeLines = true, lineStyle = "dots" })
+Northstar.RegisterDefaults("nav", Northstar.RouteSparkle.DEFAULTS)
 uistub.install()
 stub.login()
-local UI, O = Polestar.UI, Polestar.UI.Options
+local UI, O = Northstar.UI, Northstar.UI.Options
 UI.ShowOptions("guide")
 O.Select("guide", "Arrow & routes")
 local row = O.Controls("guide", "Arrow & routes")["nav.routeLines"]
 local r = { gear = row and row.Gear ~= nil or false }
 if row and row.Gear then row.Gear:Click() end
-local win = _G.PolestarLineStyle
+local win = _G.NorthstarLineStyle
 r.shown = win ~= nil and win:IsShown()
 local controls = UI.LineStyleControls() or {}
 local keys = {}
@@ -386,9 +386,9 @@ for key in pairs(controls) do keys[#keys + 1] = key end
 table.sort(keys)
 r.keys = keys
 local intensity = controls["nav.sparkleIntensity"]
-r.offWhileDots = intensity and not Polestar.Widgets.Enabled(intensity)
-Polestar.Set("nav.lineStyle", "sparkle")
-r.onWhileSparkle = intensity and Polestar.Widgets.Enabled(intensity)
+r.offWhileDots = intensity and not Northstar.Widgets.Enabled(intensity)
+Northstar.Set("nav.lineStyle", "sparkle")
+r.onWhileSparkle = intensity and Northstar.Widgets.Enabled(intensity)
 emit(r)"#
 			.into(),
 		..Default::default()

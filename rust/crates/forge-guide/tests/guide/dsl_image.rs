@@ -125,7 +125,7 @@ fn lint_warns_about_a_picture_the_pack_folder_lacks_one_of_a_size_that_is_no_pow
 		vec![
 			format!("{}: image media/missing: the pack folder has no media/missing.tga or media/missing.blp, so the step shows no picture", at("image media/missing")),
 			format!("{}: image media/odd.tga is 600x400: the game may not draw a texture whose sides are not powers of two", at("image media/odd.tga")),
-			format!("{}: image media/junk.tga is not a TGA or BLP picture Polestar can read the size of", at("image media/junk")),
+			format!("{}: image media/junk.tga is not a TGA or BLP picture Northstar can read the size of", at("image media/junk")),
 		]
 	);
 	// A missing file is shown as nothing: the step keeps its path, the addon folder no file.

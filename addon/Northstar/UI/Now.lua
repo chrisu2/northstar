@@ -1,0 +1,304 @@
+-- The compact step list. One next action, the rest of the step in quiet lines,
+-- and the wide guide window, search, and collections kept behind text buttons.
+-- Fishing is a mode of this same list, not a second dashboard.
+--
+-- Forever only: Interface 16001. Nothing here is checked in the 1.60.1.70862
+-- client. Skill numbers are shown only when the client answers. Catch counts,
+-- lure timers, pool maps, and casting are omitted.
+
+local ADDON, ns = ...
+local UI = ns.UI
+local Now, Fish = {}, {}
+UI.Now, UI.Fish = Now, Fish
+
+Fish.GUIDE = "forever/professions/fishing"
+
+local f
+local mode = "step" -- "step" | "fish"
+
+local function nowClock()
+	if GetTime then return GetTime() end
+	return nil
+end
+
+function Fish.Lines(rank, maxRank, elapsed)
+	local lines = {
+		"Open the fishing guide for the route.",
+		"Catches are not counted.",
+		"Lures and pole enchants are not read.",
+		"Northstar does not cast or loot.",
+	}
+	if type(rank) == "number" then
+		local cap = type(maxRank) == "number" and (" / " .. maxRank) or ""
+		lines[#lines + 1] = "Skill the client reported: " .. rank .. cap .. "."
+	else
+		lines[#lines + 1] = "Fishing skill: not reported."
+	end
+	if type(elapsed) == "number" then
+		lines[#lines + 1] = "Session timer: " .. math.floor(elapsed / 60) .. " min. Not a catch count."
+	else
+		lines[#lines + 1] = "Session timer off."
+	end
+	return lines
+end
+
+function Fish.Rank()
+	local C = ns.Compat
+	if not (C and C.GetSkillRank) then return nil, nil end
+	return C.GetSkillRank("Fishing")
+end
+
+function Fish.Elapsed()
+	if not Fish.started then return nil end
+	local t = nowClock()
+	if not t then return nil end
+	return t - Fish.started
+end
+
+function Fish.ToggleSession()
+	if not nowClock() then return end
+	if Fish.started then Fish.started = nil else Fish.started = nowClock() end
+	if Now.Refresh then Now.Refresh() end
+end
+
+function Fish.OpenGuide()
+	local E = ns.Engine
+	if E and E.OpenTab then E.OpenTab(Fish.GUIDE, true) end
+end
+
+-- The next open goal of a step view, plus up to three quieter lines.
+-- `view` is an Engine step view, or nil when no guide is open.
+function Now.Compose(view)
+	if type(view) ~= "table" or type(view.goals) ~= "table" then
+		return { step = "", title = "No guide open", next = "Open a guide when you are ready.", more = {} }
+	end
+	local function open(g)
+		return g and not g.folded and g.status ~= "done" and g.status ~= "skipped" and g.status ~= "na"
+	end
+	local nextGoal
+	if view.current and open(view.goals[view.current]) then nextGoal = view.goals[view.current] end
+	if not nextGoal then
+		for i = 1, #view.goals do
+			if open(view.goals[i]) then nextGoal = view.goals[i] break end
+		end
+	end
+	local more = {}
+	for i = 1, #view.goals do
+		local g = view.goals[i]
+		if open(g) and g ~= nextGoal then
+			more[#more + 1] = UI.PlainGoalText(g)
+			if #more == 3 then break end
+		end
+	end
+	return {
+		step = view.index and ("Step " .. view.index) or "",
+		title = view.title or "",
+		next = nextGoal and UI.PlainGoalText(nextGoal) or "Nothing left on this step.",
+		more = more,
+	}
+end
+
+-- Class guides for this character, from the loaded packs. Empty when the
+-- client has not named a class or no class guide is loaded.
+function Now.ClassRows()
+	local rows = {}
+	local G, C = ns.Guides, ns.Compat
+	local info = C and C.GetPlayerInfo and C.GetPlayerInfo()
+	local class = info and info.class
+	if not (G and G.List and class) then return rows end
+	for _, h in ipairs(G.List()) do
+		if h.category == "Class" and type(h.classes) == "table" then
+			for i = 1, #h.classes do
+				if h.classes[i] == class then
+					rows[#rows + 1] = { id = h.id, title = h.title or h.id }
+					break
+				end
+			end
+		end
+		if #rows == 3 then break end
+	end
+	return rows
+end
+
+local function plate(parent)
+	local frame = CreateFrame("Frame", nil, parent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	if frame.SetBackdrop then
+		frame:SetBackdrop({
+			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = true, tileSize = 16, edgeSize = 12,
+			insets = { left = 3, right = 3, top = 3, bottom = 3 },
+		})
+		frame:SetBackdropColor(0.06, 0.06, 0.05, 0.94)
+		frame:SetBackdropBorderColor(0.45, 0.40, 0.32, 1)
+	end
+	return frame
+end
+
+local function label(parent, font, r, g, b)
+	local fs = parent:CreateFontString(nil, "OVERLAY", font)
+	fs:SetJustifyH("LEFT")
+	fs:SetJustifyV("TOP")
+	fs:SetTextColor(r, g, b)
+	return fs
+end
+
+local function button(parent, text, onClick)
+	local b = CreateFrame("Button", nil, parent)
+	b:SetSize(68, 16)
+	local fs = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	fs:SetAllPoints()
+	fs:SetJustifyH("LEFT")
+	fs:SetText(text)
+	fs:SetTextColor(0.78, 0.74, 0.66)
+	b.Label = fs
+	b:SetScript("OnClick", onClick)
+	return b
+end
+
+local function build()
+	if f then return f end
+	f = plate(UIParent)
+	f:SetSize(300, 196)
+	f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 24, -160)
+	f:SetFrameStrata("MEDIUM")
+	f:SetMovable(true)
+	f:EnableMouse(true)
+	f:RegisterForDrag("LeftButton")
+	f:SetScript("OnDragStart", function(self) if not ns.DragLocked() then self:StartMoving() end end)
+	f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+	f:SetClampedToScreen(true)
+
+	f.Title = label(f, "GameFontHighlightSmall", 0.55, 0.52, 0.46)
+	f.Title:SetPoint("TOPLEFT", 12, -10)
+	f.Title:SetText("Northstar")
+	f.Step = label(f, "GameFontHighlightSmall", 0.70, 0.66, 0.58)
+	f.Step:SetPoint("TOPLEFT", 12, -26)
+	f.Step:SetPoint("TOPRIGHT", -12, -26)
+	f.Head = label(f, "GameFontHighlight", 0.90, 0.86, 0.76)
+	f.Head:SetPoint("TOPLEFT", 12, -42)
+	f.Head:SetPoint("TOPRIGHT", -12, -42)
+	f.Next = label(f, "GameFontHighlight", 0.93, 0.84, 0.62)
+	f.Next:SetPoint("TOPLEFT", 12, -62)
+	f.Next:SetPoint("TOPRIGHT", -12, -62)
+	f.More = label(f, "GameFontHighlightSmall", 0.62, 0.60, 0.54)
+	f.More:SetPoint("TOPLEFT", 12, -84)
+	f.More:SetPoint("RIGHT", -12, 0)
+	f.More:SetHeight(36)
+
+	f.ClassBtn = button(f, "Class", function()
+		if UI.ShowPicker then UI.ShowPicker() end
+		local P = UI.Picker
+		if P and P.ShowSection then P.ShowSection("Guides") end
+		if P and P.SetCategory then P.SetCategory("Class") end
+	end)
+	f.ClassBtn:SetPoint("BOTTOMLEFT", 12, 10)
+	f.FishBtn = button(f, "Fish", function()
+		mode = mode == "fish" and "step" or "fish"
+		Now.Refresh()
+	end)
+	f.FishBtn:SetPoint("LEFT", f.ClassBtn, "RIGHT", 8, 0)
+	f.MoreBtn = button(f, "More", function()
+		if UI.ShowPicker then UI.ShowPicker() end
+	end)
+	f.MoreBtn:SetPoint("LEFT", f.FishBtn, "RIGHT", 8, 0)
+	f.FullBtn = button(f, "Full guide", function()
+		ns.Set("ui.journal", false)
+		ns.Set("ui.shown", true)
+	end)
+	f.FullBtn:SetPoint("LEFT", f.MoreBtn, "RIGHT", 8, 0)
+	f.TimerBtn = button(f, "Timer", function() Fish.ToggleSession() end)
+	f.TimerBtn:Hide()
+
+	Now.frame = f
+	return f
+end
+
+function Now.Apply(composed, fishLines)
+	local frame = build()
+	if fishLines then
+		frame.Step:SetText("Fishing")
+		frame.Head:SetText(fishLines[1] or "")
+		frame.Next:SetText(fishLines[2] or "")
+		local rest = {}
+		for i = 3, #fishLines do rest[#rest + 1] = fishLines[i] end
+		frame.More:SetText(table.concat(rest, "\n"))
+		frame.TimerBtn:Show()
+		frame.TimerBtn:ClearAllPoints()
+		frame.TimerBtn:SetPoint("BOTTOMLEFT", 12, 28)
+		frame.FishBtn.Label:SetText("Steps")
+	else
+		frame.Step:SetText(composed.step or "")
+		frame.Head:SetText(composed.title or "")
+		frame.Next:SetText(composed.next or "")
+		frame.More:SetText(table.concat(composed.more or {}, "\n"))
+		frame.TimerBtn:Hide()
+		frame.FishBtn.Label:SetText("Fish")
+	end
+end
+
+function Now.Refresh()
+	if not f or not f:IsShown() then return end
+	if mode == "fish" then
+		local rank, maxRank = Fish.Rank()
+		Now.Apply(nil, Fish.Lines(rank, maxRank, Fish.Elapsed()))
+		return
+	end
+	local E = ns.Engine
+	local view
+	if E and E.GetStepIndex and E.GetStepView then
+		local i = E.GetStepIndex()
+		if i then view = E.GetStepView(i) end
+	end
+	Now.Apply(Now.Compose(view))
+end
+
+function Now.Show()
+	build()
+	f:Show()
+	Now.Refresh()
+end
+
+function Now.Hide()
+	if f then f:Hide() end
+end
+
+function Now.Toggle()
+	if f and f:IsShown() then Now.Hide() else Now.Show() end
+end
+
+local function shown()
+	return ns.Get("ui.journal") and ns.Get("ui.shown") ~= false
+end
+
+local function sync()
+	if shown() then Now.Show() else Now.Hide() end
+end
+
+ns.On("TOGGLE_JOURNAL", function()
+	if f and f:IsShown() then
+		ns.Set("ui.journal", false)
+	else
+		ns.Set("ui.journal", true)
+		ns.Set("ui.shown", true)
+	end
+	sync()
+end)
+ns.On("SETTING_CHANGED", function(path)
+	if path == "ui.journal" or path == "ui.shown" then sync() end
+end)
+ns.On("GUIDE_CHANGED", function() Now.Refresh() end)
+
+if ns.RegisterCommand then
+	ns.RegisterCommand("journal", function() ns.Fire("TOGGLE_JOURNAL") end, "Show or hide the step list")
+	ns.RegisterCommand("fish", function()
+		ns.Set("ui.journal", true)
+		ns.Set("ui.shown", true)
+		mode = "fish"
+		sync()
+		Fish.OpenGuide()
+	end, "Fishing notes, and open the fishing guide")
+end
+
+ns.OnLogin(function() sync() end)
+if ns.IsLoggedIn and ns.IsLoggedIn() then sync() end

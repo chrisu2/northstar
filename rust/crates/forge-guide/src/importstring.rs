@@ -3,7 +3,7 @@
 //! fg-route export/polestar/mod.rs: import_string, adler32), MIT, used with its author's permission.
 //!
 //! Import strings (docs/PACK_FORMAT.md, "Import strings"): one compiled guide
-//! as one line of text a player pastes into Polestar's Import page, no addon
+//! as one line of text a player pastes into Northstar's Import page, no addon
 //! to install.
 //!
 //!   !PS1!<checksum>!<body>
@@ -249,7 +249,7 @@ pub fn encode_import(payload: &V) -> String {
 pub fn decode_import(text: &str) -> Result<V, String> {
 	let s: String = text.chars().filter(|c| !is_js_space(*c)).collect();
 	if !s.starts_with(PREFIX) {
-		return Err(format!("not a Polestar import string: it starts with {PREFIX}"));
+		return Err(format!("not a Northstar import string: it starts with {PREFIX}"));
 	}
 	// /^!PS1!([0-9a-f]{8})!([A-Za-z0-9+/]+={0,2})$/
 	let rest = &s[PREFIX.len()..];
@@ -271,14 +271,14 @@ pub fn decode_import(text: &str) -> Result<V, String> {
 
 /// One compiled guide of a pack (build_pack's guides; manifest its pack.json,
 /// data its reference data) as an import string. -> Ok((text, steps)) or
-/// Err(error) when the guide cannot go in one: one of Polestar's own guides,
+/// Err(error) when the guide cannot go in one: one of Northstar's own guides,
 /// too many steps, a text longer than the addon reads, or a string or payload
 /// bigger than it reads. `manifest`: Undef/Null for none.
 pub fn import_string(guide: &V, manifest: &V, data: Option<&Data>) -> Result<(String, usize), String> {
 	let id = guide.get("id").to_js_string();
 	let prefix = id.split('/').next().unwrap_or("");
 	if !manifest.truthy() || manifest.get("id").as_str() == Some("guides") || RESERVED_IDS.contains(&prefix) {
-		return Err(format!("{id} is one of Polestar's own guides; an import string carries a community guide, under its pack's id"));
+		return Err(format!("{id} is one of Northstar's own guides; an import string carries a community guide, under its pack's id"));
 	}
 	let steps = guide.get("steps").len();
 	if steps > LIMITS.steps {
@@ -299,18 +299,18 @@ pub fn import_string(guide: &V, manifest: &V, data: Option<&Data>) -> Result<(St
 	}
 	let payload = V::Obj(payload);
 	if let Some(long) = long_text(&payload, "") {
-		return Err(format!("{id}: {long} is longer than {} bytes, the most Polestar reads in one text of an import string", LIMITS.text));
+		return Err(format!("{id}: {long} is longer than {} bytes, the most Northstar reads in one text of an import string", LIMITS.text));
 	}
 	if let Some((at, n, cap)) = crowded(&payload.get("guide")) {
 		return Err(format!("{id}: {at} has {n} entries; an import string holds {cap} there at most (a guide this big goes in a community addon: forge release pack)"));
 	}
 	let bytes = stringify(&payload, None).len();
 	if bytes > LIMITS.payload {
-		return Err(format!("{id} holds {bytes} bytes of guide data; Polestar reads {} at most (a guide this big goes in a community addon: forge release pack)", LIMITS.payload));
+		return Err(format!("{id} holds {bytes} bytes of guide data; Northstar reads {} at most (a guide this big goes in a community addon: forge release pack)", LIMITS.payload));
 	}
 	let text = encode_import(&payload);
 	if text.len() > LIMITS.length {
-		return Err(format!("{id} makes a string of {} characters; Polestar reads {} at most (a guide this big goes in a community addon: forge release pack)", text.len(), LIMITS.length));
+		return Err(format!("{id} makes a string of {} characters; Northstar reads {} at most (a guide this big goes in a community addon: forge release pack)", text.len(), LIMITS.length));
 	}
 	Ok((text, steps))
 }

@@ -1,6 +1,6 @@
 -- The simulated player (tools/lib/playtest.js SIMULATE): plays the open guide on the stub world
 -- (stub_world.lua), step by step, and emits how far it got. forge_addontest::playtest::SIMULATE.
-local E, w = Polestar.Engine, stub.world
+local E, w = Northstar.Engine, stub.world
 -- SIM_GUIDE (playGuide): the guide that was set, which the engine may already
 -- have left for the next one; else the open guide.
 local G = SIM_GUIDE or E.GetGuide()

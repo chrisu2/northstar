@@ -1,7 +1,7 @@
 //! The writer's travel repair (port of tests/travel-repair.test.js): the written guides played by the
 //! route's characters (playtest --honest, R1); a v1 travel line that starts where they are not is the
 //! other races', and the route's own way takes them on. Plays on the committed data slice with the
-//! writer golden's whole-world travel.json (tests/common, rust/tests/golden/writer); $POLESTAR_V1's
+//! writer golden's whole-world travel.json (tests/common, rust/tests/golden/writer); $NORTHSTAR_V1's
 //! full data/forever when set.
 #![cfg(feature = "native")]
 
@@ -71,7 +71,7 @@ fn re(l: &str, p: &str) -> bool {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn after_the_route_hearth_v1_zeppelin_is_the_others_and_the_way_is_written() {
 	let st = start(&["zone Arathi Highlands", "", "step Hammerfall", "  goto 73.8,32.5 \"Hammerfall\"", "  sethome \"Hammerfall\"", "  getfp \"Hammerfall\"", ""]);
 	let v1 = shared(&[
@@ -102,7 +102,7 @@ fn after_the_route_hearth_v1_zeppelin_is_the_others_and_the_way_is_written() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn after_the_route_flight_v1_boat_is_the_others_and_the_way_is_written() {
 	let st = start(&["zone Orgrimmar", "", "step Orgrimmar", "  goto 45.3,63.8 \"Orgrimmar flight master\"", "  getfp \"Orgrimmar\"", ""]);
 	let v1 = shared(&[
@@ -149,7 +149,7 @@ fn gate_keeps_other_races() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn a_druids_way_to_moonglade_is_its_teleport() {
 	// RevSkyH3 S6: the Skyborne Druids' way from Thunder Bluff to Moonglade was a flight to Orgrimmar
 	// and a 6,551 yd walk; they teleport, as v1's Moonglade steps say.
@@ -163,7 +163,7 @@ fn a_druids_way_to_moonglade_is_its_teleport() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn v1s_flight_back_with_only_other_classes_work_sends_no_one_walking_there() {
 	// Rev14H1 12c: v1's "Back to the Crossroads" flight (everyone back from Orgrimmar training), placed
 	// by the route at Regthar with only the Warlocks' hand-in left: the repair walked everyone to the
@@ -189,7 +189,7 @@ fn v1s_flight_back_with_only_other_classes_work_sends_no_one_walking_there() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn a_flight_from_no_flight_master_on_a_shared_guide_is_repaired_where_v1_has_it_too() {
 	// c17 30-40/03-ashenvale:81: `fly "Astranaar" -- From Nijel's Point` at Maestra's Post, after the
 	// route's own flight there; every start's repair replaced it but the Dwarves', whose v1 breaks on
@@ -213,7 +213,7 @@ fn a_flight_from_no_flight_master_on_a_shared_guide_is_repaired_where_v1_has_it_
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn a_flight_to_a_path_never_learnt_learns_it_where_the_chain_stood_by_its_flight_master() {
 	// #939's pattern, on the shared Alliance route at 40: the Gnome Warlocks took the Booty Bay boat at
 	// Ratchet's dock, about 100 yd from Bragok, without the flight path v1 learns there; their Felsteed
@@ -245,7 +245,7 @@ fn fly_away(then: &[&'static str]) -> Vec<String> {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn a_flight_away_from_the_next_goal_goes_whole_but_one_to_training_or_a_ride_stays() {
 	// c17 05-duskwood:13: the repair took the flight out of "Fly to Sentinel Hill" and left the step,
 	// a walk to the Lakeshire flight master that flew nowhere.
@@ -262,7 +262,7 @@ fn a_flight_away_from_the_next_goal_goes_whole_but_one_to_training_or_a_ride_sta
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn a_way_off_a_zeppelin_learns_the_flight_master_at_hand_and_flies_back_from_it() {
 	// The flight path sweep (#964), Horde 03-silverpine-forest: the Tauren and Skyborne Druids took the
 	// zeppelin from Tirisfal to Orgrimmar for their Thunder Bluff training and walked ~2,400 yd to

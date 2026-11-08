@@ -14,7 +14,7 @@ const { svg, compose, TextureCache } = require('../preview/render');
 const { header } = require('../lib/generated');
 
 const { ROOT } = require('../lib/paths');
-const ADDON = path.join(ROOT, 'addon', 'Polestar');
+const ADDON = path.join(ROOT, 'addon', 'Northstar');
 const OUT = path.join(ROOT, 'docs', 'preview');
 const PREVIEW_HEADER = header('svg', 'preview', "the addon's Lua and the client stubs in tests/lua");
 const FILES = ['Core/Core.xml', 'Theme/Theme.xml', 'Gear/Gear.xml', 'Lookup/Lookup.xml', 'Dungeons/Dungeons.xml', 'UI/UI.xml'];
@@ -32,14 +32,14 @@ UnitLevel = function() return 6 end
 UnitClass = function() return "Warrior", "WARRIOR", 1 end
 local worn = { [1] = "item:9150", [5] = "item:9151", [7] = "item:9152" }
 GetInventoryItemLink = function(unit, slot) return worn[slot] end
-local G = Polestar.Gear
-Polestar.ItemDB.Register({ schema = 1, build = "preview" }, {
+local G = Northstar.Gear
+Northstar.ItemDB.Register({ schema = 1, build = "preview" }, {
 	[9150] = "1 4 1 1 4 2 armor20", [9151] = "5 4 1 1 4 2 armor40", [9152] = "7 4 1 1 4 2 armor30",
 	[9101] = "5 8 5 2 4 3 str3 sta2 armor90", [9102] = "5 8 5 2 4 1 int3 spi2 armor25", [9103] = "7 7 5 1 4 3 armor70",
 	[9104] = "13 9 6 2 2 7 str2 dmin7 dmax13 speed2200", [9105] = "16 8 5 2 4 1 sta2 armor12", [9106] = "10 9 7 2 4 3 str2 armor55",
 	[9107] = "8 7 4 1 4 2 agi1 armor35",
 })
-Polestar.ItemDB.RegisterLeveling({ source = "preview" }, {
+Northstar.ItemDB.RegisterLeveling({ source = "preview" }, {
 	professions = { "Alchemy", "Blacksmithing", "Enchanting", "Engineering", "Leatherworking", "Tailoring" },
 	names = { [9101] = "Militia Chain Vest", [9102] = "Acolyte's Robe", [9103] = "Kobold Mining Leggings", [9104] = "Northshire Shortsword",
 		[9105] = "Woolen Cape", [9106] = "Gauntlets of the Watch", [9107] = "Tracker's Boots" },
@@ -57,7 +57,7 @@ G.RefreshPlayer()`;
 // top left with its quality border, the name slot beside it; two to a row,
 // 1px apart), on parchment. QoL's marks are drawn by the real QoL/Rewards.lua;
 // sell prices are samples. Runs after GEAR_SETUP.
-const REWARD_PANEL = `local QoL = Polestar.QoL
+const REWARD_PANEL = `local QoL = Northstar.QoL
 local PRICE = { [9101] = 45, [9102] = 38, [9103] = 52, [9104] = 60 }
 QoL.Client.SellPrice = function(item) return PRICE[tonumber(tostring(item):match("item:(%d+)") or item)] end
 local CHOICES = { 9101, 9102, 9103, 9104 }
@@ -75,7 +75,7 @@ local paper = P:CreateTexture(nil, "BACKGROUND")
 paper:SetAllPoints()
 paper:SetColorTexture(0.86, 0.78, 0.6, 1)
 local head = P:CreateFontString(nil, "ARTWORK")
-Polestar.Theme.Font(head, "heading")
+Northstar.Theme.Font(head, "heading")
 head:SetTextColor(0.24, 0.16, 0.06, 1)
 head:SetPoint("TOPLEFT", P, "TOPLEFT", 12, -12)
 head:SetText("Choose your reward:")
@@ -94,9 +94,9 @@ for i, id in ipairs(CHOICES) do
 	slot:SetColorTexture(0.2, 0.15, 0.1, 0.88)
 	local edge = CreateFrame("Frame", nil, b)
 	edge:SetAllPoints(b.Icon)
-	Polestar.Theme.Border(edge, QUALITY[id][1], QUALITY[id][2], QUALITY[id][3], 1)
+	Northstar.Theme.Border(edge, QUALITY[id][1], QUALITY[id][2], QUALITY[id][3], 1)
 	b.Name = b:CreateFontString(nil, "BORDER")
-	Polestar.Theme.Font(b.Name, "label")
+	Northstar.Theme.Font(b.Name, "label")
 	b.Name:SetTextColor(1, 1, 1, 1)
 	b.Name:SetPoint("LEFT", slot, "LEFT", 8, 0)
 	b.Name:SetWidth(92)
@@ -116,7 +116,7 @@ QoL.Rewards.OnQuestComplete()`;
 function xpBarScene(target, fill) {
 	return `UnitLevel = function() return 6 end
 GetMaxPlayerLevel = function() return 60 end
-Polestar.Engine.LevelTarget = function(level) if ${target} > level then return ${target}, 1 end end
+Northstar.Engine.LevelTarget = function(level) if ${target} > level then return ${target}, 1 end end
 StatusTrackingBarInfo = { BarsEnum = { None = -1, Reputation = 1, Honor = 2, Artifact = 3, Experience = 4, Azerite = 5, HouseFavor = 6 } }
 local M = CreateFrame("Frame", "StatusTrackingBarManager", UIParent)
 M:SetSize(611, 41)
@@ -143,7 +143,7 @@ bar.OverlayFrame = CreateFrame("Frame", nil, bar)
 bar.OverlayFrame:SetAllPoints(bar)
 C.bars = { [4] = bar }
 M.barContainers = { C }
-Polestar.QoL.XPMark.Refresh()`;
+Northstar.QoL.XPMark.Refresh()`;
 }
 
 const FONT_FILES = ['OpenSans-Regular.ttf', 'OpenSans-Bold.ttf', 'Inter-Regular.ttf', 'Inter-Medium.ttf', 'Inter-SemiBold.ttf', 'FiraSans-Regular.ttf', 'FiraSans-Medium.ttf', 'FiraSans-SemiBold.ttf'];
@@ -175,9 +175,9 @@ function metricsLua(fonts, extra = []) {
 
 // Scenes: Lua run after the fakes are installed and the player logged in.
 // Each panel is one run; `roots` names the frames to draw.
-const GUIDE = ['PolestarGuideFrame'];
-const OPTIONS = ['PolestarOptions'];
-const PICKER = ['PolestarPicker'];
+const GUIDE = ['NorthstarGuideFrame'];
+const OPTIONS = ['NorthstarOptions'];
+const PICKER = ['NorthstarPicker'];
 // Lookup scenes run the real Search, Codex and Lookup runtime over the
 // synthetic Codex pack of tests/fixtures/codex/sample.json (panel.codex: the
 // stubbed client loads it when asked, as the game does; without it the pack
@@ -186,8 +186,8 @@ const PICKER = ['PolestarPicker'];
 const HUNTER = `uistub.player.level, uistub.player.race, uistub.player.class = 60, "NightElf", "HUNTER"`;
 function lookupScene(script, player = HUNTER) {
 	return `${player}
-Polestar.Compat.GetPlayerMapPosition = function() return 1438, 55.6, 52.4 end
-Polestar.Nav.EstimateTravel = function(from, to)
+Northstar.Compat.GetPlayerMapPosition = function() return 1438, 55.6, 52.4 end
+Northstar.Nav.EstimateTravel = function(from, to)
 	if from.map ~= to.map then return 1500 end
 	return math.sqrt((from.x - to.x) ^ 2 + (from.y - to.y) ^ 2) * 9
 end
@@ -237,16 +237,16 @@ function levelsStub() {
 // A level 4 Human, 1,800 of 2,100 XP into the level, Elwynn Forest selected
 // and its levels chip hovered.
 const LEVELS = `uistub.player.xp, uistub.player.xpMax = 1800, 2100
-Polestar.UI.ShowPicker(); Polestar.UI.Picker.Select(uistub.elwynn)
-Polestar.UI.LevelTip.Show(Polestar.UI.Picker.details.XP)`;
+Northstar.UI.ShowPicker(); Northstar.UI.Picker.Select(uistub.elwynn)
+Northstar.UI.LevelTip.Show(Northstar.UI.Picker.details.XP)`;
 // Dungeons scenes (panel.dungeons): the synthetic fixture
 // tests/fixtures/codex/dungeons.json (game names, sample numbers: Wailing
 // Caverns with its quests and bosses, the Deadmines, a Forever dungeon with
 // nothing known) as a Codex pack carrying Dungeons1.lua, loaded when the
-// section asks. POLESTAR_DUNGEONS_PACK: a Dungeons1.lua built by `codex build`
+// section asks. NORTHSTAR_DUNGEONS_PACK: a Dungeons1.lua built by `codex build`
 // (local, never committed) used instead of the fixture's; it needs
-// POLESTAR_CLIENT_ART, so those renders land outside the repository.
-const DUNGEONS_PACK = process.env.POLESTAR_DUNGEONS_PACK || null;
+// NORTHSTAR_CLIENT_ART, so those renders land outside the repository.
+const DUNGEONS_PACK = process.env.NORTHSTAR_DUNGEONS_PACK || null;
 let dungeonsPack = null;
 function dungeonsStub() {
 	if (!dungeonsPack) {
@@ -270,12 +270,12 @@ QuestDifficultyColors = {
 	standard = { r = 0.25, g = 0.75, b = 0.25 }, trivial = { r = 0.5, g = 0.5, b = 0.5 },
 }
 local done, log, ready = { [1490] = true, [870] = true }, { [914] = true }, { [1486] = true }
-Polestar.Compat.IsQuestCompleted = function(id) return done[id] or false end
-Polestar.Compat.IsOnQuest = function(id) return (log[id] or ready[id]) and true or false end
-Polestar.Compat.IsQuestReadyForTurnIn = function(id) return ready[id] or false end
-Polestar.Compat.GetPlayerMapPosition = function() return 1413, 51, 30 end`;
+Northstar.Compat.IsQuestCompleted = function(id) return done[id] or false end
+Northstar.Compat.IsOnQuest = function(id) return (log[id] or ready[id]) and true or false end
+Northstar.Compat.IsQuestReadyForTurnIn = function(id) return ready[id] or false end
+Northstar.Compat.GetPlayerMapPosition = function() return 1413, 51, 30 end`;
 function dungeonsScene(script) {
-	return `${clientArtLua()}${DUNGEONS_SETUP}\nPolestar.UI.ShowPicker()\nlocal DS = Polestar.UI.DungeonsSection\n${script}`;
+	return `${clientArtLua()}${DUNGEONS_SETUP}\nNorthstar.UI.ShowPicker()\nlocal DS = Northstar.UI.DungeonsSection\n${script}`;
 }
 // Rares scenes (panel.rares): the sample Codex plus a few Elwynn Forest and
 // Teldrassil rares and a treasure (names from the game; levels, places and
@@ -307,13 +307,13 @@ function raresStub() {
 }
 const RARES_SETUP = `uistub.player.level = 10
 UnitLevel = function() return 10 end
-Polestar.Compat.GetPlayerMapPosition = function() return 1429, 86.5, 76.8 end
-local R = Polestar.Rares
+Northstar.Compat.GetPlayerMapPosition = function() return 1429, 86.5, 76.8 end
+local R = Northstar.Rares
 local now = GetServerTime()
 R.Record({ kind = "rare", id = 61, name = "Thuros Lightfingers", level = 11, source = "vignette" }, { map = 1429, x = 89.2, y = 79.1 }, now - 2 * 3600, true)
 R.Record({ kind = "rare", id = 471, name = "Mother Fang", level = 10, source = "nameplate" }, { map = 1429, x = 62.4, y = 50.1 }, now - 26 * 3600, true)
 R.Record({ kind = "treasure", id = 2843, name = "Battered Chest", source = "vignette" }, { map = 1429, x = 79.6, y = 55.7 }, now - 3 * 86400, false)
-Polestar.Codex.Load()`;
+Northstar.Codex.Load()`;
 function raresScene(script) {
 	return `${clientArtLua()}${RARES_SETUP}\n${script}`;
 }
@@ -334,22 +334,22 @@ GetZoneText = function() return "Darkshore" end
 GetBindLocation = function() return "Auberdine" end
 GetMoney = function() return 124000 end
 local now = GetServerTime()
-local chars = PolestarDB.alts or { chars = {} }
-PolestarDB.alts = chars
+local chars = NorthstarDB.alts or { chars = {} }
+NorthstarDB.alts = chars
 chars.chars["Bram-Test Realm"] = { key = "Bram-Test Realm", name = "Bram", realm = "Test Realm", class = "WARRIOR", race = "Dwarf", faction = "Alliance",
 	level = 31, xp = 5200, xpMax = 14600, rested = 6100, resting = true, zone = "Ironforge", bind = "Ironforge", money = 482300, seen = now - 5 * 3600,
 	profs = { [164] = 187, [186] = 201, [185] = 140 }, tabs = { { id = "g", title = "Wetlands (20-25)", step = 9, count = 40 } }, active = 1 }
 chars.chars["Cira-Test Realm"] = { key = "Cira-Test Realm", name = "Cira", realm = "Test Realm", class = "PRIEST", race = "Human", faction = "Alliance",
 	level = 9, xp = 300, xpMax = 1800, rested = 400, zone = "Westfall", bind = "Sentinel Hill", money = 12900, seen = now - 3 * 86400, profs = {} }
-Polestar.Engine.GetTabs = function() return { { guideId = "g", title = "Darkshore (16-21)", stepIndex = 16, stepCount = 43 } }, 1 end
-Polestar.Alts.Write()`;
+Northstar.Engine.GetTabs = function() return { { guideId = "g", title = "Darkshore (16-21)", stepIndex = 16, stepCount = 43 } }, 1 end
+Northstar.Alts.Write()`;
 function altsScene(script) {
 	return `${clientArtLua()}${ALTS_SETUP}\n${script}`;
 }
 const ALTS_FILES = [...FILES, 'Alts/Alts.xml'];
-const TOAST = ['PolestarRareToast'];
+const TOAST = ['NorthstarRareToast'];
 // The guide menu's sample library: pitches, pros and cons on a few guides,
-// Westfall on its real map (art with POLESTAR_CLIENT_ART), and leveling
+// Westfall on its real map (art with NORTHSTAR_CLIENT_ART), and leveling
 // guides past 30 so the folders show the bands. Pitches written for the
 // preview, not taken from any guide; ids, titles and levels are the shipped
 // guides'.
@@ -369,10 +369,10 @@ local function onZone(g, step)
 		if goal.map == g.zone and goal.x and goal.y then return goal.x, goal.y end
 	end
 end
-Polestar.Engine.GuideFocus = function(id)
+Northstar.Engine.GuideFocus = function(id)
 	local g = U[id]
 	if not g then return nil end
-	for _, t in ipairs((Polestar.Engine.GetTabs())) do
+	for _, t in ipairs((Northstar.Engine.GetTabs())) do
 		if t.guideId == id and t.stepIndex then
 			local x, y = onZone(g, g.steps[t.stepIndex])
 			if x then return x, y end
@@ -399,10 +399,10 @@ add("forever/horde/30-40/01-desolace", "Desolace & Hillsbrad Foothills", "Horde"
 -- after it) are real ones and a recompile of the shipped guides leaves the
 -- renders alone. They replace the samples of the same id.
 do
-	local register, defs = Polestar.RegisterGuide, {}
-	Polestar.RegisterGuide = function(def) defs[def.id] = def end
+	local register, defs = Northstar.RegisterGuide, {}
+	Northstar.RegisterGuide = function(def) defs[def.id] = def end
 	dofile("tests/fixtures/preview/guides.lua")
-	Polestar.RegisterGuide = register
+	Northstar.RegisterGuide = register
 	for _, rel in ipairs({ "orc-troll/01-durotar", "orc-troll/02-the-barrens", "02-the-barrens", "03-silverpine-forest", "04-the-barrens", "05-stonetalon-mountains" }) do
 		local def = defs["forever/horde/" .. rel]
 		if not U[def.id] then table.insert(uistub.order, def.id) end
@@ -416,15 +416,15 @@ function pickerScene(script) {
 const TABS = 'uistub.openTabs({ { uistub.elwynn, 3 }, { uistub.tailoring, 2 }, { uistub.stormwindRep, 2 } }, 1)';
 // Step pictures (GUIDE_FORMAT.md, `image`) on two sample steps, the field
 // step's beside its tip and one without a tip. A community addon ships its
-// own screenshots; the preview draws Polestar's own textures in their place.
+// own screenshots; the preview draws Northstar's own textures in their place.
 const PICTURES = `local steps = uistub.guides[uistub.elwynn].steps
-steps[3].image = { file = "Media\\\\UI\\\\band", w = 1024, h = 512, texture = "Interface\\\\AddOns\\\\Polestar\\\\Media\\\\UI\\\\band" }
-steps[5].image = { file = "Media\\\\UI\\\\watermark", w = 256, h = 256, texture = "Interface\\\\AddOns\\\\Polestar\\\\Media\\\\UI\\\\watermark" }`;
+steps[3].image = { file = "Media\\\\UI\\\\band", w = 1024, h = 512, texture = "Interface\\\\AddOns\\\\Northstar\\\\Media\\\\UI\\\\band" }
+steps[5].image = { file = "Media\\\\UI\\\\watermark", w = 256, h = 256, texture = "Interface\\\\AddOns\\\\Northstar\\\\Media\\\\UI\\\\watermark" }`;
 // A route for the journey panel (UI/JourneyPanel.lua): the Nav fake gains a
 // three-leg trip (Shortest Path Forever's example, 36:48 and 8.0k yd), the
 // Great Lift's departures untimed until `timed`.
-const JOURNEY = `Polestar.RegisterDefaults("nav", { distanceUnit = "yards", journeySteps = true, journeyOpen = true })
-local Nav = Polestar.Nav
+const JOURNEY = `Northstar.RegisterDefaults("nav", { distanceUnit = "yards", journeySteps = true, journeyOpen = true })
+local Nav = Northstar.Nav
 JR = { ci = 1, ps = 670, py = 3000, timed = false }
 JR.legs = {
 	{ kind = "walk", step = "lift", label = "Walk to The Great Lift, Top", seconds = 670, yards = 3000, to = { name = "The Great Lift, Top" } },
@@ -434,10 +434,10 @@ JR.legs = {
 Nav.travel = { Active = function() return true end, Progress = function() return JR.ps, JR.py end }
 function Nav.GetRoute() return JR.legs, JR.ci end
 Nav.prompts = { MenuItems = function() return { { text = "Mark this leg done" } } end, OpenMenu = function() end }
-Polestar.Transit = { Now = function() return 1000 end, NextDeparture = function() return 15, 10, JR.timed end }
+Northstar.Transit = { Now = function() return 1000 end, NextDeparture = function() return 15, 10, JR.timed end }
 uistub.target = { label = "Silithus" }
 ${TABS}
-Polestar.Fire("ROUTE_CHANGED", JR.legs)`;
+Northstar.Fire("ROUTE_CHANGED", JR.legs)`;
 // The game's gamepad interface with a gamepad plugged in (labels "Letters":
 // Xbox; "Shapes": PlayStation), LT acting as Shift, and a few saved bindings
 // for the Key bindings tab.
@@ -446,7 +446,7 @@ C_InputInterfaceStyle = { GetCurrentStyle = function() return 1 end }
 C_GamePad = { IsEnabled = function() return true end, GetAllDeviceIDs = function() return { 1 } end,
 	GetActiveDeviceID = function() return 1 end, GetDeviceMappedState = function() return { labelStyle = "${labels}" } end }
 stub.cvars.GamePadEmulateShift = "PADLTRIGGER"
-local saved = { PAD3 = "CLICK PolestarQuestItemButton:LeftButton", ["SHIFT-PADDRIGHT"] = "POLESTAR_NEXT", ["SHIFT-PADDLEFT"] = "POLESTAR_PREV", N = "POLESTAR_TOGGLE" }
+local saved = { PAD3 = "CLICK NorthstarQuestItemButton:LeftButton", ["SHIFT-PADDRIGHT"] = "NORTHSTAR_NEXT", ["SHIFT-PADDLEFT"] = "NORTHSTAR_PREV", N = "NORTHSTAR_TOGGLE" }
 function GetBindingKey(action)
 	local keys = {}
 	for k, a in pairs(saved) do if a == action then keys[#keys + 1] = k end end
@@ -454,18 +454,18 @@ function GetBindingKey(action)
 	return unpack(keys)
 end`;
 // The gamepad's ring, hint bar and B chip, moved to the window holding the gamepad.
-const PAD_UI = ['PolestarPadRing', 'PolestarPadHints', 'PolestarPadBadge'];
+const PAD_UI = ['NorthstarPadRing', 'NorthstarPadHints', 'NorthstarPadBadge'];
 const PAD_GUIDE = [...GUIDE, ...PAD_UI];
 const PAD_OPTIONS = [...OPTIONS, ...PAD_UI];
-const HOVER = 'PolestarGuideFrame.IsMouseOver = function() return true end; Polestar.UI.GuideFrame.HoverIn()';
-const RECORDER = `stub.addonsLoaded.Polestar_Recorder = true
-PolestarRecorderDB = { enabled = true, current = "s2", sessions = {
+const HOVER = 'NorthstarGuideFrame.IsMouseOver = function() return true end; Northstar.UI.GuideFrame.HoverIn()';
+const RECORDER = `stub.addonsLoaded.Northstar_Recorder = true
+NorthstarRecorderDB = { enabled = true, current = "s2", sessions = {
 	s1 = { char = { name = "Testchar" }, events = {} },
 	s2 = { char = { name = "Testchar" }, events = { {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {} } } } }`;
 // A module registering its controls into a declared page, the way Quests,
 // Gear, Maps and QoL do.
-const REGISTERED = `Polestar.RegisterDefaults("qol", { mapObjectives = true, markerScale = 1, markerColor = { 1, 0.82, 0.3 } })
-Polestar.RegisterOptions({ page = "Questing", tab = "Quests", section = "Quest database", controls = {
+const REGISTERED = `Northstar.RegisterDefaults("qol", { mapObjectives = true, markerScale = 1, markerColor = { 1, 0.82, 0.3 } })
+Northstar.RegisterOptions({ page = "Questing", tab = "Quests", section = "Quest database", controls = {
 	{ kind = "toggle", key = "qol.mapObjectives", label = "Objective markers", help = "Show quest objectives on the world map." },
 	{ kind = "slider", key = "qol.markerScale", label = "Marker size", min = 0.5, max = 2, step = 0.05, format = function(v) return math.floor(v * 100 + 0.5) .. "%" end },
 	{ kind = "color", key = "qol.markerColor", label = "Marker colour" },
@@ -475,18 +475,18 @@ const MODULE_FILES = ['Core/Core.xml', 'Theme/Theme.xml', 'Quests/Quests.xml', '
 	'Dungeons/Dungeons.xml', 'UI/UI.xml', 'Rares/Rares.xml'];
 // Six more pages from third-party modules, in the game font: the list
 // scrolls in its own area, clear of the version and the stage chip.
-const MANY_PAGES = `Polestar.Set("ui.font", "game")
-Polestar.RegisterDefaults("extra", { on = true })
+const MANY_PAGES = `Northstar.Set("ui.font", "game")
+Northstar.RegisterDefaults("extra", { on = true })
 for i, name in ipairs({ "Professions", "Reputation", "Achievements", "Collections", "Talents", "Keybinds" }) do
-	Polestar.RegisterOptions({ page = name, icon = "gear", order = 70 + i, controls = { { kind = "toggle", key = "extra.on", label = "Enabled" } } })
+	Northstar.RegisterOptions({ page = name, icon = "gear", order = 70 + i, controls = { { kind = "toggle", key = "extra.on", label = "Enabled" } } })
 end`;
 // A look of your own: the accent on a 2px border, no band, no shadow, and
 // the arrow in your own colours.
-const CUSTOM_LOOK = `Polestar.Set("ui.borderAccent", true); Polestar.Set("ui.borderSize", 2); Polestar.Set("ui.band", false); Polestar.Set("ui.shadow", false)
-Polestar.Set("nav.arrowColor", { 0.45, 0.7, 1 }); Polestar.Set("nav.arrowNearColor", { 1, 0.55, 0.85 })`;
+const CUSTOM_LOOK = `Northstar.Set("ui.borderAccent", true); Northstar.Set("ui.borderSize", 2); Northstar.Set("ui.band", false); Northstar.Set("ui.shadow", false)
+Northstar.Set("nav.arrowColor", { 0.45, 0.7, 1 }); Northstar.Set("nav.arrowNearColor", { 1, 0.55, 0.85 })`;
 // The Community guides page over the real registry (uistub.realGuides in place
 // of stub_ui's fake): ours and Joe's on, Ann's with two problems, Sam's
-// too new for this Polestar, Kim's turned off in the AddOns list.
+// too new for this Northstar, Kim's turned off in the AddOns list.
 // What the Recorder reads that the UI stub leaves out (the quest log, the
 // player, maps): the Recorder tests' world, a level 12 Night Elf, so the
 // Alliance tour's spots are listed.
@@ -494,59 +494,59 @@ const RECORDER_PLAYER = `dofile(${JSON.stringify(path.join(ROOT, 'tests', 'lua',
 stub.world.level = 12
 stub.world.player.race, stub.world.player.class = "NightElf", "HUNTER"`;
 const PACKS_ADDONS = `stub.addons = {
-	{ name = "Polestar", loaded = true }, { name = "Polestar_Guides", loaded = true }, { name = "JoeRoutes", loaded = true },
+	{ name = "Northstar", loaded = true }, { name = "Northstar_Guides", loaded = true }, { name = "JoeRoutes", loaded = true },
 	{ name = "AnnDungeons", loaded = true }, { name = "SamProfessions", reason = "INTERFACE_VERSION" }, { name = "KimQuests", reason = "DISABLED", enabled = false },
 }
-stub.addonMeta.Polestar = { ["X-Website"] = "https://github.com/polestar-wow/polestar" }
-stub.addonMeta.Polestar_Guides = { ["X-Polestar-Pack"] = "guides", ["X-Polestar-Format"] = "1" }
-stub.addonMeta.JoeRoutes = { ["X-Polestar-Pack"] = "joe", ["X-Polestar-Format"] = "1" }
-stub.addonMeta.AnnDungeons = { ["X-Polestar-Pack"] = "ann", ["X-Polestar-Format"] = "1" }
-stub.addonMeta.SamProfessions = { ["X-Polestar-Pack"] = "sam", ["X-Polestar-Format"] = "3", ["X-Polestar-Needs"] = "0.3.0", Title = "Sam's Professions", Author = "Sam", Version = "0.9.0", ["X-License"] = "MIT" }
-stub.addonMeta.KimQuests = { ["X-Polestar-Pack"] = "kim", ["X-Polestar-Format"] = "1", Title = "Kim's Quests", Author = "Kim", Version = "2.1.0", ["X-License"] = "CC0-1.0", ["X-Website"] = "https://github.com/kim/quests" }`;
+stub.addonMeta.Northstar = { ["X-Website"] = "https://github.com/polestar-wow/polestar" }
+stub.addonMeta.Northstar_Guides = { ["X-Northstar-Pack"] = "guides", ["X-Northstar-Format"] = "1" }
+stub.addonMeta.JoeRoutes = { ["X-Northstar-Pack"] = "joe", ["X-Northstar-Format"] = "1" }
+stub.addonMeta.AnnDungeons = { ["X-Northstar-Pack"] = "ann", ["X-Northstar-Format"] = "1" }
+stub.addonMeta.SamProfessions = { ["X-Northstar-Pack"] = "sam", ["X-Northstar-Format"] = "3", ["X-Northstar-Needs"] = "0.3.0", Title = "Sam's Professions", Author = "Sam", Version = "0.9.0", ["X-License"] = "MIT" }
+stub.addonMeta.KimQuests = { ["X-Northstar-Pack"] = "kim", ["X-Northstar-Format"] = "1", Title = "Kim's Quests", Author = "Kim", Version = "2.1.0", ["X-License"] = "CC0-1.0", ["X-Website"] = "https://github.com/kim/quests" }`;
 const PACKS_SCENE = `local realGuides = uistub.realGuides
-Polestar.Guides = realGuides
+Northstar.Guides = realGuides
 local function guide(id, pack, n, extra)
 	for i = 1, n do
 		local g = { id = id .. i, pack = pack, title = id .. i, minLevel = 1, maxLevel = 10, steps = { { goals = { { t = "level", level = 2 } } } } }
 		for k, v in pairs(extra or {}) do g[k] = v end
-		Polestar.RegisterGuide(g)
+		Northstar.RegisterGuide(g)
 	end
 end
-Polestar.RegisterPack({ addon = "Polestar_Guides", id = "guides", format = 1, title = "Polestar Guides", author = "Polestar", version = "0.1.0", license = "GPL-3.0" })
+Northstar.RegisterPack({ addon = "Northstar_Guides", id = "guides", format = 1, title = "Northstar Guides", author = "Northstar", version = "0.1.0", license = "GPL-3.0" })
 guide("forever/g", "guides", 173)
-Polestar.RegisterPack({ addon = "JoeRoutes", id = "joe", format = 1, title = "Joe's Routes", author = "Joe", version = "1.2.0", license = "CC-BY-4.0",
+Northstar.RegisterPack({ addon = "JoeRoutes", id = "joe", format = 1, title = "Joe's Routes", author = "Joe", version = "1.2.0", license = "CC-BY-4.0",
 	website = "https://github.com/joe/routes", source = "Written from my own play" })
 guide("joe/r", "joe", 58)
-Polestar.RegisterPack({ addon = "AnnDungeons", id = "ann", format = 1, title = "Ann's Dungeons", author = "Ann", version = "0.4.0", license = "MIT" })
+Northstar.RegisterPack({ addon = "AnnDungeons", id = "ann", format = 1, title = "Ann's Dungeons", author = "Ann", version = "0.4.0", license = "MIT" })
 guide("ann/d", "ann", 12, { category = "Dungeons" })
 guide("dungeons/deadmines", "ann", 1)
-Polestar.RegisterGuide({ id = "ann/broken", pack = "ann", title = "Broken", steps = {} })
+Northstar.RegisterGuide({ id = "ann/broken", pack = "ann", title = "Broken", steps = {} })
 realGuides.ScanInstalled()`;
 // The guide menu over the same registry: Joe's Routes listed under Community
 // guides, its Westfall selected with the author's credits in the details.
-const PACKS_PICKER = `Polestar.Guides = uistub.realGuides
+const PACKS_PICKER = `Northstar.Guides = uistub.realGuides
 local function guide(id, pack, title, zone, minL, maxL)
 	local steps = {}
 	for i = 1, 6 * (maxL - minL) do steps[i] = { goals = { { t = "level", level = maxL } } } end
-	Polestar.RegisterGuide({ id = id, pack = pack, title = title, zone = zone, faction = "Alliance", category = "Leveling", minLevel = minL, maxLevel = maxL, steps = steps })
+	Northstar.RegisterGuide({ id = id, pack = pack, title = title, zone = zone, faction = "Alliance", category = "Leveling", minLevel = minL, maxLevel = maxL, steps = steps })
 end
-Polestar.RegisterPack({ addon = "Polestar_Guides", id = "guides", format = 1, title = "Polestar Guides", author = "Polestar", version = "0.1.0", license = "GPL-3.0" })
+Northstar.RegisterPack({ addon = "Northstar_Guides", id = "guides", format = 1, title = "Northstar Guides", author = "Northstar", version = "0.1.0", license = "GPL-3.0" })
 guide("forever/alliance/02-westfall", "guides", "Westfall", "Westfall", 10, 15)
-Polestar.RegisterPack({ addon = "JoeRoutes", id = "joe", format = 1, title = "Joe's Routes", author = "Joe", version = "1.2.0", license = "CC-BY-4.0",
+Northstar.RegisterPack({ addon = "JoeRoutes", id = "joe", format = 1, title = "Joe's Routes", author = "Joe", version = "1.2.0", license = "CC-BY-4.0",
 	website = "https://github.com/joe/routes", source = "Written from my own play" })
 guide("joe/elwynn", "joe", "Elwynn Forest", "Elwynn Forest", 1, 10)
 guide("joe/westfall", "joe", "Westfall", "Westfall", 10, 15)
 guide("joe/redridge", "joe", "Redridge Mountains", "Redridge Mountains", 15, 20)
 guide("joe/duskwood", "joe", "Duskwood", "Duskwood", 20, 25)
-Polestar.RegisterPack({ addon = "AnnDungeons", id = "ann", format = 1, title = "Ann's Dungeons", author = "Ann", version = "0.4.0", license = "MIT" })
-Polestar.RegisterGuide({ id = "ann/deadmines", pack = "ann", title = "The Deadmines", category = "Dungeons", minLevel = 17, maxLevel = 23, steps = { { goals = { { t = "level", level = 23 } } } } })
+Northstar.RegisterPack({ addon = "AnnDungeons", id = "ann", format = 1, title = "Ann's Dungeons", author = "Ann", version = "0.4.0", license = "MIT" })
+Northstar.RegisterGuide({ id = "ann/deadmines", pack = "ann", title = "The Deadmines", category = "Dungeons", minLevel = 17, maxLevel = 23, steps = { { goals = { { t = "level", level = 23 } } } } })
 uistub.realGuides.ScanInstalled()`;
 
 // The route choice window, filled the way Engine.GetRouteChoice fills it, with
 // each zone's pitch, pros and cons read from its guide file. The shipped
 // leveling guides follow one shared route (no choice), so the scene uses the
 // frozen guides of tests/fixtures/placement, which offered one.
-const ROUTE = ['PolestarRouteChoice'];
+const ROUTE = ['NorthstarRouteChoice'];
 const ROUTE_GUIDES = path.join(ROOT, 'tests', 'fixtures', 'placement', 'forever');
 function luaOf(v) {
 	if (v === null || v === undefined) return 'nil';
@@ -562,14 +562,14 @@ function routeOption(rel, extra) {
 	const title = all('title')[0];
 	return { id: all('guide')[0], title, zoneName: all('zone')[0], minLevel: min, maxLevel: max, pitch: all('pitch')[0], pros: all('pro'), cons: all('con'), ...extra };
 }
-// POLESTAR_CLIENT_ART: a local folder holding map art decoded from the game
+// NORTHSTAR_CLIENT_ART: a local folder holding map art decoded from the game
 // client (<fileID>.tga, base tiles and every overlay tile, plus maps.json:
 // { [uiMapID]: { artID, layer, textures } }). With it, the route cards and the
 // guide menu show each zone's real painting, unfogged by UI/ZoneArtOverlays.lua
 // when artID matches, and every preview is written into <folder>/preview/
 // instead of docs/preview/, so Blizzard art never lands in the repository.
 // Without it, the cards show the night band.
-const CLIENT_ART = process.env.POLESTAR_CLIENT_ART || null;
+const CLIENT_ART = process.env.NORTHSTAR_CLIENT_ART || null;
 function clientArtLua() {
 	if (!CLIENT_ART) return '';
 	const maps = JSON.parse(fs.readFileSync(path.join(CLIENT_ART, 'maps.json'), 'utf8'));
@@ -581,7 +581,7 @@ C_Map.GetMapArtLayerTextures = function(id) local m = ART[id]; return m and m.te
 C_Map.GetMapArtID = function(id) local m = ART[id]; return m and m.artID end
 `;
 }
-// With POLESTAR_CLIENT_ART holding atlases.json ({ [lower-case atlas element]:
+// With NORTHSTAR_CLIENT_ART holding atlases.json ({ [lower-case atlas element]:
 // { file, w, h, l, r, t, b } }, the Forever client's members) and files.json
 // ({ [lower-case "interface\\...\\name"]: fileID }), the game's own UI art is
 // drawn too: SetAtlas, C_Texture.GetAtlasInfo and SetTexture by path resolve
@@ -630,10 +630,10 @@ end
 }
 function routeScene(from, fromTitle, options, joinsAt) {
 	const choice = { from, fromTitle, recommended: options.find((o) => o.recommended).id, joinsAt, options };
-	return `${clientArtLua()}local E = Polestar.Engine
+	return `${clientArtLua()}local E = Northstar.Engine
 E.GetRouteChoice = function() return ${luaOf(choice)} end
 E.PendingRouteChoice = function() return ${JSON.stringify(from)} end
-Polestar.UI.ShowRouteChoice(${JSON.stringify(from)})`;
+Northstar.UI.ShowRouteChoice(${JSON.stringify(from)})`;
 }
 // zone: the guide's uiMapID; focusX/Y: where the route starts on it (live frame).
 const UNDEAD_CHOICE = routeScene('forever/horde/undead/01-tirisfal-glades', 'Tirisfal Glades', [
@@ -658,7 +658,7 @@ function questDbLua() {
 }
 const MAP_W = 700, MAP_H = 470;
 // Runs before the addon files: the world, then the map canvas (the shape of
-// Blizzard_MapCanvas Polestar reads, tests/lua/wow_stub.lua's world map with
+// Blizzard_MapCanvas Northstar reads, tests/lua/wow_stub.lua's world map with
 // its own canvas) sized like the world map's, and the minimap's ground. Map
 // percent to canvas pixels: x * MAP_W, y * MAP_H from the top left.
 const QUEST_PLAYER = { x: 46.4, y: 39.6 };
@@ -673,8 +673,8 @@ w.moveTo(${place.map}, ${place.player.x}, ${place.player.y})
 for q, t in pairs({ [7] = "Kobold Camp Cleanup", [18] = "Gathering Wood", [33] = "Wolves Across the Border", [60] = "Kobold Candles" }) do w.titles[q] = t end
 w.complete({ 14 }); w.setLevel(4)
 stub.worldMapID = ${place.map}
-local FONT = "Interface\\\\AddOns\\\\Polestar\\\\Media\\\\Fonts\\\\Inter-SemiBold.ttf"
-local NAV = "Interface\\\\AddOns\\\\Polestar\\\\Media\\\\Nav\\\\"
+local FONT = "Interface\\\\AddOns\\\\Northstar\\\\Media\\\\Fonts\\\\Inter-SemiBold.ttf"
+local NAV = "Interface\\\\AddOns\\\\Northstar\\\\Media\\\\Nav\\\\"
 
 local map = WorldMapFrame
 map:SetSize(${MAP_W}, ${MAP_H})
@@ -730,7 +730,7 @@ arrow:SetAllPoints(player); arrow:SetTexture(NAV .. "arrow"); arrow:SetRotation(
 // After login: the marker layers turned on (off by default), the quest log,
 // then the markers settle (Quests' 0.2 s throttle).
 const QUEST_LOG = `local w = stub.world
-for _, k in ipairs({ "mapObjectives", "minimapObjectives", "turnInMarkers", "availableQuests" }) do Polestar.Set("qol." .. k, true) end
+for _, k in ipairs({ "mapObjectives", "minimapObjectives", "turnInMarkers", "availableQuests" }) do Northstar.Set("qol." .. k, true) end
 stub.advance(0.3)
 w.accept(7, { { text = "Kobold Vermin slain: 0/10", type = "monster", required = 10 } }); w.progress(7, 1, 3)
 w.accept(60, { { text = "Large Candle: 0/8", type = "item", required = 8 } }); w.progress(60, 1, 2)
@@ -739,15 +739,15 @@ w.accept(33, { { text = "Tough Wolf Meat: 0/8", type = "item", required = 8 } })
 stub.advance(0.3)`;
 // A guide on the step that takes on the kobolds and hands in the wolf meat:
 // those quests' markers are highlighted, the others dimmed (qol.guideDim).
-const QUEST_GUIDE = `Polestar.RegisterPack({ addon = "Polestar_Preview", id = "preview", format = 1, title = "Preview", author = "Polestar", version = "1", license = "GPL-3.0-only" })
-Polestar.RegisterGuide({ id = "preview/elwynn", pack = "preview", title = "Elwynn Forest", faction = "Alliance", minLevel = 1, maxLevel = 10, zone = 1429, steps = {
+const QUEST_GUIDE = `Northstar.RegisterPack({ addon = "Northstar_Preview", id = "preview", format = 1, title = "Preview", author = "Northstar", version = "1", license = "GPL-3.0-only" })
+Northstar.RegisterGuide({ id = "preview/elwynn", pack = "preview", title = "Elwynn Forest", faction = "Alliance", minLevel = 1, maxLevel = 10, zone = 1429, steps = {
 	{ title = "Kobold Camp", goals = {
 		{ t = "kill", quest = 7, target = "Kobold Vermin", count = 10, map = 1429, x = 47.8, y = 35.8 },
 		{ t = "turnin", quest = 33, title = "Wolves Across the Border", npc = 196, npcName = "Eagan Peltskinner", map = 1429, x = 48.9, y = 40.2 },
 	} },
 } })
-Polestar.Set("qol.guideDim", true)
-Polestar.Engine.SetGuide("preview/elwynn")
+Northstar.Set("qol.guideDim", true)
+Northstar.Engine.SetGuide("preview/elwynn")
 stub.advance(0.3)`;
 // A route into the next zone: Westfall west of the sample Elwynn, joined by
 // one crossing on the border, so the walk goes to the crossing first (its
@@ -755,10 +755,10 @@ stub.advance(0.3)`;
 const TRAVEL = `local w = stub.world
 local WESTFALL = { name = "Westfall", c = 0, left = 4500, right = 1500, top = 500, bottom = -1500 }
 w.addMap(1436, WESTFALL)
-Polestar.Nav.RegisterCrossings({ complete = true,
+Northstar.Nav.RegisterCrossings({ complete = true,
 	zones = { [1429] = w.maps[1429], [1436] = WESTFALL },
 	crossings = { { id = "border", a = { map = 1429, c = 0, wx = -700, wy = 1460, r = 15 }, b = { map = 1436, c = 0, wx = -700, wy = 1540, r = 15 } } } })
-Polestar.Nav.SetTarget(1436, 60, 45, "Sentinel Hill")
+Northstar.Nav.SetTarget(1436, 60, 45, "Sentinel Hill")
 stub.advance(1)`;
 // Spawn areas: Teldrassil's "The Balance of Nature" as the pack compiles it
 // (`spots`: every place each goal's mobs and objects spawn), the player in
@@ -771,7 +771,7 @@ const TELDRASSIL = {
 	map: 1438, name: 'Teldrassil', frame: 'c = 1, left = 3814.583, right = -1277.083, top = 11831.25, bottom = 8437.5', player: { x: 55.3, y: 42.4 },
 };
 const AREAS = `local w = stub.world
-Polestar.RegisterMapFrames({ era = { [1438] = { ${TELDRASSIL.frame} } } })
+Northstar.RegisterMapFrames({ era = { [1438] = { ${TELDRASSIL.frame} } } })
 w.setLevel(3)
 w.titles[456], w.titles[459], w.titles[97977] = "The Balance of Nature", "The Woodland Protector", "Nature's Call"
 w.accept(456, { { text = "Young Nightsaber slain: 0/7", type = "monster", required = 7 }, { text = "Young Thistle Boar slain: 0/4", type = "monster", required = 4 } })
@@ -779,8 +779,8 @@ w.progress(456, 1, 2)
 w.accept(459, { { text = "Fel Moss: 0/8", type = "item", required = 8 } }); w.progress(459, 1, 3)
 w.accept(97977, { { text = "Gnarlpine Totem destroyed: 0/1", type = "object", required = 1 } })
 stub.advance(0.3)
-Polestar.RegisterPack({ addon = "Polestar_Preview", id = "preview", format = 1, title = "Preview", author = "Polestar", version = "1", license = "GPL-3.0-only" })
-Polestar.RegisterGuide({ id = "preview/areas", pack = "preview", title = "Teldrassil", faction = "Alliance", minLevel = 1, maxLevel = 10, zone = 1438, steps = {
+Northstar.RegisterPack({ addon = "Northstar_Preview", id = "preview", format = 1, title = "Preview", author = "Northstar", version = "1", license = "GPL-3.0-only" })
+Northstar.RegisterGuide({ id = "preview/areas", pack = "preview", title = "Teldrassil", faction = "Alliance", minLevel = 1, maxLevel = 10, zone = 1438, steps = {
 	{ title = "The Balance of Nature", goals = {
 		{ t = "kill", quest = 456, title = "The Balance of Nature", target = "Young Nightsaber", npc = 2031, count = 7, oi = 1, map = 1438, x = 57.87, y = 44.69, f = "e", spots = { { x = 57.2, y = 44.6, r = 35, n = 2 }, { x = 58.5, y = 46.1, r = 23, n = 3 }, { x = 61.3, y = 44.9, r = 63, n = 7 }, { x = 61.5, y = 40.1, r = 30, n = 2 }, { x = 62.4, y = 42.1, r = 50, n = 5 }, { x = 64.3, y = 41.3, r = 29, n = 2 }, { x = 57.9, y = 39, r = 15, n = 1, alt = true } } },
 		{ t = "kill", quest = 456, title = "The Balance of Nature", target = "Young Thistle Boar", npc = 1984, count = 4, oi = 2, map = 1438, x = 57.44, y = 45.02, f = "e", spots = { { x = 57.1, y = 45, r = 34, n = 3 }, { x = 59, y = 44.7, r = 47, n = 4 }, { x = 55.7, y = 42.4, r = 48, n = 6 }, { x = 60.9, y = 46, r = 18, n = 2 }, { x = 61.7, y = 42.6, r = 51, n = 4 }, { x = 57.8, y = 42.4, r = 15, n = 1, alt = true }, { x = 57.6, y = 39.5, r = 15, n = 1, alt = true }, { x = 63.2, y = 42.2, r = 15, n = 1, alt = true } } },
@@ -788,9 +788,9 @@ Polestar.RegisterGuide({ id = "preview/areas", pack = "preview", title = "Teldra
 		{ t = "interact", quest = 97977, title = "Nature's Call", object = 668482, objName = "Gnarlpine Totem", oi = 1, map = 1438, x = 56, y = 46.1, f = "e", spots = { { x = 56, y = 46.1, r = 15, n = 1 }, { x = 55.2, y = 44.2, r = 36, n = 2 }, { x = 56.2, y = 39.4, r = 15, n = 1 }, { x = 54.6, y = 39.7, r = 26, n = 2 } }, note = "Gnarlpine Totem" },
 	} },
 } })
-Polestar.Engine.SetGuide("preview/areas")
+Northstar.Engine.SetGuide("preview/areas")
 stub.advance(0.3)
-Polestar.Engine.AimGoal(1, 3)
+Northstar.Engine.AimGoal(1, 3)
 stub.advance(0.3)`;
 function questScene(roots, script, place) {
 	// `before` is read when the panel runs, so the database is only built for these scenes.
@@ -805,7 +805,7 @@ const GROUP_GUIDES = `local function G(t, f) f.t = t; return f end
 local DM = { kind = "dungeon", name = "Dire Maul" }
 local function class(id, title, group, steps)
 	uistub.guides[id] = { id = id, pack = "guides", title = title, classes = { "WARLOCK" }, minLevel = 60, maxLevel = 60, category = "Class", folder = "Warlock",
-		zone = 1428, zoneName = "Burning Steppes", author = "Polestar", version = 1, group = group, steps = steps }
+		zone = 1428, zoneName = "Burning Steppes", author = "Northstar", version = 1, group = group, steps = steps }
 	table.insert(uistub.order, id)
 end
 class("forever/collectibles/mounts/neutral/warlock-dreadsteed", "Warlock Dreadsteed", true, {
@@ -831,7 +831,7 @@ uistub.player.class, uistub.player.level = "WARLOCK", 60`;
 const NOT_YET_GUIDES = `local function G(t, f) f.t = t; return f end
 local function class(id, title, lo, hi, steps)
 	uistub.guides[id] = { id = id, pack = "guides", title = title, classes = { "SHAMAN" }, minLevel = lo, maxLevel = hi, category = "Class", folder = "Shaman",
-		zone = 1411, zoneName = "Durotar", author = "Polestar", version = 1, steps = steps }
+		zone = 1411, zoneName = "Durotar", author = "Northstar", version = 1, steps = steps }
 	table.insert(uistub.order, id)
 end
 class("forever/class/shaman/call-of-water-horde", "Call of Water (Horde)", 20, 23, {
@@ -841,7 +841,7 @@ class("forever/class/shaman/call-of-earth-horde", "Call of Earth (Horde)", 4, 10
 	{ title = "Canaga Earthcaller", goals = { G("accept", { verb = "Accept", subject = "Call of Earth", subjectKind = "quest", quest = 1516, status = "active" }) } },
 })
 local WATER = "forever/class/shaman/call-of-water-horde"
-Polestar.Engine.StartGate = function(id)
+Northstar.Engine.StartGate = function(id)
 	if id == WATER then return { level = 20, giver = "Searn Firewarder", map = 1454 } end
 end
 uistub.player.class, uistub.player.level = "SHAMAN", 12`;
@@ -871,12 +871,12 @@ INCUBUS.why = "A second seducer demon, the male sayaad, and a soul shard bag to 
 // maps are the game's; rewards come from UI/ClassRewards.lua.
 const CLASS_CARD = `local function G(t, f) f.t = t; return f end
 local MAPS = { [1457] = "Darnassus", [1450] = "Moonglade", [1416] = "Alterac Mountains" }
-local mapName = Polestar.Compat.GetMapName
-Polestar.Compat.GetMapName = function(id) return MAPS[id] or mapName(id) end
+local mapName = Northstar.Compat.GetMapName
+Northstar.Compat.GetMapName = function(id) return MAPS[id] or mapName(id) end
 local DRUID, WARRIOR = { classes = { "DRUID" } }, { classes = { "WARRIOR" } }
 local function leveling(id, title, zone, zoneName, steps)
 	uistub.guides[id] = { id = id, pack = "guides", title = title, faction = "Alliance", minLevel = 16, maxLevel = 40, category = "Leveling",
-		zone = zone, zoneName = zoneName, author = "Polestar", version = 1, steps = steps }
+		zone = zone, zoneName = zoneName, author = "Northstar", version = 1, steps = steps }
 	table.insert(uistub.order, id)
 end
 leveling("preview/darkshore-druid", "Darkshore", 1439, "Darkshore", {
@@ -916,11 +916,11 @@ uistub.player.race, uistub.player.level = "NightElf", 20`;
 // me" points the arrow at Ageron Kargal). Steps written for the preview.
 const CLASS_TOAST = `local function G(t, f) f.t = t; return f end
 local MAPS = { [1411] = "Durotar", [1420] = "Tirisfal Glades" }
-local mapName = Polestar.Compat.GetMapName
-Polestar.Compat.GetMapName = function(id) return MAPS[id] or mapName(id) end
+local mapName = Northstar.Compat.GetMapName
+Northstar.Compat.GetMapName = function(id) return MAPS[id] or mapName(id) end
 local function add(g) uistub.guides[g.id] = g; table.insert(uistub.order, g.id) end
 add({ id = "preview/durotar", pack = "guides", title = "Durotar", faction = "Horde", minLevel = 1, maxLevel = 12, category = "Leveling",
-	zone = 1411, zoneName = "Durotar", author = "Polestar", version = 1, steps = {
+	zone = 1411, zoneName = "Durotar", author = "Northstar", version = 1, steps = {
 	{ title = "Thunder Ridge", goals = {
 		G("kill", { verb = "Kill", subject = "Thunder Lizard", subjectKind = "npc", npc = 3130, progress = { cur = 6, max = 8 }, map = 1411, x = 39.6, y = 26.4, status = "active" }),
 		G("collect", { verb = "Collect", subject = "Thunder Lizard Horn", subjectKind = "item", item = 5143, progress = { cur = 3, max = 6 }, map = 1411, x = 39.6, y = 26.4, status = "active" }),
@@ -929,25 +929,25 @@ add({ id = "preview/durotar", pack = "guides", title = "Durotar", faction = "Hor
 	{ title = "Orgrimmar", only = { classes = { "WARLOCK" } }, goals = { G("accept", { verb = "Accept", subject = "Gan'rul's Summons", subjectKind = "quest", quest = 1506, npc = 3294, npcName = "Ophek", map = 1411, x = 54.4, y = 41.3, status = "pending" }) } },
 } })
 add({ id = "preview/class/warlock-voidwalker", pack = "guides", title = "Warlock: Voidwalker", category = "Class", classes = { "WARLOCK" }, faction = "Horde", minLevel = 10, maxLevel = 12,
-	zone = 1411, zoneName = "Durotar", author = "Polestar", version = 1, steps = {
+	zone = 1411, zoneName = "Durotar", author = "Northstar", version = 1, steps = {
 	{ title = "Ophek", goals = { G("accept", { verb = "Accept", subject = "Gan'rul's Summons", subjectKind = "quest", quest = 1506, npcName = "Ophek", status = "active" }) } },
 } })
 add({ id = "preview/tirisfal", pack = "guides", title = "Tirisfal Glades", faction = "Horde", races = { "Scourge" }, minLevel = 1, maxLevel = 13, category = "Leveling",
-	zone = 1420, zoneName = "Tirisfal Glades", author = "Polestar", version = 1, steps = {
+	zone = 1420, zoneName = "Tirisfal Glades", author = "Northstar", version = 1, steps = {
 	{ title = "Calvin Montague", goals = { G("turnin", { verb = "Turn in", subject = "A Rogue's Deal", subjectKind = "quest", quest = 590, npc = 6784, npcName = "Calvin Montague", map = 1420, x = 38.4, y = 56.4, status = "active" }) } },
 	{ title = "Brill", goals = { G("goto", { verb = "Go to", subject = "Brill", subjectKind = "place", map = 1420, x = 61.0, y = 52.0, status = "pending" }) } },
 } })
 uistub.player.class, uistub.player.level, uistub.player.faction = "WARLOCK", 10, "Horde"`;
-const ORC_TOAST = `${CLASS_TOAST}; uistub.player.race = "Orc"; uistub.openTabs({ { "preview/durotar", 1 } }, 1); Polestar.UI.ClassToast.Show(1506)`;
-const UNDEAD_TOAST = `${CLASS_TOAST}; uistub.player.race = "Scourge"; uistub.openTabs({ { "preview/tirisfal", 1 } }, 1); Polestar.UI.ClassToast.Show(1478)`;
+const ORC_TOAST = `${CLASS_TOAST}; uistub.player.race = "Orc"; uistub.openTabs({ { "preview/durotar", 1 } }, 1); Northstar.UI.ClassToast.Show(1506)`;
+const UNDEAD_TOAST = `${CLASS_TOAST}; uistub.player.race = "Scourge"; uistub.openTabs({ { "preview/tirisfal", 1 } }, 1); Northstar.UI.ClassToast.Show(1478)`;
 // The dungeon heads-up (UI/DungeonToast.lua) for the dungeons fixture's level 20 Tauren: Wailing Caverns.
 const DUNGEON_TOAST = `${CLASS_TOAST}
 ${DUNGEONS_SETUP}
 uistub.openTabs({ { "preview/durotar", 1 } }, 1)
-local DT = Polestar.UI.DungeonToast
+local DT = Northstar.UI.DungeonToast
 log[914], ready[1486] = nil, nil
 DT.Show(DT.Candidates(20, "any")[1])`;
-const NARROW = 'Polestar.UI.GuideFrame.frame:SetWidth(Polestar.UI.MIN_WIDTH); Polestar.UI.ClassToast.Place(false)';
+const NARROW = 'Northstar.UI.GuideFrame.frame:SetWidth(Northstar.UI.MIN_WIDTH); Northstar.UI.ClassToast.Place(false)';
 const DRUID_CARD = `${CLASS_CARD}; uistub.player.class = "DRUID"; uistub.openTabs({ { "preview/darkshore-druid", 1 } }, 1)`;
 const WARRIOR_CARD = `${CLASS_CARD}; uistub.player.class, uistub.player.race, uistub.player.level = "WARRIOR", "Human", 30; uistub.openTabs({ { "preview/whirlwind", 1 } }, 1)`;
 const SCENES = [
@@ -958,12 +958,12 @@ const SCENES = [
 			{ roots: GUIDE, script: TABS },
 			{ roots: GUIDE, script: `${TABS}; uistub.setStep(4)` },
 			{ roots: GUIDE, script: `${TABS}; uistub.goal(4, 1).status = "done"; uistub.goal(4, 2).status = "done"; uistub.setStep(4)` },
-			{ roots: GUIDE, script: `${TABS}; Polestar.UI.GuideFrame.parts.tip:Click()` },
+			{ roots: GUIDE, script: `${TABS}; Northstar.UI.GuideFrame.parts.tip:Click()` },
 		],
 	},
 	{
 		file: 'guide-picture.svg',
-		title: "Step pictures: a community addon's screenshot under the step's tip, scaled to the window; a picture with no tip, at most 160 high (Polestar's own textures stand in for the screenshots)",
+		title: "Step pictures: a community addon's screenshot under the step's tip, scaled to the window; a picture with no tip, at most 160 high (Northstar's own textures stand in for the screenshots)",
 		panels: [
 			{ roots: GUIDE, script: `${PICTURES}; ${TABS}` },
 			{ roots: GUIDE, script: `${PICTURES}; ${TABS}; uistub.setStep(5)` },
@@ -971,12 +971,12 @@ const SCENES = [
 	},
 	{
 		file: 'skins-guide.svg',
-		title: 'Skins: the guide window in Polestar, Halo and Hearth',
+		title: 'Skins: the guide window in Northstar, Halo and Hearth',
 		backdrop: 'terrain',
 		panels: [
 			{ roots: GUIDE, script: TABS },
-			{ roots: GUIDE, script: `Polestar.Set("ui.skin", "halo"); ${TABS}` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.skin", "hearth"); ${TABS}` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.skin", "halo"); ${TABS}` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.skin", "hearth"); ${TABS}` },
 		],
 	},
 	{
@@ -984,11 +984,11 @@ const SCENES = [
 		title: 'Skins: a hub step, transparent and the header menu, in Halo and Hearth',
 		backdrop: 'terrain',
 		panels: [
-			{ roots: GUIDE, script: `Polestar.Set("ui.skin", "halo"); ${TABS}; uistub.setStep(4)` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.skin", "halo"); Polestar.Set("ui.style", "transparent"); ${TABS}; ${HOVER}` },
-			{ roots: [...GUIDE, 'PolestarMenu'], script: `Polestar.Set("ui.skin", "halo"); ${TABS}; stub.RunScript(Polestar.UI.GuideFrame.menuButton, "OnClick", "LeftButton")` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.skin", "hearth"); ${TABS}; uistub.setStep(4)` },
-			{ roots: [...GUIDE, 'PolestarMenu'], script: `Polestar.Set("ui.skin", "hearth"); ${TABS}; stub.RunScript(Polestar.UI.GuideFrame.menuButton, "OnClick", "LeftButton")` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.skin", "halo"); ${TABS}; uistub.setStep(4)` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.skin", "halo"); Northstar.Set("ui.style", "transparent"); ${TABS}; ${HOVER}` },
+			{ roots: [...GUIDE, 'NorthstarMenu'], script: `Northstar.Set("ui.skin", "halo"); ${TABS}; stub.RunScript(Northstar.UI.GuideFrame.menuButton, "OnClick", "LeftButton")` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.skin", "hearth"); ${TABS}; uistub.setStep(4)` },
+			{ roots: [...GUIDE, 'NorthstarMenu'], script: `Northstar.Set("ui.skin", "hearth"); ${TABS}; stub.RunScript(Northstar.UI.GuideFrame.menuButton, "OnClick", "LeftButton")` },
 		],
 	},
 	{
@@ -996,16 +996,16 @@ const SCENES = [
 		title: 'Transparent mode over a bright world: at rest, and with the cursor over it',
 		backdrop: 'terrain',
 		panels: [
-			{ roots: GUIDE, script: `Polestar.Set("ui.style", "transparent"); ${TABS}` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.style", "transparent"); ${TABS}; ${HOVER}` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.style", "transparent"); ${TABS}` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.style", "transparent"); ${TABS}; ${HOVER}` },
 		],
 	},
 	{
 		file: 'guide-compact.svg',
 		title: 'Compact mode: standard and transparent',
 		panels: [
-			{ roots: GUIDE, script: `Polestar.Set("ui.compact", true); ${TABS}` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.compact", true); Polestar.Set("ui.style", "transparent"); ${TABS}` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.compact", true); ${TABS}` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.compact", true); Northstar.Set("ui.style", "transparent"); ${TABS}` },
 		],
 		backdrop: 'terrain',
 	},
@@ -1013,10 +1013,10 @@ const SCENES = [
 		file: 'guide-states.svg',
 		title: 'No guide open, guide complete, out-levelled banner, header menu',
 		panels: [
-			{ roots: GUIDE, script: 'Polestar.Engine.SetGuide(nil)' },
+			{ roots: GUIDE, script: 'Northstar.Engine.SetGuide(nil)' },
 			{ roots: GUIDE, script: `${TABS}; uistub.complete()` },
-			{ roots: GUIDE, script: `${TABS}; Polestar.Fire("GUIDE_OUTLEVELED", uistub.elwynn, "forever/alliance/02-westfall")` },
-			{ roots: [...GUIDE, 'PolestarMenu'], script: `${TABS}; stub.RunScript(Polestar.UI.GuideFrame.menuButton, "OnClick", "LeftButton")` },
+			{ roots: GUIDE, script: `${TABS}; Northstar.Fire("GUIDE_OUTLEVELED", uistub.elwynn, "forever/alliance/02-westfall")` },
+			{ roots: [...GUIDE, 'NorthstarMenu'], script: `${TABS}; stub.RunScript(Northstar.UI.GuideFrame.menuButton, "OnClick", "LeftButton")` },
 		],
 	},
 	{
@@ -1024,17 +1024,17 @@ const SCENES = [
 		title: 'Choose your path: an Undead after Tirisfal Glades; the guide window while the choice waits',
 		panels: [
 			{ roots: ROUTE, script: UNDEAD_CHOICE },
-			{ roots: GUIDE, script: `${TABS}; uistub.complete(); Polestar.Engine.PendingRouteChoice = function() return "forever/horde/undead/01-tirisfal-glades" end; Polestar.UI.GuideFrame.Render()` },
+			{ roots: GUIDE, script: `${TABS}; uistub.complete(); Northstar.Engine.PendingRouteChoice = function() return "forever/horde/undead/01-tirisfal-glades" end; Northstar.UI.GuideFrame.Render()` },
 		],
 	},
 	{
 		file: 'welcome.svg',
 		title: 'The welcome, once per new character after login: Hello, Make it yours and Route style (on the account\'s first), Your first guide',
 		panels: [
-			{ roots: ['PolestarWelcome'], script: 'Polestar.UI.Welcome.Show("welcome")' },
-			{ roots: ['PolestarWelcome'], script: 'Polestar.UI.Welcome.Show("setup")' },
-			{ roots: ['PolestarWelcome'], script: 'Polestar.UI.Welcome.Show("route")' },
-			{ roots: ['PolestarWelcome'], get script() { return `${clientArtLua()}Polestar.UI.Welcome.Show("start")`; } },
+			{ roots: ['NorthstarWelcome'], script: 'Northstar.UI.Welcome.Show("welcome")' },
+			{ roots: ['NorthstarWelcome'], script: 'Northstar.UI.Welcome.Show("setup")' },
+			{ roots: ['NorthstarWelcome'], script: 'Northstar.UI.Welcome.Show("route")' },
+			{ roots: ['NorthstarWelcome'], get script() { return `${clientArtLua()}Northstar.UI.Welcome.Show("start")`; } },
 		],
 	},
 	{
@@ -1052,7 +1052,7 @@ const SCENES = [
 		panels: [
 			{
 				roots: GUIDE,
-				script: `${TABS}; Polestar.Fire("TRAIN_DUE", 12, { npc = 914, npcName = "Ander Germaine", map = 1453, x = 79.6, y = 70.2 })`,
+				script: `${TABS}; Northstar.Fire("TRAIN_DUE", 12, { npc = 914, npcName = "Ander Germaine", map = 1453, x = 79.6, y = 70.2 })`,
 			},
 			{
 				roots: GUIDE,
@@ -1075,19 +1075,19 @@ uistub.update()`,
 			// (a) Human level 40, 112 g → banner with Take me there (cost 1000000)
 			roots: GUIDE,
 			script: `${TABS}; uistub.player.level = 40; function GetMoney() return 1120000 end
-Polestar.Fire("RIDING_DUE", { tier = 1, cost = 1000000, trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" }, factionID = 72 })`,
+Northstar.Fire("RIDING_DUE", { tier = 1, cost = 1000000, trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" }, factionID = 72 })`,
 		},
 		{
 			// (b) Human level 40, 43 g → banner without button (cost 1000000 > 430000)
 			roots: GUIDE,
 			script: `${TABS}; uistub.player.level = 40; function GetMoney() return 430000 end
-Polestar.Fire("RIDING_DUE", { tier = 1, cost = 1000000, trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" }, factionID = 72 })`,
+Northstar.Fire("RIDING_DUE", { tier = 1, cost = 1000000, trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" }, factionID = 72 })`,
 		},
 		{
 			// (c) Warlock level 40 → Felsteed class mount route (cost 0 = free)
 			roots: GUIDE,
 			script: `${TABS}; uistub.player.level = 40; uistub.player.class = "WARLOCK"; function GetMoney() return 0 end
-Polestar.Fire("RIDING_DUE", { tier = 1, cost = 0, trainer = { map = 1413, x = 62.6, y = 35.5, npcName = "Strahad Farsan" }, classKind = "WARLOCK" })`,
+Northstar.Fire("RIDING_DUE", { tier = 1, cost = 0, trainer = { map = 1413, x = 62.6, y = 35.5, npcName = "Strahad Farsan" }, classKind = "WARLOCK" })`,
 		},
 		],
 	},
@@ -1096,7 +1096,7 @@ Polestar.Fire("RIDING_DUE", { tier = 1, cost = 0, trainer = { map = 1413, x = 62
 		title: 'Along the way: the kobolds and wolf meat of an `along` step under the steps after it; with Up next open',
 		panels: [
 			{ roots: GUIDE, script: `${TABS}; uistub.along = { { 3, { 3, 4 } } }; uistub.setStep(5)` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.upcoming", 3); Polestar.Set("ui.upcomingOpen", true); ${TABS}; uistub.along = { { 3, { 3, 4 } } }; uistub.setStep(4)` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.upcoming", 3); Northstar.Set("ui.upcomingOpen", true); ${TABS}; uistub.along = { { 3, { 3, 4 } } }; uistub.setStep(4)` },
 		],
 	},
 	{
@@ -1104,8 +1104,8 @@ Polestar.Fire("RIDING_DUE", { tier = 1, cost = 0, trainer = { map = 1413, x = 62
 		title: 'The journey under the focus: walking to the Great Lift (36:48, 8.0k yd, the lift untimed); on the lift, timed; collapsed to its totals',
 		panels: [
 			{ roots: GUIDE, script: JOURNEY },
-			{ roots: GUIDE, script: `${JOURNEY}; JR.timed = true; JR.ci = 2; JR.ps = 25; JR.py = 60; Polestar.Fire("ROUTE_ADVANCED", JR.legs, 2)` },
-			{ roots: GUIDE, script: `${JOURNEY}; Polestar.Set("nav.journeyOpen", false)` },
+			{ roots: GUIDE, script: `${JOURNEY}; JR.timed = true; JR.ci = 2; JR.ps = 25; JR.py = 60; Northstar.Fire("ROUTE_ADVANCED", JR.legs, 2)` },
+			{ roots: GUIDE, script: `${JOURNEY}; Northstar.Set("nav.journeyOpen", false)` },
 		],
 	},
 	{
@@ -1116,8 +1116,8 @@ Polestar.Fire("RIDING_DUE", { tier = 1, cost = 0, trainer = { map = 1413, x = 62
 			{ roots: GUIDE, script: `${GROUP_GUIDES}; uistub.openTabs({ { DREADSTEED, 2 } }, 1)` },
 			{
 				roots: PICKER,
-				script: pickerScene(`${GROUP_GUIDES}; uistub.openTabs({ { DREADSTEED, 2 } }, 1); Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Class")
-Polestar.UI.Picker.Select(DREADSTEED)`),
+				script: pickerScene(`${GROUP_GUIDES}; uistub.openTabs({ { DREADSTEED, 2 } }, 1); Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Class")
+Northstar.UI.Picker.Select(DREADSTEED)`),
 			},
 		],
 	},
@@ -1128,8 +1128,8 @@ Polestar.UI.Picker.Select(DREADSTEED)`),
 			{ roots: GUIDE, script: `${NOT_YET_GUIDES}; uistub.openTabs({ { WATER, 1 } }, 1)` },
 			{
 				roots: PICKER,
-				script: pickerScene(`${NOT_YET_GUIDES}; Polestar.Set("ui.pickerFaction", "Horde"); Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Class")
-Polestar.UI.Picker.Select("forever/class/shaman/call-of-earth-horde")`),
+				script: pickerScene(`${NOT_YET_GUIDES}; Northstar.Set("ui.pickerFaction", "Horde"); Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Class")
+Northstar.UI.Picker.Select("forever/class/shaman/call-of-earth-horde")`),
 			},
 		],
 	},
@@ -1138,9 +1138,9 @@ Polestar.UI.Picker.Select("forever/class/shaman/call-of-earth-horde")`),
 		title: 'A class quest\'s step: the class card in the class colour with the chain\'s reward (Cat Form for a Druid; the Whirlwind weapon, a choice, for a Warrior), in Night, transparent and compact',
 		panels: [
 			{ roots: GUIDE, script: DRUID_CARD },
-			{ roots: GUIDE, script: `Polestar.Set("ui.scheme", "night"); ${WARRIOR_CARD}` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.style", "transparent"); ${DRUID_CARD}; ${HOVER}` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.compact", true); ${WARRIOR_CARD}` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.scheme", "night"); ${WARRIOR_CARD}` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.style", "transparent"); ${DRUID_CARD}; ${HOVER}` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.compact", true); ${WARRIOR_CARD}` },
 		],
 		backdrop: 'terrain',
 	},
@@ -1148,8 +1148,8 @@ Polestar.UI.Picker.Select("forever/class/shaman/call-of-earth-horde")`),
 		file: 'guide-class-toast.svg',
 		title: 'The class quest heads-up on the guide window: an Orc Warlock reaching 10 (its class guide opens in a new tab), and an Undead one in Night (no class guide: Show me)',
 		panels: [
-			{ roots: [...GUIDE, 'PolestarClassToast'], script: ORC_TOAST },
-			{ roots: [...GUIDE, 'PolestarClassToast'], script: `Polestar.Set("ui.scheme", "night"); ${UNDEAD_TOAST}` },
+			{ roots: [...GUIDE, 'NorthstarClassToast'], script: ORC_TOAST },
+			{ roots: [...GUIDE, 'NorthstarClassToast'], script: `Northstar.Set("ui.scheme", "night"); ${UNDEAD_TOAST}` },
 		],
 		backdrop: 'terrain',
 	},
@@ -1157,8 +1157,8 @@ Polestar.UI.Picker.Select("forever/class/shaman/call-of-earth-horde")`),
 		file: 'guide-dungeon-toast.svg',
 		title: 'The dungeon heads-up on the guide window: a level 20 Tauren told Wailing Caverns is open (Pick up the quests opens its pick-up guide in a new tab, Open in Dungeons its page); the same at the window\'s narrowest',
 		panels: [
-			{ dungeons: true, roots: [...GUIDE, 'PolestarClassToast'], script: DUNGEON_TOAST },
-			{ dungeons: true, roots: [...GUIDE, 'PolestarClassToast'], script: `${DUNGEON_TOAST}; ${NARROW}` },
+			{ dungeons: true, roots: [...GUIDE, 'NorthstarClassToast'], script: DUNGEON_TOAST },
+			{ dungeons: true, roots: [...GUIDE, 'NorthstarClassToast'], script: `${DUNGEON_TOAST}; ${NARROW}` },
 		],
 		backdrop: 'terrain',
 	},
@@ -1168,18 +1168,18 @@ Polestar.UI.Picker.Select("forever/class/shaman/call-of-earth-horde")`),
 		panels: [
 			{
 				roots: PICKER,
-				script: pickerScene(`${CLASS_GUIDES}; Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Class")
-Polestar.UI.Picker.Select(DREADSTEED)`),
+				script: pickerScene(`${CLASS_GUIDES}; Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Class")
+Northstar.UI.Picker.Select(DREADSTEED)`),
 			},
 			{
 				roots: PICKER,
-				script: pickerScene(`${CLASS_GUIDES}; Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Class")
-Polestar.UI.Picker.Select("forever/class/warlock/impsys-request")`),
+				script: pickerScene(`${CLASS_GUIDES}; Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Class")
+Northstar.UI.Picker.Select("forever/class/warlock/impsys-request")`),
 			},
 			{
 				roots: PICKER,
-				script: pickerScene(`${CLASS_GUIDES}; Polestar.Set("ui.pickerFaction", "All"); Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Class")
-Polestar.UI.Picker.Select("forever/class/warlock/incubus-horde")`),
+				script: pickerScene(`${CLASS_GUIDES}; Northstar.Set("ui.pickerFaction", "All"); Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Class")
+Northstar.UI.Picker.Select("forever/class/warlock/incubus-horde")`),
 			},
 		],
 	},
@@ -1188,21 +1188,21 @@ Polestar.UI.Picker.Select("forever/class/warlock/incubus-horde")`),
 		title: 'Report a problem (the guide window\'s bug button): what went wrong, the right spot to mark, the report for the Polestar Discord, or a filled-in issue on GitHub; the invite on its own (the sidebar\'s Discord mark)',
 		panels: [
 			{
-				roots: ['PolestarReport'],
-				script: `${TABS}; Polestar.UI.ShowReport()
-local d = PolestarReport.Desc
+				roots: ['NorthstarReport'],
+				script: `${TABS}; Northstar.UI.ShowReport()
+local d = NorthstarReport.Desc
 d:SetText("The vermin were all on the far side of the camp, by the tents.")
 stub.RunScript(d, "OnTextChanged", true)`,
 			},
-			{ roots: ['PolestarCopy'], script: 'Polestar.UI.ShowDiscord()' },
+			{ roots: ['NorthstarCopy'], script: 'Northstar.UI.ShowDiscord()' },
 		],
 	},
 	{
 		file: 'guide-ellesmere.svg',
-		title: 'With EllesmereUI: Polestar follows its accent and font by default; every colour stays editable',
+		title: 'With EllesmereUI: Northstar follows its accent and font by default; every colour stays editable',
 		panels: [
 			{ eui: true, roots: GUIDE, script: `stub.setAccent(0.6, 0.48, 1); ${TABS}` },
-			{ eui: true, roots: OPTIONS, script: 'stub.setAccent(0.6, 0.48, 1); Polestar.UI.ShowOptions("appearance")' },
+			{ eui: true, roots: OPTIONS, script: 'stub.setAccent(0.6, 0.48, 1); Northstar.UI.ShowOptions("appearance")' },
 		],
 	},
 	{
@@ -1210,72 +1210,72 @@ stub.RunScript(d, "OnTextChanged", true)`,
 		title: 'Colour schemes on the guide window: Dusk (default), Night, Graphite, EllesmereUI; and your own ground, accent and brightness',
 		panels: [
 			{ roots: GUIDE, script: `${TABS}; uistub.setStep(4)` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.scheme", "night"); ${TABS}; uistub.setStep(4)` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.scheme", "graphite"); ${TABS}; uistub.setStep(4)` },
-			{ eui: true, roots: GUIDE, script: `stub.setAccent(0.6, 0.48, 1); Polestar.Set("ui.scheme", "ellesmere"); ${TABS}; uistub.setStep(4)` },
-			{ roots: GUIDE, script: `Polestar.Set("ui.bgColor", { 0.08, 0.2, 0.2 }); Polestar.Set("ui.accent", { 0.45, 0.85, 0.8 }); Polestar.Set("ui.brightness", 0.3); ${TABS}; uistub.setStep(4)` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.scheme", "night"); ${TABS}; uistub.setStep(4)` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.scheme", "graphite"); ${TABS}; uistub.setStep(4)` },
+			{ eui: true, roots: GUIDE, script: `stub.setAccent(0.6, 0.48, 1); Northstar.Set("ui.scheme", "ellesmere"); ${TABS}; uistub.setStep(4)` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.bgColor", { 0.08, 0.2, 0.2 }); Northstar.Set("ui.accent", { 0.45, 0.85, 0.8 }); Northstar.Set("ui.brightness", 0.3); ${TABS}; uistub.setStep(4)` },
 		],
 	},
 	{
 		file: 'schemes-options.svg',
 		title: 'Options > Appearance in each scheme: Dusk, Night, Graphite, and EllesmereUI installed (its scheme, follow toggles, its font offered)',
 		panels: [
-			{ roots: OPTIONS, script: 'Polestar.UI.ShowOptions("appearance")' },
-			{ roots: OPTIONS, script: 'Polestar.Set("ui.scheme", "night"); Polestar.UI.ShowOptions("appearance")' },
-			{ roots: OPTIONS, script: 'Polestar.Set("ui.scheme", "graphite"); Polestar.UI.ShowOptions("appearance")' },
-			{ eui: true, roots: OPTIONS, script: 'stub.setAccent(0.6, 0.48, 1); Polestar.Set("ui.scheme", "ellesmere"); Polestar.UI.ShowOptions("appearance")' },
+			{ roots: OPTIONS, script: 'Northstar.UI.ShowOptions("appearance")' },
+			{ roots: OPTIONS, script: 'Northstar.Set("ui.scheme", "night"); Northstar.UI.ShowOptions("appearance")' },
+			{ roots: OPTIONS, script: 'Northstar.Set("ui.scheme", "graphite"); Northstar.UI.ShowOptions("appearance")' },
+			{ eui: true, roots: OPTIONS, script: 'stub.setAccent(0.6, 0.48, 1); Northstar.Set("ui.scheme", "ellesmere"); Northstar.UI.ShowOptions("appearance")' },
 		],
 	},
 	{
 		file: 'schemes-picker.svg',
 		title: 'The guide menu in Dusk (default), Night, Graphite, and EllesmereUI with its purple accent',
 		panels: [
-			{ roots: PICKER, script: pickerScene(`${TABS}; Polestar.Set("ui.pickerFaction", "All"); Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/alliance/02-westfall")`) },
-			{ roots: PICKER, script: pickerScene(`Polestar.Set("ui.scheme", "night"); ${TABS}; Polestar.Set("ui.pickerFaction", "All"); Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/alliance/02-westfall")`) },
-			{ roots: PICKER, script: pickerScene(`Polestar.Set("ui.scheme", "graphite"); ${TABS}; Polestar.Set("ui.pickerFaction", "All"); Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/alliance/02-westfall")`) },
-			{ eui: true, roots: PICKER, script: pickerScene(`stub.setAccent(0.6, 0.48, 1); Polestar.Set("ui.scheme", "ellesmere"); ${TABS}; Polestar.Set("ui.pickerFaction", "All"); Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/alliance/02-westfall")`) },
+			{ roots: PICKER, script: pickerScene(`${TABS}; Northstar.Set("ui.pickerFaction", "All"); Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Leveling"); Northstar.UI.Picker.Select("forever/alliance/02-westfall")`) },
+			{ roots: PICKER, script: pickerScene(`Northstar.Set("ui.scheme", "night"); ${TABS}; Northstar.Set("ui.pickerFaction", "All"); Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Leveling"); Northstar.UI.Picker.Select("forever/alliance/02-westfall")`) },
+			{ roots: PICKER, script: pickerScene(`Northstar.Set("ui.scheme", "graphite"); ${TABS}; Northstar.Set("ui.pickerFaction", "All"); Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Leveling"); Northstar.UI.Picker.Select("forever/alliance/02-westfall")`) },
+			{ eui: true, roots: PICKER, script: pickerScene(`stub.setAccent(0.6, 0.48, 1); Northstar.Set("ui.scheme", "ellesmere"); ${TABS}; Northstar.Set("ui.pickerFaction", "All"); Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Leveling"); Northstar.UI.Picker.Select("forever/alliance/02-westfall")`) },
 		],
 	},
 	{
 		file: 'options.svg',
 		title: 'Options: Guide (Window, Arrow & routes, Automation)',
 		panels: [
-			{ roots: OPTIONS, script: 'Polestar.UI.ShowOptions("guide")' },
-			{ roots: OPTIONS, script: 'Polestar.UI.ShowOptions("guide"); Polestar.UI.Options.Select("guide", "Arrow & routes")' },
-			{ roots: OPTIONS, script: 'Polestar.UI.ShowOptions("guide"); Polestar.UI.Options.Select("guide", "Automation")' },
+			{ roots: OPTIONS, script: 'Northstar.UI.ShowOptions("guide")' },
+			{ roots: OPTIONS, script: 'Northstar.UI.ShowOptions("guide"); Northstar.UI.Options.Select("guide", "Arrow & routes")' },
+			{ roots: OPTIONS, script: 'Northstar.UI.ShowOptions("guide"); Northstar.UI.Options.Select("guide", "Automation")' },
 		],
 	},
 	{
 		file: 'skins-options.svg',
 		title: 'Skins: Options in Halo and Hearth (Guide, Window; Appearance, Windows with the Skin setting)',
 		panels: [
-			{ roots: OPTIONS, script: 'Polestar.Set("ui.skin", "halo"); Polestar.UI.ShowOptions("guide")' },
-			{ roots: OPTIONS, script: 'Polestar.Set("ui.skin", "halo"); Polestar.UI.ShowOptions("appearance"); Polestar.UI.Options.Select("appearance", "Windows")' },
-			{ roots: OPTIONS, script: 'Polestar.Set("ui.skin", "hearth"); Polestar.UI.ShowOptions("guide")' },
-			{ roots: OPTIONS, script: 'Polestar.Set("ui.skin", "hearth"); Polestar.UI.ShowOptions("appearance"); Polestar.UI.Options.Select("appearance", "Windows")' },
+			{ roots: OPTIONS, script: 'Northstar.Set("ui.skin", "halo"); Northstar.UI.ShowOptions("guide")' },
+			{ roots: OPTIONS, script: 'Northstar.Set("ui.skin", "halo"); Northstar.UI.ShowOptions("appearance"); Northstar.UI.Options.Select("appearance", "Windows")' },
+			{ roots: OPTIONS, script: 'Northstar.Set("ui.skin", "hearth"); Northstar.UI.ShowOptions("guide")' },
+			{ roots: OPTIONS, script: 'Northstar.Set("ui.skin", "hearth"); Northstar.UI.ShowOptions("appearance"); Northstar.UI.Options.Select("appearance", "Windows")' },
 		],
 	},
 	{
 		file: 'gamepad-guide.svg',
 		title: 'Focus mode on the guide window (Browse the guide with the gamepad): the first open goal; down a line on a hub step; up into the navigator with PlayStation buttons',
 		panels: [
-			{ roots: PAD_GUIDE, before: PAD(), script: `${TABS}; Polestar.Gamepad.StartFocus()` },
-			{ roots: PAD_GUIDE, before: PAD(), script: `${TABS}; uistub.setStep(4); Polestar.Gamepad.StartFocus(); Polestar.Gamepad.Dispatch("PADDDOWN")` },
-			{ roots: PAD_GUIDE, before: PAD('Shapes'), script: `${TABS}; Polestar.Gamepad.StartFocus(); Polestar.Gamepad.Dispatch("PADDUP")` },
+			{ roots: PAD_GUIDE, before: PAD(), script: `${TABS}; Northstar.Gamepad.StartFocus()` },
+			{ roots: PAD_GUIDE, before: PAD(), script: `${TABS}; uistub.setStep(4); Northstar.Gamepad.StartFocus(); Northstar.Gamepad.Dispatch("PADDDOWN")` },
+			{ roots: PAD_GUIDE, before: PAD('Shapes'), script: `${TABS}; Northstar.Gamepad.StartFocus(); Northstar.Gamepad.Dispatch("PADDUP")` },
 		],
 	},
 	{
 		file: 'gamepad-options.svg',
 		title: 'Options with a gamepad: the Gamepad page (a dropdown focused, D-pad left / right steps it), a binding row on its Key bindings tab (chips for buttons, chords and keys), and a slider with PlayStation buttons; B sits on the close button',
 		panels: [
-			{ roots: PAD_OPTIONS, before: PAD(), script: 'Polestar.UI.ShowOptions("gamepad"); stub.advance(0.3)' },
-			{ roots: PAD_OPTIONS, before: PAD(), script: 'Polestar.UI.ShowOptions("gamepad"); stub.advance(0.3); Polestar.Gamepad.Dispatch("PADRSHOULDER"); stub.advance(0.3); Polestar.Gamepad.Dispatch("PADDDOWN")' },
+			{ roots: PAD_OPTIONS, before: PAD(), script: 'Northstar.UI.ShowOptions("gamepad"); stub.advance(0.3)' },
+			{ roots: PAD_OPTIONS, before: PAD(), script: 'Northstar.UI.ShowOptions("gamepad"); stub.advance(0.3); Northstar.Gamepad.Dispatch("PADRSHOULDER"); stub.advance(0.3); Northstar.Gamepad.Dispatch("PADDDOWN")' },
 			{
 				roots: PAD_OPTIONS, before: PAD('Shapes'),
-				script: `Polestar.UI.ShowOptions("guide"); stub.advance(0.3)
-local G = Polestar.Gamepad
+				script: `Northstar.UI.ShowOptions("guide"); stub.advance(0.3)
+local G = Northstar.Gamepad
 for _ = 1, 30 do
-	local f = G.Focused(PolestarOptions)
+	local f = G.Focused(NorthstarOptions)
 	if f and f.psStep then break end
 	G.Dispatch("PADDDOWN")
 end`,
@@ -1286,18 +1286,18 @@ end`,
 		file: 'gamepad-hub.svg',
 		title: 'The guide menu with a gamepad: the focus starts on the selected guide (X loads it, LB / RB step the sections); a dropdown\'s choices in the shared menu, the current one focused',
 		panels: [
-			{ roots: [...PICKER, ...PAD_UI], before: PAD(), script: pickerScene(`${TABS}; Polestar.UI.ShowPicker(); Polestar.UI.Picker.Select(uistub.elwynn); stub.advance(0.3)`) },
-			{ roots: [...PAD_OPTIONS, 'PolestarMenu'], before: PAD(), script: 'Polestar.UI.ShowOptions("gamepad"); stub.advance(0.3); Polestar.Gamepad.Dispatch("PAD1")' },
+			{ roots: [...PICKER, ...PAD_UI], before: PAD(), script: pickerScene(`${TABS}; Northstar.UI.ShowPicker(); Northstar.UI.Picker.Select(uistub.elwynn); stub.advance(0.3)`) },
+			{ roots: [...PAD_OPTIONS, 'NorthstarMenu'], before: PAD(), script: 'Northstar.UI.ShowOptions("gamepad"); stub.advance(0.3); Northstar.Gamepad.Dispatch("PAD1")' },
 		],
 	},
 	{
 		file: 'options-appearance.svg',
 		title: 'Options: Appearance (Colour & type, Windows, Arrow); then a look of your own: an accent border 2px thick, no band, no shadow, your own arrow colours',
 		panels: [
-			{ roots: OPTIONS, script: 'Polestar.UI.ShowOptions("appearance")' },
-			{ roots: OPTIONS, script: 'Polestar.UI.ShowOptions("appearance"); Polestar.UI.Options.Select("appearance", "Windows")' },
-			{ roots: OPTIONS, script: 'Polestar.UI.ShowOptions("appearance"); Polestar.UI.Options.Select("appearance", "Arrow")' },
-			{ roots: OPTIONS, script: `${CUSTOM_LOOK}; Polestar.UI.ShowOptions("appearance"); Polestar.UI.Options.Select("appearance", "Windows")` },
+			{ roots: OPTIONS, script: 'Northstar.UI.ShowOptions("appearance")' },
+			{ roots: OPTIONS, script: 'Northstar.UI.ShowOptions("appearance"); Northstar.UI.Options.Select("appearance", "Windows")' },
+			{ roots: OPTIONS, script: 'Northstar.UI.ShowOptions("appearance"); Northstar.UI.Options.Select("appearance", "Arrow")' },
+			{ roots: OPTIONS, script: `${CUSTOM_LOOK}; Northstar.UI.ShowOptions("appearance"); Northstar.UI.Options.Select("appearance", "Windows")` },
 			{ roots: GUIDE, script: `${CUSTOM_LOOK}; ${TABS}; uistub.setStep(4)` },
 		],
 	},
@@ -1305,30 +1305,30 @@ end`,
 		file: 'options-modules.svg',
 		title: 'Options: pages the modules fill: Map, Questing, Discovery, Quality of Life',
 		panels: [
-			{ files: MODULE_FILES, roots: OPTIONS, script: 'Polestar.UI.ShowOptions("map")' },
-			{ files: MODULE_FILES, roots: OPTIONS, script: 'Polestar.UI.ShowOptions("questing")' },
-			{ files: MODULE_FILES, roots: OPTIONS, script: 'Polestar.UI.ShowOptions("discovery"); Polestar.UI.Options.Select("discovery", "Rares")' },
-			{ files: MODULE_FILES, roots: OPTIONS, script: 'Polestar.UI.ShowOptions("qualityoflife")' },
+			{ files: MODULE_FILES, roots: OPTIONS, script: 'Northstar.UI.ShowOptions("map")' },
+			{ files: MODULE_FILES, roots: OPTIONS, script: 'Northstar.UI.ShowOptions("questing")' },
+			{ files: MODULE_FILES, roots: OPTIONS, script: 'Northstar.UI.ShowOptions("discovery"); Northstar.UI.Options.Select("discovery", "Rares")' },
+			{ files: MODULE_FILES, roots: OPTIONS, script: 'Northstar.UI.ShowOptions("qualityoflife")' },
 		],
 	},
 	{
 		file: 'options-more.svg',
 		title: 'Options: Recorder and About, at the foot of the list',
 		panels: [
-			{ roots: OPTIONS, before: RECORDER, script: 'Polestar.UI.ShowOptions("recorder")' },
-			{ roots: OPTIONS, script: 'Polestar.UI.ShowOptions("about")' },
+			{ roots: OPTIONS, before: RECORDER, script: 'Northstar.UI.ShowOptions("recorder")' },
+			{ roots: OPTIONS, script: 'Northstar.UI.ShowOptions("about")' },
 		],
 	},
 	{
 		file: 'recorder-window.svg',
-		title: 'The Recorder window (/psrec ui) in Polestar\'s look: a trail running on the next spot of the tour, one spot done, this session\'s trails',
+		title: 'The Recorder window (/psrec ui) in Northstar\'s look: a trail running on the next spot of the tour, one spot done, this session\'s trails',
 		panels: [
-			{ roots: ['PolestarRecorderPanel'], addons: ['Polestar_Recorder'], before: RECORDER_PLAYER, script: `PolestarRecorder_Command("on")
-				PolestarRecorder_Command("ui")
-				PolestarRecorder_Command("trail on #11 Teldrassil Darnassus gate")
+			{ roots: ['NorthstarRecorderPanel'], addons: ['Northstar_Recorder'], before: RECORDER_PLAYER, script: `NorthstarRecorder_Command("on")
+				NorthstarRecorder_Command("ui")
+				NorthstarRecorder_Command("trail on #11 Teldrassil Darnassus gate")
 				stub.advance(95)
-				PolestarRecorder_Command("trail off")
-				PolestarRecorder_Command("trail toggle")
+				NorthstarRecorder_Command("trail off")
+				NorthstarRecorder_Command("trail toggle")
 				stub.advance(42)` },
 		],
 	},
@@ -1336,34 +1336,34 @@ end`,
 		file: 'options-thanks.svg',
 		title: 'Options: Guiding Stars, with sample supporters; "Special thanks to" in the header leads here',
 		panels: [
-			{ roots: OPTIONS, script: `Polestar.Credits.supporters = { "Sample Supporter", "Another Supporter", "Third Supporter", "Fourth", "Fifth", "Sixth" }
-				Polestar.UI.ShowOptions("thanks")` },
+			{ roots: OPTIONS, script: `Northstar.Credits.supporters = { "Sample Supporter", "Another Supporter", "Third Supporter", "Fourth", "Fifth", "Sixth" }
+				Northstar.UI.ShowOptions("thanks")` },
 		],
 	},
 	{
 		file: 'options-integrations.svg',
 		title: 'Options: Integrations: Questie\'s section while Questie is loaded; with no supported addon, one line says so',
 		panels: [
-			{ roots: OPTIONS, script: 'stub.addonsLoaded.Questie = true; Polestar.UI.ShowOptions("integrations")' },
-			{ roots: OPTIONS, script: 'Polestar.UI.ShowOptions("integrations")' },
+			{ roots: OPTIONS, script: 'stub.addonsLoaded.Questie = true; Northstar.UI.ShowOptions("integrations")' },
+			{ roots: OPTIONS, script: 'Northstar.UI.ShowOptions("integrations")' },
 		],
 	},
 	{
 		file: 'options-packs.svg',
 		title: 'Options: Community guides: ours and a community addon on, one with problems and its report, one turned off, one too new; where suggestions come from',
 		panels: [
-			{ roots: OPTIONS, before: PACKS_ADDONS, script: `${PACKS_SCENE}; Polestar.UI.ShowOptions("guidepacks")` },
-			{ roots: OPTIONS, before: PACKS_ADDONS, script: `${PACKS_SCENE}; Polestar.UI.ShowOptions("guidepacks")
-				for _, r in ipairs(Polestar.UI.Packs.view.rows) do if r:IsShown() and r.psRecord.id == "ann" then r.ShowList:Click(); r.CopyReport:Click() end end` },
+			{ roots: OPTIONS, before: PACKS_ADDONS, script: `${PACKS_SCENE}; Northstar.UI.ShowOptions("guidepacks")` },
+			{ roots: OPTIONS, before: PACKS_ADDONS, script: `${PACKS_SCENE}; Northstar.UI.ShowOptions("guidepacks")
+				for _, r in ipairs(Northstar.UI.Packs.view.rows) do if r:IsShown() and r.psRecord.id == "ann" then r.ShowList:Click(); r.CopyReport:Click() end end` },
 		],
 	},
 	{
 		file: 'options-search.svg',
 		title: 'Options: a module\'s registered controls, search across pages, and a crowded sidebar in the game font that scrolls clear of the version',
 		panels: [
-			{ roots: OPTIONS, script: `${REGISTERED}; Polestar.UI.ShowOptions("questing")` },
-			{ roots: OPTIONS, script: `${REGISTERED}; Polestar.UI.ShowOptions(); local box = Polestar.UI.Options.frame.Search; box:SetText("arrow"); stub.RunScript(box, "OnTextChanged", true)` },
-			{ files: MODULE_FILES, roots: OPTIONS, script: `${MANY_PAGES}; Polestar.UI.ShowOptions("about")` },
+			{ roots: OPTIONS, script: `${REGISTERED}; Northstar.UI.ShowOptions("questing")` },
+			{ roots: OPTIONS, script: `${REGISTERED}; Northstar.UI.ShowOptions(); local box = Northstar.UI.Options.frame.Search; box:SetText("arrow"); stub.RunScript(box, "OnTextChanged", true)` },
+			{ files: MODULE_FILES, roots: OPTIONS, script: `${MANY_PAGES}; Northstar.UI.ShowOptions("about")` },
 		],
 	},
 	{
@@ -1371,56 +1371,56 @@ end`,
 		title: 'Skins: the welcome, the journey and the route choice in Halo, then in Hearth',
 		backdrop: 'terrain',
 		panels: [
-			{ roots: ['PolestarWelcome'], script: 'Polestar.Set("ui.skin", "halo"); Polestar.UI.Welcome.Show("welcome")' },
-			{ roots: GUIDE, script: `Polestar.Set("ui.skin", "halo"); ${JOURNEY}` },
-			{ roots: ROUTE, script: `Polestar.Set("ui.skin", "halo"); ${UNDEAD_CHOICE}` },
-			{ roots: ['PolestarWelcome'], script: 'Polestar.Set("ui.skin", "hearth"); Polestar.UI.Welcome.Show("welcome")' },
-			{ roots: GUIDE, script: `Polestar.Set("ui.skin", "hearth"); ${JOURNEY}` },
-			{ roots: ROUTE, script: `Polestar.Set("ui.skin", "hearth"); ${UNDEAD_CHOICE}` },
+			{ roots: ['NorthstarWelcome'], script: 'Northstar.Set("ui.skin", "halo"); Northstar.UI.Welcome.Show("welcome")' },
+			{ roots: GUIDE, script: `Northstar.Set("ui.skin", "halo"); ${JOURNEY}` },
+			{ roots: ROUTE, script: `Northstar.Set("ui.skin", "halo"); ${UNDEAD_CHOICE}` },
+			{ roots: ['NorthstarWelcome'], script: 'Northstar.Set("ui.skin", "hearth"); Northstar.UI.Welcome.Show("welcome")' },
+			{ roots: GUIDE, script: `Northstar.Set("ui.skin", "hearth"); ${JOURNEY}` },
+			{ roots: ROUTE, script: `Northstar.Set("ui.skin", "hearth"); ${UNDEAD_CHOICE}` },
 		],
 	},
 	{
 		file: 'skins-dungeons.svg',
 		title: 'Skins: the dungeon journal in Halo and Hearth',
 		panels: [
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('Polestar.Set("ui.skin", "halo"); Polestar.Dungeons.Open("wailing-caverns")') },
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('Polestar.Set("ui.skin", "hearth"); Polestar.Dungeons.Open("wailing-caverns")') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('Northstar.Set("ui.skin", "halo"); Northstar.Dungeons.Open("wailing-caverns")') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('Northstar.Set("ui.skin", "hearth"); Northstar.Dungeons.Open("wailing-caverns")') },
 		],
 	},
 	{
 		file: 'skins-picker.svg',
 		title: 'Skins: the guide menu in Halo and Hearth',
 		panels: [
-			{ roots: PICKER, script: pickerScene(`Polestar.Set("ui.skin", "halo"); ${TABS}; Polestar.UI.ShowPicker(); Polestar.UI.Picker.Select(uistub.elwynn)`) },
-			{ roots: PICKER, script: pickerScene(`Polestar.Set("ui.skin", "hearth"); ${TABS}; Polestar.UI.ShowPicker(); Polestar.UI.Picker.Select(uistub.elwynn)`) },
+			{ roots: PICKER, script: pickerScene(`Northstar.Set("ui.skin", "halo"); ${TABS}; Northstar.UI.ShowPicker(); Northstar.UI.Picker.Select(uistub.elwynn)`) },
+			{ roots: PICKER, script: pickerScene(`Northstar.Set("ui.skin", "hearth"); ${TABS}; Northstar.UI.ShowPicker(); Northstar.UI.Picker.Select(uistub.elwynn)`) },
 		],
 	},
 	{
 		file: 'skins-new.svg',
 		title: 'Skins: the welcome\'s Route style page, Options\' Community guides, the gamepad\'s focus and hints, and the report window, in Halo and Hearth',
 		panels: ['halo', 'hearth'].flatMap((k) => [
-			{ roots: ['PolestarWelcome'], script: `Polestar.Set("ui.skin", "${k}"); Polestar.UI.Welcome.Show("route")` },
-			{ roots: OPTIONS, before: PACKS_ADDONS, script: `Polestar.Set("ui.skin", "${k}"); ${PACKS_SCENE}; Polestar.UI.ShowOptions("guidepacks")` },
-			{ roots: PAD_OPTIONS, before: PAD(), script: `Polestar.Set("ui.skin", "${k}"); Polestar.UI.ShowOptions("gamepad"); stub.advance(0.3)` },
-			{ roots: ['PolestarReport'], script: `Polestar.Set("ui.skin", "${k}"); ${TABS}; Polestar.UI.ShowReport()` },
+			{ roots: ['NorthstarWelcome'], script: `Northstar.Set("ui.skin", "${k}"); Northstar.UI.Welcome.Show("route")` },
+			{ roots: OPTIONS, before: PACKS_ADDONS, script: `Northstar.Set("ui.skin", "${k}"); ${PACKS_SCENE}; Northstar.UI.ShowOptions("guidepacks")` },
+			{ roots: PAD_OPTIONS, before: PAD(), script: `Northstar.Set("ui.skin", "${k}"); Northstar.UI.ShowOptions("gamepad"); stub.advance(0.3)` },
+			{ roots: ['NorthstarReport'], script: `Northstar.Set("ui.skin", "${k}"); ${TABS}; Northstar.UI.ShowReport()` },
 		]),
 	},
 	// The game's looks draw the client's own art: rendered only with
-	// POLESTAR_CLIENT_ART (local: true), so it never lands in docs/preview.
+	// NORTHSTAR_CLIENT_ART (local: true), so it never lands in docs/preview.
 	...['forever', 'blizzard', 'classic'].map((k) => ({
 		file: `skins-game-${k}.svg`,
 		title: `Skins: ${k}: the guide window (a hub step, the menu), Options (Guide, Appearance, Community guides, Gamepad), the welcome's Route style page and the report window`,
 		backdrop: 'terrain',
 		local: true,
 		panels: [
-			{ roots: GUIDE, script: `Polestar.Set("ui.skin", "${k}"); ${TABS}; uistub.setStep(4)` },
-			{ roots: [...GUIDE, 'PolestarMenu'], script: `Polestar.Set("ui.skin", "${k}"); ${TABS}; stub.RunScript(Polestar.UI.GuideFrame.menuButton, "OnClick", "LeftButton")` },
-			{ roots: OPTIONS, script: `Polestar.Set("ui.skin", "${k}"); Polestar.UI.ShowOptions("guide")` },
-			{ roots: OPTIONS, script: `Polestar.Set("ui.skin", "${k}"); Polestar.UI.ShowOptions("appearance"); Polestar.UI.Options.Select("appearance", "Windows")` },
-			{ roots: OPTIONS, before: PACKS_ADDONS, script: `Polestar.Set("ui.skin", "${k}"); ${PACKS_SCENE}; Polestar.UI.ShowOptions("guidepacks")` },
-			{ roots: PAD_OPTIONS, before: PAD(), script: `Polestar.Set("ui.skin", "${k}"); Polestar.UI.ShowOptions("gamepad"); stub.advance(0.3)` },
-			{ roots: ['PolestarWelcome'], script: `Polestar.Set("ui.skin", "${k}"); Polestar.UI.Welcome.Show("route")` },
-			{ roots: ['PolestarReport'], script: `Polestar.Set("ui.skin", "${k}"); ${TABS}; Polestar.UI.ShowReport()` },
+			{ roots: GUIDE, script: `Northstar.Set("ui.skin", "${k}"); ${TABS}; uistub.setStep(4)` },
+			{ roots: [...GUIDE, 'NorthstarMenu'], script: `Northstar.Set("ui.skin", "${k}"); ${TABS}; stub.RunScript(Northstar.UI.GuideFrame.menuButton, "OnClick", "LeftButton")` },
+			{ roots: OPTIONS, script: `Northstar.Set("ui.skin", "${k}"); Northstar.UI.ShowOptions("guide")` },
+			{ roots: OPTIONS, script: `Northstar.Set("ui.skin", "${k}"); Northstar.UI.ShowOptions("appearance"); Northstar.UI.Options.Select("appearance", "Windows")` },
+			{ roots: OPTIONS, before: PACKS_ADDONS, script: `Northstar.Set("ui.skin", "${k}"); ${PACKS_SCENE}; Northstar.UI.ShowOptions("guidepacks")` },
+			{ roots: PAD_OPTIONS, before: PAD(), script: `Northstar.Set("ui.skin", "${k}"); Northstar.UI.ShowOptions("gamepad"); stub.advance(0.3)` },
+			{ roots: ['NorthstarWelcome'], script: `Northstar.Set("ui.skin", "${k}"); Northstar.UI.Welcome.Show("route")` },
+			{ roots: ['NorthstarReport'], script: `Northstar.Set("ui.skin", "${k}"); ${TABS}; Northstar.UI.ShowReport()` },
 		],
 	})),
 	{
@@ -1428,7 +1428,7 @@ end`,
 		title: 'Guide menu: Elwynn Forest selected for a level 4 Human at 1,800 of 2,100 XP, its levels chip hovered: the XP its turn-ins and kills give, a bar from level 4 into 5, what was counted; the same in the Halo skin, the Graphite scheme and an accent of your own; the guide set to start at 6: level 6 recommended, the sums from there',
 		panels: [
 			{ levels: true, roots: PICKER, script: pickerScene(`${TABS}; ${LEVELS}`) },
-			{ levels: true, roots: PICKER, script: pickerScene(`Polestar.Set("ui.skin", "halo"); Polestar.Set("ui.scheme", "graphite"); Polestar.Set("ui.accent", { 0.36, 0.78, 0.62 }); ${TABS}; ${LEVELS}`) },
+			{ levels: true, roots: PICKER, script: pickerScene(`Northstar.Set("ui.skin", "halo"); Northstar.Set("ui.scheme", "graphite"); Northstar.Set("ui.accent", { 0.36, 0.78, 0.62 }); ${TABS}; ${LEVELS}`) },
 			{ levels: true, roots: PICKER, script: pickerScene(`uistub.guides["forever/alliance/human/01-elwynn-forest"].minLevel = 6; ${TABS}; ${LEVELS}`) },
 		],
 	},
@@ -1438,12 +1438,12 @@ end`,
 		panels: [
 			{
 				roots: PICKER,
-				script: pickerScene(`${TABS}; Polestar.UI.ShowPicker(); Polestar.UI.Picker.Select(uistub.elwynn)`),
+				script: pickerScene(`${TABS}; Northstar.UI.ShowPicker(); Northstar.UI.Picker.Select(uistub.elwynn)`),
 			},
 			{
 				roots: PICKER,
-				script: pickerScene(`${TABS}; Polestar.Set("ui.pickerFaction", "All"); Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Leveling")
-Polestar.UI.Picker.Select("forever/alliance/02-westfall")`),
+				script: pickerScene(`${TABS}; Northstar.Set("ui.pickerFaction", "All"); Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Leveling")
+Northstar.UI.Picker.Select("forever/alliance/02-westfall")`),
 			},
 		],
 	},
@@ -1454,7 +1454,7 @@ Polestar.UI.Picker.Select("forever/alliance/02-westfall")`),
 			{
 				roots: PICKER,
 				before: PACKS_ADDONS,
-				script: `${PACKS_PICKER}; Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("pack:joe"); Polestar.UI.Picker.Select("joe/westfall")`,
+				script: `${PACKS_PICKER}; Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("pack:joe"); Northstar.UI.Picker.Select("joe/westfall")`,
 			},
 		],
 	},
@@ -1464,12 +1464,12 @@ Polestar.UI.Picker.Select("forever/alliance/02-westfall")`),
 		panels: [
 			{
 				roots: PICKER,
-				script: pickerScene(`${TABS}; Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetView("current"); Polestar.UI.Picker.Select(uistub.tailoring)`),
+				script: pickerScene(`${TABS}; Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetView("current"); Northstar.UI.Picker.Select(uistub.tailoring)`),
 			},
 			{
 				roots: PICKER,
-				script: pickerScene(`${TABS}; Polestar.CharState().ui = { recentGuides = { "forever/alliance/02-westfall", uistub.elwynn, "forever/alliance/dwarf-gnome/01-dun-morogh", "forever/alliance/nightelf/01-teldrassil" } }
-Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetView("recent"); Polestar.UI.Picker.Select("forever/alliance/02-westfall")`),
+				script: pickerScene(`${TABS}; Northstar.CharState().ui = { recentGuides = { "forever/alliance/02-westfall", uistub.elwynn, "forever/alliance/dwarf-gnome/01-dun-morogh", "forever/alliance/nightelf/01-teldrassil" } }
+Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetView("recent"); Northstar.UI.Picker.Select("forever/alliance/02-westfall")`),
 			},
 		],
 	},
@@ -1479,12 +1479,12 @@ Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetView("recent"); Polestar.UI.Pick
 		panels: [
 			{
 				roots: PICKER,
-				script: pickerScene(`${TABS}; Polestar.CharState().ui = { favoriteGuides = { ["forever/alliance/02-westfall"] = true, ["forever/collectibles/mounts/alliance/horse"] = true } }
-Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Favorites"); Polestar.UI.Picker.Select("forever/alliance/02-westfall")`),
+				script: pickerScene(`${TABS}; Northstar.CharState().ui = { favoriteGuides = { ["forever/alliance/02-westfall"] = true, ["forever/collectibles/mounts/alliance/horse"] = true } }
+Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Favorites"); Northstar.UI.Picker.Select("forever/alliance/02-westfall")`),
 			},
 			{
 				roots: PICKER,
-				script: pickerScene(`${TABS}; Polestar.UI.ShowPicker(); local box = Polestar.UI.Picker.search; box:SetText("elwynn"); stub.RunScript(box, "OnTextChanged", true)`),
+				script: pickerScene(`${TABS}; Northstar.UI.ShowPicker(); local box = Northstar.UI.Picker.search; box:SetText("elwynn"); stub.RunScript(box, "OnTextChanged", true)`),
 			},
 		],
 	},
@@ -1494,13 +1494,13 @@ Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Favorites"); Polestar.
 		panels: [
 			{
 				roots: PICKER,
-				script: pickerScene(`Polestar.Set("ui.pickerFaction", "Horde"); Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Leveling")
-Polestar.UI.Picker.Select("forever/horde/orc-troll/01-durotar")`),
+				script: pickerScene(`Northstar.Set("ui.pickerFaction", "Horde"); Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Leveling")
+Northstar.UI.Picker.Select("forever/horde/orc-troll/01-durotar")`),
 			},
 			{
 				roots: PICKER,
-				script: pickerScene(`uistub.openTabs({ { "forever/horde/04-the-barrens", 13 } }, 1); Polestar.Set("ui.pickerFaction", "Horde"); Polestar.UI.ShowPicker()
-Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/horde/04-the-barrens")`),
+				script: pickerScene(`uistub.openTabs({ { "forever/horde/04-the-barrens", 13 } }, 1); Northstar.Set("ui.pickerFaction", "Horde"); Northstar.UI.ShowPicker()
+Northstar.UI.Picker.SetCategory("Leveling"); Northstar.UI.Picker.Select("forever/horde/04-the-barrens")`),
 			},
 		],
 	},
@@ -1508,47 +1508,47 @@ Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/h
 		file: 'hub.svg',
 		title: 'The hub: sections on the rail (Guides, Lookup, Dungeons, Rares) with Options at its foot; the sidebar holds the wordmark, the search and the section\'s own index on one edge',
 		panels: [
-			{ roots: PICKER, script: pickerScene(`${TABS}; Polestar.Set("ui.pickerFaction", "All"); Polestar.UI.ShowPicker(); Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/alliance/02-westfall")`) },
-			{ codex: true, roots: PICKER, script: lookupScene('Polestar.Lookup.Show("saber")') },
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('Polestar.Dungeons.Open()') },
+			{ roots: PICKER, script: pickerScene(`${TABS}; Northstar.Set("ui.pickerFaction", "All"); Northstar.UI.ShowPicker(); Northstar.UI.Picker.SetCategory("Leveling"); Northstar.UI.Picker.Select("forever/alliance/02-westfall")`) },
+			{ codex: true, roots: PICKER, script: lookupScene('Northstar.Lookup.Show("saber")') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('Northstar.Dungeons.Open()') },
 		],
 	},
 	{
 		file: 'lookup.svg',
 		title: 'Lookup in the hub, over the sample Codex: "saber" with a vendor mount selected; the Winterspring Frostsaber, reputation or a limited vendor, its best source chosen; an empty search: the recent lookups',
 		panels: [
-			{ codex: true, roots: PICKER, script: lookupScene('Polestar.Lookup.Show("saber")') },
-			{ codex: true, roots: PICKER, script: lookupScene('Polestar.Lookup.Show(nil, "mount", 13086); Polestar.UI.Lookup.SelectSource(1)') },
-			{ codex: true, roots: PICKER, script: lookupScene('Polestar.Lookup.Show(nil, "mount", 8631); Polestar.Lookup.Show(nil, "npc", 448); Polestar.Lookup.Show(nil, "mount", 13335); Polestar.UI.Picker.SetQuery("")') },
+			{ codex: true, roots: PICKER, script: lookupScene('Northstar.Lookup.Show("saber")') },
+			{ codex: true, roots: PICKER, script: lookupScene('Northstar.Lookup.Show(nil, "mount", 13086); Northstar.UI.Lookup.SelectSource(1)') },
+			{ codex: true, roots: PICKER, script: lookupScene('Northstar.Lookup.Show(nil, "mount", 8631); Northstar.Lookup.Show(nil, "npc", 448); Northstar.Lookup.Show(nil, "mount", 13335); Northstar.UI.Picker.SetQuery("")') },
 		],
 	},
 	{
 		file: 'lookup-retired.svg',
 		title: 'Lookup: "frostsaber" with the retired Reins of the Frostsaber last, dimmed with its chip; its details for reference, no guide',
 		panels: [
-			{ codex: true, roots: PICKER, script: lookupScene('Polestar.Lookup.Show("frostsaber"); Polestar.UI.Lookup.Select("mount", 12302)') },
+			{ codex: true, roots: PICKER, script: lookupScene('Northstar.Lookup.Show("frostsaber"); Northstar.UI.Lookup.Select("mount", 12302)') },
 		],
 	},
 	{
 		file: 'lookup-drop.svg',
 		title: "Lookup: Deathcharger's Reins for a level 4 character, a rare drop out of reach, saying why",
-		panels: [{ codex: true, roots: PICKER, script: lookupScene('Polestar.Lookup.Show(nil, "mount", 13335); Polestar.UI.Lookup.SelectSource(1)', '') }],
+		panels: [{ codex: true, roots: PICKER, script: lookupScene('Northstar.Lookup.Show(nil, "mount", 13335); Northstar.UI.Lookup.SelectSource(1)', '') }],
 	},
 	{
 		file: 'lookup-missing.svg',
 		title: 'Lookup without the Codex pack: opened; a search only the Codex could answer; a guide still found',
 		panels: [
-			{ roots: PICKER, script: lookupScene('Polestar.UI.ShowLookup()') },
-			{ roots: PICKER, script: lookupScene('Polestar.Lookup.Show("saber")') },
-			{ roots: PICKER, script: lookupScene('Polestar.Lookup.Show("westfall")') },
+			{ roots: PICKER, script: lookupScene('Northstar.UI.ShowLookup()') },
+			{ roots: PICKER, script: lookupScene('Northstar.Lookup.Show("saber")') },
+			{ roots: PICKER, script: lookupScene('Northstar.Lookup.Show("westfall")') },
 		],
 	},
 	{
 		file: 'picker-codex.svg',
 		title: 'Guide search in the hub: the guides that match, then what the Codex holds (a few per kind) and a way into Lookup',
 		panels: [
-			{ codex: true, roots: PICKER, script: pickerScene(lookupScene(`${TABS}; Polestar.UI.ShowPicker(); local box = Polestar.UI.Picker.search; box:SetText("elwynn"); stub.RunScript(box, "OnTextChanged", true)`)) },
-			{ codex: true, roots: PICKER, script: pickerScene(lookupScene(`${TABS}; Polestar.UI.ShowPicker(); local box = Polestar.UI.Picker.search; box:SetText("wol"); stub.RunScript(box, "OnTextChanged", true)`)) },
+			{ codex: true, roots: PICKER, script: pickerScene(lookupScene(`${TABS}; Northstar.UI.ShowPicker(); local box = Northstar.UI.Picker.search; box:SetText("elwynn"); stub.RunScript(box, "OnTextChanged", true)`)) },
+			{ codex: true, roots: PICKER, script: pickerScene(lookupScene(`${TABS}; Northstar.UI.ShowPicker(); local box = Northstar.UI.Picker.search; box:SetText("wol"); stub.RunScript(box, "OnTextChanged", true)`)) },
 		],
 	},
 	{
@@ -1556,7 +1556,7 @@ Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/h
 		title: 'The reward pick under turn-in goals: an upgrade (chevron, gain) and, with nothing better, the best of the choices',
 		panels: [
 			{ roots: GUIDE, script: `${GEAR_SETUP}\n${TABS}; uistub.setStep(4)` },
-			{ roots: GUIDE, script: `${GEAR_SETUP}\nworn[5] = "item:9101"; worn[7] = "item:9103"; worn[10] = "item:9106"; worn[8] = "item:9107"; Polestar.Gear.Invalidate("equipment")\n${TABS}; uistub.setStep(4)` },
+			{ roots: GUIDE, script: `${GEAR_SETUP}\nworn[5] = "item:9101"; worn[7] = "item:9103"; worn[10] = "item:9106"; worn[8] = "item:9107"; Northstar.Gear.Invalidate("equipment")\n${TABS}; uistub.setStep(4)` },
 		],
 	},
 	{
@@ -1564,7 +1564,7 @@ Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/h
 		title: "The game's reward panel: a green arrow on each upgrade, the one to take framed in the accent; with no upgrade, the coin on the one that sells for most",
 		panels: [
 			{ roots: ['QuestInfoRewardsFrame'], files: REWARD_FILES, script: `${GEAR_SETUP}\n${REWARD_PANEL}` },
-			{ roots: ['QuestInfoRewardsFrame'], files: REWARD_FILES, script: `${GEAR_SETUP}\nworn[5] = "item:9101"; worn[7] = "item:9103"; worn[16] = "item:9104"; Polestar.Gear.Invalidate("equipment")\n${REWARD_PANEL}` },
+			{ roots: ['QuestInfoRewardsFrame'], files: REWARD_FILES, script: `${GEAR_SETUP}\nworn[5] = "item:9101"; worn[7] = "item:9103"; worn[16] = "item:9104"; Northstar.Gear.Invalidate("equipment")\n${REWARD_PANEL}` },
 		],
 	},
 	{
@@ -1573,7 +1573,7 @@ Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/h
 		panels: [
 			{ roots: ['StatusTrackingBarManager'], files: REWARD_FILES, script: xpBarScene(7, 0.62) },
 			{ roots: ['StatusTrackingBarManager'], files: REWARD_FILES, script: xpBarScene(10, 0.3) },
-			{ files: MODULE_FILES, roots: OPTIONS, script: 'Polestar.UI.ShowOptions("qualityoflife"); Polestar.UI.Options.Select("qualityoflife", "Trackers")' },
+			{ files: MODULE_FILES, roots: OPTIONS, script: 'Northstar.UI.ShowOptions("qualityoflife"); Northstar.UI.Options.Select("qualityoflife", "Trackers")' },
 		],
 	},
 	{
@@ -1596,9 +1596,9 @@ Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/h
 		file: 'travel.svg',
 		title: 'Travel: the arrow (Arrow scale 160%) on a route into the next zone, its leg captioned ("Go to Westfall"), and the trail dots on the world map from the player to the zone crossing; then the arrow where the game gives no position (the Deeprun Tram)',
 		panels: [
-			questScene(['PolestarNavArrow'], `Polestar.Set("nav.arrowScale", 1.6)\n${TRAVEL}`),
+			questScene(['NorthstarNavArrow'], `Northstar.Set("nav.arrowScale", 1.6)\n${TRAVEL}`),
 			questScene(['WorldMapFrame'], TRAVEL),
-			questScene(['PolestarNavArrow'], `Polestar.Set("nav.arrowScale", 1.6)\n${TRAVEL}\nstub.world.map = nil\nstub.advance(0.2)`),
+			questScene(['NorthstarNavArrow'], `Northstar.Set("nav.arrowScale", 1.6)\n${TRAVEL}\nstub.world.map = nil\nstub.advance(0.2)`),
 		],
 	},
 	{
@@ -1613,26 +1613,26 @@ Polestar.UI.Picker.SetCategory("Leveling"); Polestar.UI.Picker.Select("forever/h
 		file: 'dungeons.svg',
 		title: 'Dungeons in the hub: Home for a level 20 Tauren (the dungeons for your level, faction filter Horde); Wailing Caverns, its Quests tab',
 		panels: [
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('Polestar.Dungeons.Open()') },
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('Polestar.Dungeons.Open("wailing-caverns")') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('Northstar.Dungeons.Open()') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('Northstar.Dungeons.Open("wailing-caverns")') },
 		],
 	},
 	{
 		file: 'dungeons-xp.svg',
 		title: 'Wailing Caverns: the levels its quests are worth, the chip beside the name hovered: at 19,800 of 23,200 XP into level 20 they carry the Tauren into 21; at 27 the lowest gives a tenth of its XP',
 		panels: [
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('uistub.player.xp, uistub.player.xpMax = 19800, 23200; Polestar.Dungeons.Open("wailing-caverns"); Polestar.UI.LevelTip.Show(select(3, DS.Frames()).XP)') },
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('uistub.player.level, uistub.player.xp, uistub.player.xpMax = 27, 9000, 38900; UnitLevel = function() return 27 end; Polestar.Dungeons.Open("wailing-caverns"); Polestar.UI.LevelTip.Show(select(3, DS.Frames()).XP)') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('uistub.player.xp, uistub.player.xpMax = 19800, 23200; Northstar.Dungeons.Open("wailing-caverns"); Northstar.UI.LevelTip.Show(select(3, DS.Frames()).XP)') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('uistub.player.level, uistub.player.xp, uistub.player.xpMax = 27, 9000, 38900; UnitLevel = function() return 27 end; Northstar.Dungeons.Open("wailing-caverns"); Northstar.UI.LevelTip.Show(select(3, DS.Frames()).XP)') },
 		],
 	},
 	{
 		file: 'dungeons-chain.svg',
 		title: 'Wailing Caverns, Leaders of the Fang with Nara Wildmane before it still to do: the chain chip after its rewards, hovered (the quest and its chain, 3,000 XP); at 27, Nara Wildmane in the chain hovered: its levels, state, start and end, rewards and its XP at your level',
 		panels: [
-			{ dungeons: true, roots: PICKER, script: dungeonsScene(`done[1490] = nil; Polestar.Dungeons.Open("wailing-caverns"); DS.ShowQuest(914)
+			{ dungeons: true, roots: PICKER, script: dungeonsScene(`done[1490] = nil; Northstar.Dungeons.Open("wailing-caverns"); DS.ShowQuest(914)
 local b; for _, x in ipairs(DS.blocks) do if x:IsShown() and x.psQuest == 914 then b = x end end
-Polestar.UI.LevelTip.Show(b.ChainXP)`) },
-			{ dungeons: true, roots: [...PICKER, 'GameTooltip'], script: dungeonsScene(`preview.enableTooltips(); uistub.player.level = 27; UnitLevel = function() return 27 end; Polestar.Dungeons.Open("wailing-caverns"); DS.ShowQuest(914)
+Northstar.UI.LevelTip.Show(b.ChainXP)`) },
+			{ dungeons: true, roots: [...PICKER, 'GameTooltip'], script: dungeonsScene(`preview.enableTooltips(); uistub.player.level = 27; UnitLevel = function() return 27 end; Northstar.Dungeons.Open("wailing-caverns"); DS.ShowQuest(914)
 local b; for _, x in ipairs(DS.blocks) do if x:IsShown() and x.psQuest == 914 then b = x end end
 local r = b.Chains[1]; r:GetScript("OnEnter")(r)`) },
 		],
@@ -1641,41 +1641,41 @@ local r = b.Chains[1]; r:GetScript("OnEnter")(r)`) },
 		file: 'dungeons-bosses.svg',
 		title: 'Wailing Caverns: the Bosses tab (kill order and the quests each serves) and the Map tab (the entrance and the quest givers near it); All dungeons with the filter on All',
 		panels: [
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('Polestar.Dungeons.Open("wailing-caverns"); DS.SetTab("bosses")') },
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('Polestar.Dungeons.Open("wailing-caverns"); DS.SetTab("map")') },
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('Polestar.Dungeons.Open(); DS.SetFaction("All"); DS.SetBand("all")') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('Northstar.Dungeons.Open("wailing-caverns"); DS.SetTab("bosses")') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('Northstar.Dungeons.Open("wailing-caverns"); DS.SetTab("map")') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('Northstar.Dungeons.Open(); DS.SetFaction("All"); DS.SetBand("all")') },
 		],
 	},
 	{
 		file: 'dungeons-attune.svg',
 		title: 'The Attunement tab: Wailing Caverns\' attunement with the first quest done and the second in the log, and "Guide me through it"; the Deadmines\' keys with the filter on All',
 		panels: [
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('done[90001] = true; log[90002] = true; Polestar.Dungeons.Open("wailing-caverns"); DS.SetTab("attune")') },
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('DS.SetFaction("All"); Polestar.Dungeons.Open("deadmines"); DS.SetTab("attune")') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('done[90001] = true; log[90002] = true; Northstar.Dungeons.Open("wailing-caverns"); DS.SetTab("attune")') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('DS.SetFaction("All"); Northstar.Dungeons.Open("deadmines"); DS.SetTab("attune")') },
 		],
 	},
 	{
 		file: 'dungeons-small.svg',
 		title: 'The hub at its smallest (menu scale 0.7): Wailing Caverns, Quests; without the Codex pack',
 		panels: [
-			{ dungeons: true, roots: PICKER, script: dungeonsScene('Polestar.Set("ui.menuScale", 0.7); Polestar.Dungeons.Open("wailing-caverns")') },
-			{ roots: PICKER, script: dungeonsScene('Polestar.Dungeons.Open()') },
+			{ dungeons: true, roots: PICKER, script: dungeonsScene('Northstar.Set("ui.menuScale", 0.7); Northstar.Dungeons.Open("wailing-caverns")') },
+			{ roots: PICKER, script: dungeonsScene('Northstar.Dungeons.Open()') },
 		],
 	},
 	{
 		file: 'rares.svg',
 		title: 'Rares in the hub: Elwynn Forest\'s rares by zone, Thuros Lightfingers with its signature drop, its spawns and when it was last met; the Seen list',
 		panels: [
-			{ rares: true, files: RARES_FILES, roots: PICKER, script: raresScene('Polestar.Rares.Show("rare", 61)') },
-			{ rares: true, files: RARES_FILES, roots: PICKER, script: raresScene('Polestar.Rares.Show(); Polestar.UI.RaresSection.SetTab("seen")') },
+			{ rares: true, files: RARES_FILES, roots: PICKER, script: raresScene('Northstar.Rares.Show("rare", 61)') },
+			{ rares: true, files: RARES_FILES, roots: PICKER, script: raresScene('Northstar.Rares.Show(); Northstar.UI.RaresSection.SetTab("seen")') },
 		],
 	},
 	{
 		file: 'characters.svg',
 		title: 'Characters in the hub: three characters on one realm, the one playing first with its guide, each other as of its last logout with rested XP projected to now, one sidebar entry each; the sort tabs on last played, then most rested',
 		panels: [
-			{ files: ALTS_FILES, roots: PICKER, script: altsScene('Polestar.Fire("SHOW_ALTS")') },
-			{ files: ALTS_FILES, roots: PICKER, script: altsScene('Polestar.Set("alts.sort", "rested"); Polestar.Fire("SHOW_ALTS")') },
+			{ files: ALTS_FILES, roots: PICKER, script: altsScene('Northstar.Fire("SHOW_ALTS")') },
+			{ files: ALTS_FILES, roots: PICKER, script: altsScene('Northstar.Set("alts.sort", "rested"); Northstar.Fire("SHOW_ALTS")') },
 		],
 	},
 	{
@@ -1683,16 +1683,16 @@ local r = b.Chains[1]; r:GetScript("OnEnter")(r)`) },
 		title: 'The rare alert over the world: a rare on the minimap at its distance; a rare elite in sight; a treasure',
 		backdrop: 'terrain',
 		panels: [
-			{ rares: true, files: RARES_FILES, roots: TOAST, script: raresScene('local a = Polestar.Rares.AlertOf({ source = "vignette", kind = "rare", id = 61, name = "Thuros Lightfingers", level = 11 }, { map = 1429, x = 89.2, y = 79.1 }, true); a.yards = 87; Polestar.Fire("RARE_SPOTTED", a); stub.advance(4)') },
-			{ rares: true, files: RARES_FILES, roots: TOAST, script: raresScene('Polestar.Fire("RARE_SPOTTED", Polestar.Rares.AlertOf({ source = "nameplate", kind = "rare", id = 471, name = "Mother Fang", level = 10, classification = "rareelite" }, nil, false)); stub.advance(12)') },
-			{ rares: true, files: RARES_FILES, roots: TOAST, script: raresScene('local a = Polestar.Rares.AlertOf({ source = "vignette", kind = "treasure", id = 2843, name = "Battered Chest" }, { map = 1429, x = 79.6, y = 55.7 }, true); a.yards = 412; Polestar.Fire("RARE_SPOTTED", a)') },
+			{ rares: true, files: RARES_FILES, roots: TOAST, script: raresScene('local a = Northstar.Rares.AlertOf({ source = "vignette", kind = "rare", id = 61, name = "Thuros Lightfingers", level = 11 }, { map = 1429, x = 89.2, y = 79.1 }, true); a.yards = 87; Northstar.Fire("RARE_SPOTTED", a); stub.advance(4)') },
+			{ rares: true, files: RARES_FILES, roots: TOAST, script: raresScene('Northstar.Fire("RARE_SPOTTED", Northstar.Rares.AlertOf({ source = "nameplate", kind = "rare", id = 471, name = "Mother Fang", level = 10, classification = "rareelite" }, nil, false)); stub.advance(12)') },
+			{ rares: true, files: RARES_FILES, roots: TOAST, script: raresScene('local a = Northstar.Rares.AlertOf({ source = "vignette", kind = "treasure", id = 2843, name = "Battered Chest" }, { map = 1429, x = 79.6, y = 55.7 }, true); a.yards = 412; Northstar.Fire("RARE_SPOTTED", a)') },
 		],
 	},
 ];
 
 // panel.stubs / panel.files: other client stubs and manifests than the UI's
 // (stub_ui.lua's fake Engine and guides, installed after load); panel.addons:
-// addons loaded after Polestar (the Recorder).
+// addons loaded after Northstar (the Recorder).
 function dumpPanel(panel, prelude) {
 	const before = [prelude, `dofile(${JSON.stringify(path.join(ROOT, 'tools', 'preview', 'stub.lua'))})`];
 	before.push(clientUiArtLua());
@@ -1705,7 +1705,7 @@ function dumpPanel(panel, prelude) {
 	const { emitted } = runAddon({
 		stubs: panel.stubs || ['stub_ui.lua'],
 		before: before.join('\n'),
-		addons: [{ name: 'Polestar', files: panel.files || FILES }, ...(panel.addons || [])],
+		addons: [{ name: 'Northstar', files: panel.files || FILES }, ...(panel.addons || [])],
 		script: `${panel.stubs ? '' : 'uistub.install()\n'}stub.login()\n${panel.script}\nstub.advance(1)\npreview.emit()`,
 	});
 	const dump = emitted[emitted.length - 1];
@@ -1729,10 +1729,10 @@ function cleanupPacks() {
 async function run(argv) {
 	const only = new Set(argv.filter((a) => !a.startsWith('-')));
 	// docs/preview holds renders of the checkout alone: local inputs render
-	// into POLESTAR_CLIENT_ART's folder or not at all.
-	const local = ['POLESTAR_DUNGEONS_PACK', 'POLESTAR_ADDON_DIR'].filter((k) => process.env[k]);
+	// into NORTHSTAR_CLIENT_ART's folder or not at all.
+	const local = ['NORTHSTAR_DUNGEONS_PACK', 'NORTHSTAR_ADDON_DIR'].filter((k) => process.env[k]);
 	if (local.length && !CLIENT_ART) {
-		console.error(`preview: ${local.join(' and ')} would put local data in docs/preview; unset it, or set POLESTAR_CLIENT_ART to render into its folder`);
+		console.error(`preview: ${local.join(' and ')} would put local data in docs/preview; unset it, or set NORTHSTAR_CLIENT_ART to render into its folder`);
 		return 2;
 	}
 	const fonts = loadFonts();

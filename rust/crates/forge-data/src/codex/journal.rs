@@ -1206,9 +1206,9 @@ pub fn emit_journal(journal: &V) -> String {
 	let mut lines: Vec<String> = vec![
 		forge_guide::emit::header("lua", "forge data codex", "the sources listed in Meta.lua (tools/lib/codex/journal.js)"),
 		"-- Dungeon facts (ids, names, levels, coordinates, amounts). Read by".into(),
-		"-- Polestar/Dungeons/Dungeons.lua; each page compiles when opened.".into(),
+		"-- Northstar/Dungeons/Dungeons.lua; each page compiles when opened.".into(),
 		String::new(),
-		"local D = Polestar and Polestar.Dungeons".into(),
+		"local D = Northstar and Northstar.Dungeons".into(),
 		"if not (D and D.Register) then return end".into(),
 		String::new(),
 	];

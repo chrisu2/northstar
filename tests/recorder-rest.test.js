@@ -1,5 +1,5 @@
 'use strict';
-// Eating and drinking (addon/Polestar_Recorder/World.lua): a Food or Drink
+// Eating and drinking (addon/Northstar_Recorder/World.lua): a Food or Drink
 // aura becomes a `rest` record when it ends (docs/RECORDING.md). In restricted
 // contexts the client passes UNIT_AURA secret values, which can't be tested.
 
@@ -10,8 +10,8 @@ const { runAddon } = require('./helpers/lua');
 function rests(script) {
 	const { emitted: [out] } = runAddon({
 		stubs: ['stub_recorder.lua'],
-		addons: ['Polestar_Recorder'],
-		saved: { Polestar_Recorder: 'PolestarRecorderDB = { schema = 2, enabled = true }' },
+		addons: ['Northstar_Recorder'],
+		saved: { Northstar_Recorder: 'NorthstarRecorderDB = { schema = 2, enabled = true }' },
 		login: true,
 		script: `
 		stub.world.spells[433], stub.world.spells[430] = "Food", "Drink"
@@ -19,7 +19,7 @@ function rests(script) {
 		local ok, err = pcall(function() ${script} end)
 		stub.fire("PLAYER_LOGOUT")
 		local out = {}
-		for _, chunk in pairs(PolestarRecorderDB.chunks) do
+		for _, chunk in pairs(NorthstarRecorderDB.chunks) do
 			for _, r in ipairs(stub.records(chunk)) do
 				if r[1] == "rest" then out[#out + 1] = { r[3], tonumber(r[4]) } end
 			end

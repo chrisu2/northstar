@@ -1,5 +1,5 @@
 'use strict';
-// Every texture shipped in addon/Polestar/Media is used: its name appears in
+// Every texture shipped in addon/Northstar/Media is used: its name appears in
 // the addon's Lua, XML or TOC (as a quoted name or the end of a path), or it
 // is a goal verb's icon, which Theme.lua builds as "icon-" .. verb, or a map
 // mark (Media/Map/icon-<name>) named as "map:<name>" or by its bare name (a
@@ -11,7 +11,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const ADDON = path.join(__dirname, '..', 'addon', 'Polestar');
+const ADDON = path.join(__dirname, '..', 'addon', 'Northstar');
 
 function sources(dir, out = []) {
 	for (const e of fs.readdirSync(dir, { withFileTypes: true })) {

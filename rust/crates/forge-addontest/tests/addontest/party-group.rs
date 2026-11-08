@@ -44,11 +44,11 @@ local w = stub.world
 w.addMap(1429, { name = "Elwynn Forest", c = 1415, left = 1535.4166, right = -1941.6666, top = 1300.0, bottom = -1060.4166 })
 w.moveTo(1429, 48.5, 42.5)"#;
 
-// On step 3 with quest 7 done for you, Ana (who runs Polestar) at 3/10 of it.
+// On step 3 with quest 7 done for you, Ana (who runs Northstar) at 3/10 of it.
 const ON_KOBOLDS: &str = r#"
 stub.login()
 stub.advance(0.5)
-local w, p, P, E = stub.world, stub.party, Polestar.Party, Polestar.Engine
+local w, p, P, E = stub.world, stub.party, Northstar.Party, Northstar.Engine
 w.accept(783, {}, "A Threat Within")
 stub.advance(0.5)
 w.turnIn(783)
@@ -78,12 +78,12 @@ fn run(rest: &str, script: &str) -> Vec<Value> {
 	let errors: Vec<String> = r.diag.errors().into_iter().map(forge_guide::diag::format).collect();
 	assert_eq!(errors, Vec::<String>::new());
 	let pack = write_our_test_pack(&r.guides);
-	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Polestar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
+	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Northstar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
 	let loads = format!("do local ns = {{}}\n{}\nend", lines.join("\n"));
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_party.lua"],
 		before: BEFORE.into(),
-		addons: vec![Addon::name("Polestar")],
+		addons: vec![Addon::name("Northstar")],
 		script: format!("{loads}\n{ON_KOBOLDS}\n{script}"),
 		..Default::default()
 	})
@@ -174,7 +174,7 @@ emit(state())"#,
 	let off = run(
 		APART,
 		r#"
-Polestar.Set("party.waitForGroup", false)
+Northstar.Set("party.waitForGroup", false)
 stub.advance(1)
 emit(state())"#,
 	);
@@ -195,23 +195,23 @@ fn group_a_goal_row_offers_share_when_a_member_lacks_its_quest_and_the_party_lin
 		APART,
 		r#"
 p.join("Ben")
--- Ben runs Polestar too (his hello); without it nothing would be said of him.
+-- Ben runs Northstar too (his hello); without it nothing would be said of him.
 p.receive("Ben-TestRealm", "1H|0.0.1")
 p.onQuest.Ben = { [7] = false }
 stub.advance(1)
-Polestar.UI.GuideFrame.Update()
-local GF = Polestar.UI.GuideFrame
+Northstar.UI.GuideFrame.Update()
+local GF = Northstar.UI.GuideFrame
 local shares = {}
 for _, r in ipairs(GF.rows or {}) do
 	if r:IsShown() and r.Share:IsShown() then shares[#shares + 1] = r.psGoal.index end
 end
 emit(shares)
-local PP = Polestar.UI.PartyPanel
+local PP = Northstar.UI.PartyPanel
 emit(PP.Frame() ~= nil and PP.Frame():IsShown())
 GF.party:Click()
-emit({ Polestar.Get("party.panel"), PP.Frame():IsShown() })
+emit({ Northstar.Get("party.panel"), PP.Frame():IsShown() })
 GF.party:Click()
-emit({ Polestar.Get("party.panel"), PP.Frame():IsShown() })"#,
+emit({ Northstar.Get("party.panel"), PP.Frame():IsShown() })"#,
 	);
 	assert_eq!(out[0], json!([1]), "once, on the kobolds' row");
 	assert_eq!(out[1], true, "the panel opened by itself once a member was heard");

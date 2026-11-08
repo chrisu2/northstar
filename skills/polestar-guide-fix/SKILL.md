@@ -1,13 +1,13 @@
 ---
 name: polestar-guide-fix
-description: Fixes a confirmed wrong step in Polestar's own leveling guides (guides/forever) and takes it to a pull request on the right branch, with its test, the recompiled guides and the changelog entry. Use when changing a step, route, quest order, giver or coordinate in guides/ for a reported or found bug. Run the polestar-triage skill first when the bug comes from a report.
-compatibility: A Polestar clone with data/forever built (forge data build, or the public data pack), Node 24 or newer, and Lua 5.1 or LuaJIT for playtest. Without the data, the fix can still be sent, saying which checks did not run.
+description: Fixes a confirmed wrong step in Northstar's own leveling guides (guides/forever) and takes it to a pull request on the right branch, with its test, the recompiled guides and the changelog entry. Use when changing a step, route, quest order, giver or coordinate in guides/ for a reported or found bug. Run the polestar-triage skill first when the bug comes from a report.
+compatibility: A Northstar clone with data/forever built (forge data build, or the public data pack), Node 24 or newer, and Lua 5.1 or LuaJIT for playtest. Without the data, the fix can still be sent, saying which checks did not run.
 ---
 
-# Fixing a step in Polestar's guides
+# Fixing a step in Northstar's guides
 
 `polestar` below is `node tools/polestar.js` in the clone (`find`,
-`playtest`, `changelog` and `regen` are still current; lint is `forge guide lint`); `forge` is Polestar
+`playtest`, `changelog` and `regen` are still current; lint is `forge guide lint`); `forge` is Northstar
 Forge (docs/FORGE.md). CONTRIBUTING.md ("Fixing a guide", "Branches") is the
 long form; docs/GUIDE_CHEATSHEET.md has the guide format on one page.
 
@@ -45,7 +45,7 @@ polestar find 184
 Read the comments at the top of the guide before moving anything. They say
 where the route comes from and why it goes the way it does. A fix that
 changes the route updates them too, so a later route refresh keeps it.
-Routes are refreshed by Polestar Forge (`forge build`, docs/FORGE.md), which
+Routes are refreshed by Northstar Forge (`forge build`, docs/FORGE.md), which
 starts from the guides' own order; an order players asked for that a
 refresh must keep gets its case in `tests/guides-reported.test.js` and the
 same pair under `deliberate` in `data/route-fixes.json` (Forge's hard
@@ -131,7 +131,7 @@ node --test tests/guides-reported.test.js  # or tests/guides-caves.test.js for a
 You don't need the whole suite; CI runs it on your pull request and tells
 you if anything else broke.
 
-**Do not commit `addon/Polestar_Guides/Guides.lua`.** The maintainer runs
+**Do not commit `addon/Northstar_Guides/Guides.lua`.** The maintainer runs
 `polestar regen` after merge. Never edit it by hand or splice in a hunk
 from another compile: a spliced hunk can load without error while the game
 never sees the goals it contains.

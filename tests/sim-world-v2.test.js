@@ -509,10 +509,10 @@ test('the world hash reads only the handover rules\' quest, objective, item and 
 	fs.rmSync(dir, { recursive: true, force: true });
 });
 
-// Real worlds (POLESTAR_SIM_DIR, default the sim command's data/sim): skipped
+// Real worlds (NORTHSTAR_SIM_DIR, default the sim command's data/sim): skipped
 // only when there is no world; a world from an older builder fails.
 const { BUILDER_VERSION } = require('../tools/lib/sim/world');
-const REAL_SIM = process.env.POLESTAR_SIM_DIR || path.join(__dirname, '..', 'data', 'sim');
+const REAL_SIM = process.env.NORTHSTAR_SIM_DIR || path.join(__dirname, '..', 'data', 'sim');
 const realFile = (faction) => path.join(REAL_SIM, `world-${faction}.json`);
 const noWorld = (faction) => !fs.existsSync(realFile(faction)) && `no ${realFile(faction)}`;
 const realWorlds = {};

@@ -1,4 +1,4 @@
-//! Riding reminder (addon/Polestar/QoL/Riding.lua + UI/GuideFrame.lua banner): fires a banner at levels 40 and
+//! Riding reminder (addon/Northstar/QoL/Riding.lua + UI/GuideFrame.lua banner): fires a banner at levels 40 and
 //! 60 when riding has not been learned, once per tier per character; gold-gated "Take me there" button; class
 //! routing for Warlocks and Alliance Paladins.
 //!
@@ -17,10 +17,10 @@ use serde_json::Value;
 
 const UI_FILES: &[&str] = &["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"];
 
-const UI_PRELUDE: &str = "uistub.install()\nstub.login()\nlocal GF = Polestar.UI.GuideFrame\nlocal B = GF.parts.banner\nlocal TABS = { { uistub.elwynn, 3 } }\n";
+const UI_PRELUDE: &str = "uistub.install()\nstub.login()\nlocal GF = Northstar.UI.GuideFrame\nlocal B = GF.parts.banner\nlocal TABS = { { uistub.elwynn, 3 } }\n";
 
 fn run_ui(script: &str) -> Vec<Value> {
-	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Polestar", UI_FILES)], script: UI_PRELUDE.to_string() + script, ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Northstar", UI_FILES)], script: UI_PRELUDE.to_string() + script, ..Default::default() })
 }
 
 // ---- RIDING_DUE fires banner --------------------------------------------------
@@ -34,7 +34,7 @@ fn riding_due_shows_a_riding_banner_icon_mount_title_body_dismiss_button() {
 		local notice = { tier = 1, cost = 1000000,
 			trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" }, factionID = 72 }
 		function GetMoney() return 1120000 end
-		Polestar.Fire("RIDING_DUE", notice)
+		Northstar.Fire("RIDING_DUE", notice)
 		emit({ shown = B:IsShown(),
 			text  = B.Text:GetText(),
 			close = B.Close:IsShown(),
@@ -62,7 +62,7 @@ fn riding_due_hides_take_me_there_when_player_cannot_afford() {
 		r#"
 		uistub.openTabs(TABS, 1)
 		function GetMoney() return 430000 end   -- 43g < 100g
-		Polestar.Fire("RIDING_DUE", { tier = 1, cost = 1000000,
+		Northstar.Fire("RIDING_DUE", { tier = 1, cost = 1000000,
 			trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" }, factionID = 72 })
 		emit({ jump = B.Jump:IsShown(), close = B.Close:IsShown() })
 	"#,
@@ -78,7 +78,7 @@ fn riding_due_with_classkind_warlock_shows_class_mount_text_and_always_shows_tak
 		r#"
 		uistub.openTabs(TABS, 1)
 		function GetMoney() return 0 end   -- 0g, but free for Warlock
-		Polestar.Fire("RIDING_DUE", { tier = 1, cost = 0,
+		Northstar.Fire("RIDING_DUE", { tier = 1, cost = 0,
 			trainer = { map = 1413, x = 62.6, y = 35.5, npcName = "Strahad Farsan" }, classKind = "WARLOCK" })
 		emit({ text = B.Text:GetText(), jump = B.Jump:IsShown() })
 	"#,
@@ -95,7 +95,7 @@ fn riding_due_with_classkind_paladin_shows_tome_of_nobility_text() {
 		r#"
 		uistub.openTabs(TABS, 1)
 		function GetMoney() return 0 end
-		Polestar.Fire("RIDING_DUE", { tier = 1, cost = 0,
+		Northstar.Fire("RIDING_DUE", { tier = 1, cost = 0,
 			trainer = { map = 1453, x = 48.43, y = 50.22, npcName = "Lord Grayson Shadowbreaker" }, classKind = "PALADIN" })
 		emit({ text = B.Text:GetText(), jump = B.Jump:IsShown() })
 	"#,
@@ -112,7 +112,7 @@ fn tier_2_banner_shows_journeyman_riding_title_and_1_000_g_cost() {
 		r#"
 		uistub.openTabs(TABS, 1)
 		function GetMoney() return 15000000 end
-		Polestar.Fire("RIDING_DUE", { tier = 2, cost = 10000000,
+		Northstar.Fire("RIDING_DUE", { tier = 2, cost = 10000000,
 			trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" }, factionID = 72 })
 		emit(B.Text:GetText())
 	"#,
@@ -130,8 +130,8 @@ fn banner_shows_honored_90_g_when_player_is_honored_with_home_faction() {
 		uistub.openTabs(TABS, 1)
 		function GetMoney() return 1120000 end
 		-- Override GetFactionStanding to return Honored (5) for Stormwind (72).
-		Polestar.Compat.GetFactionStanding = function(id) if id == 72 then return 5 end end
-		Polestar.Fire("RIDING_DUE", { tier = 1, cost = 900000, factionID = 72,
+		Northstar.Compat.GetFactionStanding = function(id) if id == 72 then return 5 end end
+		Northstar.Fire("RIDING_DUE", { tier = 1, cost = 900000, factionID = 72,
 			trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" } })
 		emit(B.Text:GetText())
 	"#,
@@ -149,8 +149,8 @@ fn banner_shows_10_off_at_honored_when_faction_standing_is_unknown() {
 		uistub.openTabs(TABS, 1)
 		function GetMoney() return 1120000 end
 		-- Compat.GetFactionStanding returns nil (no faction data yet).
-		Polestar.Compat.GetFactionStanding = function() return nil end
-		Polestar.Fire("RIDING_DUE", { tier = 1, cost = 1000000, factionID = 72,
+		Northstar.Compat.GetFactionStanding = function() return nil end
+		Northstar.Fire("RIDING_DUE", { tier = 1, cost = 1000000, factionID = 72,
 			trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" } })
 		emit(B.Text:GetText())
 	"#,
@@ -166,7 +166,7 @@ fn clicking_dismiss_hides_the_banner() {
 		r#"
 		uistub.openTabs(TABS, 1)
 		function GetMoney() return 1120000 end
-		Polestar.Fire("RIDING_DUE", { tier = 1, cost = 1000000,
+		Northstar.Fire("RIDING_DUE", { tier = 1, cost = 1000000,
 			trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" } })
 		B.Close:Click()
 		emit(B:IsShown())
@@ -181,7 +181,7 @@ fn clicking_take_me_there_sets_nav_arrow_to_trainer_and_hides_banner() {
 		r#"
 		uistub.openTabs(TABS, 1)
 		function GetMoney() return 1120000 end
-		Polestar.Fire("RIDING_DUE", { tier = 1, cost = 1000000,
+		Northstar.Fire("RIDING_DUE", { tier = 1, cost = 1000000,
 			trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" } })
 		B.Jump:Click()
 		local t = uistub.target
@@ -205,11 +205,11 @@ fn riding_money_re_renders_banner_adds_take_me_there_once_gold_crosses_threshold
 		uistub.openTabs(TABS, 1)
 		local copper = 430000   -- start broke
 		function GetMoney() return copper end
-		Polestar.Fire("RIDING_DUE", { tier = 1, cost = 1000000,
+		Northstar.Fire("RIDING_DUE", { tier = 1, cost = 1000000,
 			trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" } })
 		emit(B.Jump:IsShown())       -- (1) broke: no button
 		copper = 1120000             -- now can afford
-		Polestar.Fire("RIDING_MONEY")
+		Northstar.Fire("RIDING_MONEY")
 		emit(B.Jump:IsShown())       -- (2) rich: button appears
 	"#,
 	);
@@ -225,8 +225,8 @@ fn training_banner_shows_first_riding_banner_shows_after_it_is_dismissed() {
 		r#"
 		uistub.openTabs(TABS, 1)
 		function GetMoney() return 1120000 end
-		Polestar.Fire("TRAIN_DUE", 12, { npc = 914, npcName = "Ander Germaine", map = 1453, x = 79.6, y = 70.2 })
-		Polestar.Fire("RIDING_DUE", { tier = 1, cost = 1000000,
+		Northstar.Fire("TRAIN_DUE", 12, { npc = 914, npcName = "Ander Germaine", map = 1453, x = 79.6, y = 70.2 })
+		Northstar.Fire("RIDING_DUE", { tier = 1, cost = 1000000,
 			trainer = { map = 1429, x = 84.3, y = 64.9, npcName = "Randal Hunter" } })
 		emit(B.Text:GetText())         -- train has priority
 		B.Later:Click()                -- dismiss train via Later
@@ -246,8 +246,8 @@ const QOL_FILES: &[&str] = &["Core/Init.lua", "Core/Compat.lua", "Theme/Theme.xm
 
 const PRELUDE: &str = r#"
 local q  = stub.qol
-local R  = Polestar.QoL.Riding
-local C  = Polestar.Compat
+local R  = Northstar.QoL.Riding
+local C  = Northstar.Compat
 local _ridingRank, _ridingMaxRank = nil, nil
 local _spells = {}
 local _quests = {}
@@ -271,7 +271,7 @@ local function setRep(fid, standing) _factions[fid] = standing end
 C.GetPlayerInfo = function() return { name="T", level=q.level, race="Human", class="WARRIOR", faction="Alliance" } end
 
 local ridings = {}   -- captures from RIDING_DUE
-Polestar.On("RIDING_DUE", function(n) ridings[#ridings + 1] = n end)
+Northstar.On("RIDING_DUE", function(n) ridings[#ridings + 1] = n end)
 
 local function levelUp(n)
     q.level = n
@@ -288,8 +288,8 @@ end
 fn run_qol_with(script: &str, saved: Option<&str>) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_qol.lua"],
-		addons: vec![Addon::files("Polestar", QOL_FILES)],
-		saved: saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		addons: vec![Addon::files("Northstar", QOL_FILES)],
+		saved: saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		login: true,
 		script: PRELUDE.to_string() + script,
 		..Default::default()
@@ -300,7 +300,7 @@ fn run_qol(script: &str) -> Vec<Value> {
 	run_qol_with(script, None)
 }
 
-const SEEN_40: Option<&str> = Some("PolestarCharDB = { schema = 1, flags = { ridingReminder40 = true } }");
+const SEEN_40: Option<&str> = Some("NorthstarCharDB = { schema = 1, flags = { ridingReminder40 = true } }");
 
 // ---- RIDING_DUE event fires instead of Print ---------------------------------
 
@@ -412,7 +412,7 @@ fn riding_money_fires_when_gold_changes_and_tier_is_pending() {
 	let out = run_qol(
 		r#"
 		local moneyFired = 0
-		Polestar.On("RIDING_MONEY", function() moneyFired = moneyFired + 1 end)
+		Northstar.On("RIDING_MONEY", function() moneyFired = moneyFired + 1 end)
 		levelUp(40)                           -- note fires, watcher registers
 		stub.fire("PLAYER_MONEY")
 		stub.runTimers()
@@ -427,7 +427,7 @@ fn riding_money_stops_firing_after_onresolve_is_called() {
 	let out = run_qol(
 		r#"
 		local count = 0
-		Polestar.On("RIDING_MONEY", function() count = count + 1 end)
+		Northstar.On("RIDING_MONEY", function() count = count + 1 end)
 		levelUp(40)
 		stub.fire("PLAYER_MONEY"); stub.runTimers()
 		emit(count)
@@ -535,7 +535,7 @@ fn effectivecost_returns_full_1000000_when_not_honored() {
 fn option_off_no_riding_due_fires() {
 	let out = run_qol(
 		r#"
-		Polestar.Set("qol.ridingReminder", false)
+		Northstar.Set("qol.ridingReminder", false)
 		levelUp(40); emit(#ridings)
 	"#,
 	);

@@ -129,7 +129,7 @@ const WOW_DIRS: &[&str] = &["Program Files (x86)/World of Warcraft", "Program Fi
 /// How [`find_install`] chose the World of Warcraft folder.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Found {
-	/// `$POLESTAR_WOW_DIR`
+	/// `$NORTHSTAR_WOW_DIR`
 	Env,
 	/// the folder remembered in the config file ([`config_file`])
 	Config,
@@ -137,7 +137,7 @@ pub enum Found {
 	Search,
 }
 
-/// The World of Warcraft folder: `$POLESTAR_WOW_DIR`, else the one remembered in the config file
+/// The World of Warcraft folder: `$NORTHSTAR_WOW_DIR`, else the one remembered in the config file
 /// (a command given `--wow` remembers it, [`remember_wow`]), else the first install found by
 /// [`search_installs`].
 pub fn find_install() -> Option<PathBuf> {
@@ -146,7 +146,7 @@ pub fn find_install() -> Option<PathBuf> {
 
 /// [`find_install`] and how the folder was chosen.
 pub fn find_install_how() -> Option<(PathBuf, Found)> {
-	if let Some(d) = std::env::var_os("POLESTAR_WOW_DIR") {
+	if let Some(d) = std::env::var_os("NORTHSTAR_WOW_DIR") {
 		return Some((PathBuf::from(d), Found::Env));
 	}
 	if let Some(d) = remembered_wow().filter(|d| d.join(".build.info").is_file()) {
@@ -202,11 +202,11 @@ pub fn search_installs() -> Vec<PathBuf> {
 	out
 }
 
-/// Forge's config file: `$POLESTAR_FORGE_CONFIG`, else `polestar-forge/config.toml` in the user's
+/// Forge's config file: `$NORTHSTAR_FORGE_CONFIG`, else `polestar-forge/config.toml` in the user's
 /// config folder (`$XDG_CONFIG_HOME` or `~/.config` on Linux, `~/Library/Application Support` on
 /// macOS, `%APPDATA%` on Windows). None when no home folder is known.
 pub fn config_file() -> Option<PathBuf> {
-	if let Some(f) = std::env::var_os("POLESTAR_FORGE_CONFIG") {
+	if let Some(f) = std::env::var_os("NORTHSTAR_FORGE_CONFIG") {
 		return Some(PathBuf::from(f));
 	}
 	let var = |k: &str| std::env::var_os(k).filter(|v| !v.is_empty()).map(PathBuf::from);

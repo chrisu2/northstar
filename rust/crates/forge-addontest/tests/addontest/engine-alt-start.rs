@@ -1,5 +1,5 @@
 //! Another race's starting zone on the character's side (Guides.OtherStart): a Night Elf may load the Human
-//! start. Polestar does not guide them there: while they are outside its zone and none of it is played, the guide
+//! start. Northstar does not guide them there: while they are outside its zone and none of it is played, the guide
 //! window shows a notice instead of the steps and the arrow points nowhere; arriving lifts it. In the guide,
 //! steps for the guide's race only and quests the character can never take (the quest database) do not block,
 //! and the hand-off goes on to the shared route. The whole addon, the stub world, synthetic guides.
@@ -25,8 +25,8 @@ AddRecords("quests", {
 	[3100] = { "Simple Letter", 1, 1, 1 },
 	[7001] = { "Kobold Camp Cleanup", 2, 1 },
 })
-Polestar.QuestDB.SetMeta({})
-Polestar.RegisterGuide({ id = "test/elwynn", pack = "test", title = "Elwynn Forest", faction = "Alliance", races = { "Human" },
+Northstar.QuestDB.SetMeta({})
+Northstar.RegisterGuide({ id = "test/elwynn", pack = "test", title = "Elwynn Forest", faction = "Alliance", races = { "Human" },
 	minLevel = 1, maxLevel = 12, category = "Leveling", zone = 1429, zoneName = "Elwynn Forest", next = "test/westfall", steps = {
 	{ title = "Marshal McBride", goals = { { t = "accept", quest = 7001, title = "Kobold Camp Cleanup", npc = 197, npcName = "Marshal McBride", map = 1429, x = 48, y = 42 } } },
 	{ title = "Llane Beshere", only = { classes = { "WARRIOR" } }, goals = {
@@ -36,15 +36,15 @@ Polestar.RegisterGuide({ id = "test/elwynn", pack = "test", title = "Elwynn Fore
 	{ title = "Human errand", only = { races = { "Human" } }, goals = { { t = "accept", quest = 7003, title = "Human Errand", npc = 198, npcName = "Someone", map = 1429, x = 49, y = 41 } } },
 	{ title = "Back to McBride", goals = { { t = "turnin", quest = 7001, title = "Kobold Camp Cleanup", npc = 197, npcName = "Marshal McBride", map = 1429, x = 48, y = 42 } } },
 } })
-Polestar.RegisterGuide({ id = "test/westfall", pack = "test", title = "Westfall", faction = "Alliance", minLevel = 10, maxLevel = 15, category = "Leveling",
+Northstar.RegisterGuide({ id = "test/westfall", pack = "test", title = "Westfall", faction = "Alliance", minLevel = 10, maxLevel = 15, category = "Leveling",
 	zone = 1436, zoneName = "Westfall", steps = {
 	{ title = "Gryan", goals = { { t = "level", level = 15 } } },
 } })
 "#;
 
 const HELPERS: &str = r#"
-			E, w = Polestar.Engine, stub.world
-			local p = Polestar.UI.GuideFrame.parts
+			E, w = Northstar.Engine, stub.world
+			local p = Northstar.UI.GuideFrame.parts
 			function shown()
 				local wp = E.GetWaypoint()
 				return { step = E.GetStepIndex() or false, notice = p.empty:IsShown() and p.empty.Title:GetText() or false,
@@ -52,15 +52,15 @@ const HELPERS: &str = r#"
 			end
 			stub.login()
 			stub.fire("QUEST_LOG_UPDATE")
-			Polestar.Set("behavior.autoAccept", false)
-			Polestar.Set("behavior.guideEnd", "continue") -- the hand-off by itself
+			Northstar.Set("behavior.autoAccept", false)
+			Northstar.Set("behavior.guideEnd", "continue") -- the hand-off by itself
 "#;
 
 fn run(before: &str, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
-		addons: vec!["Polestar".into()],
+		addons: vec!["Northstar".into()],
 		script: [TEST_PACK, TEST_SOURCE, ADD_RECORDS_LUA, GUIDES, HELPERS, script].join("\n"),
 		..Default::default()
 	})
@@ -84,7 +84,7 @@ fn outside_the_zone_a_night_elf_gets_the_notice_and_no_arrow_arriving_lifts_it()
 		json!({
 			"step": 1,
 			"notice": "Another race's starting zone",
-			"text": "This is the Human starting zone. Polestar won't guide you there: make your own way to Elwynn Forest, and the guide picks up when you arrive.\nYour class trainer may be elsewhere (check your capital).",
+			"text": "This is the Human starting zone. Northstar won't guide you there: make your own way to Elwynn Forest, and the guide picks up when you arrive.\nYour class trainer may be elsewhere (check your capital).",
 			"card": false,
 			"wp": false,
 		})

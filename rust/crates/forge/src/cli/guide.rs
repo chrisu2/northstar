@@ -16,10 +16,10 @@ use forge_guide::project::{build_pack, find_guide_files, find_pack_dir, load_pro
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
-/// The Polestar checkout: the nearest folder above the working directory, else above the forge binary,
-/// holding addon/Polestar/Polestar.toc and guides/pack.json.
+/// The Northstar checkout: the nearest folder above the working directory, else above the forge binary,
+/// holding addon/Northstar/Northstar.toc and guides/pack.json.
 fn find_root() -> Option<PathBuf> {
-	let is_root = |d: &&Path| d.join("addon/Polestar/Polestar.toc").exists() && d.join("guides/pack.json").exists();
+	let is_root = |d: &&Path| d.join("addon/Northstar/Northstar.toc").exists() && d.join("guides/pack.json").exists();
 	let cwd = std::env::current_dir().unwrap_or_default();
 	let exe = std::env::current_exe().unwrap_or_default();
 	cwd.ancestors().find(is_root).or_else(|| exe.ancestors().find(is_root)).map(Path::to_path_buf)
@@ -124,10 +124,10 @@ fn generated(cmd: &str, args: &[String]) -> i32 {
 	};
 	let checkout = match opt("--checkout").map(abs) {
 		Some(c) if c.join(forge::CHECKOUT_MARK).is_file() => c,
-		Some(c) => return usage(&format!("--checkout {}: not a Polestar checkout (no {})", c.display(), forge::CHECKOUT_MARK)),
+		Some(c) => return usage(&format!("--checkout {}: not a Northstar checkout (no {})", c.display(), forge::CHECKOUT_MARK)),
 		None => match forge::find_checkout(&cwd) {
 			Some(c) => c,
-			None => return usage(&format!("no Polestar checkout ({}) above here: pass --checkout <dir>", forge::CHECKOUT_MARK)),
+			None => return usage(&format!("no Northstar checkout ({}) above here: pass --checkout <dir>", forge::CHECKOUT_MARK)),
 		},
 	};
 	match cmd {
@@ -192,7 +192,7 @@ fn bake(args: &[String]) -> i32 {
 	let Some(trees) = opt("--guides") else { return usage("bake needs --guides <written tree>[,<tree>...]") };
 	let trees: Vec<PathBuf> = trees.split(',').map(|t| cwd.join(t.trim())).collect();
 	let Some(root) = opt("--root").map(|r| cwd.join(r)).or_else(find_root) else {
-		return usage("no Polestar checkout (addon/Polestar/Polestar.toc and guides/pack.json) above here or the forge binary: pass --root <checkout>");
+		return usage("no Northstar checkout (addon/Northstar/Northstar.toc and guides/pack.json) above here or the forge binary: pass --root <checkout>");
 	};
 	let data = opt("--data").map(|d| cwd.join(d)).unwrap_or_else(|| root.join("data/forever"));
 	let grid = forge::grid_dir(opt("--grid").map(|g| cwd.join(g)).as_deref(), &root);
@@ -213,7 +213,7 @@ fn bake(args: &[String]) -> i32 {
 		leffe: leffe.as_deref(),
 		area_table: &area_table,
 		zones: &data.join("zones.json"),
-		chokepoints: &root.join("addon/Polestar_Nav/Nav/Chokepoints.lua"),
+		chokepoints: &root.join("addon/Northstar_Nav/Nav/Chokepoints.lua"),
 		threads,
 		log: &say,
 	});
@@ -265,7 +265,7 @@ fn guidecheck(args: &[String]) -> i32 {
 	let data_dir = match (opt("--data"), &root) {
 		(Some(d), _) => cwd.join(d),
 		(None, Some(r)) => r.join("data/forever"),
-		(None, None) => return usage("no Polestar checkout above here: pass --data <dir> or --root <checkout>"),
+		(None, None) => return usage("no Northstar checkout above here: pass --data <dir> or --root <checkout>"),
 	};
 	let data = match forge_guide::data::load_data(&data_dir) {
 		Ok(d) => d,
@@ -427,7 +427,7 @@ fn run() -> i32 {
 		}
 	}
 	let Some(root) = opt("--root").map(at).or_else(find_root) else {
-		return usage("no Polestar checkout (addon/Polestar/Polestar.toc and guides/pack.json) above here or the forge binary: pass --root <checkout>");
+		return usage("no Northstar checkout (addon/Northstar/Northstar.toc and guides/pack.json) above here or the forge binary: pass --root <checkout>");
 	};
 	if !root.join("guides/pack.json").is_file() {
 		eprintln!("forge guide {cmd}: no guides/pack.json in {}: pass --root <checkout>", root.display());

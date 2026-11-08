@@ -445,7 +445,7 @@ struct Shared {
 	packed: bool,
 }
 
-/// A goal's spawn spots as one string, `spotsPacked` (format 8, Polestar's
+/// A goal's spawn spots as one string, `spotsPacked` (format 8, Northstar's
 /// own pack; docs/PACK_FORMAT.md, "Format 8"): each spot's SPOT_KEYS values
 /// in that order, separated by `,`, numbers as lua_number writes them, `alt`
 /// as `1`, an absent value empty and trailing empty values dropped; spots
@@ -576,7 +576,7 @@ fn step_lines(steps: &V, ind: &str, shared: &Shared) -> Vec<String> {
 /// `deferred` (a race part's guide, docs/PACK_FORMAT.md "Race parts"): the
 /// steps as one source string (`stepsSrc`, `return { ... }`, run on first
 /// read) with `stepCount`, and the guide registers only for a character of
-/// one of its classes (Polestar.PartWants). `packed`: spawn spots as strings
+/// one of its classes (Northstar.PartWants). `packed`: spawn spots as strings
 /// (pack_spots, format 8).
 fn emit_guide(guide: &V, source_rel: &V, deferred: bool, packed: bool) -> String {
 	let mut out: Vec<String> = Vec::new();
@@ -590,7 +590,7 @@ fn emit_guide(guide: &V, source_rel: &V, deferred: bool, packed: bool) -> String
 	if !deferred {
 		out.extend(shared.lines.iter().map(|l| format!("\t\t{l}")));
 	}
-	out.push("\t\tPolestar.RegisterGuide({".into());
+	out.push("\t\tNorthstar.RegisterGuide({".into());
 	for k in GUIDE_KEYS {
 		let v = guide.get(k);
 		if v.is_nullish() {
@@ -653,7 +653,7 @@ fn emit_guide(guide: &V, source_rel: &V, deferred: bool, packed: bool) -> String
 	out.push("\t\t})".into());
 	out.push("\tend".into());
 	out.push(match classes {
-		Some(c) => format!("\tif Polestar.PartWants({}) then register() end", list(&c, None, 2)),
+		Some(c) => format!("\tif Northstar.PartWants({}) then register() end", list(&c, None, 2)),
 		None => "\tregister()".into(),
 	});
 	out.push("end".into());
@@ -773,7 +773,7 @@ pub fn emit_guides(entries: &[V], deferred: bool) -> String {
 	emit_guides_with(entries, deferred, false)
 }
 
-/// `emit_guides` with spawn spots written as strings when `packed` (format 8, Polestar's own pack).
+/// `emit_guides` with spawn spots written as strings when `packed` (format 8, Northstar's own pack).
 pub fn emit_guides_with(entries: &[V], deferred: bool, packed: bool) -> String {
 	let mut sorted: Vec<&V> = entries.iter().collect();
 	sorted.sort_by(|a, b| {
@@ -797,19 +797,19 @@ pub fn emit_pack(manifest: &V, format: u32) -> String {
 			parts.push(format!("{k} = {}", lua_str_v(&v)));
 		}
 	}
-	format!("{}\nlocal ADDON = ...\n\nPolestar.RegisterPack({{ {} }})\n", header("lua", crate::format::COMPILE_COMMAND, "pack.json"), parts.join(", "))
+	format!("{}\nlocal ADDON = ...\n\nNorthstar.RegisterPack({{ {} }})\n", header("lua", crate::format::COMPILE_COMMAND, "pack.json"), parts.join(", "))
 }
 
 fn needs_str(format: u32) -> String {
 	needs(format).unwrap_or("undefined").to_string()
 }
 
-/// <folder>.toc: the pack's metadata for the client and for Polestar's pack
+/// <folder>.toc: the pack's metadata for the client and for Northstar's pack
 /// list (optional lines only when the value exists), then the fixed file set.
-/// A pack other than ours reads "Polestar Community: <title>" in the AddOns list.
-/// Every pack sits in Polestar's group there, under Polestar's own entry;
-/// Polestar's menus show the plain title (Pack.lua). A title
-/// already carrying that prefix or the legacy "Polestar Pack: " is kept.
+/// A pack other than ours reads "Northstar Community: <title>" in the AddOns list.
+/// Every pack sits in Northstar's group there, under Northstar's own entry;
+/// Northstar's menus show the plain title (Pack.lua). A title
+/// already carrying that prefix or the legacy "Northstar Pack: " is kept.
 /// (JS default format: FORMAT.)
 pub fn emit_toc(manifest: &V, iface: &str, format: u32) -> String {
 	let ours = manifest.get("id").as_str() == Some("guides");
@@ -818,20 +818,20 @@ pub fn emit_toc(manifest: &V, iface: &str, format: u32) -> String {
 	let title = if ours || prefixed { m_title.clone() } else { format!("{TOC_TITLE_PREFIX}{m_title}") };
 	let author = manifest.get("author").to_js_string();
 	let notes = manifest.get("notes");
-	let notes = if notes.truthy() { notes.to_js_string() } else { format!("Community addon for Polestar by {author}") };
+	let notes = if notes.truthy() { notes.to_js_string() } else { format!("Community addon for Northstar by {author}") };
 	let mut lines = vec![format!("## Interface: {iface}"), format!("## Title: {title}"), format!("## Notes: {notes}")];
-	// Polestar's own pack: the AddOns list in the client's language too.
+	// Northstar's own pack: the AddOns list in the client's language too.
 	if ours {
-		lines.extend(crate::toc::toc_lines("Polestar_Guides"));
+		lines.extend(crate::toc::toc_lines("Northstar_Guides"));
 	}
 	lines.push(format!("## Author: {author}"));
 	lines.push(format!("## Version: {}", manifest.get("version").to_js_string()));
-	lines.push("## Category: Polestar".into());
-	lines.push("## Group: Polestar".into());
-	lines.push("## Dependencies: Polestar".into());
-	lines.push(format!("## X-Polestar-Pack: {}", manifest.get("id").to_js_string()));
-	lines.push(format!("## X-Polestar-Format: {format}"));
-	lines.push(format!("## X-Polestar-Needs: {}", needs_str(format)));
+	lines.push("## Category: Northstar".into());
+	lines.push("## Group: Northstar".into());
+	lines.push("## Dependencies: Northstar".into());
+	lines.push(format!("## X-Northstar-Pack: {}", manifest.get("id").to_js_string()));
+	lines.push(format!("## X-Northstar-Format: {format}"));
+	lines.push(format!("## X-Northstar-Needs: {}", needs_str(format)));
 	lines.push(format!("## X-License: {}", manifest.get("license").to_js_string()));
 	let website = manifest.get("website");
 	if website.truthy() {
@@ -844,10 +844,10 @@ pub fn emit_toc(manifest: &V, iface: &str, format: u32) -> String {
 }
 
 /// A pack's race part (project.rs build_pack_files): the leveling
-/// guides for one race, <folder>_<race file>, which Polestar loads on demand
+/// guides for one race, <folder>_<race file>, which Northstar loads on demand
 /// once the pack is in, for a player of that race only (Core/Guides.lua). Its
 /// guides register into the pack; its TOC names the pack and the race, and
-/// (Polestar's own) the AddOns list in every client language. `guides`, `legs`:
+/// (Northstar's own) the AddOns list in every client language. `guides`, `legs`:
 /// whether it holds guides (Guides.lua) and baked legs (Legs.lua).
 pub fn emit_part_toc(manifest: &V, race: &str, iface: &str, guides: bool, legs: bool) -> String {
 	let title = manifest.get("title").to_js_string();
@@ -862,17 +862,17 @@ pub fn emit_part_toc(manifest: &V, race: &str, iface: &str, guides: bool, legs: 
 		},
 	];
 	if manifest.get("id").as_str() == Some("guides") {
-		lines.extend(crate::toc::toc_lines(&format!("Polestar_Guides_{race}")));
+		lines.extend(crate::toc::toc_lines(&format!("Northstar_Guides_{race}")));
 	}
 	lines.extend([
 		format!("## Author: {}", manifest.get("author").to_js_string()),
 		format!("## Version: {}", manifest.get("version").to_js_string()),
-		"## Category: Polestar".into(),
-		"## Group: Polestar".into(),
+		"## Category: Northstar".into(),
+		"## Group: Northstar".into(),
 		"## LoadOnDemand: 1".into(),
-		format!("## Dependencies: Polestar, {}", manifest.get("folder").to_js_string()),
-		format!("## X-Polestar-Part: {}", manifest.get("id").to_js_string()),
-		format!("## X-Polestar-Race: {race}"),
+		format!("## Dependencies: Northstar, {}", manifest.get("folder").to_js_string()),
+		format!("## X-Northstar-Part: {}", manifest.get("id").to_js_string()),
+		format!("## X-Northstar-Race: {race}"),
 		format!("## X-License: {}", manifest.get("license").to_js_string()),
 		toc_marker(),
 		String::new(),
@@ -888,7 +888,7 @@ pub fn emit_part_toc(manifest: &V, race: &str, iface: &str, guides: bool, legs: 
 
 /// A race part's Legs.lua (docs/PACK_FORMAT.md, "Format 7"): the baked legs of
 /// the leveling guides a player of that race may follow, one
-/// Polestar.RegisterLegs call per grid they were baked on, guides by id, each
+/// Northstar.RegisterLegs call per grid they were baked on, guides by id, each
 /// step's leg as one string (forge::bake, Nav/Baked.lua). `guides` carry their
 /// legs as project.rs read_legs_text hides them (`_legs`, `_legsGrid`).
 pub fn emit_legs(pack_id: &str, guides: &[V]) -> String {
@@ -897,7 +897,7 @@ pub fn emit_legs(pack_id: &str, guides: &[V]) -> String {
 	grids.dedup();
 	let mut out = vec![header("lua", crate::format::COMPILE_COMMAND, "legs.json"), String::new()];
 	for grid in &grids {
-		out.push(format!("Polestar.RegisterLegs({}, {}, {{", lua_string(pack_id), lua_string(grid)));
+		out.push(format!("Northstar.RegisterLegs({}, {}, {{", lua_string(pack_id), lua_string(grid)));
 		let mut list: Vec<&V> = guides.iter().filter(|g| g.hidden("_legsGrid").to_js_string() == *grid).collect();
 		list.sort_by(|a, b| cmp_utf16(&a.get("id").to_js_string(), &b.get("id").to_js_string()));
 		for g in list {
@@ -910,27 +910,27 @@ pub fn emit_legs(pack_id: &str, guides: &[V]) -> String {
 	format!("{}\n", out.join("\n"))
 }
 
-/// Polestar's own pack's faction part (project.rs build_pack_files, format 8):
+/// Northstar's own pack's faction part (project.rs build_pack_files, format 8):
 /// the guides of one faction that no race part holds, <folder>_<faction>,
-/// which Polestar loads on demand once the pack is in, for a player of that
+/// which Northstar loads on demand once the pack is in, for a player of that
 /// faction (and the other faction's when the player asks for its guides). Its
 /// guides register into the pack; its TOC names the pack and the faction, and
-/// (Polestar's own) the AddOns list in every client language.
+/// (Northstar's own) the AddOns list in every client language.
 pub fn emit_faction_toc(manifest: &V, faction: &str, iface: &str) -> String {
 	let title = manifest.get("title").to_js_string();
 	let mut lines = vec![format!("## Interface: {iface}"), format!("## Title: {title} ({faction})"), format!("## Notes: {faction} guides of {title}. Loaded on demand for {faction} characters.")];
 	if manifest.get("id").as_str() == Some("guides") {
-		lines.extend(crate::toc::toc_lines(&format!("Polestar_Guides_{faction}")));
+		lines.extend(crate::toc::toc_lines(&format!("Northstar_Guides_{faction}")));
 	}
 	lines.extend([
 		format!("## Author: {}", manifest.get("author").to_js_string()),
 		format!("## Version: {}", manifest.get("version").to_js_string()),
-		"## Category: Polestar".into(),
-		"## Group: Polestar".into(),
+		"## Category: Northstar".into(),
+		"## Group: Northstar".into(),
 		"## LoadOnDemand: 1".into(),
-		format!("## Dependencies: Polestar, {}", manifest.get("folder").to_js_string()),
-		format!("## X-Polestar-Part: {}", manifest.get("id").to_js_string()),
-		format!("## X-Polestar-Faction: {faction}"),
+		format!("## Dependencies: Northstar, {}", manifest.get("folder").to_js_string()),
+		format!("## X-Northstar-Part: {}", manifest.get("id").to_js_string()),
+		format!("## X-Northstar-Faction: {faction}"),
 		format!("## X-License: {}", manifest.get("license").to_js_string()),
 		toc_marker(),
 		String::new(),
@@ -940,17 +940,17 @@ pub fn emit_faction_toc(manifest: &V, faction: &str, iface: &str) -> String {
 }
 
 /// The ids of guides a cutover retired (retired.json), after the pack's guides
-/// in Guides.lua: Polestar opens a saved tab of one as its successor.
+/// in Guides.lua: Northstar opens a saved tab of one as its successor.
 pub fn emit_retired(pack_id: &str, ids: &[String]) -> String {
 	let lines: Vec<String> = ids.iter().map(|id| format!("\t{},", lua_string(id))).collect();
-	format!("\nPolestar.RetireGuides({}, {{\n{}\n}})\n", lua_string(pack_id), lines.join("\n"))
+	format!("\nNorthstar.RetireGuides({}, {{\n{}\n}})\n", lua_string(pack_id), lines.join("\n"))
 }
 
 /// A pack's texts addon for one language (docs/TRANSLATING.md, "Guide
-/// texts"): <folder>_<locale>, which Polestar loads on demand on that client
+/// texts"): <folder>_<locale>, which Northstar loads on demand on that client
 /// only, once the pack's own files are in (Core/GuideTexts.lua). Its TOC
-/// names the pack it translates; the client lists it under Polestar. Our own
-/// pack's texts go into the language folder Polestar_<locale> beside the
+/// names the pack it translates; the client lists it under Northstar. Our own
+/// pack's texts go into the language folder Northstar_<locale> beside the
 /// game's names (crate::toc::language_toc).
 pub fn emit_texts_toc(manifest: &V, locale: &str, language: &str, iface: &str) -> String {
 	if manifest.get("id").as_str() == Some("guides") {
@@ -961,12 +961,12 @@ pub fn emit_texts_toc(manifest: &V, locale: &str, language: &str, iface: &str) -
 	lines.extend([
 		format!("## Author: {}", manifest.get("author").to_js_string()),
 		format!("## Version: {}", manifest.get("version").to_js_string()),
-		"## Category: Polestar".into(),
-		"## Group: Polestar".into(),
+		"## Category: Northstar".into(),
+		"## Group: Northstar".into(),
 		"## LoadOnDemand: 1".into(),
-		"## Dependencies: Polestar".into(),
-		format!("## X-Polestar-Texts: {}", manifest.get("id").to_js_string()),
-		format!("## X-Polestar-Locale: {locale}"),
+		"## Dependencies: Northstar".into(),
+		format!("## X-Northstar-Texts: {}", manifest.get("id").to_js_string()),
+		format!("## X-Northstar-Locale: {locale}"),
 		format!("## X-License: {}", manifest.get("license").to_js_string()),
 		toc_marker(),
 		String::new(),
@@ -990,14 +990,14 @@ pub fn emit_texts(pack_id: &str, locale: &str, t: &V) -> String {
 		out.push("} end)()".into());
 	}
 	out.push(String::new());
-	out.push(format!("Polestar.RegisterGuideTexts({}, {}, t)", lua_string(locale), lua_string(pack_id)));
+	out.push(format!("Northstar.RegisterGuideTexts({}, {}, t)", lua_string(locale), lua_string(pack_id)));
 	out.push(String::new());
 	out.join("\n")
 }
 
 /// frames: { [mapId]: { c, left, right, top, bottom } }, registered for pack_id.
 pub fn emit_map_frames(frames: &V, pack_id: &str) -> String {
-	let mut out = vec![header_main(), String::new(), "Polestar.RegisterMapFrames({".into(), "\tera = {".into()];
+	let mut out = vec![header_main(), String::new(), "Northstar.RegisterMapFrames({".into(), "\tera = {".into()];
 	for id in numeric_keys(frames) {
 		out.push(format!("\t\t[{}] = {},", num_str(id), inline(&frames.get(&num_str(id)), &Keys::Fixed(&FRAME_KEYS), 4)));
 	}
@@ -1117,7 +1117,7 @@ const LEGS_NOTICE: [&str; 6] = [
 	"Baked walking legs",
 	"------------------",
 	"The walks into the guides' steps (Legs.lua in the race parts) were routed on",
-	"Leffe's navigation maps, used with Leffe's permission given to Polestar's author.",
+	"Leffe's navigation maps, used with Leffe's permission given to Northstar's author.",
 	"Credit: Leffe's navigation maps.",
 	"",
 ];
@@ -1126,10 +1126,10 @@ pub fn emit_license(meta: &V, legs: bool) -> String {
 	let mut sources: Vec<V> = if meta.truthy() && meta.get("sources").is_arr() { meta.get("sources").items() } else { Vec::new() };
 	sources.sort_by(|a, b| locale_compare(&or_empty(&a.get("name")), &or_empty(&b.get("name"))));
 	let mut out: Vec<String> = [
-		"Polestar guide data: third-party notices",
+		"Northstar guide data: third-party notices",
 		"========================================",
 		"",
-		"The guides in this folder were written for Polestar. Quest titles, names and",
+		"The guides in this folder were written for Northstar. Quest titles, names and",
 		"coordinates in them were filled in from the reference data sources below.",
 		"",
 	]
@@ -1187,11 +1187,11 @@ pub fn emit_license(meta: &V, legs: bool) -> String {
 		[
 			"Guide pack permission",
 			"---------------------",
-			"This folder was produced by Polestar's compiler. Polestar's LICENSE-EXCEPTION.md",
+			"This folder was produced by Northstar's compiler. Northstar's LICENSE-EXCEPTION.md",
 			"gives permission to distribute guide packs produced by the compiler, including",
-			"the parts of Polestar's reference data placed in them, under terms of your",
-			"choice. It does not cover guide text copied from Polestar's own guides, or",
-			"Polestar's code.",
+			"the parts of Northstar's reference data placed in them, under terms of your",
+			"choice. It does not cover guide text copied from Northstar's own guides, or",
+			"Northstar's code.",
 			"",
 		]
 		.map(String::from),
@@ -1264,12 +1264,12 @@ mod tests {
 
 	#[test]
 	fn part_toc_shows_undead_for_the_scourge_token() {
-		let manifest = V::Obj(crate::obj! { "id" => "guides", "title" => "Polestar Guides", "author" => "Polestar", "version" => "1.0.0" });
+		let manifest = V::Obj(crate::obj! { "id" => "guides", "title" => "Northstar Guides", "author" => "Northstar", "version" => "1.0.0" });
 		let toc = emit_part_toc(&manifest, "Scourge", "16001", true, false);
-		assert!(toc.contains("## Title: Polestar Guides (Undead)\n"), "{toc}");
+		assert!(toc.contains("## Title: Northstar Guides (Undead)\n"), "{toc}");
 		assert!(toc.contains("for Undead characters."), "{toc}");
 		assert!(!toc.contains("(Scourge)") && !toc.contains("for Scourge"), "{toc}");
 		let walks = emit_part_toc(&manifest, "Orc", "16001", false, true);
-		assert!(walks.contains("## Title: Polestar Guides (Orc)\n") && walks.contains("for Orc characters."), "{walks}");
+		assert!(walks.contains("## Title: Northstar Guides (Orc)\n") && walks.contains("for Orc characters."), "{walks}");
 	}
 }

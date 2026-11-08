@@ -115,7 +115,7 @@
 				</div>
 				<div class="row">
 					<Glyph name="record" color="var(--textDim)" />
-					<span class="label">Polestar Recorder</span>
+					<span class="label">Northstar Recorder</span>
 					{#if addon?.updateAvailable && addon.latest}<button class="chip accent" onclick={() => go('addons')}>{addon.latest} available</button>{/if}
 					<span class="value num">{addon?.installed ? (addon.version ?? 'Installed') : 'Not installed'}</span>
 				</div>

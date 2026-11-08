@@ -1,7 +1,7 @@
 'use strict';
 // What the JS tools keep of the names addons (`forge data names` builds them:
 // rust/crates/forge-data/tests/data/names.rs tests the builder): usedIds,
-// the ids Polestar's data names, and the release taking every names addon.
+// the ids Northstar's data names, and the release taking every names addon.
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -29,10 +29,10 @@ test('the release zip and install take every language folder that is built, afte
 	const { languageAddon } = require('../tools/lib/i18n/toc');
 	const { fakeAddons } = require('./helpers/cli');
 	const { ADDONS } = require('./helpers/lua');
-	const dir = fakeAddons(tmpdir(), ['Polestar', 'Polestar_Guides', 'Polestar_Nav', 'Polestar_Codex', 'Polestar_frFR', 'Polestar_Names_deDE', 'Polestar_Guides_deDE']);
+	const dir = fakeAddons(tmpdir(), ['Northstar', 'Northstar_Guides', 'Northstar_Nav', 'Northstar_Codex', 'Northstar_frFR', 'Northstar_Names_deDE', 'Northstar_Guides_deDE']);
 	const r = releaseAddons(dir);
-	assert.deepEqual(r.names, ['Polestar', 'Polestar_Guides', 'Polestar_Nav', 'Polestar_Codex', 'Polestar_frFR']);
-	assert.ok(r.skipped.includes('Polestar_deDE'), 'one not built is left out');
+	assert.deepEqual(r.names, ['Northstar', 'Northstar_Guides', 'Northstar_Nav', 'Northstar_Codex', 'Northstar_frFR']);
+	assert.ok(r.skipped.includes('Northstar_deDE'), 'one not built is left out');
 	const languages = LOCALE_CODES.map(languageAddon);
 	const shipped = releaseAddons(ADDONS).names.filter((n) => languages.includes(n));
 	assert.deepEqual(shipped, languages);

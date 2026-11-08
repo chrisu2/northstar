@@ -19,9 +19,9 @@ const JS = path.resolve(process.env.JS_ROOT);
 const OUT = path.join(HERE, 'expected');
 const DATA = path.join(ROOT, 'data/forever');
 const SOURCES = path.join(ROOT, 'data/sources');
-process.env.POLESTAR_GRID = path.join(ROOT, 'data/local/nav4');
-process.env.POLESTAR_CAS = 'off';
-process.env.POLESTAR_CAS_SKIP = 'walks';
+process.env.NORTHSTAR_GRID = path.join(ROOT, 'data/local/nav4');
+process.env.NORTHSTAR_CAS = 'off';
+process.env.NORTHSTAR_CAS_SKIP = 'walks';
 
 // The JS world reads its checkout's own rules file (sim/rules.js FILE): the copy must match it.
 const rulesCopy = fs.readFileSync(path.join(ROOT, 'data/rules.json'));
@@ -54,7 +54,7 @@ const rd = (f) => JSON.parse(fs.readFileSync(path.join(DATA, `${f}.json`), 'utf8
 	const [quests, npcs, objects, items, frames] = ['quests', 'npcs', 'objects', 'items', 'map-frames'].map(rd);
 	const sz = (s) => (s ? { id: s.id, name: s.name, zoneId: s.zoneId, zone: s.zone } : null);
 	for (const faction of ['Horde', 'Alliance']) {
-		const a = buildAtlas({ quests, npcs, objects, items, proj: makeProjector(frames), subzone: subzoneLookup({ gridDir: process.env.POLESTAR_GRID, sourcesDir: SOURCES }), faction });
+		const a = buildAtlas({ quests, npcs, objects, items, proj: makeProjector(frames), subzone: subzoneLookup({ gridDir: process.env.NORTHSTAR_GRID, sourcesDir: SOURCES }), faction });
 		gz(`atlas-${faction.toLowerCase()}.json`, {
 			areas: a.areas.map((x) => ({ id: x.id, map: x.map, c: x.c, name: x.name, subzone: sz(x.subzone), wx: x.wx, wy: x.wy, n: x.n, hub: x.hub, nodes: x.nodes, give: [...x.give], end: [...x.end], obj: [...x.obj].map(([q, l]) => [q, l.map((o) => [o.oi, o.key, o.n])]) })),
 			zones: [...a.zones.values()].map((z) => ({ map: z.map, areas: z.areas.map((x) => x.id), hubs: z.hubs })),

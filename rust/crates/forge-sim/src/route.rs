@@ -767,7 +767,7 @@ pub fn improve(
 	written: Option<&mut dyn FnMut(&RouteResult) -> Result<Vec<crate::flow::Finding>, String>>,
 ) -> Result<RouteResult, String> {
 	let base = sets.base();
-	// Phase timings (POLESTAR_BUILD_TIMES, forge_core::timing).
+	// Phase timings (NORTHSTAR_BUILD_TIMES, forge_core::timing).
 	let scope = format!("routes {} {race}", world.faction.name());
 	let mut tm = forge_core::timing::start();
 	let mut prep = prepare(world, walks, &base, race, events, goals, profile, &ex)?;

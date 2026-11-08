@@ -1,7 +1,7 @@
 //! Test helpers: the JS grid builder's stage files on the committed synthetic grid
 //! (rust/tests/golden/nav-grid, its README), read as forge-navbuild's types.
 //!
-//! POLESTAR_NAV_SCRATCH=<dir> reads the old local references instead: the Zephras Isle (map 2991) JS dumps
+//! NORTHSTAR_NAV_SCRATCH=<dir> reads the old local references instead: the Zephras Isle (map 2991) JS dumps
 //! of RsWriter's scratch dump.js (<dir>/NavSurfaces/out/2991, <dir>/js/tiles/2991, <dir>/js/graph/2991.bin.gz).
 #![allow(dead_code)]
 use forge_navbuild::format::{gunzip, LiftRide, Tile};
@@ -27,7 +27,7 @@ pub struct Src {
 }
 
 pub fn src() -> Src {
-	if let Ok(s) = std::env::var("POLESTAR_NAV_SCRATCH") {
+	if let Ok(s) = std::env::var("NORTHSTAR_NAV_SCRATCH") {
 		let s = PathBuf::from(s);
 		let out = s.join("NavSurfaces/out/2991");
 		return Src { c: 2991, geom: out.clone(), surf: out, tiles: s.join("js/tiles/2991"), graph: s.join("js/graph/2991.bin.gz"), lifts: Vec::new() };

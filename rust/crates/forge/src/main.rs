@@ -17,7 +17,7 @@ fn version() -> String {
 	}
 }
 
-const USAGE: &str = "Forge builds Polestar's leveling guides from your own game client: it plans each start's route
+const USAGE: &str = "Forge builds Northstar's leveling guides from your own game client: it plans each start's route
 through the quests, writes the route into the guides and judges the result.
 
 usage: forge <command> [options]
@@ -58,9 +58,9 @@ inputs did not change since the last run (a BLAKE3 key in <out>/.forge/<stage>.k
   --threads      worker threads (default 8)
   --nav          the walks backend (default: hybrid when Leffe's navigation maps or the data pack's
                  saved walks on them are found, else grid)
-  --leffe        Leffe's navigation maps, private (default $POLESTAR_LEFFE_NAV); without them the hybrid
+  --leffe        Leffe's navigation maps, private (default $NORTHSTAR_LEFFE_NAV); without them the hybrid
                  uses the data pack's saved walks on his maps and our grid for the rest
-  --checkout     the Polestar checkout whose fixes the build applies: forever-db/corrections
+  --checkout     the Northstar checkout whose fixes the build applies: forever-db/corrections
                  and data/route-fixes.json (default: the nearest checkout above --guides, else above here)
   --root         the checkout whose data/sources, data/local, tools and addon are read (default: the
                  nearest folder above here with data/sources; without one, the data pack)
@@ -69,8 +69,8 @@ inputs did not change since the last run (a BLAKE3 key in <out>/.forge/<stage>.k
   --walks-from   a forge output folder whose walk store to start from
   --walk-pairs   extra walk pairs for the walks stage (default <out>/walks/extra-pairs.json when present:
                  the legs the routes priced with no walk, merged there after each routes stage and walked in the same build)
-  --grid         a built walking grid (default: built from the client, or $POLESTAR_GRID)
-  --pack         the data pack folder (default $POLESTAR_DATA_PACK, else the user's data folder)
+  --grid         a built walking grid (default: built from the client, or $NORTHSTAR_GRID)
+  --pack         the data pack folder (default $NORTHSTAR_DATA_PACK, else the user's data folder)
   --allow-incomplete   build the grid from an install with missing files (the grid is wrong there)
   --no-questie   build the data without QuestieDB (about a sixth of the quests fewer); without it the
                  build stops when no client AddOns folder holds QuestieDB ($WOW_FOREVER_ADDONS names one)
@@ -115,8 +115,8 @@ packed.";
 
 const FETCH_HELP: &str = "usage: forge data fetch [--url <pack index URL or path>] [--dest <dir>]
 
-Downloads the data pack (default: the `data-pack` release, or $POLESTAR_DATA_PACK_URL), checks its
-BLAKE3 and unpacks it into --dest (default: $POLESTAR_DATA_PACK, else the user's data folder,
+Downloads the data pack (default: the `data-pack` release, or $NORTHSTAR_DATA_PACK_URL), checks its
+BLAKE3 and unpacks it into --dest (default: $NORTHSTAR_DATA_PACK, else the user's data folder,
 polestar/data-pack). No public data pack has been published yet: until one is, build from your own
 game client (forge build --wow <dir>).";
 
@@ -241,7 +241,7 @@ fn run(cmd: &str, args: &[String]) -> Result<(), Fail> {
 	if cmd == "pack" {
 		let out = abs(need("--out")?);
 		let root = val("--root").map(abs).or_else(found_root).ok_or_else(|| Fail::Usage("no data/sources above here: pass --root <checkout>".into()))?;
-		let o = forge::pack::PackOpts { root, walks_from: val("--walks-from").map(abs).map(|d| d.join("walks")), grid: val("--grid").map(abs), nav_fp: std::env::var("POLESTAR_NAV_FP").ok(), out };
+		let o = forge::pack::PackOpts { root, walks_from: val("--walks-from").map(abs).map(|d| d.join("walks")), grid: val("--grid").map(abs), nav_fp: std::env::var("NORTHSTAR_NAV_FP").ok(), out };
 		let t = std::time::Instant::now();
 		let p = forge::pack::pack(&o, &mut log)?;
 		eprintln!(
@@ -269,12 +269,12 @@ fn run(cmd: &str, args: &[String]) -> Result<(), Fail> {
 	let given = val("--guides").map(abs);
 	let checkout = match val("--checkout").map(abs) {
 		Some(c) if c.join(forge::CHECKOUT_MARK).is_file() => c,
-		Some(c) => return Err(Fail::Usage(format!("--checkout {}: not a Polestar checkout (no {})", c.display(), forge::CHECKOUT_MARK))),
+		Some(c) => return Err(Fail::Usage(format!("--checkout {}: not a Northstar checkout (no {})", c.display(), forge::CHECKOUT_MARK))),
 		None => given
 			.as_deref()
 			.and_then(forge::find_checkout)
 			.or_else(|| forge::find_checkout(&cwd))
-			.ok_or_else(|| Fail::Usage(format!("no Polestar checkout ({}) above --guides or here: pass --checkout <dir>", forge::CHECKOUT_MARK)))?,
+			.ok_or_else(|| Fail::Usage(format!("no Northstar checkout ({}) above --guides or here: pass --checkout <dir>", forge::CHECKOUT_MARK)))?,
 	};
 	let guides = given.unwrap_or_else(|| checkout.join("guides"));
 	let o = BuildOpts {

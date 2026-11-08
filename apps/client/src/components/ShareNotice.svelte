@@ -33,10 +33,10 @@
 <section class="notice" aria-labelledby="share-notice-title" in:rise={{ y: 12, duration: 280 }} out:rise={{ y: 8, duration: 160 }}>
 	<div class="head">
 		<Glyph name="record" size={14} color="var(--success)" />
-		<h2 id="share-notice-title">You're sharing your play with Polestar</h2>
+		<h2 id="share-notice-title">You're sharing your play with Northstar</h2>
 	</div>
 	<p>
-		As you play, the Polestar Recorder notes the quests, places, creatures and vendors you meet, and Polestar Client sends them in with no character, realm or account names. Like any website, the server
+		As you play, the Northstar Recorder notes the quests, places, creatures and vendors you meet, and Polestar Client sends them in with no character, realm or account names. Like any website, the server
 		sees your IP address.
 	</p>
 	<p>

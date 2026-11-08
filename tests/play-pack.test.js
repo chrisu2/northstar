@@ -26,13 +26,13 @@ test('play loads a pack after ours: its guides are registered beside ours', { sk
 	const pack = { ...resolvePack({ pack: path.join(PACKS, 'mini') }), contextDir: path.join(PACKS, 'context'), contextDataDir: DATA_DIR };
 	const { result } = await quiet(() => buildPlayPack(pack, { dataDir: DATA_DIR }));
 	assert.ok(result.dir, 'the pack builds');
-	assert.equal(path.basename(result.dir), 'PolestarPack_MiniPack');
+	assert.equal(path.basename(result.dir), 'NorthstarPack_MiniPack');
 	let play = null;
 	try {
 		play = await startServer({ port: 0, dataDir: tmpdir(), artDir: null, packs: [result.dir] });
 		assert.notEqual(play.port, 8077);
 		const ask = async () => {
-			const r = await play.session.call('local G = Polestar.Guides; local a, b = G.Get("mini/a"), G.Get("mini/b"); return { a = a and a.title, b = b and b.title, next = a and a.next, ours = #G.List() }');
+			const r = await play.session.call('local G = Northstar.Guides; local a, b = G.Get("mini/a"), G.Get("mini/b"); return { a = a and a.title, b = b and b.title, next = a and a.next, ours = #G.List() }');
 			assert.ok(r.ok, r.error);
 			return r.value;
 		};

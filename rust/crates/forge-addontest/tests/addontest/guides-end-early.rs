@@ -18,10 +18,10 @@ use serde_json::Value;
 const SETUP: &str = r#"
 stub.login()
 stub.fire("QUEST_LOG_UPDATE")
-local E = Polestar.Engine
-Polestar.Set("behavior.groupQuests", "do")
+local E = Northstar.Engine
+Northstar.Set("behavior.groupQuests", "do")
 ENDS = {}
-Polestar.On("GUIDE_END", function(gid, i)
+Northstar.On("GUIDE_END", function(gid, i)
 	ENDS[#ENDS + 1] = { id = gid, undone = i.undone, live = i.live or false }
 end)
 E.SetGuide(@ID@)
@@ -90,7 +90,7 @@ fn every_leveling_guide_played_in_order_with_its_givers_windows_ends_only_at_its
 	let sources: Vec<(&str, &str)> = texts.iter().map(|(f, t)| (f.as_str(), t.as_str())).collect();
 	let compiled = compile_with(&sources, &data, None);
 	let pack = write_test_pack(&compiled.guides, &data, &our_manifest());
-	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Polestar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
+	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Northstar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
 	let loads = format!("do local ns = {{}}\n{}\nend", lines.join("\n"));
 	let mut maps = String::new();
 	for era in ["forever", "era"] {
@@ -172,7 +172,7 @@ fn every_leveling_guide_played_in_order_with_its_givers_windows_ends_only_at_its
 					loop {
 						let i = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 						let Some((who, before, script)) = jobs.get(i) else { break };
-						let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: before.clone(), addons: vec![Addon::name("Polestar")], script: script.clone(), ..Default::default() });
+						let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: before.clone(), addons: vec![Addon::name("Northstar")], script: script.clone(), ..Default::default() });
 						let sim = out.first().cloned().unwrap_or(Value::Null);
 						let ends = out.get(1).cloned().unwrap_or(Value::Null);
 						let early: Vec<&Value> = ends.as_array().map(|a| a.iter().filter(|e| e["live"] != false).collect()).unwrap_or_default();

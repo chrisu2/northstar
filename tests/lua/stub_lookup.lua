@@ -114,7 +114,7 @@ function Lookup.Guide(kind, id, index)
 	if index == nil and Lookup.IsMount(select(2, Lookup.Sources(kind, id))) then return nil, "mount" end
 	return "lookup/" .. kind .. "/" .. tostring(id)
 end
-function Lookup.Show(q, kind, id) Polestar.Fire("SHOW_LOOKUP", q, kind, id) end
+function Lookup.Show(q, kind, id) Northstar.Fire("SHOW_LOOKUP", q, kind, id) end
 
 -- The two sample selections: a vendor mount and a rare drop.
 lookupstub.sources["mount:8631"] = {
@@ -142,7 +142,7 @@ lookupstub.sources["item:4386"] = {
 }
 
 function lookupstub.install()
-	Polestar.Search = Search
-	Polestar.Codex = Codex
-	Polestar.Lookup = Lookup
+	Northstar.Search = Search
+	Northstar.Codex = Codex
+	Northstar.Lookup = Lookup
 end

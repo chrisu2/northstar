@@ -1,4 +1,4 @@
-//! Issue #360 (AurumTitanos): after Polestar's own accept or turn-in, the game opens the NPC's next window by
+//! Issue #360 (AurumTitanos): after Northstar's own accept or turn-in, the game opens the NPC's next window by
 //! itself: the follow-up of the quest just handed in, or the NPC's other quests again. With
 //! behavior.closeSkipped (on by default) Automation closes that window when it shows nothing the guide takes;
 //! one the player opened, one with a quest the guide wants, one in combat or with Shift held stays open. Each
@@ -9,13 +9,13 @@ use forge_addontest::{emitted, Addon, RunAddon, TEST_PACK, TEST_SOURCE};
 use serde_json::{json, Value};
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 // steps: Lua step tables, e.g. '{ goals = { { t = "turnin", quest = 476, title = "Quest 476" } } }'.
 fn guide(steps: &[String]) -> String {
 	format!(
-		"\n{TEST_PACK}\n{TEST_SOURCE}\nPolestar.RegisterGuide({{\n\tid = \"test/close\", pack = \"test\", title = \"Close\", minLevel = 1, maxLevel = 20,\n\tsteps = {{ {} }},\n}})",
+		"\n{TEST_PACK}\n{TEST_SOURCE}\nNorthstar.RegisterGuide({{\n\tid = \"test/close\", pack = \"test\", title = \"Close\", minLevel = 1, maxLevel = 20,\n\tsteps = {{ {} }},\n}})",
 		steps.join(",\n")
 	)
 }
@@ -96,7 +96,7 @@ fn t_360_fandral_staghelm_the_skipped_follow_up_is_closed_and_the_next_talk_stil
 		&[format!("{{ goals = {{ {}, {}, {} }} }}", goal("turnin", 935), goal("turnin", 940), goal("accept", 98046)), away()],
 		r#"
 			w.gossip(3516, { active = { { questID = 935, isComplete = true }, { questID = 940, isComplete = true } }, available = { { questID = 98046 } } })
-			-- after 935 the game shows the NPC's quests again: Polestar carries on
+			-- after 935 the game shows the NPC's quests again: Northstar carries on
 			w.gossip(3516, { active = { { questID = 940, isComplete = true } }, available = { { questID = 98046 } } })
 			-- after 940 it offers the follow-up, Grove of the Ancients
 			w.questDetail(3516, 952, { title = "Grove of the Ancients" })
@@ -229,11 +229,11 @@ fn t_360_a_window_the_player_opens_is_never_closed_a_quest_picked_from_the_list_
 
 #[test]
 fn t_360_a_quest_the_guide_wants_stays_open_even_when_polestar_leaves_its_accept_to_the_player() {
-	let out = run("w.onQuest(476, {})", &[turnin(476), accept(483)], &format!("\n\t\t\tPolestar.Set(\"behavior.autoAccept\", false)\n\t\t\t{ATHRIDAS}"));
+	let out = run("w.onQuest(476, {})", &[turnin(476), accept(483)], &format!("\n\t\t\tNorthstar.Set(\"behavior.autoAccept\", false)\n\t\t\t{ATHRIDAS}"));
 	assert_eq!(out, json!({ "calls": reward(476), "open": "detail 483" }));
 
 	// A quest the guide turns in two steps later is not the live step's: the list the game opens after
-	// Polestar's own hand-in is closed (automation looks at the live step only, Fitz).
+	// Northstar's own hand-in is closed (automation looks at the live step only, Fitz).
 	let list = run(
 		"w.onQuest(476, {}); w.onQuest(7, { 10 })",
 		&[turnin(476), away(), turnin(7)],
@@ -268,7 +268,7 @@ fn t_360_nothing_is_closed_in_combat_with_shift_held_with_the_setting_off_or_on_
 		stub.keys.shift = true
 		stub.runTimers()"#,
 	);
-	let off = run(before, &steps, &format!("Polestar.Set(\"behavior.closeSkipped\", false)\n{ATHRIDAS}"));
+	let off = run(before, &steps, &format!("Northstar.Set(\"behavior.closeSkipped\", false)\n{ATHRIDAS}"));
 	let services = run(
 		before,
 		&steps,
@@ -300,6 +300,6 @@ fn t_360_nothing_is_closed_in_combat_with_shift_held_with_the_setting_off_or_on_
 
 #[test]
 fn t_360_the_setting_is_on_by_default() {
-	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], addons: vec![core()], script: "stub.login()\nemit(Polestar.Get(\"behavior.closeSkipped\"))".into(), ..Default::default() });
+	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], addons: vec![core()], script: "stub.login()\nemit(Northstar.Get(\"behavior.closeSkipped\"))".into(), ..Default::default() });
 	assert_eq!(out[0], true);
 }

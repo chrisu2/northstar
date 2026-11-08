@@ -31,7 +31,7 @@ test('a coloured line is a stroke between its two ends, offsets and thickness in
 
 test('a textured line stretches its texture along it, turned to its direction; a line without both ends draws nothing', () => {
 	const { body, uris } = draw([UI, PANEL, line(3, {
-		texture: 'Interface\\AddOns\\Polestar\\Media\\Nav\\pin-fill', vertexColor: [0, 1, 0, 1],
+		texture: 'Interface\\AddOns\\Northstar\\Media\\Nav\\pin-fill', vertexColor: [0, 1, 0, 1],
 		line: { from: { point: 'TOPLEFT', rel: 2, x: 0, y: 0 }, to: { point: 'TOPLEFT', rel: 2, x: 0, y: -10 }, thickness: 2 },
 	}), line(4, { color: [1, 1, 1, 1], line: { from: { point: 'TOPLEFT', rel: 2, x: 0, y: 0 }, thickness: 2 } })]);
 	assert.deepEqual(uris, [['Nav/pin-fill', [0, 1, 0, 1]]]);

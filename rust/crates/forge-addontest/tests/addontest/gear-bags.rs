@@ -1,4 +1,4 @@
-//! Upgrade arrows on bag items (addon/Polestar/Gear/Bags.lua): the reward panel's green arrow on each item in the
+//! Upgrade arrows on bag items (addon/Northstar/Gear/Bags.lua): the reward panel's green arrow on each item in the
 //! bags that Gear calls an upgrade, in the client's bags (each container frame's UpdateItems, post-hooked) and in
 //! Baganator (a corner widget); redrawn as the verdicts change.
 
@@ -23,7 +23,7 @@ g.bag(0, 1, "item:9002"); g.bag(0, 2, "item:9004"); g.bag(0, 3, "item:9005"); g.
 "#;
 
 const HELPERS: &str = r#"
-local T = Polestar.Theme
+local T = Northstar.Theme
 local function arrow(button)
 	for _, r in ipairs(button.regions) do
 		if type(r.texture) == "string" and r.texture:find("qol%-upgrade$") then return r end
@@ -46,8 +46,8 @@ local function keys(t)
 end
 "#;
 
-const SCRIPT_HEAD: &str = r#"G = Polestar.Gear
-Polestar.ItemDB.Register({ schema = 1, build = "test" }, "#;
+const SCRIPT_HEAD: &str = r#"G = Northstar.Gear
+Northstar.ItemDB.Register({ schema = 1, build = "test" }, "#;
 
 fn run(script: &str, before: &str) -> Vec<Value> {
 	emitted(&RunAddon {
@@ -58,7 +58,7 @@ w.class, w.className, w.classID, w.level = \"WARRIOR\", \"Warrior\", 1, 30
 w.race, w.raceName, w.raceID, w.faction = \"Troll\", \"Troll\", 8, \"Horde\"
 {before}"
 		),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Gear/Gear.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Gear/Gear.xml"])],
 		login: true,
 		script: [SCRIPT_HEAD, ITEMS, ")\n", HELPERS, "\n", script].concat(),
 		..Default::default()
@@ -110,13 +110,13 @@ fn the_client_s_bags_arrows_follow_the_verdict_a_better_piece_worn_a_bag_change_
 		emit(arrows(0))
 		g.bag(0, 5, "item:9040")
 		emit(arrows(0))
-		Polestar.Set("gear.bagArrows", false); stub.advance(0.25)
+		Northstar.Set("gear.bagArrows", false); stub.advance(0.25)
 		emit(arrows(0))
-		Polestar.Set("gear.bagArrows", true); stub.advance(0.25)
+		Northstar.Set("gear.bagArrows", true); stub.advance(0.25)
 		emit(arrows(0))
-		Polestar.Set("gear.enabled", false); stub.advance(0.25)
+		Northstar.Set("gear.enabled", false); stub.advance(0.25)
 		emit(arrows(0))
-		Polestar.Set("gear.enabled", true); stub.advance(0.25)
+		Northstar.Set("gear.enabled", true); stub.advance(0.25)
 		local redraws, redraw = 0, G.Bags.Redraw
 		G.Bags.Redraw = function() redraws = redraws + 1; redraw() end
 		for _ = 1, 10 do stub.fire("GET_ITEM_INFO_RECEIVED", 9002, true) end
@@ -198,7 +198,7 @@ fn baganator_a_top_left_corner_widget_shows_the_arrow_on_upgrades_and_is_refresh
 	)
 	.try_into()
 	.unwrap();
-	assert_eq!(reg, json!({ "count": 1, "label": "Polestar", "id": "polestar_upgrade", "corner": "top_left", "priority": 1 }));
+	assert_eq!(reg, json!({ "count": 1, "label": "Northstar", "id": "polestar_upgrade", "corner": "top_left", "priority": 1 }));
 	assert_eq!(look, json!({ "texture": "qol-upgrade", "size": [20, 20], "layer": "OVERLAY" }));
 	assert_eq!(verdicts, json!([true, false, false, true, false, false]));
 	assert_eq!(refreshes, json!([[4]]), "one item-widget refresh for the new verdicts");
@@ -276,7 +276,7 @@ fn the_client_s_bags_an_item_the_class_cannot_use_gets_no_empty_slot_arrow_a_wan
 
 // EllesmereUI Bags' item overlay API (EllesmereUIBags/EUI_Bags_Slots.lua): RegisterItemOverlayIcon(name, fn(button,
 // data)) runs on every painted slot; the arrow goes on the button's _textOverlay; RefreshInventory rebuilds its
-// whole window, which Polestar leaves to it.
+// whole window, which Northstar leaves to it.
 const ELLESMERE: &str = r#"
 EUI_Bags = { itemOverlayIcons = {}, refreshes = 0, shown = true }
 function EUI_Bags.RegisterItemOverlayIcon(name, fn) EUI_Bags.itemOverlayIcons[name] = fn end
@@ -287,7 +287,7 @@ function slot(link, bag, n)
 	button._textOverlay = CreateFrame("Frame", nil, button)
 	return button, { bag = bag, slot = n, itemLink = link }
 end
-function paint(button, data) EUI_Bags.itemOverlayIcons.Polestar(button, data) end
+function paint(button, data) EUI_Bags.itemOverlayIcons.Northstar(button, data) end
 function shown(button)
 	for _, r in ipairs(button._textOverlay.regions) do
 		if type(r.texture) == "string" and r.texture:find("qol%-upgrade$") then return r:IsShown() end
@@ -318,7 +318,7 @@ fn ellesmereui_bags_a_painter_puts_the_arrow_bottom_left_on_the_slot_s_overlay_f
 	)
 	.try_into()
 	.unwrap();
-	assert_eq!(reg, json!({ "names": "Polestar" }));
+	assert_eq!(reg, json!({ "names": "Northstar" }));
 	assert_eq!(verdicts, json!([true, false, false]));
 	assert_eq!(look, json!({ "size": [20, 20], "layer": "OVERLAY", "point": "BOTTOMLEFT" }));
 	assert_eq!(after, false, "a better piece worn: the same slot is no upgrade");
@@ -332,11 +332,11 @@ fn ellesmereui_bags_the_link_comes_from_the_bag_slot_when_the_data_has_none_the_
 		local a, da = slot(nil, 0, 1)
 		paint(a, da)
 		emit(shown(a))
-		Polestar.Set("gear.bagArrows", false)
+		Northstar.Set("gear.bagArrows", false)
 		paint(a, da)
 		emit(shown(a))
-		Polestar.Set("gear.bagArrows", true)
-		Polestar.Set("gear.enabled", false)
+		Northstar.Set("gear.bagArrows", true)
+		Northstar.Set("gear.enabled", false)
 		paint(a, da)
 		emit(shown(a))
 	"#,
@@ -393,7 +393,7 @@ fn ellesmereui_bags_loaded_after_polestar_the_painter_registers_as_it_loads_once
 	.try_into()
 	.unwrap();
 	assert_eq!(before, true);
-	assert_eq!(after, "Polestar");
+	assert_eq!(after, "Northstar");
 }
 
 #[test]
@@ -403,12 +403,12 @@ fn leave_bag_arrows_to_pawn_hides_the_bag_arrows_only_while_pawn_is_installed() 
 			r#"
 		emit(G.Bags.IsOn())
 		C_AddOns = { IsAddOnLoaded = function(n) return n == "Pawn" end }
-		Polestar.Set("gear.hideForPawn", true)
+		Northstar.Set("gear.hideForPawn", true)
 		emit(G.Bags.IsOn())
-		Polestar.Set("gear.hideForPawn", false)
+		Northstar.Set("gear.hideForPawn", false)
 		emit(G.Bags.IsOn())
 		C_AddOns = nil
-		Polestar.Set("gear.hideForPawn", true)
+		Northstar.Set("gear.hideForPawn", true)
 		emit(G.Bags.IsOn())
 	"#,
 		),
@@ -431,7 +431,7 @@ fn ellesmereui_bags_the_arrow_takes_the_new_success_colour_when_the_look_changes
 		paint(a, da)
 		local r
 		for _, x in ipairs(a._textOverlay.regions) do if x.texture then r = x end end
-		Polestar.Set("ui.skin", "halo")
+		Northstar.Set("ui.skin", "halo")
 		local want = { T.Color("success") }
 		local got = { r:GetVertexColor() }
 		emit({ want = { want[1], want[2], want[3] }, got = { got[1], got[2], got[3] } })

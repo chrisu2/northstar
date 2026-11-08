@@ -29,9 +29,9 @@ function packageVersion() {
 	return JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
 }
 
-// The whole `## Interface:` value of addon/Polestar/Polestar.toc (a
+// The whole `## Interface:` value of addon/Northstar/Northstar.toc (a
 // multi-version line like "11507, 16001" included), copied into every pack's TOC.
-function coreInterface(tocFile = path.join(ROOT, 'addon', 'Polestar', 'Polestar.toc')) {
+function coreInterface(tocFile = path.join(ROOT, 'addon', 'Northstar', 'Northstar.toc')) {
 	const m = /^## Interface:\s*(.+?)\s*$/m.exec(fs.readFileSync(tocFile, 'utf8'));
 	if (!m) throw new Error(`${tocFile} has no ## Interface line`);
 	return m[1];
@@ -169,7 +169,7 @@ function legsRaces(g) {
 }
 
 // <packDir>/retired.json: the ids of guides a cutover removed, ["<id>", ...]
-// (Polestar opens a saved tab of one as its successor: Core/Guides.lua
+// (Northstar opens a saved tab of one as its successor: Core/Guides.lua
 // Guides.Successor). An id one of the pack's guides still has warns; a file
 // that is no list of guide ids is an error. -> [id] ([] without the file)
 const RETIRED_FILE = 'retired.json';
@@ -193,7 +193,7 @@ function readRetired(packDir, guides, diag) {
 		return [];
 	}
 	const live = new Set(guides.map((g) => g.id));
-	for (const id of list) if (live.has(id)) diag.warn(file, 1, `retired guide id "${id}" is still a guide of the pack: Polestar keeps opening it`);
+	for (const id of list) if (live.has(id)) diag.warn(file, 1, `retired guide id "${id}" is still a guide of the pack: Northstar keeps opening it`);
 	return [...new Set(list)].sort();
 }
 
@@ -286,7 +286,7 @@ function buildPackFiles({ guides, manifest, data, license = null, translations =
 	const iface = coreInterface();
 	const entry = (g) => ({ guide: g._localised || g, source: g._ast && g._ast.source ? g._ast.source : null });
 	// Leveling guides for one class and named races go into an addon per race
-	// (racePart), which Polestar loads for the player's race only; so do the
+	// (racePart), which Northstar loads for the player's race only; so do the
 	// baked legs of every leveling guide (readLegs, legsRaces), in its Legs.lua.
 	const parts = new Map();
 	const legParts = new Map();
@@ -352,11 +352,11 @@ function partAddon(folder, race) {
 }
 
 // Our guide pack's folder (pack id `guides`).
-const OWN_FOLDER = 'Polestar_Guides';
+const OWN_FOLDER = 'Northstar_Guides';
 
 // The texts addon of pack folder `folder` in `locale` (Core/GuideTexts.lua
 // TextsAddon): <folder>_<locale>, and for our own pack the language folder
-// Polestar_<locale> it shares with the game's names.
+// Northstar_<locale> it shares with the game's names.
 function textsAddon(folder, locale) {
 	return folder === OWN_FOLDER ? languageAddon(locale) : `${folder}_${locale}`;
 }
@@ -374,8 +374,8 @@ function isGeneratedDir(dir) {
 	return entries.some((e) => e.isFile() && (e.name.toLowerCase().endsWith('.toc') || e.name === 'Pack.xml') && has(e.name));
 }
 
-// The pack id a generated TOC names (its `## X-Polestar-Pack:` line).
-const PACK_ID_LINE = /^## X-Polestar-Pack:[ \t]*(\S+)[ \t]*$/m;
+// The pack id a generated TOC names (its `## X-Northstar-Pack:` line).
+const PACK_ID_LINE = /^## X-Northstar-Pack:[ \t]*(\S+)[ \t]*$/m;
 
 // The pack id dir's generated TOC names, or null.
 function generatedPackId(dir) {
@@ -421,9 +421,9 @@ function packDirRefusal(dir, packId = null) {
 // pack's texts addons and `../<folder>_<race file>/...` its race parts
 // (buildPackFiles), each written whole beside outDir; a texts addon or race
 // part of the pack the build no longer has is removed. Our pack's texts go
-// into the language folders Polestar_<locale>, which the game's names
+// into the language folders Northstar_<locale>, which the game's names
 // share: there only the TOC and Texts.lua are written (or Texts.lua
-// removed), and the retired Polestar_Guides_<locale> folders are removed.
+// removed), and the retired Northstar_Guides_<locale> folders are removed.
 function writePackDir(outDir, files) {
 	const toc = Object.keys(files).find((name) => !name.startsWith('../') && name.toLowerCase().endsWith('.toc'));
 	const m = toc ? PACK_ID_LINE.exec(String(files[toc])) : null;
@@ -487,8 +487,8 @@ function writePackDir(outDir, files) {
 	}
 }
 
-// The pack id a generated race part's TOC names (`## X-Polestar-Part:`).
-const PART_ID_LINE = /^## X-Polestar-Part:[ \t]*(\S+)[ \t]*$/m;
+// The pack id a generated race part's TOC names (`## X-Northstar-Part:`).
+const PART_ID_LINE = /^## X-Northstar-Part:[ \t]*(\S+)[ \t]*$/m;
 
 // Whether dir may hold pack packId's race part: absent, empty, or one we
 // generated for that pack. -> null, or why not.
@@ -508,8 +508,8 @@ function partDirRefusal(dir, packId) {
 	return null;
 }
 
-// The pack id a generated texts addon's TOC names (`## X-Polestar-Texts:`).
-const TEXTS_ID_LINE = /^## X-Polestar-Texts:[ \t]*(\S+)[ \t]*$/m;
+// The pack id a generated texts addon's TOC names (`## X-Northstar-Texts:`).
+const TEXTS_ID_LINE = /^## X-Northstar-Texts:[ \t]*(\S+)[ \t]*$/m;
 
 // Whether dir may hold pack packId's texts addon: absent, empty, or one we
 // generated for that pack. -> null, or why not.
@@ -529,16 +529,16 @@ function textsDirRefusal(dir, packId) {
 	return null;
 }
 
-// Addon folders of the release: always these (Polestar_Nav is committed:
-// Polestar's walking router and maps, `nav pack`), plus the generated
+// Addon folders of the release: always these (Northstar_Nav is committed:
+// Northstar's walking router and maps, `nav pack`), plus the generated
 // data addons when they have been built (each skipped while its folder or TOC
 // is missing; `pack` refuses a release without the Codex, which Lookup,
 // Dungeons and Rares read: forge-release's codex_refusal), the language
 // folders last (our guides' texts and the game's names, `forge guide
 // compile` and `forge data names`, committed; the client loads only its own).
-const RELEASE_ADDONS = ['Polestar', 'Polestar_Guides', 'Polestar_Nav'];
+const RELEASE_ADDONS = ['Northstar', 'Northstar_Guides', 'Northstar_Nav'];
 const RELEASE_DATA_ADDONS = [
-	'Polestar_QuestDB', 'Polestar_ItemDB', 'Polestar_Codex',
+	'Northstar_QuestDB', 'Northstar_ItemDB', 'Northstar_Codex',
 	...LOCALE_CODES.map(languageAddon),
 ];
 
@@ -547,7 +547,7 @@ function releaseAddons(addonsDir) {
 	const skipped = RELEASE_DATA_ADDONS.filter((n) => !fs.existsSync(path.join(addonsDir, n, `${n}.toc`)));
 	// The walking maps' part addons (forge nav pack --leffe), then our pack's faction parts and race parts (forge
 	// guide compile, format 8), each once built (as forge-release's release_addons).
-	const navParts = ['Polestar_Nav_EK', 'Polestar_Nav_Kalimdor'];
+	const navParts = ['Northstar_Nav_EK', 'Northstar_Nav_Kalimdor'];
 	const parts = [...navParts, ...['Alliance', 'Horde', ...RACE_FILES].map((r) => partAddon(OWN_FOLDER, r))].filter((n) => fs.existsSync(path.join(addonsDir, n, `${n}.toc`)));
 	return { names: [...RELEASE_ADDONS, ...parts, ...RELEASE_DATA_ADDONS.filter((n) => !skipped.includes(n))], skipped };
 }

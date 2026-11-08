@@ -244,7 +244,7 @@ const GLYPHS = {
 		polyline([[3.6, 12.2], [12, 16.8], [20.4, 12.2]], 2.1),
 		polyline([[3.6, 16.2], [12, 20.8], [20.4, 16.2]], 2.1),
 	),
-	// Integrations (other addons Polestar works with): a plug, two prongs
+	// Integrations (other addons Northstar works with): a plug, two prongs
 	// over its body, the cable out of the bottom.
 	plug: union(
 		line(9, 2.8, 9, 7.6, 2.2), line(15, 2.8, 15, 7.6, 2.2),
@@ -277,7 +277,7 @@ function glyph(shape) {
 // symbol from Discord's brand kit (discord.com/branding) exactly as it is
 // published, scaled whole to 21 grid units wide and centred, filled white
 // and tinted Discord's Blurple at runtime (the Theme token `discord`). It is
-// Discord's trademark, the one mark Polestar ships that it did not draw
+// Discord's trademark, the one mark Northstar ships that it did not draw
 // (THIRD_PARTY.md).
 const DISCORD_SYMBOL = 'M40.575 0C39.9562 1.09866 39.4006 2.2352 38.8954 3.397C34.0967 2.67719 29.2096 2.67719 24.3982 3.397C23.9057 2.2352 23.3374 1.09866 22.7186 0C18.2104 0.770324 13.8157 2.12155 9.64839 4.02841C1.38951 16.2652 -0.845688 28.1863 0.265599 39.9432C5.10222 43.517 10.5197 46.2447 16.2909 47.9874C17.5916 46.2447 18.7407 44.3883 19.7257 42.4562C17.8568 41.7616 16.0509 40.8903 14.3208 39.88C14.7755 39.5517 15.2175 39.2107 15.6468 38.8824C25.7873 43.6559 37.5316 43.6559 47.6847 38.8824C48.1141 39.236 48.5561 39.577 49.0107 39.88C47.2806 40.9029 45.4748 41.7616 43.5931 42.4688C44.5781 44.4009 45.7273 46.2573 47.028 48C52.7991 46.2573 58.2167 43.5422 63.0533 39.9684C64.3666 26.3299 60.8055 14.5099 53.6452 4.04104C49.4905 2.13418 45.0959 0.782952 40.5876 0.0252565L40.575 0ZM21.1401 32.7072C18.0209 32.7072 15.4321 29.8785 15.4321 26.3804C15.4321 22.8824 17.9199 20.041 21.1275 20.041C24.3351 20.041 26.886 22.895 26.8354 26.3804C26.7849 29.8658 24.3224 32.7072 21.1401 32.7072ZM42.1788 32.7072C39.047 32.7072 36.4834 29.8785 36.4834 26.3804C36.4834 22.8824 38.9712 20.041 42.1788 20.041C45.3864 20.041 47.9246 22.895 47.8741 26.3804C47.8236 29.8658 45.3611 32.7072 42.1788 32.7072Z';
 const DISCORD_W = 64, DISCORD_H = 48; // the symbol's viewBox
@@ -346,7 +346,7 @@ function white() {
 }
 
 // ---------------------------------------------------------------------------
-// Identity. The Polestar emblem is a four-point guiding star set in a fine
+// Identity. The Northstar emblem is a four-point guiding star set in a fine
 // ring: long north/south rays that break through the ring, short east/west
 // rays inside it. Provenance: drawn here, procedurally, licence-free.
 // ---------------------------------------------------------------------------
@@ -421,7 +421,7 @@ function prng(seed) {
 
 // The night-sky header band, 1024x128, drawn at 1:1 (the UI crops it with
 // texcoords, never stretches it), as two layers so every colour scheme gets
-// its own sky over its own ground (Polestar.Theme.Band):
+// its own sky over its own ground (Northstar.Theme.Band):
 // - band: the sky as a white alpha mask, opaque at the top and gone by 108px,
 //   with fine grain; tinted with the scheme's sky colour over the window
 //   ground, so it always fades into whatever ground sits under it. The curve
@@ -484,7 +484,7 @@ function bandStars() {
 }
 
 // ---------------------------------------------------------------------------
-// The wordmark: "POLESTAR" engraved in Cinzel (The Cinzel Project Authors,
+// The wordmark: "NORTHSTAR" engraved in Cinzel (The Cinzel Project Authors,
 // SIL Open Font License 1.1; tools/media/fonts/). Only these rendered images
 // ship in the addon, not the font. Outlines come straight from the font's
 // glyf table (its Regular master), filled with the non-zero rule at 4x4
@@ -557,7 +557,7 @@ function nearEdge(edges, x, y, r) {
 function engrave({ capH, bold, tracking, W = 256, H = 32 }) {
 	const { Font } = require('../preview/font');
 	const font = new Font(path.join(__dirname, 'fonts', 'Cinzel-Variable.ttf'));
-	const text = 'POLESTAR';
+	const text = 'NORTHSTAR';
 	const scale = capH / 700; // Cinzel caps are 700 units tall
 	const track = tracking * capH;
 	let x = 1 + bold;

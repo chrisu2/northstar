@@ -1,4 +1,4 @@
-//! "While you're here" (addon/Polestar/Core/Engine.lua, Own.hereBuild / Own.hereTick, Engine.GetWhileHere): while
+//! "While you're here" (addon/Northstar/Core/Engine.lua, Own.hereBuild / Own.hereTick, Engine.GetWhileHere): while
 //! the player works the live step, an open objective of a later step whose quest is already in the log, close by,
 //! becomes one line under the step, whatever is left (the player is there already); with the option on, so does a
 //! quest ready to hand in whose NPC stands right there. Real Core manifest, stub world.
@@ -28,7 +28,7 @@ w.onQuest(52, { 1 }, "Spiders")
 // >= 10`: a murloc for 50 · 7 an ogre for 51, level 9 · 8 turn in 40 (ready) to Marshal Dughan at 42,35.1 · 9 hearth
 // (the guide leaves the zone) · 10 a spider for 52.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/here", pack = "test", title = "Here", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Wolves", goals = { { t = "kill", target = "Young Wolf", npc = 299, count = 8, quest = 33, oi = 1, map = 1429, x = 60, y = 60 ESCORT } } },
@@ -47,7 +47,7 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 w = stub.world
 function flush() stub.advance(0.25) end
 -- Move, then let the arrival poll (every 0.5 s) measure.
@@ -73,8 +73,8 @@ fn run_edit(script: &str, from: &str, to: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/here" }"#.into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/here" }"#.into())],
 		script: [TEST_PACK, TEST_SOURCE, &guide, HELPERS, "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 		..Default::default()
 	})
@@ -201,7 +201,7 @@ fn a_quest_ready_to_hand_in_whose_npc_stands_within_30_yards_is_the_line_when_th
 		at(42.0, 36.1); emit(here())    -- 20 yd
 		at(42.0, 37.4); emit(here())    -- 46 yd: it holds
 		at(42.0, 38.1); emit(here())    -- 60 yd: gone
-		Polestar.Set("behavior.whileHereTurnins", false); flush()
+		Northstar.Set("behavior.whileHereTurnins", false); flush()
 		emit(cands())
 		at(42.0, 36.1); emit(here())
 	"#);
@@ -244,18 +244,18 @@ fn never_in_an_instance_on_a_taxi_while_hearthing_or_during_a_timed_or_escort_qu
 #[test]
 fn the_options_turn_it_off_and_set_how_close() {
 	let out = run(r#"
-		emit({ Polestar.Get("behavior.whileHere"), Polestar.Get("behavior.whileHereRadius"), Polestar.Get("behavior.whileHereTurnins") })
-		Polestar.Set("behavior.whileHere", false); flush()
+		emit({ Northstar.Get("behavior.whileHere"), Northstar.Get("behavior.whileHereRadius"), Northstar.Get("behavior.whileHereTurnins") })
+		Northstar.Set("behavior.whileHere", false); flush()
 		at(47.6, 37.6); emit({ cands(), here() })
-		Polestar.Set("behavior.whileHere", true); Polestar.Set("behavior.whileHereRadius", 40); flush()
+		Northstar.Set("behavior.whileHere", true); Northstar.Set("behavior.whileHereRadius", 40); flush()
 		at(47.6, 37.6); emit(here())    -- 50 yd: past 40
 		at(47.6, 37.0); emit(here())    -- 38 yd
 		E.DismissWhileHere()
-		Polestar.Set("behavior.whileHereRadius", 120); flush()
+		Northstar.Set("behavior.whileHereRadius", 120); flush()
 		at(47.6, 40.1); emit(here())    -- 100 yd, within 120 (the vermin stay quiet: the candles are 150 yd off)
 	"#);
 	assert_eq!(out, vec![json!([true, 60, true]), json!(["", "none"]), json!("none"), json!("2:1 Kill Kobold Vermin, 2 more 40"), json!("none")]);
-	let wide = run(r#"Polestar.Set("behavior.whileHereRadius", 120); flush(); at(47.6, 40.1); emit(here())"#);
+	let wide = run(r#"Northstar.Set("behavior.whileHereRadius", 120); flush(); at(47.6, 40.1); emit(here())"#);
 	assert_eq!(wide, vec![json!("2:1 Kill Kobold Vermin, 2 more 100")]);
 }
 
@@ -265,7 +265,7 @@ fn the_options_turn_it_off_and_set_how_close() {
 fn the_position_poll_allocates_nothing_per_tick() {
 	let out = run(r#"
 		local function ticks(n)
-			local c, px, py = Polestar.Compat.GetPlayerWorldPosition()
+			local c, px, py = Northstar.Compat.GetPlayerWorldPosition()
 			for _ = 1, 20 do E.WhileHereTick(c, px, py) end
 			collectgarbage("collect"); collectgarbage("collect")
 			collectgarbage("stop")

@@ -1,4 +1,4 @@
-//! Bags and supplies (addon/Polestar/QoL): bag space and the two-press junk delete (Space.lua and the bag
+//! Bags and supplies (addon/Northstar/QoL): bag space and the two-press junk delete (Space.lua and the bag
 //! button in Buttons.lua), junk and keep marks (Marks.lua, with the merchant's selling in Vendor.lua), gear
 //! from loot or a merchant offered to wear (Wear.lua), restocking at a merchant on a press (Restock.lua), and
 //! their guide-window banners (UI/GuideFrame.lua) and per-character option sliders (Theme/Widgets.lua).
@@ -12,8 +12,8 @@ const FILES: [&str; 5] = ["Core/Init.lua", "Core/Compat.lua", "Core/Hooks.lua", 
 
 const PRELUDE: &str = r#"
 local q = stub.qol
-local QoL = Polestar.QoL
-local function set(k, v) Polestar.Set("qol." .. k, v); stub.runTimers() end
+local QoL = Northstar.QoL
+local function set(k, v) Northstar.Set("qol." .. k, v); stub.runTimers() end
 local function calls(name)
 	local out = {}
 	for _, c in ipairs(q.calls) do if c[1] == name then out[#out + 1] = c[2] or true end end
@@ -27,7 +27,7 @@ local function bagsChanged() stub.fire("BAG_UPDATE_DELAYED"); stub.advance(0.1) 
 "#;
 
 fn run_with(script: &str, before: &str) -> Vec<Value> {
-	emitted(&RunAddon { stubs: vec!["stub_qol.lua"], addons: vec![Addon::files("Polestar", &FILES)], before: before.into(), saved: vec![], login: true, script: format!("{PRELUDE}{script}") })
+	emitted(&RunAddon { stubs: vec!["stub_qol.lua"], addons: vec![Addon::files("Northstar", &FILES)], before: before.into(), saved: vec![], login: true, script: format!("{PRELUDE}{script}") })
 }
 
 fn run(script: &str) -> Vec<Value> {
@@ -125,14 +125,14 @@ fn marks_ctrl_alt_click_cycles_junk_keep_and_clear_junk_is_sold_kept_greys_are_n
 		local M, S = QoL.Marks, QoL.Space
 		local cloth = "|Hitem:3|h[Linen Cloth]|h"
 		stub.keys.ctrl, stub.keys.alt = true, true
-		Polestar.Hooks.OnItemClick(cloth)
+		Northstar.Hooks.OnItemClick(cloth)
 		local first = M.Get(3)
-		Polestar.Hooks.OnItemClick(cloth)
+		Northstar.Hooks.OnItemClick(cloth)
 		local second = M.Get(3)
-		Polestar.Hooks.OnItemClick(cloth)
+		Northstar.Hooks.OnItemClick(cloth)
 		local third = M.Get(3)
 		stub.keys.ctrl = false
-		Polestar.Hooks.OnItemClick(cloth)   -- Alt alone is the Lookup's
+		Northstar.Hooks.OnItemClick(cloth)   -- Alt alone is the Lookup's
 		emit({ first = first, second = second, third = third or false, altOnly = M.Get(3) or false,
 			said = printed("Linen Cloth%]|h is junk now") })
 		stub.keys.alt = false
@@ -222,7 +222,7 @@ const WEAR: &str = r#"
 	q.items[16] = { name = "Rusted Belt", quality = 2, equipLoc = "INVTYPE_WAIST" }
 	q.items[17] = { name = "Watcher's Bracers", quality = 2, equipLoc = "INVTYPE_WRIST" }
 	local SLOT = { [11] = 8, [12] = 10, [14] = 1, [15] = 15, [16] = 6, [17] = 9 }
-	Polestar.Gear = {
+	Northstar.Gear = {
 		IsEnabled = function() return true end,
 		IsUpgrade = function(link)
 			if link:find("item:12|", 1, true) then return false, -1 end
@@ -274,7 +274,7 @@ fn wear_offers_new_gear_from_loot_puts_it_on_only_when_taken_and_remembers_a_no(
 		emit(Wr.Offer() == nil)
 		QoL.Kept = kept
 
-		Polestar.Gear.IsEnabled = function() return false end
+		Northstar.Gear.IsEnabled = function() return false end
 		loot(7, 11)
 		emit(Wr.Offer() == nil)
 	"#,
@@ -380,13 +380,13 @@ fn restock_money_short_is_said_and_the_amounts_are_per_character_set_by_command(
 fn options_restock_sliders_hold_per_character_amounts_through_get_and_set() {
 	let out = run(r#"
 		local controls
-		for _, spec in ipairs(Polestar.Widgets.OptionsRegistry) do
+		for _, spec in ipairs(Northstar.Widgets.OptionsRegistry) do
 			if spec.section == "Restock" then controls = spec.controls end
 		end
 		local kinds = {}
 		for i, c in ipairs(controls) do kinds[i] = c.kind .. ":" .. tostring(c.key or "-") end
 		emit(kinds)
-		local W = Polestar.Widgets
+		local W = Northstar.Widgets
 		local drink = controls[2]
 		local row = W.Slider(UIParent, drink.label, nil, drink.min, drink.max, drink.step, drink.format, drink.help, nil, { get = drink.get, set = drink.set })
 		stub.RunScript(row.Slider, "OnMouseWheel", 1)
@@ -408,12 +408,12 @@ const UI_FILES: [&str; 3] = ["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"];
 
 const UI_PRE: &str = r#"uistub.install()
 stub.login()
-local GF = Polestar.UI.GuideFrame
+local GF = Northstar.UI.GuideFrame
 local B = GF.parts.banner
 uistub.openTabs({ { uistub.elwynn, 3 } }, 1)
 local log = {}
 local bags, offer
-Polestar.QoL = {
+Northstar.QoL = {
 	Money = function(c) return c .. "c" end,
 	Space = {
 		Banner = function() return bags end,
@@ -428,11 +428,11 @@ Polestar.QoL = {
 		Dismiss = function() log[#log + 1] = "let go"; offer = nil end,
 	},
 }
-Polestar.Gear = { GainText = function(p) return "+" .. p .. "%" end, SlotName = function(s) return s == 1 and "Head" or nil end }
+Northstar.Gear = { GainText = function(p) return "+" .. p .. "%" end, SlotName = function(s) return s == 1 and "Head" or nil end }
 "#;
 
 fn run_ui(script: &str) -> Vec<Value> {
-	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Polestar", &UI_FILES)], script: format!("{UI_PRE}{script}"), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Northstar", &UI_FILES)], script: format!("{UI_PRE}{script}"), ..Default::default() })
 }
 
 #[test]
@@ -440,7 +440,7 @@ fn banner_bags_full_offers_the_two_click_delete_and_close_dismisses_it() {
 	let out = run_ui(
 		r#"
 		bags = { free = 0, junk = { id = 2, count = 2, value = 14, link = "[Broken Fang]" }, armed = false }
-		Polestar.Fire("BAG_SPACE")
+		Northstar.Fire("BAG_SPACE")
 		emit({ shown = B:IsShown(), text = B.Text:GetText(), jump = B.Jump.Label:GetText(), close = B.Close:IsShown() })
 		B.Jump:Click()
 		emit(B.Jump.Label:GetText())
@@ -458,11 +458,11 @@ fn banner_gear_offer_wear_it_or_not_this_one() {
 	let out = run_ui(
 		r#"
 		offer = { id = 14, link = "[Ridge Helm]", slot = 1, pct = 10 }
-		Polestar.Fire("WEAR_OFFER")
+		Northstar.Fire("WEAR_OFFER")
 		emit({ text = B.Text:GetText(), jump = B.Jump.Label:GetText(), later = B.Later.Label:GetText() })
 		B.Jump:Click()
 		offer = { id = 15, link = "[Dusty Cloak]", slot = 15 }
-		Polestar.Fire("WEAR_OFFER")
+		Northstar.Fire("WEAR_OFFER")
 		B.Later:Click()
 		emit({ shown = B:IsShown(), log = log })
 	"#,

@@ -7,13 +7,13 @@ use std::process::ExitCode;
 pub const USAGE: &str = "usage: forge release <command> [options]
 
 Building and releasing the addon (docs/RELEASING.md):
-  pack [<dir>]       the release zips dist/Polestar-<version>.zip, dist/Polestar_Recorder-<version>.zip and
+  pack [<dir>]       the release zips dist/Northstar-<version>.zip, dist/Northstar_Recorder-<version>.zip and
                      dist/SHA256SUMS; given another pack, <pack>/dist/<folder>-<version>.zip
   version [<x.y.z>]  print the version (exit 1 when guides/pack.json or an addon TOC disagrees), or set it
                      in package.json, guides/pack.json and every addon TOC
   notes <x.y.z>      the version's release notes from CHANGELOG.md: dist/notes-<v>.md (GitHub),
                      dist/notes-curseforge-<v>.md and dist/notes-discord-<v>.txt
-  credits            rewrite addon/Polestar/Core/Credits.lua (the Guiding Stars page) from data/credits.json
+  credits            rewrite addon/Northstar/Core/Credits.lua (the Guiding Stars page) from data/credits.json
                      and the repository's merged pull requests (needs the GitHub CLI, gh, logged in)
 
 forge release <command> --help shows the command's options. The changelog fragments: forge changelog.";
@@ -30,7 +30,7 @@ most 2,000 characters), each paragraph and list item joined onto one line. Each 
 
 const CREDITS_USAGE: &str = "usage: forge release credits [--root <dir>]
 
-Rewrites addon/Polestar/Core/Credits.lua, the names on the Guiding Stars page (Options > Guiding Stars,
+Rewrites addon/Northstar/Core/Credits.lua, the names on the Guiding Stars page (Options > Guiding Stars,
 and \"Special thanks to\" in the windows' headers):
 
   supporters    data/credits.json \"supporters\": Ko-fi supporters' names, highest total first.
@@ -42,20 +42,20 @@ and \"Special thanks to\" in the windows' headers):
 Run it before a release.
   --root <dir>   the checkout (default: the one above here, else above the forge binary)";
 
-/// The Polestar checkout: `--root`, else the nearest folder above the working directory, else above
-/// the forge binary, holding addon/Polestar/Polestar.toc and package.json.
+/// The Northstar checkout: `--root`, else the nearest folder above the working directory, else above
+/// the forge binary, holding addon/Northstar/Northstar.toc and package.json.
 pub(super) fn checkout(root: Option<String>) -> Result<PathBuf, super::Fail> {
 	if let Some(r) = root {
 		return Ok(forge_release::absolute(Path::new(&r)));
 	}
-	let is_root = |d: &&Path| d.join("addon/Polestar/Polestar.toc").is_file() && d.join("package.json").is_file();
+	let is_root = |d: &&Path| d.join("addon/Northstar/Northstar.toc").is_file() && d.join("package.json").is_file();
 	let cwd = std::env::current_dir().unwrap_or_default();
 	let exe = std::env::current_exe().unwrap_or_default();
 	cwd.ancestors()
 		.find(is_root)
 		.or_else(|| exe.ancestors().find(is_root))
 		.map(Path::to_path_buf)
-		.ok_or_else(|| super::usage("no Polestar checkout (addon/Polestar/Polestar.toc and package.json) above here or the forge binary: pass --root <checkout>"))
+		.ok_or_else(|| super::usage("no Northstar checkout (addon/Northstar/Northstar.toc and package.json) above here or the forge binary: pass --root <checkout>"))
 }
 
 /// The value of option `k` (`k v` or `k=v`).

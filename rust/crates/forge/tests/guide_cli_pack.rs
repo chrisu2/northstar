@@ -278,11 +278,11 @@ fn without_pack_lint_and_compile_use_the_nearest_pack_json_compile_writes_dist_f
 	has(&lint.stdout, "lint ok: 2 files, 2 guides");
 	let compile = with("compile", &[]);
 	assert_eq!(compile.status, 0, "{}", compile.stderr);
-	let out = Path::new(&dir).join("dist/PolestarPack_Joe");
+	let out = Path::new(&dir).join("dist/NorthstarPack_Joe");
 	let mut files: Vec<String> = std::fs::read_dir(&out).unwrap().flatten().map(|e| e.file_name().to_string_lossy().into_owned()).collect();
 	files.sort();
-	assert_eq!(files, ["Guides.lua", "LICENSE-DATA.txt", "MapFrames.lua", "Pack.lua", "PolestarPack_Joe.toc"]);
-	has(&std::fs::read_to_string(out.join("PolestarPack_Joe.toc")).unwrap(), r"(?m)^## X-Polestar-Pack: joe$");
+	assert_eq!(files, ["Guides.lua", "LICENSE-DATA.txt", "MapFrames.lua", "Pack.lua", "NorthstarPack_Joe.toc"]);
+	has(&std::fs::read_to_string(out.join("NorthstarPack_Joe.toc")).unwrap(), r"(?m)^## X-Northstar-Pack: joe$");
 	let lua = std::fs::read_to_string(out.join("Guides.lua")).unwrap();
 	has(&lua, r#"id = "joe/a""#);
 	assert!(!lua.contains("id = \"forever/"), "nothing of the context is emitted");
@@ -291,7 +291,7 @@ fn without_pack_lint_and_compile_use_the_nearest_pack_json_compile_writes_dist_f
 	// --out still wins.
 	let other = tmp("nearest-out").join("out");
 	assert_eq!(with("compile", &["--out", &s(&other)]).status, 0);
-	assert!(other.join("PolestarPack_Joe.toc").exists());
+	assert!(other.join("NorthstarPack_Joe.toc").exists());
 }
 
 #[test]
@@ -324,11 +324,11 @@ fn lint_and_compile_take_the_pack_folder_as_their_one_argument_two_folders_exit_
 	assert_eq!(lint.status, 0, "{}", lint.stderr);
 	has(&lint.stdout, "lint ok: 2 files, 2 guides");
 	// Our own build folder is left alone.
-	let ours = repo().join("addon/Polestar_Guides/Guides.lua");
+	let ours = repo().join("addon/Northstar_Guides/Guides.lua");
 	let before = std::fs::metadata(&ours).and_then(|m| m.modified()).ok();
 	let compile = with(&["compile", &dir]);
 	assert_eq!(compile.status, 0, "{}", compile.stderr);
-	assert!(Path::new(&dir).join("dist/PolestarPack_Joe").is_dir());
+	assert!(Path::new(&dir).join("dist/NorthstarPack_Joe").is_dir());
 	assert_eq!(std::fs::metadata(&ours).and_then(|m| m.modified()).ok(), before);
 	assert_eq!(std::fs::read_dir(&elsewhere).unwrap().count(), 0);
 	let other = joe_copy("arg-other", &[]);

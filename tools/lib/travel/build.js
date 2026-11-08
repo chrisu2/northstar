@@ -1,16 +1,16 @@
 'use strict';
 // `travel build`: the flight network, transports, inns, learned walking
 // paths and zone crossings -> data/forever/travel.json (full detail, with
-// sources and warnings) and addon/Polestar/Nav/TravelData.lua (what the
+// sources and warnings) and addon/Northstar/Nav/TravelData.lua (what the
 // in-game planner needs, with the timetables, walk-in portals and class
 // teleports Nav/Transit.lua reads: tools/lib/travel/timetable.js); the
-// flights' tracks -> addon/Polestar/Maps/FlightPaths.lua (what the map's
+// flights' tracks -> addon/Northstar/Maps/FlightPaths.lua (what the map's
 // route lines draw).
 // Crossings: the shipped crossings file (data/crossings.json, from
 // `travel import`: Carbonite's zone connections, GPL-3.0) goes into
 // TravelData.lua as the full crossing data; the optional local crossings
 // file (data/local/crossings.json) goes into the local data addon
-// Polestar_Travel, never into TravelData.lua, and adds to it in game.
+// Northstar_Travel, never into TravelData.lua, and adds to it in game.
 // Same inputs give byte-identical outputs.
 
 const fs = require('node:fs');
@@ -70,7 +70,7 @@ function emitLua(t) {
 	lines.push(`-- ${t.transitBuild || 'none'}), CMaNGOS classic-db ${t.cmangosRev ? t.cmangosRev.slice(0, 7) : 'none'} (spawns, areatrigger_teleport,`);
 	lines.push('-- spell_target_position, sniffed transport periods) and the CMaNGOS transport model, after');
 	lines.push('-- Shortest Path Forever by Cillian Berragan (GPL-3.0-or-later, used with permission).');
-	lines.push('-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15.');
+	lines.push('-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.');
 	lines.push('');
 	lines.push('local ADDON, ns = ...');
 	lines.push('local N = ns.Nav');
@@ -203,7 +203,7 @@ function emitFlightLua(build, legs) {
 // shippedFile: the shipped crossings file (default SHIPPED_CROSSINGS,
 // committed); absent -> no shipped crossings. crossingsFile: the optional
 // local crossings file (default data/local/crossings.json next to dataDir);
-// absent -> no Polestar_Travel output. gridDir: the navigation grid
+// absent -> no Northstar_Travel output. gridDir: the navigation grid
 // (tools/lib/nav, `nav build`) the transports' board points come from;
 // absent -> none, with a warning.
 async function buildTravel({
@@ -345,7 +345,7 @@ async function buildTravel({
 	return { travel: result, lua, flightLua, warnings, travelAddon: local ? emitTravelAddon(local, frames, live) : null, localCounts };
 }
 
-// travelAddonDir: where Polestar_Travel goes (written only when the build read a local crossings file).
+// travelAddonDir: where Northstar_Travel goes (written only when the build read a local crossings file).
 // flightOut: FlightPaths.lua (skipped when not given).
 function writeTravel({ travel, lua, flightLua, travelAddon }, { jsonOut, luaOut, flightOut, travelAddonDir }) {
 	fs.mkdirSync(path.dirname(jsonOut), { recursive: true });

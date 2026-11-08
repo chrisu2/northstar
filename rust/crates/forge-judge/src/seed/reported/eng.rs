@@ -1012,10 +1012,10 @@ fn neighbour_map(ctx: &Ctx, c: &mut Check) {
 	c.eq(offenders, vec![], "goals on the map of a zone the web facts do not place them in");
 }
 
-/// The walking maps' hostile hub `id` on continent 1 (PolestarPathData[1].hubs, Nav/Nav1.lua): its
+/// The walking maps' hostile hub `id` on continent 1 (NorthstarPathData[1].hubs, Nav/Nav1.lua): its
 /// disks as [x, y, r] (world frame: x north, y west).
 fn hub_disks(root: &std::path::Path, id: &str) -> Vec<[f64; 3]> {
-	let Ok(text) = std::fs::read_to_string(root.join("addon/Polestar_Nav/Nav/Nav1.lua")) else { return Vec::new() };
+	let Ok(text) = std::fs::read_to_string(root.join("addon/Northstar_Nav/Nav/Nav1.lua")) else { return Vec::new() };
 	let disk = regex::Regex::new(r"\{\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*\}").unwrap();
 	let mut out = Vec::new();
 	let tag = format!("id = \"{id}\"");

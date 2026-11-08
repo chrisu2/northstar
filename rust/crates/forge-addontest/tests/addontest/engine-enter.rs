@@ -1,4 +1,4 @@
-//! `enter "<Place>"` during play (addon/Polestar/Core/Engine.lua): done while the zone or subzone text reads the
+//! `enter "<Place>"` during play (addon/Northstar/Core/Engine.lua): done while the zone or subzone text reads the
 //! place (inPlace, as for `hearth`), kept once the live step had it, so walking out again does not reopen it.
 //! Coordinates only point the arrow. Real Core manifest, stub world (a level 1 Human Warrior in Elwynn
 //! Forest), as tests/engine-when-dungeon.rs.
@@ -18,7 +18,7 @@ w.onQuest(783, {})
 // Step 1 goes to Goldshire (an area, with a point for the arrow), step 2 to Westfall (a zone), step 3 hands
 // in A Threat Within.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/enter", pack = "test", title = "Enter", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Goldshire", goals = { { t = "enter", location = "Goldshire", map = 1429, x = 42.1, y = 65.9 } } },
@@ -31,7 +31,7 @@ Polestar.RegisterGuide({
 "#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 fn run(script: &str) -> Vec<Value> {
@@ -39,8 +39,8 @@ fn run(script: &str) -> Vec<Value> {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/enter" }"#.into())],
-		script: [TEST_PACK, TEST_SOURCE, GUIDE, "E = Polestar.Engine", "function flush() stub.advance(0.25) end", "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script]
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/enter" }"#.into())],
+		script: [TEST_PACK, TEST_SOURCE, GUIDE, "E = Northstar.Engine", "function flush() stub.advance(0.25) end", "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script]
 			.join("\n"),
 		..Default::default()
 	})
@@ -74,7 +74,7 @@ fn guides_validate_takes_enter_with_a_location_and_refuses_it_without() {
 		stubs: vec!["stub_world.lua"],
 		addons: vec![core()],
 		script: r#"
-			local V = Polestar.Guides.Validate
+			local V = Northstar.Guides.Validate
 			local function g(goal) return { id = "t/v", pack = "test", title = "V", minLevel = 1, maxLevel = 10, steps = { { goals = { goal } } } } end
 			emit({ ok = V(g({ t = "enter", location = "Goldshire", area = 87 })) or "ok", none = V(g({ t = "enter" })) or "ok" })
 		"#

@@ -1,21 +1,21 @@
 # {{title}}
 
-A community addon for Polestar, the leveling guide addon for World of
+A community addon for Northstar, the leveling guide addon for World of
 Warcraft: Forever, by {{author}}. It is a separate addon with {{author}}'s own
-guides; it is not made by Polestar.
+guides; it is not made by Northstar.
 
 ## For players
 
-1. Install Polestar first.
+1. Install Northstar first.
 2. Download `{{folder}}-<version>.zip` from this project's releases and unzip
-   it into the game's `Interface/AddOns/` folder, next to `Polestar`.
-3. Restart the game. Its guides appear in Polestar's guide menu
+   it into the game's `Interface/AddOns/` folder, next to `Northstar`.
+3. Restart the game. Its guides appear in Northstar's guide menu
    (`/polestar guides`) under Community guides; Options > Community guides
    (`/polestar packs`) turns the addon on or off.
 
 Credits: {{author}}. Licence: {{license}} (see `LICENSE`).
 
-This addon is supported by {{author}}, not by Polestar: report its problems
+This addon is supported by {{author}}, not by Northstar: report its problems
 here.
 
 ## For authors
@@ -25,7 +25,7 @@ files. This pack was started with `polestar new`, which needs an empty folder: f
 your next pack, run `polestar new` first and `git init` in the folder after
 (a folder holding only `.git` counts as not empty).
 
-You need Node 24 or newer, Lua 5.1 and a Polestar clone with `npm link`
+You need Node 24 or newer, Lua 5.1 and a Northstar clone with `npm link`
 run in it (`polestar doctor` checks all of it), and `forge` built in the
 clone (`cargo build --release -p forge` in its `rust/`) on your PATH. From
 this folder:
@@ -37,7 +37,7 @@ this folder:
 - `polestar dev`: copy the pack into the game's AddOns folder while you work.
 - `forge release pack`: write the release zip to `dist/`.
 
-Polestar's source describes the guide format on one page in
+Northstar's source describes the guide format on one page in
 docs/GUIDE_CHEATSHEET.md, in full in docs/GUIDE_FORMAT.md, and packs in
 docs/GUIDE_PACKS.md (what a community addon is, what the tools require, what is asked
 of authors) and docs/PACKS.md (the full handbook). Start from

@@ -1,7 +1,7 @@
 # Community addon format
 
-The contract between a community addon and Polestar, for anyone building
-tools of their own. Authors who use Polestar's tools never write any of this
+The contract between a community addon and Northstar, for anyone building
+tools of their own. Authors who use Northstar's tools never write any of this
 by hand: they write `pack.json` and `.guide` files
 ([GUIDE_FORMAT.md](GUIDE_FORMAT.md)) and `forge guide compile` writes the rest.
 The handbook is [PACKS.md](PACKS.md).
@@ -14,13 +14,13 @@ The handbook is [PACKS.md](PACKS.md).
 
 **On this page:** [`pack.json`](#packjson) ·
 [The addon](#the-addon) · [TOC fields](#toc-fields) ·
-[Rules Polestar enforces](#rules-polestar-enforces) ·
+[Rules Northstar enforces](#rules-polestar-enforces) ·
 [Format 3](#format-3) · [Format 4](#format-4) · [Format 5](#format-5) · [Format 6](#format-6) · [Format 7](#format-7) · [Format 8](#format-8) · [Import strings](#import-strings) · [Versioning](#versioning)
 
 A community addon is an addon for World of Warcraft: Forever that depends
-on Polestar and registers guides with it. It is built from a pack: a folder
+on Northstar and registers guides with it. It is built from a pack: a folder
 with a `pack.json` and `.guide` files. In the format, every such addon is a
-pack; Polestar's own guides are a pack too (`Polestar_Guides`, pack id
+pack; Northstar's own guides are a pack too (`Northstar_Guides`, pack id
 `guides`).
 
 ## `pack.json`
@@ -39,7 +39,7 @@ a parent.
 	"license": "CC-BY-4.0",
 	"website": "https://github.com/joe/joe-routes",
 	"source": "Written from my own play",
-	"folder": "PolestarPack_JoesRoutes"
+	"folder": "NorthstarPack_JoesRoutes"
 }
 ```
 
@@ -52,8 +52,8 @@ a parent.
 | `license` | yes | the licence of the pack's guides, as an SPDX id where one exists (`CC-BY-4.0`, `CC0-1.0`, `MIT`, `GPL-3.0-only`); at most 64 characters |
 | `website` | no | `https://` or `http://` address; at most 200 characters |
 | `source` | no | where the guides come from, in the author's words; at most 200 characters |
-| `notes` | no | one line for the AddOns list, shown when the player points at the pack there; at most 200 characters (default "Community addon for Polestar by <author>") |
-| `folder` | no | the addon's folder name: 1 to 64 letters, digits, `_` and `-`, not `Polestar` and not starting with `Polestar_` (in any case); default `PolestarPack_` and the title in CamelCase (`Joe's Routes` → `PolestarPack_JoesRoutes`), or the id when the title has no letters or digits |
+| `notes` | no | one line for the AddOns list, shown when the player points at the pack there; at most 200 characters (default "Community addon for Northstar by <author>") |
+| `folder` | no | the addon's folder name: 1 to 64 letters, digits, `_` and `-`, not `Northstar` and not starting with `Northstar_` (in any case); default `NorthstarPack_` and the title in CamelCase (`Joe's Routes` → `NorthstarPack_JoesRoutes`), or the id when the title has no letters or digits |
 
 Every value is a string on one line. A missing required field, or a value
 that breaks these rules, is a lint error; an unknown key is a warning; a `|`
@@ -68,25 +68,25 @@ every `.guide` file under the folder except in `dist/`, `drafts/`,
 
 ## The addon
 
-`forge guide compile` writes `dist/<folder>/` (ours: `addon/Polestar_Guides/`):
+`forge guide compile` writes `dist/<folder>/` (ours: `addon/Northstar_Guides/`):
 
 ```
-PolestarPack_JoesRoutes/
-  PolestarPack_JoesRoutes.toc
-  Pack.lua           Polestar.RegisterPack({ ... })
-  MapFrames.lua      Polestar.RegisterMapFrames({ ... }, "joe-routes")
-  Guides.lua         one Polestar.RegisterGuide({ ... }) per guide
+NorthstarPack_JoesRoutes/
+  NorthstarPack_JoesRoutes.toc
+  Pack.lua           Northstar.RegisterPack({ ... })
+  MapFrames.lua      Northstar.RegisterMapFrames({ ... }, "joe-routes")
+  Guides.lua         one Northstar.RegisterGuide({ ... }) per guide
   LICENSE-DATA.txt   the reference data sources the guides draw on
   LICENSE.txt        the pack folder's LICENSE, copied as is (only when it has one)
   media/cave.tga     each picture an `image` line names, at its path in the pack folder
-PolestarPack_JoesRoutes_deDE/   one texts addon per language the pack translates
-  PolestarPack_JoesRoutes_deDE.toc
-  Texts.lua          Polestar.RegisterGuideTexts("deDE", "joe-routes", { ... })
+NorthstarPack_JoesRoutes_deDE/   one texts addon per language the pack translates
+  NorthstarPack_JoesRoutes_deDE.toc
+  Texts.lua          Northstar.RegisterGuideTexts("deDE", "joe-routes", { ... })
   LICENSE.txt        as above
-PolestarPack_JoesRoutes_Orc/    one race part per race the pack's class chains or baked legs are for
-  PolestarPack_JoesRoutes_Orc.toc
-  Guides.lua         those guides' Polestar.RegisterGuide({ ... }) calls (a race with class chains)
-  Legs.lua           Polestar.RegisterLegs("joe-routes", "<grid>", { ... }) (format 7: baked legs)
+NorthstarPack_JoesRoutes_Orc/    one race part per race the pack's class chains or baked legs are for
+  NorthstarPack_JoesRoutes_Orc.toc
+  Guides.lua         those guides' Northstar.RegisterGuide({ ... }) calls (a race with class chains)
+  Legs.lua           Northstar.RegisterLegs("joe-routes", "<grid>", { ... }) (format 7: baked legs)
   LICENSE.txt        as above
 ```
 
@@ -94,32 +94,32 @@ PolestarPack_JoesRoutes_Orc/    one race part per race the pack's class chains o
 `class` and a `race` header, one class's chain through the game, ships in
 `<folder>_<race file>` for each race it names (`Orc`, `Scourge`, `NightElf`,
 ...), not in the pack's own `Guides.lua`: one chain per race and class adds
-up to tens of megabytes, and a character only needs its own race's. Polestar
+up to tens of megabytes, and a character only needs its own race's. Northstar
 loads the player's race part once the pack's own files are in, and no other;
 its guides register into the pack. Its TOC carries `## LoadOnDemand: 1`,
-`## Dependencies: Polestar, <folder>`, `## X-Polestar-Part: <pack id>` and
-`## X-Polestar-Race: <race file>` with the generated-folder marker. A
+`## Dependencies: Northstar, <folder>`, `## X-Northstar-Part: <pack id>` and
+`## X-Northstar-Race: <race file>` with the generated-folder marker. A
 part is written for memory: each guide registers only for a character of
-one of its classes (`if Polestar.PartWants({ "WARRIOR" }) then register()
+one of its classes (`if Northstar.PartWants({ "WARRIOR" }) then register()
 end`), and carries its steps as one Lua source string, `stepsSrc = "return
 { ... }"`, with `stepCount` (and `groupQuests`, the quests its steps ask
 about with `when group`). The first read of the guide's `steps` runs the
 string, checks the steps and writes their texts in the client's language as
 at registration; a guide no tab shows any more gives its steps back
-(`Polestar.Guides.Release`), so a character holds its own route's headers
+(`Northstar.Guides.Release`), so a character holds its own route's headers
 and the guides it has open, about 2 MiB, not every route of its race. The
 pack's `MapFrames.lua` and format cover the parts' guides too. `compile`,
 `install` and `dev` write and replace a race part by the same rule as a
-texts addon (its marker and `X-Polestar-Part`) and remove the one of a race
+texts addon (its marker and `X-Northstar-Part`) and remove the one of a race
 the pack no longer has a chain or baked legs for. A race part also carries
 the baked legs of the leveling guides that race may follow, in `Legs.lua`
 ([Format 7](#format-7)); a race with legs and no class chain gets a part
-with `Legs.lua` only. Polestar's own pack also splits its other guides by
+with `Legs.lua` only. Northstar's own pack also splits its other guides by
 faction ([Format 8](#format-8)).
 
 **Retired guides.** A pack folder's `retired.json`, a list of guide ids
 (`["forever/horde/02-the-barrens", ...]`), names the guides a new route set
-replaced. `Guides.lua` ends with `Polestar.RetireGuides("<pack id>", { ...
+replaced. `Guides.lua` ends with `Northstar.RetireGuides("<pack id>", { ...
 })`, and a character whose saved tab holds one of them opens, at login, the
 pack's leveling guide for it now (the one the guide menu would suggest at
 its level), whose progress is read from the quest log. A retired id that is
@@ -127,15 +127,15 @@ still one of the pack's guides warns.
 
 **Texts addons.** A pack whose `locales/<locale>/` folder holds translations
 (docs/TRANSLATING.md, "Guide texts") gets, beside its folder, one
-load-on-demand addon per language, `<folder>_<locale>`. Polestar loads the
+load-on-demand addon per language, `<folder>_<locale>`. Northstar loads the
 client's own once the pack's files are in, and no other: a German client
 never reads the French texts. Its TOC carries `## LoadOnDemand: 1`,
-`## Dependencies: Polestar`, `## X-Polestar-Texts: <pack id>` and
-`## X-Polestar-Locale: <locale>` with the generated-folder marker, and
+`## Dependencies: Northstar`, `## X-Northstar-Texts: <pack id>` and
+`## X-Northstar-Locale: <locale>` with the generated-folder marker, and
 `Texts.lua` makes one call:
 
 ```lua
-Polestar.RegisterGuideTexts("deDE", "joe-routes", {
+Northstar.RegisterGuideTexts("deDE", "joe-routes", {
 	pack = { ["Joe's Routes"] = "Joes Routen" },   -- the pack's title and notes, its guides' folders
 	guides = { ["joe-routes/elwynn"] = { ["{npc:240} stands outside the inn."] = "{npc:240} steht vor dem Gasthaus." } },
 })
@@ -144,7 +144,7 @@ Polestar.RegisterGuideTexts("deDE", "joe-routes", {
 Each table maps a text's English, name tokens and all, to its translation;
 a text without one shows in English. `compile`, `install` and `dev` write
 and replace a texts addon folder by the same rule as the pack folder (its
-marker and `X-Polestar-Texts`), and remove the one of a language the pack no
+marker and `X-Northstar-Texts`), and remove the one of a language the pack no
 longer translates; `pack` puts each into the zip as a folder of its own.
 
 The file set is fixed: a new guide changes `Guides.lua`, never the file list,
@@ -158,16 +158,16 @@ Each guide's table is built inside its own function in `Guides.lua`, so Lua
 
 ```
 ## Interface: 16001
-## Title: Polestar Community: Joe's Routes
-## Notes: Community addon for Polestar by Joe
+## Title: Northstar Community: Joe's Routes
+## Notes: Community addon for Northstar by Joe
 ## Author: Joe
 ## Version: 1.2.0
-## Category: Polestar
-## Group: Polestar
-## Dependencies: Polestar
-## X-Polestar-Pack: joe-routes
-## X-Polestar-Format: 3
-## X-Polestar-Needs: 0.2.5
+## Category: Northstar
+## Group: Northstar
+## Dependencies: Northstar
+## X-Northstar-Pack: joe-routes
+## X-Northstar-Format: 3
+## X-Northstar-Needs: 0.2.5
 ## X-License: CC-BY-4.0
 ## X-Website: https://github.com/joe/joe-routes
 # Generated by `forge guide compile` from pack.json and the .guide files. Do not edit: rebuild with that command.
@@ -179,21 +179,21 @@ Guides.lua
 
 | Field | Value |
 |---|---|
-| `Interface` | copied from `addon/Polestar/Polestar.toc` at build time |
-| `Title` | "Polestar Community: " and `pack.json` `title` (the title alone when it already starts so), so the AddOns list reads the addon as a community addon. Community addons built before this prefix carry "Polestar Pack: " until rebuilt; Polestar recognises both. Polestar's own menus show the title without it. Polestar's own pack (`guides`) gets no prefix |
+| `Interface` | copied from `addon/Northstar/Northstar.toc` at build time |
+| `Title` | "Northstar Community: " and `pack.json` `title` (the title alone when it already starts so), so the AddOns list reads the addon as a community addon. Community addons built before this prefix carry "Northstar Pack: " until rebuilt; Northstar recognises both. Northstar's own menus show the title without it. Northstar's own pack (`guides`) gets no prefix |
 | `Author`, `Version` | from `pack.json` |
-| `Notes` | `pack.json` `notes`, else "Community addon for Polestar by <author>" |
-| `Category` | `Quests`, Polestar's category in the AddOns list |
-| `Group` | `Polestar`: the AddOns list shows the pack under Polestar's own entry, beside Polestar's own addons. Not written for Polestar's own pack |
-| `Dependencies` | `Polestar`: the client loads Polestar first |
-| `X-Polestar-Pack` | the pack id. Polestar lists every addon carrying it on the Community guides page, loaded or not |
-| `X-Polestar-Format` | the pack format (below) |
-| `X-Polestar-Needs` | the first Polestar version that reads that format, so an older Polestar can say which version the pack needs |
+| `Notes` | `pack.json` `notes`, else "Community addon for Northstar by <author>" |
+| `Category` | `Quests`, Northstar's category in the AddOns list |
+| `Group` | `Northstar`: the AddOns list shows the pack under Northstar's own entry, beside Northstar's own addons. Not written for Northstar's own pack |
+| `Dependencies` | `Northstar`: the client loads Northstar first |
+| `X-Northstar-Pack` | the pack id. Northstar lists every addon carrying it on the Community guides page, loaded or not |
+| `X-Northstar-Format` | the pack format (below) |
+| `X-Northstar-Needs` | the first Northstar version that reads that format, so an older Northstar can say which version the pack needs |
 | `X-License` | `pack.json` `license` |
 | `X-Website` | `pack.json` `website`, only when given |
 
 The comment line is the **generated-folder marker**, and with
-`X-Polestar-Pack` it makes the folder rule: `compile` (its output folder),
+`X-Northstar-Pack` it makes the folder rule: `compile` (its output folder),
 `install` (`dist/<folder>/` and the folder in AddOns, where a symlink is
 replaced without the check) and `dev` (the folder
 in AddOns) write a pack folder only when it is absent, empty, or carrying
@@ -203,15 +203,15 @@ for another pack as holding that pack, with the hint to set `folder` in
 `pack.json`. `pack` builds a community addon's zip in memory, and `play` writes
 into a new temporary folder, so neither touches an existing pack folder.
 
-## Rules Polestar enforces
+## Rules Northstar enforces
 
 `Core/Guides.lua` applies these at registration; lint reports the same ones
 before a pack is built (`rust/crates/forge-addontest/tests/addontest/packs-parity.rs` holds the two together).
 
 1. **Ids.** Pack ids match `^[a-z0-9][a-z0-9-]{1,31}$`; `guides`, `forever`,
    `lookup`, `draft`, `polestar` and `imported` are reserved. Every guide id
-   starts with `<pack id>/`, except in Polestar's own packs: `guides` (the
-   addon `Polestar_Guides`) owns `forever/` and `draft/`, Polestar's internal
+   starts with `<pack id>/`, except in Northstar's own packs: `guides` (the
+   addon `Northstar_Guides`) owns `forever/` and `draft/`, Northstar's internal
    `lookup` pack owns `lookup/`, and `imported` (the guides pasted as
    import strings, below) owns every `<author>/` that is a valid pack id
    nobody reserves.
@@ -222,7 +222,7 @@ before a pack is built (`rust/crates/forge-addontest/tests/addontest/packs-parit
    share a prefix with a pack.
 3. **Clashes.** A pack whose id is already registered is refused whole, and
    the problem names both addons; a pack with a reserved id is refused whole
-   with "Pack id <id> is reserved for Polestar.". Either way the guides and
+   with "Pack id <id> is reserved for Northstar.". Either way the guides and
    map frames its files register for that id while it loads are dropped,
    never given to the holder, and the dropped guides are counted in the
    problem. A pack with a malformed id, no `format` or a required field
@@ -231,14 +231,14 @@ before a pack is built (`rust/crates/forge-addontest/tests/addontest/packs-parit
    A guide registered before its pack is refused (listed once the pack
    registers); one for a pack that never registers is ignored, since there
    is no row to list it on.
-4. **Map frames.** A pack may add Era map frames for maps Polestar's lack; for
-   a map both cover, Polestar's win whatever the load order (lint warns when
+4. **Map frames.** A pack may add Era map frames for maps Northstar's lack; for
+   a map both cover, Northstar's win whatever the load order (lint warns when
    the bounds differ). Frames for a pack that is not registered, or was
    refused, are dropped.
-5. **Format.** A pack declaring a format Polestar does not read is refused
-   whole, with the status `too-new` and "Needs Polestar <X-Polestar-Needs> or
-   newer." ("Needs a newer Polestar." when its TOC has no
-   `X-Polestar-Needs`). An unknown verb or a malformed field inside a known
+5. **Format.** A pack declaring a format Northstar does not read is refused
+   whole, with the status `too-new` and "Needs Northstar <X-Northstar-Needs> or
+   newer." ("Needs a newer Northstar." when its TOC has no
+   `X-Northstar-Needs`). An unknown verb or a malformed field inside a known
    format refuses only that guide.
 6. **Visible problems.** Every refusal is recorded against its pack with a
    kind: `pack-refused` (the pack), `guide-refused` (one guide, with its id),
@@ -249,8 +249,8 @@ before a pack is built (`rust/crates/forge-addontest/tests/addontest/packs-parit
    guide's ids (`id`, `pack`, `next`, `nextChoices`) are left as written.
 8. **Missing guides keep their place.** Saved tabs of a guide whose pack is
    missing or switched off reopen in their old place when it comes back.
-9. **Packs on disk.** At login Polestar lists every addon whose TOC carries
-   `X-Polestar-Pack`, loaded or not, with a status. A registered pack is
+9. **Packs on disk.** At login Northstar lists every addon whose TOC carries
+   `X-Northstar-Pack`, loaded or not, with a status. A registered pack is
    `on`, `off` (switched off on the Community guides page), `refused`, `too-new`
    (a newer format) or `broken` (registered no guides). One that never
    registered is, in this order of precedence, `too-new`, `disabled` (turned
@@ -258,9 +258,9 @@ before a pack is built (`rust/crates/forge-addontest/tests/addontest/packs-parit
    date, a dependency missing) or `broken`.
 
 Only guides of packs that are on are shown, searched and suggested.
-Suggestions come from Polestar's guides unless the player picks a pack under
+Suggestions come from Northstar's guides unless the player picks a pack under
 **Suggest guides from** on the Community guides page; only packs with Leveling
-guides are offered there, and Polestar's guides fill in where the chosen pack
+guides are offered there, and Northstar's guides fill in where the chosen pack
 has nothing for the character.
 
 ## Format 3
@@ -269,9 +269,9 @@ The format the compiler writes for a pack whose guides have no `when` (on a
 step or a `next` option), `along` or `label`, and whose `level` goals have no
 `frac` (format 4, below). Format 2 is format 1 with the two `group`
 keys (a guide's and a goal's) and a guide's `reward` and `why`, marked
-"format 2" below; Polestar 0.2.4 and later read it. Format 3 is format 2
+"format 2" below; Northstar 0.2.4 and later read it. Format 3 is format 2
 with **name tokens** in the texts and a guide's `names`, marked "format 3"
-below; Polestar 0.2.5 and later read it. A format 1 or 2 pack is the same
+below; Northstar 0.2.5 and later read it. A format 1 or 2 pack is the same
 without them and keeps loading.
 
 **Name tokens** (format 3). The game's names inside the texts a player reads
@@ -279,14 +279,14 @@ without them and keeps loading.
 step's `title` and `note`; a goal's `note` and `text`) are written
 `{kind:id}`: `{npc:240}`, `{object:68}`, `{item:1528}`, `{quest:176}`,
 `{zone:1429}` (a uiMapID), `{area:87}` (an AreaTable ID), `{spell:5487}`,
-`{faction:72}`, `{skill:182}` (a profession's skill line). Polestar shows
-each as the game names it in the client's language (Polestar.Names, the
+`{faction:72}`, `{skill:182}` (a profession's skill line). Northstar shows
+each as the game names it in the client's language (Northstar.Names, the
 client's map and area names, the profession's translation), else as the
 guide's `names` give it, so an English client reads the text as its author
 wrote it (a text that spells a name otherwise, "Dendrite" for Dendrite
 Starblaze, is in the guide's `written` with the author's words). The
 compiler writes the tokens (GUIDE_FORMAT.md, "Names in
-texts"); an older Polestar would show them as written, hence the format.
+texts"); an older Northstar would show them as written, hence the format.
 
 ## Format 4
 
@@ -294,11 +294,11 @@ Format 3 with a step's **`when`**: the conditions checked during play
 (GUIDE_FORMAT.md, "Conditions checked during play"), a step's **`along`** and
 **`label`** (GUIDE_FORMAT.md, "Along the way"), a `level` goal's **`frac`**:
 a point inside the level, and a guide's **`nextWhen`**: conditional
-hand-offs (GUIDE_FORMAT.md, "Conditional hand-offs"). Polestar 0.2.6 and
+hand-offs (GUIDE_FORMAT.md, "Conditional hand-offs"). Northstar 0.2.6 and
 later read it.
 The compiler writes a pack in format 4 only when its guides use one of them;
-any other pack stays in format 3, so the Polestar it needs does not change. An
-older Polestar would show every conditional step to every character, stop the
+any other pack stays in format 3, so the Northstar it needs does not change. An
+older Northstar would show every conditional step to every character, stop the
 route at every along step, count `level 12.5` done at level 12 and offer every
 `next` option (it ignores keys it does not know), hence the format.
 
@@ -314,7 +314,7 @@ hold:
 | `"turnedin"` | `q` | the quest is handed in |
 | `"available"` | `q`; optional `minLevel`, `pre`, `preAll`, `closedBy` (as on an `accept`) | the quest is not in the log or done, the level is reached, one of `pre` and every one of `preAll` is done, and none of `closedBy` is in the log or done |
 | `"has"` | `item`; optional `n` (default 1) | the bags hold `n` or more |
-| `"upgrade"` | `item` | Polestar's gear advice rates the item an upgrade for the character now (`Gear.IsUpgrade`); an item it cannot judge, or gear advice turned off, counts as one |
+| `"upgrade"` | `item` | Northstar's gear advice rates the item an upgrade for the character now (`Gear.IsUpgrade`); an item it cannot judge, or gear advice turned off, counts as one |
 | `"zone"`, `"subzone"` | `name`; optional `area` | the zone (subzone) text reads as the area's name in the client's language, or as `name` |
 | `"bound"` | `name`; optional `area` | the bind location reads so |
 | `"dungeon"` | `name`; optional `map` (the instance's Map.csv id) | the character chose to run the dungeon with that `map` in leveling guides (Options, Discovery, Dungeons: "Dungeons in leveling guides"); without `map` it never holds |
@@ -329,11 +329,11 @@ hold:
 ```
 
 A `when` that is not a non-empty list, or a predicate of another kind or
-without its keys, refuses the guide. Polestar 0.2.6 reads every kind above
+without its keys, refuses the guide. Northstar 0.2.6 reads every kind above
 but `"money"`, `"dungeon"`, `"upgrade"`, `"done"`, `"skill"`, `"cooldown"`, `"group"` and `"knows"`, which came after it: a guide with one, on a
 step or a `next` option, is written in format 5, so 0.2.6 says the pack needs
-Polestar 0.3.0 instead of refusing the guide ("bad when"). Once the route has moved past a step,
-Polestar stores whether its `when` held (per character, guide and step) and
+Northstar 0.3.0 instead of refusing the guide ("bad when"). Once the route has moved past a step,
+Northstar stores whether its `when` held (per character, guide and step) and
 reads that from then on.
 
 `label` is a string, the step's name, unique in the guide. `along` is
@@ -360,7 +360,7 @@ is done at level 12 with XP / XPMax >= 0.5, or at any later level. A goal's
 `nextWhen` maps a `next` option to its predicates, the same tables as a
 step's `when`: `{ ["joe-routes/barrens-early"] = { { k = "level", op = "<", n = 12 } } }`.
 Every key must be one of `nextChoices`, which the compiler writes whenever
-`nextWhen` is there, even for one option. Polestar offers an option only
+`nextWhen` is there, even for one option. Northstar offers an option only
 while its predicates hold, checked on the character's live state each time
 it lists the options; with one option offered it goes on to it without
 asking, with none the guide ends there. Nothing is stored. A `nextWhen` that
@@ -372,7 +372,7 @@ list refuses the guide.
 Format 4 with the **`money`**, **`task`**, **`enter`**, **`cast`**, **`abandon`** and **`destroy`** goals, the **`money`**,
 **`dungeon`**, **`upgrade`**, **`done`**, **`skill`**, **`cooldown`**, **`group`** and **`knows`**
 `when` predicates (on a step or a `next` option; `done` on a step only) and a step's
-**`skipto`** jumps. Polestar 0.3.0 and later read it.
+**`skipto`** jumps. Northstar 0.3.0 and later read it.
 The compiler writes a pack in format 5 only when its guides use one of them;
 any other pack stays in format 3 or 4. A 0.2.6 client accepts a format-4 pack
 and then refuses a guide with an unknown verb or predicate, so these features
@@ -416,7 +416,7 @@ name (`Compat.GetSkillRank`).
 `cooldown` when predicate: `{ k = "cooldown", item = <id> }` or
 `{ k = "cooldown", spell = <id> }`, one of the two. Holds while the item
 (`Compat.GetItemCooldown`) or spell (`Compat.GetSpellCooldown`) has a cooldown
-longer than the global cooldown that has not run out; Polestar evaluates the
+longer than the global cooldown that has not run out; Northstar evaluates the
 guide again when it does.
 
 `knows` when predicate: `{ k = "knows", spell = <id> }`. Holds while the
@@ -460,7 +460,7 @@ once the bags hold none of the item; stays done for the rest of its step.
 
 ```lua
 local ADDON = ...
-Polestar.RegisterPack({
+Northstar.RegisterPack({
 	addon = ADDON, id = "joe-routes", format = 3,
 	title = "Joe's Routes", author = "Joe", version = "1.2.0", license = "CC-BY-4.0",
 	website = "https://github.com/joe/joe-routes", source = "Written from my own play",
@@ -483,7 +483,7 @@ guide.
 One table per guide; returns `ok, err`.
 
 ```lua
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "joe-routes/elwynn", pack = "joe-routes",
 	title = "Elwynn Forest", faction = "Alliance", minLevel = 5, maxLevel = 10,
 	category = "Leveling", zone = 1429, zoneName = "Elwynn Forest",
@@ -514,7 +514,7 @@ Guide keys (the compiler writes them in this order):
 | `reward` | no | format 2: what the guide's goal gives, shown first in the guide menu's details, in order: `{ item = 20536, itemName = "Soul Harvester", quality = 3, choice = true }` (an item; `choice` when one of several to choose from; the name shows in the client's quality colour when the item is cached, else the compiled `quality`'s), `{ spell = 23161, spellName = "Summon Dreadsteed" }` or `{ text = "Shen'dralar reputation" }`; an entry with none of `item`, `spell` or `text` refuses the guide |
 | `why` | no | format 2: one line on why the goal is worth doing, shown under the reward |
 | `zone`, `zoneName` | no | the default zone's uiMapID and name |
-| `next` | no | the id of the guide that follows: one of the pack's or one of Polestar's |
+| `next` | no | the id of the guide that follows: one of the pack's or one of Northstar's |
 | `nextChoices` | no | list of guide ids offered as a route choice (the first is the default); with `nextWhen`, every option, even one |
 | `nextWhen` | no | format 4: `{ [<guide id>] = { <predicate>, ... } }`, an option of `nextChoices` offered only while its predicates hold (Format 4, above) |
 | `pitch` | no | one line for the route choice card |
@@ -530,10 +530,10 @@ Guide keys (the compiler writes them in this order):
 Step keys: `title` (optional), `note` (optional, player-facing), `image`
 (optional: `{ file = "media\\cave", w = 512, h = 256 }`, the step's picture:
 `file` its path in the pack's addon folder without the extension, `\`
-between folders, `w` and `h` its size in pixels; Polestar shows it under the
+between folders, `w` and `h` its size in pixels; Northstar shows it under the
 step's tip, and an imported guide, which has no addon folder, shows none),
 `only` (optional: `{ classes = { ... }, races = { ... }, factions = { ... } }`,
-AND across keys, OR within; Polestar also reads an entry `"!X"` as "not X",
+AND across keys, OR within; Northstar also reads an entry `"!X"` as "not X",
 but the compiler writes positive lists only), `when` (optional, format 4: the
 step's conditions checked during play, below) and `goals` (at least one).
 
@@ -596,35 +596,35 @@ The fields:
 | `location` | an inn, flight point or zone name as the game shows it |
 | `class` | `true` on `train`: the nearest trainer of the player's class |
 | `skill` | a profession name; `skillLine` its skill line id |
-| `rank`, `rankMax` | on `train`: the profession rank (1 Apprentice to 4 Artisan; Polestar also reads a rank name or a skill cap) and its skill cap (written by the compiler, not read by Polestar) |
+| `rank`, `rankMax` | on `train`: the profession rank (1 Apprentice to 4 Artisan; Northstar also reads a rank name or a skill cap) and its skill cap (written by the compiler, not read by Northstar) |
 | `level` | on `level`: the level to reach; on `skill`: the skill to reach |
 | `frac` | on `level` (format 4): the share of the level's XP to reach, 0 < frac < 1 (above) |
 | `untilSkill` | on `craft`: craft until the profession reaches this skill |
 | `reagents` | `{ { item, itemName, count } }` |
 | `standing` | 1 Hated to 8 Exalted |
 | `criteria` | an achievement's criterion index |
-| `z` | the height (world z, yards) of the NPC or object the goal's `x`,`y` stands for, so the walking route ends on its floor (an Undercity quarter rather than the street above it). Polestar 0.2.4 and later pass it to the walking engine while the arrow leads to that point, and ask again without it when the route found with it fails or ends more than 30 yards above or below it. A spot (`spots`) and a smart target's candidate (`candidates`) may carry their own `z`, which Polestar 0.2.5 and later pass the same way when the arrow leads there (#180). The compiler fills it in (GUIDE_FORMAT.md, "Heights"); a hand-written pack may leave it out. Older Polestar ignores it, so it does not change the format |
-| `area` | the AreaTable area ID (`C_Map.GetAreaInfo`) of the place a `sethome`, `hearth`, `fly` or `getfp` location or a `goto` label names. Polestar 0.2.5 and later complete a `hearth` or `fly` when the zone or subzone text is that area's name in the client's language, accept a `sethome` bind location that reads so, count a `goto` arrived when the player goes indoors in that subzone (a cave or mine past its mouth; never for a zone), and show that name in place of the English one. The compiler fills it in (GUIDE_FORMAT.md, "Places by ID"); without it the goal matches by its English name. Older Polestar ignores it, so it does not change the format |
-| `node` | on `getfp`: the taxi node ID (`C_TaxiMap` `nodeID`) of its flight point. Polestar 0.2.5 and later count the goal done once the flight map lists that node as known, instead of comparing names. Filled in like `area`; older Polestar ignores it |
-| `spots` | spawn places `{ { x, y, z, r, n, alt, lvl } }`: centre in the goal's map and frame, its height (optional, see `z`), radius in yards, spawn count; `alt = true` for another place the target spawns, which the arrow takes only when the player moves on to it (the world map marks it); `lvl` on a `kill` or `collect`'s place: the highest level of the mobs spawning there, so the arrow takes the places at the player's level first (Polestar 0.3.2 and later; older Polestar ignores it), written only where it differs from the goal's `lvl` |
+| `z` | the height (world z, yards) of the NPC or object the goal's `x`,`y` stands for, so the walking route ends on its floor (an Undercity quarter rather than the street above it). Northstar 0.2.4 and later pass it to the walking engine while the arrow leads to that point, and ask again without it when the route found with it fails or ends more than 30 yards above or below it. A spot (`spots`) and a smart target's candidate (`candidates`) may carry their own `z`, which Northstar 0.2.5 and later pass the same way when the arrow leads there (#180). The compiler fills it in (GUIDE_FORMAT.md, "Heights"); a hand-written pack may leave it out. Older Northstar ignores it, so it does not change the format |
+| `area` | the AreaTable area ID (`C_Map.GetAreaInfo`) of the place a `sethome`, `hearth`, `fly` or `getfp` location or a `goto` label names. Northstar 0.2.5 and later complete a `hearth` or `fly` when the zone or subzone text is that area's name in the client's language, accept a `sethome` bind location that reads so, count a `goto` arrived when the player goes indoors in that subzone (a cave or mine past its mouth; never for a zone), and show that name in place of the English one. The compiler fills it in (GUIDE_FORMAT.md, "Places by ID"); without it the goal matches by its English name. Older Northstar ignores it, so it does not change the format |
+| `node` | on `getfp`: the taxi node ID (`C_TaxiMap` `nodeID`) of its flight point. Northstar 0.2.5 and later count the goal done once the flight map lists that node as known, instead of comparing names. Filled in like `area`; older Northstar ignores it |
+| `spots` | spawn places `{ { x, y, z, r, n, alt, lvl } }`: centre in the goal's map and frame, its height (optional, see `z`), radius in yards, spawn count; `alt = true` for another place the target spawns, which the arrow takes only when the player moves on to it (the world map marks it); `lvl` on a `kill` or `collect`'s place: the highest level of the mobs spawning there, so the arrow takes the places at the player's level first (Northstar 0.3.2 and later; older Northstar ignores it), written only where it differs from the goal's `lvl` |
 | `lvl` | on a `kill` or `collect` with `spots`, every place having a level: the level most of its places share (see `spots`) |
-| `spotsPacked` | format 8, Polestar's own pack: the same spots as one string instead of `spots` ([Format 8](#format-8)) |
+| `spotsPacked` | format 8, Northstar's own pack: the same spots as one string instead of `spots` ([Format 8](#format-8)) |
 | `spread` | `true` with `spots`: an area objective, searched spot by spot |
 | `from`, `fromAlso`, `fromKind`, `fromRank`, `fromFaction` | a `collect`'s main source: name, a second source of the same kind dropping it at 50% or more, `"npc"` or `"object"`, rank (1 elite, 2 rare elite, 3 boss, 4 rare), faction `"A"`, `"H"` or `"AH"` |
-| `fromId`, `fromAlsoId` | the ids of `from` and `fromAlso` (of kind `fromKind`): Polestar names them in the client's language (`Polestar.Names`), keeping `from`/`fromAlso` where it has no name; older Polestar ignores them |
+| `fromId`, `fromAlsoId` | the ids of `from` and `fromAlso` (of kind `fromKind`): Northstar names them in the client's language (`Northstar.Names`), keeping `from`/`fromAlso` where it has no name; older Northstar ignores them |
 | `npc`, `npcName` | a `collect` whose guide names the NPC who hands the item over (`npc <id>`), for an item nothing drops: the target button targets them first. The farm spot a `collect … nearest` goal settles on carries the same pair |
-| `fromNpcs` | a `collect`'s source creatures where the goal stands: `{ { npc, npcName } }`, the one its point belongs to first, then the other likely sources there, at most 5 (GUIDE_FORMAT.md, "What the compiler fills in"). Newer Polestar gives them to the target button, named in the client's language by their ids, before the item's own droppers from the quest database, whose drop chances rank them over the whole world. Older Polestar ignores them, so it does not change the format |
-| `candidates` | smart targets: `{ { npc, npcName, map, x, y, z, f, faction, races, classes, lvl, rate, spawns } }` (`z` optional, see `z`); Polestar picks the nearest usable one at runtime |
+| `fromNpcs` | a `collect`'s source creatures where the goal stands: `{ { npc, npcName } }`, the one its point belongs to first, then the other likely sources there, at most 5 (GUIDE_FORMAT.md, "What the compiler fills in"). Newer Northstar gives them to the target button, named in the client's language by their ids, before the item's own droppers from the quest database, whose drop chances rank them over the whole world. Older Northstar ignores them, so it does not change the format |
+| `candidates` | smart targets: `{ { npc, npcName, map, x, y, z, f, faction, races, classes, lvl, rate, spawns } }` (`z` optional, see `z`); Northstar picks the nearest usable one at runtime |
 | `rewards` | `{ choices = { { item, itemName, quality } }, items = { ... }, xp, money }` (money in copper) |
-| `direct` | `true` on a `turnin`: the quest is handed in straight from the giver's window and never enters the quest log, so the goal needs no `accept` before it and carries no objectives. Polestar counts it done on the hand-in itself and stores that, so a repeatable stays done after a reload |
-| `gossip` | On a `talk`, `vendor` or `train`: the `gossipOptionID` Polestar picks at that NPC on the live step |
+| `direct` | `true` on a `turnin`: the quest is handed in straight from the giver's window and never enters the quest log, so the goal needs no `accept` before it and carries no objectives. Northstar counts it done on the hand-in itself and stores that, so a repeatable stays done after a reload |
+| `gossip` | On a `talk`, `vendor` or `train`: the `gossipOptionID` Northstar picks at that NPC on the live step |
 | `seconds` | A `wait` goal's countdown, 1 to 3600 |
-| `escort` | `true` on the accept, `complete` and objective goals of an escort quest: the guide window says under the goal that the NPC may have to respawn (GUIDE_FORMAT.md, "Escort quests"). Older Polestar ignores it |
-| `objs` | on a `complete`: its quest's objectives from the quest data, `{ { text, count } }`, which the guide window shows while the quest is not in the log (looked at ahead); in the log it shows the game's own lines. Older Polestar ignores it |
-| `startItem`, `startItemName` | on a `complete`: the item its quest hands over when taken (Tharnariun's Hope for Plagued Lands), id and name; while it is in the bags and usable the guide window starts the goal with "Use <item>:". Older Polestar ignores them |
-| `group` | format 2: the goal needs a group, shown under it in the guide window: `{ kind = "elite", rank = 1 }` (rank 1 elite, 2 rare elite, 3 boss: "Elite: group advised"), `{ kind = "dungeon", name = "Dire Maul" }` ("Dungeon: Dire Maul"), `{ kind = "raid", name = "Molten Core" }` ("Raid: Molten Core"), `{ kind = "group", size = 3 }` ("Group of 3 advised"; without `size`, "Group advised"). The compiler derives it or takes the author's `group [N]` (GUIDE_FORMAT.md, "Group content"); Polestar shows nothing for a kind it does not know |
+| `escort` | `true` on the accept, `complete` and objective goals of an escort quest: the guide window says under the goal that the NPC may have to respawn (GUIDE_FORMAT.md, "Escort quests"). Older Northstar ignores it |
+| `objs` | on a `complete`: its quest's objectives from the quest data, `{ { text, count } }`, which the guide window shows while the quest is not in the log (looked at ahead); in the log it shows the game's own lines. Older Northstar ignores it |
+| `startItem`, `startItemName` | on a `complete`: the item its quest hands over when taken (Tharnariun's Hope for Plagued Lands), id and name; while it is in the bags and usable the guide window starts the goal with "Use <item>:". Older Northstar ignores them |
+| `group` | format 2: the goal needs a group, shown under it in the guide window: `{ kind = "elite", rank = 1 }` (rank 1 elite, 2 rare elite, 3 boss: "Elite: group advised"), `{ kind = "dungeon", name = "Dire Maul" }` ("Dungeon: Dire Maul"), `{ kind = "raid", name = "Molten Core" }` ("Raid: Molten Core"), `{ kind = "group", size = 3 }` ("Group of 3 advised"; without `size`, "Group advised"). The compiler derives it or takes the author's `group [N]` (GUIDE_FORMAT.md, "Group content"); Northstar shows nothing for a kind it does not know |
 
-Polestar 0.1.0 reads every verb above; 0.2.4 and later read the `group`
+Northstar 0.1.0 reads every verb above; 0.2.4 and later read the `group`
 keys; 0.2.4 and later read `z`; 0.2.5 and later read `area`, `node` and
 `direct`. ARCHITECTURE.md ("Guide data") describes when the Engine counts each
 goal done.
@@ -632,7 +632,7 @@ goal done.
 ### `RegisterMapFrames(frames, packId)`
 
 ```lua
-Polestar.RegisterMapFrames({
+Northstar.RegisterMapFrames({
 	era = {
 		[1429] = { c = 0, left = 1535.417, right = -1935.417, top = -7939.583, bottom = -10254.166 },
 	},
@@ -641,8 +641,8 @@ Polestar.RegisterMapFrames({
 
 The Era world bounds of every map the pack's guides place a goal or a
 candidate on, where the reference data has them: `c` the continent,
-`left`/`right` world Y, `top`/`bottom` world X. For a map Polestar already
-covers, Polestar's bounds win (rule 4). Call it after `RegisterPack`: the
+`left`/`right` world Y, `top`/`bottom` world X. For a map Northstar already
+covers, Northstar's bounds win (rule 4). Call it after `RegisterPack`: the
 frames of a pack that is not registered are dropped.
 
 
@@ -650,8 +650,8 @@ frames of a pack that is not registered are dropped.
 
 Format 5 with **baked legs** on the guide: `legs = { [<step>] = "<leg>" }` and
 `legsGrid = "<grid>"`, the walk into each step routed offline, each leg a
-version-1 string ([Format 7](#format-7) has the string). Polestar 0.3.0 and
-later read it; no Polestar release wrote it, and the compiler now writes
+version-1 string ([Format 7](#format-7) has the string). Northstar 0.3.0 and
+later read it; no Northstar release wrote it, and the compiler now writes
 format 7 instead.
 
 ## Format 7
@@ -669,14 +669,14 @@ that guide is for: its own race part's races (a class chain), else the races
 its `race` header names, else every race of its faction. One call per grid:
 
 ```lua
-Polestar.RegisterLegs("joe-routes", "grid 1.60.1.70450, leffe 6e0f5f2529c5", {
+Northstar.RegisterLegs("joe-routes", "grid 1.60.1.70450, leffe 6e0f5f2529c5", {
 	["joe-routes/barrens"] = { [3] = "CgA...", [5] = "CkB..." },
 })
 ```
 
-Polestar 0.3.0 and later read it: `RegisterLegs` keeps a registered pack's
+Northstar 0.3.0 and later read it: `RegisterLegs` keeps a registered pack's
 legs for its own guide ids (strings only, never run), and the arrow follows
-the current step's leg (`Polestar.Nav.BakedLeg(step)`, Nav/Walk.lua) instead
+the current step's leg (`Northstar.Nav.BakedLeg(step)`, Nav/Walk.lua) instead
 of searching, from the player's place on it, while the player keeps within
 25 yards of it; off it, it searches as for any walk.
 
@@ -702,37 +702,37 @@ strip change.
 
 ## Format 8
 
-Polestar's own pack (`guides`, the `Polestar_Guides` folder) is written for
+Northstar's own pack (`guides`, the `Northstar_Guides` folder) is written for
 memory; a community addon is written as before. Format 8 is format 7 with two
-changes, read by Polestar 0.3.0 and later:
+changes, read by Northstar 0.3.0 and later:
 
 - **Packed spawn spots.** A goal carries its `spots` as one string,
   `spotsPacked = "<spot>;<spot>;..."`, each spot its `x`, `y`, `z`, `r`, `n`,
   `alt` and `lvl` in that order, separated by commas: numbers as `Guides.lua`
   writes them, `alt` as `1`, an absent value empty and trailing empty values
   left out (`"57.6,62.1,,33,4"`, `"43.5,9.2,-12.5,110,19,1"`,
-  `"51.1,47,,40,2,,12"`; `lvl` from Polestar 0.3.2). Polestar
+  `"51.1,47,,40,2,,12"`; `lvl` from Northstar 0.3.2). Northstar
   checks the string when the guide registers and builds the spot tables when
   the goal's `spots` is first read; they stay on the goal for the session. A
   table per spot costs about 250 bytes in the game, its text about 16.
 - **Faction parts.** The pack's guides of one faction that no race part
-  holds ship in `Polestar_Guides_Alliance` and `Polestar_Guides_Horde` beside
-  it. Their TOC carries `## LoadOnDemand: 1`, `## Dependencies: Polestar,
-  Polestar_Guides`, `## X-Polestar-Part: guides` and `## X-Polestar-Faction:
+  holds ship in `Northstar_Guides_Alliance` and `Northstar_Guides_Horde` beside
+  it. Their TOC carries `## LoadOnDemand: 1`, `## Dependencies: Northstar,
+  Northstar_Guides`, `## X-Northstar-Part: guides` and `## X-Northstar-Faction:
   <faction>` with the generated-folder marker, and their `Guides.lua` is
-  written like the pack's. Polestar loads the player's faction's part once
+  written like the pack's. Northstar loads the player's faction's part once
   the pack's own files are in, before the player's race part (whose baked
   legs, `Legs.lua`, name those guides); the other faction's only when the
   guide menu's faction filter asks for it, or when a saved tab holds a guide
-  no loaded part has (`Polestar.Guides.LoadFaction`). A character holds its
+  no loaded part has (`Northstar.Guides.LoadFaction`). A character holds its
   own faction's guides and the factionless ones, not the other side's.
 
 ## Import strings
 
-One compiled guide as one line of text, for a player to paste on Polestar's
+One compiled guide as one line of text, for a player to paste on Northstar's
 Import page instead of installing an addon (GUIDE_PACKS.md, "Import
 strings"). `polestar export <file.guide>` writes it
-(`tools/lib/pack/importstring.js`); `addon/Polestar/Core/Import.lua` reads
+(`tools/lib/pack/importstring.js`); `addon/Northstar/Core/Import.lua` reads
 it.
 
 ```text
@@ -741,7 +741,7 @@ it.
 
 | Part | Value |
 |---|---|
-| `!PS1!` | the string format, version 1. A later format gets another number; Polestar refuses one it does not know with "This import string needs a newer Polestar." |
+| `!PS1!` | the string format, version 1. A later format gets another number; Northstar refuses one it does not know with "This import string needs a newer Northstar." |
 | `<checksum>` | the Adler-32 of the payload (the JSON below, as UTF-8 bytes), 8 hex digits |
 | `<body>` | the payload, compressed with zlib (RFC 1950) and written in base64 (`A`–`Z`, `a`–`z`, `0`–`9`, `+`, `/`, `=` padding) |
 
@@ -754,18 +754,18 @@ wrap it). The payload is JSON:
 
 | Key | Required | Value |
 |---|---|---|
-| `format` | yes | the guide data's format (above): 5 when the guide uses `money`/`task`/`enter`/`cast`/`abandon`/`destroy` goals or a `money` when predicate, 4 when a step has `when`, `along` or `label` or a `level` goal has `frac`, else 3; Polestar refuses a format it does not read |
+| `format` | yes | the guide data's format (above): 5 when the guide uses `money`/`task`/`enter`/`cast`/`abandon`/`destroy` goals or a `money` when predicate, 4 when a step has `when`, `along` or `label` or a `level` goal has `frac`, else 3; Northstar refuses a format it does not read |
 | `license` | yes | the licence of the guide, from the pack's `pack.json` |
 | `guide` | yes | one guide exactly as `RegisterGuide(def)` takes it, without `pack`: the keys above, numbers rounded as `Guides.lua` writes them, `preTitles` with the quest ids as the object's keys |
-| `frames` | no | `RegisterMapFrames`'s `era` table for the maps its goals use, by uiMapID. Polestar takes a frame only for a map the guide's goals or their smart targets stand on, and only where no one (Polestar, a community addon, an earlier import) has registered one |
+| `frames` | no | `RegisterMapFrames`'s `era` table for the maps its goals use, by uiMapID. Northstar takes a frame only for a map the guide's goals or their smart targets stand on, and only where no one (Northstar, a community addon, an earlier import) has registered one |
 
-Polestar reads it as data only. The client's own decoders
+Northstar reads it as data only. The client's own decoders
 (`C_EncodingUtil.DecodeBase64` and `DecompressString`, the ones the walking
-maps use) unpack it; Polestar parses the JSON itself (objects, arrays,
+maps use) unpack it; Northstar parses the JSON itself (objects, arrays,
 strings, numbers, `true`, `false`; no `null`, nested 12 deep at most) and
 builds the guide field by field from the keys this page lists, each with its
 type. A key it does not know refuses the string, naming the key ("This
-import string holds a field Polestar does not read (guide.steps[3].goals[1].onLoad).").
+import string holds a field Northstar does not read (guide.steps[3].goals[1].onLoad).").
 Nothing in a string is ever run: the reader never hands its text to
 `loadstring` or anything like it.
 
@@ -776,13 +776,13 @@ Then the guide meets the rules above, as a community addon's would, plus:
   it, before any text is filled in; `export` refuses it too);
 - its id is `<author>/<name>`, under no reserved id and no id of a
   community addon the player has installed (registered or only listed);
-- `next` and every `nextChoices` entry name one of Polestar's guides
+- `next` and every `nextChoices` entry name one of Northstar's guides
   (`forever/`, `draft/`) or a guide already imported;
 - `Guides.Validate` passes (the message is the Community guides page's:
   "Guide <id> was refused: <reason>.").
 
 A refused string saves nothing. An accepted one is kept account-wide in
-`PolestarDB.imports[<guide id>]` as its payload, and registered at every
+`NorthstarDB.imports[<guide id>]` as its payload, and registered at every
 login through the same checks under the reserved pack `imported`. A guide's
 `version` (a number) against the stored one's decides Import, Update (higher)
 or nothing (equal or lower). Imported guides are listed in the guide menu as
@@ -792,12 +792,12 @@ or nothing (equal or lower). Imported guides are listed in the guide menu as
 ## Versioning
 
 - The format number changes when a verb, a field or a field's meaning is
-  added or changed. Polestar ignores keys it does not know; an unknown verb
+  added or changed. Northstar ignores keys it does not know; an unknown verb
   refuses the guide.
-- Polestar keeps reading every format it has shipped, so a published pack
-  keeps working when Polestar updates.
-- The compiler writes the first Polestar version that reads the pack's format
-  into the TOC as `X-Polestar-Needs`. Format 1 is read by Polestar 0.1.0 and
+- Northstar keeps reading every format it has shipped, so a published pack
+  keeps working when Northstar updates.
+- The compiler writes the first Northstar version that reads the pack's format
+  into the TOC as `X-Northstar-Needs`. Format 1 is read by Northstar 0.1.0 and
   later, format 2 (the `group`, `reward` and `why` keys) by 0.2.4 and later,
   format 3 (name tokens) by 0.2.5 and later, format 4 (a step's `when`,
   `along` and `label`, a `level` goal's `frac`, a guide's `nextWhen`) by 0.2.6
@@ -805,8 +805,8 @@ or nothing (equal or lower). Imported guides are listed in the guide menu as
   `upgrade`, `done`, `skill`, `cooldown`, `group` and `knows` when predicates, a step's
   `skipto`) by 0.3.0 and later, format 6 (a guide's `legs`), format 7
   (baked legs in the race parts) and format 8 (packed spawn spots and
-  faction parts, Polestar's own pack only) by 0.3.0 and later, and format 9
+  faction parts, Northstar's own pack only) by 0.3.0 and later, and format 9
   (the `wait` goal) by 0.3.0 and later.
-- A pack in a format this Polestar does not read registers nothing; the
-  Community guides page shows it as `too-new` with "Needs Polestar <version> or
+- A pack in a format this Northstar does not read registers nothing; the
+  Community guides page shows it as `too-new` with "Needs Northstar <version> or
   newer." (rule 5).

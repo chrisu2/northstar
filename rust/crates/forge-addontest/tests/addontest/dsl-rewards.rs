@@ -85,20 +85,20 @@ fn rewards_emitted_lua_passes_the_engine_registry_and_the_step_view_carries_them
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: "stub.world.addMap(1429, { name = \"Elwynn Forest\", c = 0, left = 1500, right = -1500, top = 500, bottom = -1500 })\nstub.world.moveTo(1429, 48, 42)".into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: [
 			r#"
 			local res = {}
-			local real = Polestar.RegisterGuide
-			Polestar.RegisterGuide = function(g) local ok, e = real(g); res[#res + 1] = ok and "ok" or e; return ok, e end"#,
+			local real = Northstar.RegisterGuide
+			Northstar.RegisterGuide = function(g) local ok, e = real(g); res[#res + 1] = ok and "ok" or e; return ok, e end"#,
 			TEST_PACK,
 			TEST_SOURCE,
-			&format!("assert(loadfile({file}))(\"Polestar_Guides\", {{}})"),
+			&format!("assert(loadfile({file}))(\"Northstar_Guides\", {{}})"),
 			r#"
 			stub.login()
-			Polestar.Engine.SetGuide("test/main")
+			Northstar.Engine.SetGuide("test/main")
 			stub.advance(0.6)
-			local view = Polestar.Engine.GetStepView(1)
+			local view = Northstar.Engine.GetStepView(1)
 			emit({ res = res, rewards = view.goals[2].rewards })"#,
 		]
 		.join("\n"),
@@ -107,11 +107,11 @@ fn rewards_emitted_lua_passes_the_engine_registry_and_the_step_view_carries_them
 	assert_eq!(out[0]["res"], json!(["ok"]));
 	assert_eq!(out[0]["rewards"], turnin(&r)["rewards"]);
 	let bad = emitted(&RunAddon {
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,
-			r#"emit({ Polestar.RegisterGuide({ id = "test/bad", pack = "test", title = "B", steps = { { goals = { { t = "turnin", quest = 1, title = "Q", rewards = { choices = { { itemName = "x" } } } } } } } }) })"#,
+			r#"emit({ Northstar.RegisterGuide({ id = "test/bad", pack = "test", title = "B", steps = { { goals = { { t = "turnin", quest = 1, title = "Q", rewards = { choices = { { itemName = "x" } } } } } } } }) })"#,
 		]
 		.join("\n"),
 		..Default::default()
@@ -124,20 +124,20 @@ fn the_guide_window_shows_an_open_turn_in_s_rewards_under_it_and_in_its_tooltip_
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: "ITEM_QUALITY_COLORS = { [2] = { r = 0.12, g = 1, b = 0 }, [3] = { r = 0, g = 0.44, b = 0.87 } }".into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"])],
 		script: r#"
-			local real = Polestar.Compat
+			local real = Northstar.Compat
 			uistub.install()
 			stub.login()
 			-- The fake Compat keeps the real item-quality lookups (uncached items: compiled quality).
-			Polestar.Compat.GetItemQuality, Polestar.Compat.ItemQualityHex = real.GetItemQuality, real.ItemQualityHex
-			local UI = Polestar.UI
+			Northstar.Compat.GetItemQuality, Northstar.Compat.ItemQualityHex = real.GetItemQuality, real.ItemQualityHex
+			local UI = Northstar.UI
 			local goal = { t = "turnin", status = "active", note = "Inside",
 				rewards = { choices = { { item = 1, itemName = "Cloak", quality = 3 }, { item = 2, itemName = "Boots", quality = 2 }, { item = 3, itemName = "Ring" } },
 					items = { { item = 4, itemName = "Map" } }, xp = 3570, money = 10750 } }
 			local done = { t = "turnin", status = "done", rewards = goal.rewards }
 			emit({ line = UI.GoalRewards(goal), sub = UI.GoalSubline(goal), done = UI.GoalSubline(done) or false,
-				none = UI.GoalRewards({ t = "turnin" }) or false, item = Polestar.Theme.Hex("item") })"#
+				none = UI.GoalRewards({ t = "turnin" }) or false, item = Northstar.Theme.Hex("item") })"#
 			.into(),
 		..Default::default()
 	});

@@ -220,7 +220,7 @@ pub struct Output {
 	pub corrections: Vec<crate::corrections::Entry>,
 }
 
-const QUESTIE_LICENSE: &str = "No license file in Questie/Questie or Questie/QuestieDB; CurseForge lists GPL-3.0, and the maintainers ask that it be treated as all rights reserved (https://github.com/Questie/Questie/issues/4447). Read from the local install; facts only (quest, NPC, object and item facts, no code or text) ship in Polestar's packs, credited here, and come out if the maintainers ask (data build --no-questie).";
+const QUESTIE_LICENSE: &str = "No license file in Questie/Questie or Questie/QuestieDB; CurseForge lists GPL-3.0, and the maintainers ask that it be treated as all rights reserved (https://github.com/Questie/Questie/issues/4447). Read from the local install; facts only (quest, NPC, object and item facts, no code or text) ship in Northstar's packs, credited here, and come out if the maintainers ask (data build --no-questie).";
 
 /// Id-keyed table, one entry per line.
 pub fn serialize_table(o: &Obj) -> String {
@@ -353,7 +353,7 @@ fn so(v: &Option<String>) -> V {
 
 pub fn run(o: &Options, log: &dyn Fn(&str)) -> Result<Output, String> {
 	let t0 = std::time::Instant::now();
-	let times = std::env::var_os("POLESTAR_DATA_TIMES").is_some();
+	let times = std::env::var_os("NORTHSTAR_DATA_TIMES").is_some();
 	let lap = |what: &str| {
 		if times {
 			eprintln!("[{:.2}s] {what}", t0.elapsed().as_secs_f64())
@@ -871,10 +871,10 @@ pub fn run(o: &Options, log: &dyn Fn(&str)) -> Result<Output, String> {
 	}
 	if !recordings.is_empty() {
 		sources.push(obj_of(vec![
-			("name", s("Polestar recordings")),
+			("name", s("Northstar recordings")),
 			("url", V::Null),
 			("revision", s(&crate::recordings::revision(&recordings))),
-			("license", s("Polestar original work")),
+			("license", s("Northstar original work")),
 			("copyright", V::Null),
 			("sessions", arr(recordings.iter().map(|r| s(&r.file)).collect())),
 		]));

@@ -30,7 +30,7 @@ const CASES = {
 	'a repeated phrase': Buffer.from('Kobold Camp Cleanup, '.repeat(3000)),
 	noise: noise(70000),
 	'runs and noise': Buffer.concat([Buffer.alloc(5000, 9), noise(3000), Buffer.alloc(40000, 9), noise(3000, 11)]),
-	'a texture': fs.readFileSync(path.join(__dirname, '..', 'addon', 'Polestar', 'Media', 'UI', 'logo.tga')),
+	'a texture': fs.readFileSync(path.join(__dirname, '..', 'addon', 'Northstar', 'Media', 'UI', 'logo.tga')),
 };
 
 for (const [name, data] of Object.entries(CASES)) {

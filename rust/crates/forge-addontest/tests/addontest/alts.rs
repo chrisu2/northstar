@@ -1,4 +1,4 @@
-//! The Characters page (addon/Polestar/Alts): the per-character snapshot (what it holds, when it is written,
+//! The Characters page (addon/Northstar/Alts): the per-character snapshot (what it holds, when it is written,
 //! how often), the account list and its orders, Forget, the rested projection, and the hub section.
 
 use forge_addontest::{emitted, is_match, text, Addon, RunAddon};
@@ -22,8 +22,8 @@ GetXPExhaustion = function() return rested end
 IsResting = function() return true end
 "#;
 
-const PRELUDE: &str = r#"local Alts = Polestar.Alts
-Polestar.Engine.GetTabs = function() return { { guideId = "g1", title = "Darkshore (16-21)", stepIndex = 16, stepCount = 43 } }, 1 end
+const PRELUDE: &str = r#"local Alts = Northstar.Alts
+Northstar.Engine.GetTabs = function() return { { guideId = "g1", title = "Darkshore (16-21)", stepIndex = 16, stepCount = 43 } }, 1 end
 "#;
 
 fn run_in(script: &str, files: &[&str], ui: bool) -> Vec<Value> {
@@ -31,7 +31,7 @@ fn run_in(script: &str, files: &[&str], ui: bool) -> Vec<Value> {
 	if ui {
 		stubs.push("stub_ui.lua");
 	}
-	emitted(&RunAddon { stubs, before: WORLD.into(), addons: vec![Addon::files("Polestar", files)], login: true, script: [PRELUDE, script].concat(), ..Default::default() })
+	emitted(&RunAddon { stubs, before: WORLD.into(), addons: vec![Addon::files("Northstar", files)], login: true, script: [PRELUDE, script].concat(), ..Default::default() })
 }
 
 fn run(script: &str) -> Value {
@@ -51,10 +51,10 @@ fn nil(v: Option<&Value>) -> bool {
 fn login_writes_the_entry_under_name_realm_once_the_tabs_exist() {
 	let out = run_in(
 		r#"
-local first = PolestarDB.alts and PolestarDB.alts.chars["Testchar-Test Realm"]
+local first = NorthstarDB.alts and NorthstarDB.alts.chars["Testchar-Test Realm"]
 stub.advance(6)
 emit(first ~= nil)
-emit(PolestarDB.alts.chars["Testchar-Test Realm"])"#,
+emit(NorthstarDB.alts.chars["Testchar-Test Realm"])"#,
 		CORE,
 		false,
 	);
@@ -86,7 +86,7 @@ stub.advance(6)
 local writes = 0
 local write = Alts.Write
 Alts.Write = function() writes = writes + 1; return write() end
-local c = function() return PolestarDB.alts.chars["Testchar-Test Realm"] end
+local c = function() return NorthstarDB.alts.chars["Testchar-Test Realm"] end
 stub.world.setLevel(19)
 stub.world.setMoney(5)
 stub.world.setXP(2000, 4200)
@@ -115,9 +115,9 @@ local function as(name, class, level, xp, rested, resting, ago)
 	GetXPExhaustion = function() return rested end
 	IsResting = function() return resting end
 	Alts.Write()
-	local e = PolestarDB.alts.chars[name .. "-Test Realm"]
+	local e = NorthstarDB.alts.chars[name .. "-Test Realm"]
 	e.class = class
-	e.seen = Polestar.Compat.Now() - ago
+	e.seen = Northstar.Compat.Now() - ago
 end
 as("Alt1", "WARRIOR", 30, 0, 0, true, 3600)
 as("Alt2", "PRIEST", 12, 0, 2000, false, 7200)
@@ -139,9 +139,9 @@ emit({ seen = names(), level = names("level"), rested = names("rested") })"#);
 fn forget_removes_another_character_and_refuses_the_current_one() {
 	let out = run(r#"
 stub.advance(6)
-PolestarDB.alts.chars["Old-Test Realm"] = { key = "Old-Test Realm", name = "Old", realm = "Test Realm", level = 5, seen = 1 }
-emit({ other = Alts.Forget("Old-Test Realm"), gone = PolestarDB.alts.chars["Old-Test Realm"] == nil,
-	mine = Alts.Forget(Alts.Key()), kept = PolestarDB.alts.chars["Testchar-Test Realm"] ~= nil })"#);
+NorthstarDB.alts.chars["Old-Test Realm"] = { key = "Old-Test Realm", name = "Old", realm = "Test Realm", level = 5, seen = 1 }
+emit({ other = Alts.Forget("Old-Test Realm"), gone = NorthstarDB.alts.chars["Old-Test Realm"] == nil,
+	mine = Alts.Forget(Alts.Key()), kept = NorthstarDB.alts.chars["Testchar-Test Realm"] ~= nil })"#);
 	assert_eq!(out, json!({ "other": true, "gone": true, "mine": false, "kept": true }));
 }
 
@@ -170,10 +170,10 @@ fn the_section_one_button_row_per_character_with_an_on_click_forget_is_disabled_
 	let out = run_ui(
 		r#"
 stub.advance(6)
-PolestarDB.alts.chars["Alt-Test Realm"] = { key = "Alt-Test Realm", name = "Alt", realm = "Test Realm", class = "WARRIOR", race = "Orc",
-	level = 30, xp = 100, xpMax = 5000, zone = "Barrens", bind = "Crossroads", seen = Polestar.Compat.Now() - 7200, profs = { [186] = 80 } }
-Polestar.Fire("SHOW_ALTS")
-local V = Polestar.UI.AltsSection
+NorthstarDB.alts.chars["Alt-Test Realm"] = { key = "Alt-Test Realm", name = "Alt", realm = "Test Realm", class = "WARRIOR", race = "Orc",
+	level = 30, xp = 100, xpMax = 5000, zone = "Barrens", bind = "Crossroads", seen = Northstar.Compat.Now() - 7200, profs = { [186] = 80 } }
+Northstar.Fire("SHOW_ALTS")
+local V = Northstar.UI.AltsSection
 local s = V.Shown()
 local rows = {}
 for i = 1, s.rows do
@@ -184,7 +184,7 @@ local mine = { V.forgetButton():IsEnabled() }
 local mineLabel = V.forgetButton().Label:GetText()
 stub.RunScript(V.rows[2], "OnClick")
 local after = { s.selected, V.forgetButton():IsEnabled(), V.forgetButton().Label:GetText() }
-emit({ mineLabel = mineLabel, rows = rows, shownRows = s.rows, mine = mine, after = after, subtitle = s.subtitle, section = Polestar.UI.Picker.Section() })"#,
+emit({ mineLabel = mineLabel, rows = rows, shownRows = s.rows, mine = mine, after = after, subtitle = s.subtitle, section = Northstar.UI.Picker.Section() })"#,
 	);
 	assert_eq!(out["shownRows"], 2);
 	let rows = out["rows"].as_array().unwrap();
@@ -200,7 +200,7 @@ emit({ mineLabel = mineLabel, rows = rows, shownRows = s.rows, mine = mine, afte
 #[test]
 fn rested_is_live_for_the_current_character_projected_for_another() {
 	let out = run(r#"
-local now = Polestar.Compat.Now()
+local now = Northstar.Compat.Now()
 local mine = { key = Alts.Key(), level = 18, xpMax = 4000, rested = 1, seen = now - 8 * 3600, resting = true }
 local other = { key = "Other-Test Realm", level = 18, xpMax = 4000, rested = 1, seen = now - 8 * 3600, resting = true }
 emit({ mine = Alts.Rested(mine, now), other = Alts.Rested(other, now) })"#);
@@ -214,7 +214,7 @@ fn player_camping_writes_at_once() {
 stub.advance(6)
 stub.world.setMoney(77)
 stub.fire("PLAYER_CAMPING")
-emit(PolestarDB.alts.chars["Testchar-Test Realm"].money)"#);
+emit(NorthstarDB.alts.chars["Testchar-Test Realm"].money)"#);
 	assert_eq!(out, 77);
 }
 
@@ -223,20 +223,20 @@ fn set_sort_persists_alts_sort_and_the_order_follows_it() {
 	let out = run_ui(
 		r#"
 stub.advance(6)
-local now = Polestar.Compat.Now()
-PolestarDB.alts.chars["Hi-Test Realm"] = { key = "Hi-Test Realm", name = "Hi", realm = "Test Realm", class = "ROGUE", race = "Human", level = 50, xp = 0, xpMax = 9000, seen = now - 9000 }
-PolestarDB.alts.chars["Lo-Test Realm"] = { key = "Lo-Test Realm", name = "Lo", realm = "Test Realm", class = "ROGUE", race = "Human", level = 5, xp = 0, xpMax = 900, seen = now - 100 }
-Polestar.Fire("SHOW_ALTS")
-local V = Polestar.UI.AltsSection
+local now = Northstar.Compat.Now()
+NorthstarDB.alts.chars["Hi-Test Realm"] = { key = "Hi-Test Realm", name = "Hi", realm = "Test Realm", class = "ROGUE", race = "Human", level = 50, xp = 0, xpMax = 9000, seen = now - 9000 }
+NorthstarDB.alts.chars["Lo-Test Realm"] = { key = "Lo-Test Realm", name = "Lo", realm = "Test Realm", class = "ROGUE", race = "Human", level = 5, xp = 0, xpMax = 900, seen = now - 100 }
+Northstar.Fire("SHOW_ALTS")
+local V = Northstar.UI.AltsSection
 local function order() local o = {} for i, k in ipairs(V.Shown().keys) do o[i] = k:match("^[^-]+") end return o end
 local out = { seen = order() }
 V.SetSort("level")
 out.level = order()
-out.saved = PolestarDB.settings.alts and PolestarDB.settings.alts.sort
-out.setting = Polestar.Get("alts.sort")
+out.saved = NorthstarDB.settings.alts and NorthstarDB.settings.alts.sort
+out.setting = Northstar.Get("alts.sort")
 V.SetSort("seen")
 out.back = order()
-out.cleared = PolestarDB.settings.alts == nil or PolestarDB.settings.alts.sort == nil
+out.cleared = NorthstarDB.settings.alts == nil or NorthstarDB.settings.alts.sort == nil
 emit(out)"#,
 	);
 	assert_eq!(out["seen"], json!(["Testchar", "Lo", "Hi"]));
@@ -252,17 +252,17 @@ fn the_row_text_slower_away_from_an_inn_fully_rested_max_level_nothing_for_xp_ma
 	let out = run_ui(
 		r#"
 stub.advance(6)
-local now = Polestar.Compat.Now()
+local now = Northstar.Compat.Now()
 local function add(name, e)
 	e.key, e.name, e.realm, e.class, e.race, e.seen = name .. "-Test Realm", name, "Test Realm", "ROGUE", "Human", e.seen or now - 3600
-	PolestarDB.alts.chars[e.key] = e
+	NorthstarDB.alts.chars[e.key] = e
 end
 add("Away", { level = 20, xp = 100, xpMax = 4000, rested = 1000 })
 add("Full", { level = 20, xp = 100, xpMax = 4000, rested = 6000, resting = true })
 add("Cap", { level = 60, xp = 0, xpMax = 0 })
 add("Zero", { level = 20, xp = 0, xpMax = 0 })
-Polestar.Fire("SHOW_ALTS")
-local V = Polestar.UI.AltsSection
+Northstar.Fire("SHOW_ALTS")
+local V = Northstar.UI.AltsSection
 local by = {}
 for i, key in ipairs(V.Shown().keys) do by[key] = { rest = V.Shown().rested[i], pct = V.rows[i].Pct:GetText() } end
 emit(by)"#,
@@ -280,15 +280,15 @@ fn forget_through_the_page_takes_two_clicks_the_first_arms_it() {
 	let out = run_ui(
 		r#"
 stub.advance(6)
-PolestarDB.alts.chars["Alt-Test Realm"] = { key = "Alt-Test Realm", name = "Alt", realm = "Test Realm", class = "WARRIOR", race = "Orc", level = 30, xp = 1, xpMax = 5000, seen = 5 }
-Polestar.Fire("SHOW_ALTS")
-local V = Polestar.UI.AltsSection
+NorthstarDB.alts.chars["Alt-Test Realm"] = { key = "Alt-Test Realm", name = "Alt", realm = "Test Realm", class = "WARRIOR", race = "Orc", level = 30, xp = 1, xpMax = 5000, seen = 5 }
+Northstar.Fire("SHOW_ALTS")
+local V = Northstar.UI.AltsSection
 stub.RunScript(V.rows[2], "OnClick")
 local b = V.forgetButton()
 stub.RunScript(b, "OnClick")
-local armed = { PolestarDB.alts.chars["Alt-Test Realm"] ~= nil, b.Label:GetText() }
+local armed = { NorthstarDB.alts.chars["Alt-Test Realm"] ~= nil, b.Label:GetText() }
 stub.RunScript(b, "OnClick")
-emit({ armed = armed, gone = PolestarDB.alts.chars["Alt-Test Realm"] == nil })"#,
+emit({ armed = armed, gone = NorthstarDB.alts.chars["Alt-Test Realm"] == nil })"#,
 	);
 	assert_eq!(out["armed"][0], true, "still there after one click");
 	assert_eq!(out["armed"][1], "Click again to confirm");
@@ -300,25 +300,25 @@ fn alts_enabled_off_nothing_is_written_saved_characters_are_still_listed_and_can
 	let out = run_in(
 		r#"
 stub.advance(6)
-PolestarDB.alts.chars["Alt-Test Realm"] = { key = "Alt-Test Realm", name = "Alt", realm = "Test Realm", class = "WARRIOR", race = "Orc", level = 30, xp = 1, xpMax = 5000, seen = 5 }
-local before = PolestarDB.alts.chars["Testchar-Test Realm"].money
-Polestar.Set("alts.enabled", false)
+NorthstarDB.alts.chars["Alt-Test Realm"] = { key = "Alt-Test Realm", name = "Alt", realm = "Test Realm", class = "WARRIOR", race = "Orc", level = 30, xp = 1, xpMax = 5000, seen = 5 }
+local before = NorthstarDB.alts.chars["Testchar-Test Realm"].money
+Northstar.Set("alts.enabled", false)
 stub.world.setMoney(5)
 stub.advance(12)
 stub.fire("PLAYER_LOGOUT")
-local after = PolestarDB.alts.chars["Testchar-Test Realm"].money
-Polestar.Fire("SHOW_ALTS")
-local V = Polestar.UI.AltsSection
+local after = NorthstarDB.alts.chars["Testchar-Test Realm"].money
+Northstar.Fire("SHOW_ALTS")
+local V = Northstar.UI.AltsSection
 local s = V.Shown()
 local o = { before = before, after = after, off = s.off, rows = s.rows, subtitle = s.subtitle }
 V.Select("Alt-Test Realm")
 o.canForget = V.forgetButton():IsEnabled()
 stub.RunScript(V.forgetButton(), "OnClick")
 stub.RunScript(V.forgetButton(), "OnClick")
-o.gone = PolestarDB.alts.chars["Alt-Test Realm"] == nil
+o.gone = NorthstarDB.alts.chars["Alt-Test Realm"] == nil
 emit(o)
-Polestar.Set("alts.enabled", true)
-emit(PolestarDB.alts.chars["Testchar-Test Realm"].money)"#,
+Northstar.Set("alts.enabled", true)
+emit(NorthstarDB.alts.chars["Testchar-Test Realm"].money)"#,
 		WITH_UI,
 		true,
 	);
@@ -337,15 +337,15 @@ emit(PolestarDB.alts.chars["Testchar-Test Realm"].money)"#,
 fn the_playing_character_alone_no_as_of_their_last_logout_the_instance_count_is_in_the_subtitle() {
 	let out = run_ui(
 		r#"
-Polestar.Fire("SHOW_ALTS")
-local first = Polestar.UI.AltsSection.Shown().subtitle
-Polestar.Set("maps.instances", true)
-Polestar.Maps = { GetInstanceStatus = function() return { inHour = 3, perHour = 5 } end }
-Polestar.UI.AltsSection.Select(Polestar.Alts.Key())
-local on = Polestar.UI.AltsSection.Shown().subtitle
-Polestar.Set("maps.instances", false)
-Polestar.UI.AltsSection.Select(Polestar.Alts.Key())
-emit({ first = first, on = on, off = Polestar.UI.AltsSection.Shown().subtitle })"#,
+Northstar.Fire("SHOW_ALTS")
+local first = Northstar.UI.AltsSection.Shown().subtitle
+Northstar.Set("maps.instances", true)
+Northstar.Maps = { GetInstanceStatus = function() return { inHour = 3, perHour = 5 } end }
+Northstar.UI.AltsSection.Select(Northstar.Alts.Key())
+local on = Northstar.UI.AltsSection.Shown().subtitle
+Northstar.Set("maps.instances", false)
+Northstar.UI.AltsSection.Select(Northstar.Alts.Key())
+emit({ first = first, on = on, off = Northstar.UI.AltsSection.Shown().subtitle })"#,
 	);
 	assert_eq!(out["first"], "1 character on Test Realm");
 	assert!(is_match(text(&out["on"]), r"3/5$"));
@@ -357,12 +357,12 @@ fn the_hub_the_sorts_are_tabs_and_the_sidebar_lists_the_characters_a_pick_select
 	let out = run_ui(
 		r#"
 stub.advance(6)
-PolestarDB.alts.chars["Alt-Test Realm"] = { key = "Alt-Test Realm", name = "Alt", realm = "Test Realm", class = "WARRIOR", race = "Orc", level = 30, xp = 1, xpMax = 5000, seen = 5 }
-Polestar.Fire("SHOW_ALTS")
-local win = PolestarPicker
+NorthstarDB.alts.chars["Alt-Test Realm"] = { key = "Alt-Test Realm", name = "Alt", realm = "Test Realm", class = "WARRIOR", race = "Orc", level = 30, xp = 1, xpMax = 5000, seen = 5 }
+Northstar.Fire("SHOW_ALTS")
+local win = NorthstarPicker
 local function labels(list) local o = {} for _, b in ipairs(list) do if b:IsShown() then o[#o + 1] = b.psKey end end return o end
 local tabs, nav = labels(win.tabButtons), labels(win.navButtons)
-local V = Polestar.UI.AltsSection
+local V = Northstar.UI.AltsSection
 V.OnNav("Alt-Test Realm")
 emit({ tabs = tabs, nav = nav, selected = V.Shown().selected })"#,
 	);
@@ -374,9 +374,9 @@ emit({ tabs = tabs, nav = nav, selected = V.Shown().selected })"#,
 #[test]
 fn a_finished_guide_reads_complete_in_the_snapshot() {
 	let out = run(r#"
-Polestar.Engine.GetTabs = function() return { { guideId = "g1", title = "Done", stepIndex = 43, stepCount = 43, complete = true } }, 1 end
+Northstar.Engine.GetTabs = function() return { { guideId = "g1", title = "Done", stepIndex = 43, stepCount = 43, complete = true } }, 1 end
 Alts.Write()
-emit(PolestarDB.alts.chars["Testchar-Test Realm"].tabs[1].complete)"#);
+emit(NorthstarDB.alts.chars["Testchar-Test Realm"].tabs[1].complete)"#);
 	assert_eq!(out, true);
 }
 
@@ -401,7 +401,7 @@ emit({ atOnce = atOnce, total = writes })"#);
 fn theme_class_color_a_class_file_and_nil_for_the_players_class() {
 	let out = run(r#"
 RAID_CLASS_COLORS = { MAGE = { r = 0.25, g = 0.78, b = 0.92 }, ROGUE = { r = 1, g = 0.96, b = 0.41 } }
-local T = Polestar.Theme
+local T = Northstar.Theme
 emit({ rogue = { T.ClassColor("ROGUE") }, player = { T.ClassColor() }, unknown = { T.ClassColor("NOPE") } })"#);
 	assert_eq!(out["rogue"], json!([1, 0.96, 0.41]));
 	assert_eq!(out["player"], json!([0.25, 0.78, 0.92]), "the world stub plays a Mage");
@@ -413,9 +413,9 @@ emit({ rogue = { T.ClassColor("ROGUE") }, player = { T.ClassColor() }, unknown =
 fn opening_the_page_before_the_login_write_still_lists_the_playing_character() {
 	let out = run_ui(
 		r#"
-local s0 = PolestarDB.alts
-Polestar.Fire("SHOW_ALTS")
-local s = Polestar.UI.AltsSection.Shown()
+local s0 = NorthstarDB.alts
+Northstar.Fire("SHOW_ALTS")
+local s = Northstar.UI.AltsSection.Shown()
 emit({ had = s0 ~= nil, rows = s.rows, key = s.keys[1], subtitle = s.subtitle })"#,
 	);
 	assert_eq!(out["had"], false);
@@ -436,14 +436,14 @@ C_Map.GetBestMapForUnit = function() return nil end
 GetRealZoneText = function() return "Lion's Pride Inn" end
 GetZoneText = function() return "Lion's Pride Inn" end
 stub.world.skills = {}
-Polestar.Engine.GetTabs = function() return {}, 0 end"#;
+Northstar.Engine.GetTabs = function() return {}, 0 end"#;
 
 #[test]
 fn leaving_the_world_and_logout_read_nothing_the_entry_changes_only_in_seen() {
 	let out = run(&format!(
 		r#"
 stub.advance(6)
-local c = function() return PolestarDB.alts.chars["Testchar-Test Realm"] end
+local c = function() return NorthstarDB.alts.chars["Testchar-Test Realm"] end
 local function snap() local t = {{}} for k, v in pairs(c()) do if k ~= "seen" then t[k] = type(v) == "table" and #v or v end end return t end
 local before = snap()
 local seen = c().seen
@@ -468,16 +468,16 @@ stub.advance(6)
 stub.world.setMoney(321)
 stub.fire("PLAYER_LEAVING_WORLD")
 stub.fire("PLAYER_LOGOUT")
-emit(PolestarDB.alts.chars["Testchar-Test Realm"].money)"#);
+emit(NorthstarDB.alts.chars["Testchar-Test Realm"].money)"#);
 	assert_eq!(out, 124000, "the pending write would read the same bad values");
 }
 
 #[test]
 fn with_no_entry_yet_logout_makes_none() {
 	let out = run(r#"
-PolestarDB.alts = nil
+NorthstarDB.alts = nil
 stub.fire("PLAYER_LOGOUT")
-emit(PolestarDB.alts == nil or next(PolestarDB.alts.chars) == nil)"#);
+emit(NorthstarDB.alts == nil or next(NorthstarDB.alts.chars) == nil)"#);
 	assert_eq!(out, true);
 }
 
@@ -490,7 +490,7 @@ local write = Alts.Write
 Alts.Write = function(...) writes = writes + 1; return write(...) end
 stub.advance(6)
 writes = 0
-local c = function() return PolestarDB.alts.chars["Testchar-Test Realm"] end
+local c = function() return NorthstarDB.alts.chars["Testchar-Test Realm"] end
 local got = {}
 stub.world.setMoney(33)
 stub.fire("PLAYER_QUITING")
@@ -513,7 +513,7 @@ stub.advance(6)
 local writes = 0
 local write = Alts.Write
 Alts.Write = function(...) writes = writes + 1; return write(...) end
-local c = function() return PolestarDB.alts.chars["Testchar-Test Realm"] end
+local c = function() return NorthstarDB.alts.chars["Testchar-Test Realm"] end
 stub.world.setMoney(77)
 local a = { writes, c().money }
 stub.world.setXP(2500, 4000)
@@ -533,7 +533,7 @@ stub.advance(6)
 local writes = 0
 local write = Alts.Write
 Alts.Write = function(...) writes = writes + 1; return write(...) end
-local c = function() return PolestarDB.alts.chars["Testchar-Test Realm"] end
+local c = function() return NorthstarDB.alts.chars["Testchar-Test Realm"] end
 stub.world.setMoney(77)
 stub.world.setXP(2500, 4000)
 local early = { writes, c().money }
@@ -549,10 +549,10 @@ fn player_update_resting_writes_resting_at_once() {
 stub.advance(6)
 IsResting = function() return false end
 stub.fire("PLAYER_UPDATE_RESTING")
-local off = PolestarDB.alts.chars["Testchar-Test Realm"].resting
+local off = NorthstarDB.alts.chars["Testchar-Test Realm"].resting
 IsResting = function() return true end
 stub.fire("PLAYER_UPDATE_RESTING")
-emit({ off = off == nil, on = PolestarDB.alts.chars["Testchar-Test Realm"].resting })"#);
+emit({ off = off == nil, on = NorthstarDB.alts.chars["Testchar-Test Realm"].resting })"#);
 	assert_eq!(out, json!({ "off": true, "on": true }));
 }
 
@@ -565,10 +565,10 @@ w.moveTo(1429, 50, 50)
 GetZoneText = function() return "Lion's Pride Inn" end
 GetRealZoneText = function() return "Elwynn Forest" end
 Alts.Write()
-local mapBased = PolestarDB.alts.chars["Testchar-Test Realm"].zone
+local mapBased = NorthstarDB.alts.chars["Testchar-Test Realm"].zone
 C_Map.GetBestMapForUnit = function() return nil end
 Alts.Write()
-emit({ mapBased = mapBased, fallback = PolestarDB.alts.chars["Testchar-Test Realm"].zone })"#);
+emit({ mapBased = mapBased, fallback = NorthstarDB.alts.chars["Testchar-Test Realm"].zone })"#);
 	assert_eq!(out["mapBased"], "Elwynn Forest");
 	assert_eq!(out["fallback"], "Elwynn Forest", "GetRealZoneText before GetZoneText");
 }
@@ -579,7 +579,7 @@ fn a_readable_0_copper_is_stored_as_0() {
 stub.advance(6)
 stub.world.money = 0
 Alts.Write()
-emit(PolestarDB.alts.chars["Testchar-Test Realm"].money)"#);
+emit(NorthstarDB.alts.chars["Testchar-Test Realm"].money)"#);
 	assert_eq!(out, 0);
 }
 
@@ -588,11 +588,11 @@ fn on_forever_whose_names_carry_a_surname_the_entry_is_filed_under_the_full_name
 	// Forever's UnitName gives (first name, surname) (FrameXML Camelot NameUtil.lua): two characters with one
 	// first name used to share "Name-Realm".
 	let out = run(r#"
-PolestarDB.alts = { chars = { ["Testchar-Test Realm"] = { key = "Testchar-Test Realm", name = "Testchar", realm = "Test Realm", tabs = { { guideId = "old" } } } } }
+NorthstarDB.alts = { chars = { ["Testchar-Test Realm"] = { key = "Testchar-Test Realm", name = "Testchar", realm = "Test Realm", tabs = { { guideId = "old" } } } } }
 local base = UnitName
 function UnitName(unit) if unit == "player" then return "Testchar", "Brightwood" end return base(unit) end
 stub.advance(6)
-local c = PolestarDB.alts.chars
+local c = NorthstarDB.alts.chars
 local e = c["Testchar Brightwood-Test Realm"]
 emit({ key = Alts.Key(), old = c["Testchar-Test Realm"] == nil, entryKey = e and e.key, name = e and e.name, current = Alts.IsCurrent(e) })"#);
 	assert_eq!(out, json!({ "key": "Testchar Brightwood-Test Realm", "old": true, "entryKey": "Testchar Brightwood-Test Realm", "name": "Testchar Brightwood", "current": true }));

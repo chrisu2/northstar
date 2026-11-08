@@ -1,8 +1,8 @@
 [package]
 name = "polestar-client"
 version = "0.1.4"
-description = "Polestar Client: sends the Polestar Recorder's data to the Polestar project"
-authors = ["Polestar contributors"]
+description = "Polestar Client: sends the Northstar Recorder's data to the Northstar project"
+authors = ["Northstar contributors"]
 license = "GPL-3.0-only"
 repository = "https://github.com/fitzforge/polestar"
 edition = "2021"

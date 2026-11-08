@@ -1,11 +1,11 @@
 'use strict';
 // Regenerates rust/tests/golden/judge/<case>.json.gz: the JS judge (tools/lib/judge/index.js judgeWalk:
-// the walk, passed by, avoidable returns) of the checkout $POLESTAR_JS (required: the v2-route branch's
+// the walk, passed by, avoidable returns) of the checkout $NORTHSTAR_JS (required: the v2-route branch's
 // tree, the judge with returns that forge-judge ports) on the committed
 // guide slice (rust/tests/golden/guide/slice) and data slice (rust/tests/golden/world/root), its sim
 // world the golden slice world with the committed params (rust/tests/golden/sim/params.json): the
 // dumps of forge-judge/tests/js/judge-ref.js. No walking grid: no subzones. File names are written
-// relative to the guide slice. Not run in CI. usage: POLESTAR_JS=<checkout> node rust/tests/golden/judge/regen.js
+// relative to the guide slice. Not run in CI. usage: NORTHSTAR_JS=<checkout> node rust/tests/golden/judge/regen.js
 const fs = require('node:fs');
 const path = require('node:path');
 const zlib = require('node:zlib');
@@ -15,15 +15,15 @@ const GOLDEN = path.resolve(HERE, '..');
 // A temp copy of the data slice: the JS sim caches what it derives (escort facts) into its sources dir.
 const ROOT = path.join(fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'judge-golden-root-')), 'root');
 fs.cpSync(path.join(GOLDEN, 'world/root'), ROOT, { recursive: true });
-const JS = process.env.POLESTAR_JS;
+const JS = process.env.NORTHSTAR_JS;
 if (!JS) {
-	console.error('usage: POLESTAR_JS=<checkout of the v2-route JS judge> node rust/tests/golden/judge/regen.js');
+	console.error('usage: NORTHSTAR_JS=<checkout of the v2-route JS judge> node rust/tests/golden/judge/regen.js');
 	process.exit(2);
 }
 const GUIDES = path.join(GOLDEN, 'guide/slice');
-process.env.POLESTAR_GRID = path.join(ROOT, 'data/local/nav4');
-process.env.POLESTAR_CAS = 'off';
-process.env.POLESTAR_CAS_SKIP = 'walks';
+process.env.NORTHSTAR_GRID = path.join(ROOT, 'data/local/nav4');
+process.env.NORTHSTAR_CAS = 'off';
+process.env.NORTHSTAR_CAS_SKIP = 'walks';
 
 /// (case, faction, race, class, to): the forge-judge/tests/judge_parity.rs CASES.
 const CASES = [

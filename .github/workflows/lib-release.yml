@@ -4,7 +4,7 @@ name: Library release
 # LibForeverData, generated from the committed public database (forever-db/) with
 # `forge data publish --lua`: its Lua test runs against the release's tables, then
 # LibForeverData-<version>.zip is attached to a GitHub release. The release is never the
-# repository's latest: Polestar's own `v*` releases stay that.
+# repository's latest: Northstar's own `v*` releases stay that.
 on:
   push:
     tags: ["lib-v*"]

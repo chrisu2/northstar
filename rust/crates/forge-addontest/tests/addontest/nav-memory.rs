@@ -1,7 +1,7 @@
-//! Polestar_Nav's memory budget (issue #693): what loading the walking maps costs, and what searching them
+//! Northstar_Nav's memory budget (issue #693): what loading the walking maps costs, and what searching them
 //! costs, under Lua 5.1 as the client counts it (collectgarbage("count")). The client's decoder
 //! (C_EncodingUtil) is tests/lua/stub_encoding.lua here, a decoder in Lua: its own scratch is counted out,
-//! so the figures are Polestar_Nav's own (the client decodes in C). Each figure fails the test when it grows
+//! so the figures are Northstar_Nav's own (the client decodes in C). Each figure fails the test when it grows
 //! past its budget: lower a budget when a change lowers the figure, never raise one to make a change pass.
 //!
 //!   load resident   after loading the maps and two full collects
@@ -107,8 +107,8 @@ EXCLUDED = 0
 collectgarbage("stop")"#;
 
 /// One session on continent `map`: its walks (and, on Eastern Kingdoms, the batch). A continent whose maps are a
-/// part addon (maps format 5: Polestar_Nav_EK, _Kalimdor) has it loaded first, as the router does at its first
-/// search there, so `load` counts Polestar_Nav and that continent's part: what a player on it holds.
+/// part addon (maps format 5: Northstar_Nav_EK, _Kalimdor) has it loaded first, as the router does at its first
+/// search there, so `load` counts Northstar_Nav and that continent's part: what a player on it holds.
 fn script(map: u32) -> String {
 	let walks: Vec<String> = WALKS.iter().filter(|w| w.0 == map).map(|(m, a, b)| format!("{{ {m}, {}, {} }}", point(a), point(b))).collect();
 	let places: Vec<String> = PLACES.iter().map(point).collect();
@@ -119,12 +119,12 @@ fn script(map: u32) -> String {
 	};
 	format!(
 		r#"
-local part = PolestarPathData[{map}] and PolestarPathData[{map}].part
+local part = NorthstarPathData[{map}] and NorthstarPathData[{map}].part
 if part then C_AddOns.LoadAddOn(part) end
 local loadPeak = collectgarbage("count") - BASE - EXCLUDED
 collectgarbage("restart")
 local loadResident = FULL() - BASE
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local frames, slices = {{}}, 0
 Path.after = function(fn) slices = slices + 1 frames[#frames + 1] = fn end
 -- The searches run sliced under Path.budget as in the client, on a clock that moves CLOCK_STEP ms at every read
@@ -159,15 +159,15 @@ emit({{ loadResident = loadResident, loadPeak = loadPeak, live = live, allocated
 
 #[test]
 fn t_693_polestar_nav_stays_within_its_memory_budget_loading_the_maps_searching_them_live_and_allocated_and_at_rest() {
-	if !addons_dir().join("Polestar_Nav/Nav/Nav.xml").exists() {
-		eprintln!("skipped: addon/Polestar_Nav has no walking maps");
+	if !addons_dir().join("Northstar_Nav/Nav/Nav.xml").exists() {
+		eprintln!("skipped: addon/Northstar_Nav has no walking maps");
 		return;
 	}
-	// A session stays on one continent: Polestar_Nav loads at login, a continent's part the first time a walk
+	// A session stays on one continent: Northstar_Nav loads at login, a continent's part the first time a walk
 	// there is searched, and nothing unloads. The budget holds for each continent's session.
 	let mut over = Vec::new();
 	for map in [0u32, 1] {
-		let got = emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], before: BEFORE.into(), addons: vec![Addon::name("Polestar_Nav")], script: script(map), ..Default::default() }).remove(0);
+		let got = emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], before: BEFORE.into(), addons: vec![Addon::name("Northstar_Nav")], script: script(map), ..Default::default() }).remove(0);
 		let want = WALKS.iter().filter(|w| w.0 == map).count() + usize::from(map == 0);
 		assert_eq!(got["answers"], want as i64, "map {map}: every walk and the batch answered: {got}");
 		let slices = got["slices"].as_f64().unwrap_or(0.0);

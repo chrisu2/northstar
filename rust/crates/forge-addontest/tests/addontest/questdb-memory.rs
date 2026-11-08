@@ -1,5 +1,5 @@
-//! Polestar_QuestDB's memory budget (issue #693): what the quest database costs once loaded, under Lua 5.1 as
-//! the client counts it (collectgarbage("count")), with Polestar.QuestDB reading it (addon/Polestar/Quests/
+//! Northstar_QuestDB's memory budget (issue #693): what the quest database costs once loaded, under Lua 5.1 as
+//! the client counts it (collectgarbage("count")), with Northstar.QuestDB reading it (addon/Northstar/Quests/
 //! QuestDB.lua: the records stay LuaChunks text, decoded when read). Built by `forge data questdb` from
 //! data/forever; skipped when that data is absent. Each figure fails the test when it grows past its
 //! budget: lower a budget when a change lowers the figure, never raise one to make a change pass.
@@ -38,12 +38,12 @@ fn the_quest_database_stays_within_its_memory_budget_693() {
 	let db = build_db(&data);
 	let script = format!(
 		r#"
-local Q = Polestar.QuestDB
+local Q = Northstar.QuestDB
 local files = {files}
 local function full() collectgarbage("collect"); collectgarbage("collect"); return collectgarbage("count") end
 local base = full()
 collectgarbage("stop")
-for _, f in ipairs(files) do assert(loadfile(f))("Polestar_QuestDB", {{}}) end
+for _, f in ipairs(files) do assert(loadfile(f))("Northstar_QuestDB", {{}}) end
 local peak = collectgarbage("count") - base
 collectgarbage("restart")
 local resident = full() - base
@@ -59,7 +59,7 @@ emit({{ resident = resident, peak = peak, read = read, quests = n, loaded = Q.Is
 		files = db.lua_files(),
 		batch = READ_BATCH
 	);
-	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua", "stub_quests.lua"], addons: vec![Addon::name("Polestar")], script, ..Default::default() });
+	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua", "stub_quests.lua"], addons: vec![Addon::name("Northstar")], script, ..Default::default() });
 	let m = &out[0];
 	assert_eq!(m["quests"], db.out.db.quests.len(), "every quest reads back");
 	assert_eq!(m["loaded"], true);

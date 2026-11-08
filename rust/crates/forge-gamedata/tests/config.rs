@@ -10,8 +10,8 @@ fn remember_and_forget_wow() {
 	let file = dir.join("cfg").join("config.toml");
 	std::fs::create_dir_all(file.parent().unwrap()).unwrap();
 	std::fs::write(&file, "# mine\nother = 1\nwow = \"/old\"\n").unwrap();
-	std::env::set_var("POLESTAR_FORGE_CONFIG", &file);
-	std::env::remove_var("POLESTAR_WOW_DIR");
+	std::env::set_var("NORTHSTAR_FORGE_CONFIG", &file);
+	std::env::remove_var("NORTHSTAR_WOW_DIR");
 	let want = wow.canonicalize().unwrap();
 	assert_eq!(forge_gamedata::remember_wow(&wow).unwrap(), Some(file.clone()));
 	assert_eq!(forge_gamedata::remembered_wow(), Some(want.clone()));

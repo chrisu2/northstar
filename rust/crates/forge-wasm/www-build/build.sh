@@ -3,7 +3,7 @@
 #
 #   www-build/build.sh <checkout> <sim dir> <local dir> <name>=<pack dir> [<name>=<pack dir> ...]
 #
-#   <checkout>   a checkout with data/forever, data/sources, addon/Polestar/Polestar.toc and package.json
+#   <checkout>   a checkout with data/forever, data/sources, addon/Northstar/Northstar.toc and package.json
 #   <sim dir>    world-horde.json, world-alliance.json, params.json
 #   <local dir>  data/local with planner/art, planner/icons, nav4 (the nav grid) and nav-layers
 #   name=dir     the guide sets the page offers (?set=name; the first is the default only when named v1)

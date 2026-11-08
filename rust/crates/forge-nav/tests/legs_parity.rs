@@ -3,7 +3,7 @@
 //! ends equal, start and goal legs' nodes equal, seconds equal (1e-9 relative), yards and zone cells within
 //! the router port's yard tolerance (1 yd or 1 %) (ties may take another way of equal seconds); the router's tags (groundKey,
 //! edgeKey, the danger area's key) and its AreaTable zones equal. Golden: rust/tests/golden/nav-legs on the
-//! grid of nav-grid; POLESTAR_REF reads the old local references (tests/common/mod.rs).
+//! grid of nav-grid; NORTHSTAR_REF reads the old local references (tests/common/mod.rs).
 //! cargo test --release -p forge-nav --test legs_parity -- --nocapture
 
 mod common;

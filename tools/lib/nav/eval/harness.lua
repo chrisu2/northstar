@@ -1,11 +1,11 @@
--- `nav eval`'s harness (tools/lib/nav/eval/run.js spawns it): Polestar_Nav's walking router run standalone,
--- outside the client, on one Polestar_Nav folder's maps, the way 0.2.4's maps were measured (NavPack's spf.lua).
+-- `nav eval`'s harness (tools/lib/nav/eval/run.js spawns it): Northstar_Nav's walking router run standalone,
+-- outside the client, on one Northstar_Nav folder's maps, the way 0.2.4's maps were measured (NavPack's spf.lua).
 --
 --   luajit harness.lua <encoding.lua> <files.txt> <queries.jsonl> <out.jsonl> [zones.json]     (lua5.1 works too, slower)
 --
 -- encoding.lua: a plain-Lua C_EncodingUtil (tests/lua/stub_encoding.lua): the maps decode as the client decodes them.
 -- files.txt: the files to load, one path per line, in the client's order (run.js reads the folder's .toc and its
--- Nav/Nav.xml): each runs as an addon file does, with ("Polestar_Nav", ns).
+-- Nav/Nav.xml): each runs as an addon file does, with ("Northstar_Nav", ns).
 -- zones.json (optional): {"<uiMapID>": the zone's lowest level, ...} (tools/lib/maps/zonelevels.js, as the addon's
 -- Maps.GetZoneLevels), for the routes with a level.
 -- queries.jsonl, one JSON object per line ([x, y, z] points in UnitPosition's frame, z null when unknown):
@@ -21,7 +21,7 @@
 -- the cold search (decoding included), warmMs the same route again, kb Lua memory when the search answered. An error
 -- reported through the client's error handler during a query fails it (ok false, reason "error: ..."); each query
 -- starts with none.
--- The profile and the route style reach the router (opts.profile, opts.style) only when it prices by profile (Polestar_NavCosts is defined):
+-- The profile and the route style reach the router (opts.profile, opts.style) only when it prices by profile (Northstar_NavCosts is defined):
 -- 0.2.4's router takes a waterWalking flag where opts goes, so it is called without one.
 -- A route with a level is priced with zone danger (opts.danger) as the addon's Nav.danger.Table builds it: every zone
 -- of zones.json whose lowest level is >= level + 4 costs 3x, > level + 10 20x, except the start's and the goal's
@@ -177,15 +177,15 @@ local t0 = clock()
 for file in io.lines(FILES) do
 	if file ~= "" then
 		local chunk = assert(loadfile(file))
-		chunk("Polestar_Nav", ns)
+		chunk("Northstar_Nav", ns)
 		nfiles = nfiles + 1
 	end
 end
 local loadMs = clock() - t0
 collectgarbage("collect")
 local packedKB = collectgarbage("count") - kb0
-local Path = assert(Polestar_NavEngine or ns.Path, "no walking router loaded (Polestar_NavEngine)")
-local profiles = type(Polestar_NavCosts) == "table"
+local Path = assert(Northstar_NavEngine or ns.Path, "no walking router loaded (Northstar_NavEngine)")
+local profiles = type(Northstar_NavCosts) == "table"
 
 -- Warm mode: keep caches between queries; set high budgets and raise the endpoint cap.
 -- Activated by the optional "warm" 6th argument (nav eval does not pass it; sim walks does).
@@ -236,7 +236,7 @@ end
 
 -- Does the router read zones on this map (Path.ZoneAt and the maps' zone field)?
 local function zoned(map)
-	local D = PolestarPathData and PolestarPathData[map]
+	local D = NorthstarPathData and NorthstarPathData[map]
 	return Path.ZoneAt ~= nil and D ~= nil and D.zone ~= nil
 end
 

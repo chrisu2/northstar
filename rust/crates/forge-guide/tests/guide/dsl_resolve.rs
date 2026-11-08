@@ -467,7 +467,7 @@ fn header_fields_compile_to_the_guide_schema_with_defaults() {
 		json!({ "id": "t/full", "pack": "guides", "title": "Full", "faction": "Horde", "races": ["Orc", "Scourge"], "classes": ["WARRIOR", "PALADIN", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID"], "minLevel": 3, "maxLevel": 9, "category": "Dungeons", "zone": 1411, "zoneName": "Durotar", "next": "t/other", "author": "Someone", "version": 4 })
 	);
 	let d = plain(&compile(&guide_text(&["step S", "  level 2"])).guides[0]);
-	assert_eq!(json!([d["category"], d["author"], d["version"], d["pack"], d["zone"], d["zoneName"]]), json!(["Leveling", "Polestar", 1, "guides", 1429, "Elwynn Forest"]));
+	assert_eq!(json!([d["category"], d["author"], d["version"], d["pack"], d["zone"], d["zoneName"]]), json!(["Leveling", "Northstar", 1, "guides", 1429, "Elwynn Forest"]));
 }
 
 #[test]

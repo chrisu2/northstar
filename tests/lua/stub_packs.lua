@@ -1,10 +1,10 @@
--- Load-on-demand data packs from real files (Polestar_QuestDB, Polestar_Codex,
--- Polestar_ItemDB...), the way the client loads them: LoadAddOn(name) runs the
+-- Load-on-demand data packs from real files (Northstar_QuestDB, Northstar_Codex,
+-- Northstar_ItemDB...), the way the client loads them: LoadAddOn(name) runs the
 -- pack's files once, then fires ADDON_LOADED. Load after wow_stub.lua and any
 -- stub that wraps LoadAddOn itself (stub_quests.lua).
 --
---   stub.packs.Polestar_Codex = { "/abs/Meta.lua", ... }   -- files, in TOC order
---   stub.packLoads.Polestar_Codex                         -- times it was loaded (0 or 1)
+--   stub.packs.Northstar_Codex = { "/abs/Meta.lua", ... }   -- files, in TOC order
+--   stub.packLoads.Northstar_Codex                         -- times it was loaded (0 or 1)
 
 stub.packs = stub.packs or {}
 stub.packLoads = {}

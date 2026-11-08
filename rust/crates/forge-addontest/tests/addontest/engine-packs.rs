@@ -15,19 +15,19 @@ const STEPS: &str = r#"steps = { { goals = { { t = "level", level = 50 } } }, { 
 const TEST_GUIDES: &str = r#"
 ${TEST_PACK}
 for i = 1, 8 do
-	Polestar.RegisterGuide({ id = "test/" .. i, pack = "test", title = "T" .. i, category = "Exploration", ${STEPS} })
+	Northstar.RegisterGuide({ id = "test/" .. i, pack = "test", title = "T" .. i, category = "Exploration", ${STEPS} })
 end
-Polestar.RegisterGuide({ id = "test/x", pack = "test", title = "X", category = "Exploration", ${STEPS} })
+Northstar.RegisterGuide({ id = "test/x", pack = "test", title = "X", category = "Exploration", ${STEPS} })
 "#;
 
 const JOE: &str = r#"
-Polestar.RegisterPack({ addon = "JoeAddon", id = "joe", format = 1, title = "Joe", author = "Joe", version = "1", license = "MIT" })
-Polestar.RegisterGuide({ id = "joe/a", pack = "joe", title = "A", category = "Exploration", ${STEPS} })
-Polestar.RegisterGuide({ id = "joe/b", pack = "joe", title = "B", category = "Exploration", ${STEPS} })
+Northstar.RegisterPack({ addon = "JoeAddon", id = "joe", format = 1, title = "Joe", author = "Joe", version = "1", license = "MIT" })
+Northstar.RegisterGuide({ id = "joe/a", pack = "joe", title = "A", category = "Exploration", ${STEPS} })
+Northstar.RegisterGuide({ id = "joe/b", pack = "joe", title = "B", category = "Exploration", ${STEPS} })
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 function ids()
 	local list, active = E.GetTabs()
@@ -63,15 +63,15 @@ fn run(joe: bool, saved: Option<&str>, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		script: [fill(TEST_GUIDES).as_str(), joe_lua.as_str(), HELPERS, "stub.login(); flush()", script].join("\n"),
 		..Default::default()
 	})
 	.remove(0)
 }
 
-const SAVED: &str = r#"PolestarCharDB = { schema = 1, tabs = { "joe/a", "test/x" }, activeTab = 1, pins = { ["joe/a"] = { step = 3, done = false }, ["test/x"] = { step = 2, done = false } } }"#;
+const SAVED: &str = r#"NorthstarCharDB = { schema = 1, tabs = { "joe/a", "test/x" }, activeTab = 1, pins = { ["joe/a"] = { step = 3, done = false }, ["test/x"] = { step = 2, done = false } } }"#;
 
 fn has(v: &Value, id: &str) -> bool {
 	v.as_array().unwrap().iter().any(|x| x.as_str() == Some(id))
@@ -89,9 +89,9 @@ fn a_missing_pack_s_tab_stays_saved_with_its_pin_and_comes_back_in_its_old_place
 		r#"
 			local r = { login = ids(), step = stepOf("test/x") }
 			E.OpenTab("test/1", false); flush()
-			r.saved = PolestarCharDB.tabs
-			r.pin = PolestarCharDB.pins["joe/a"] or false
-			r.state = dump(PolestarCharDB)
+			r.saved = NorthstarCharDB.tabs
+			r.pin = NorthstarCharDB.pins["joe/a"] or false
+			r.state = dump(NorthstarCharDB)
 			emit(r)
 		"#,
 	);
@@ -100,8 +100,8 @@ fn a_missing_pack_s_tab_stays_saved_with_its_pin_and_comes_back_in_its_old_place
 	assert_eq!(first["saved"], json!(["test/x", "test/1", "joe/a"]));
 	assert_eq!(first["pin"], json!({ "step": 3, "done": false }));
 
-	let saved = format!("PolestarCharDB = {}", first["state"].as_str().unwrap());
-	let second = run(true, Some(&saved), r#"emit({ ids = ids(), step = stepOf("joe/a"), saved = PolestarCharDB.tabs })"#);
+	let saved = format!("NorthstarCharDB = {}", first["state"].as_str().unwrap());
+	let second = run(true, Some(&saved), r#"emit({ ids = ids(), step = stepOf("joe/a"), saved = NorthstarCharDB.tabs })"#);
 	assert_eq!(second["ids"]["tabs"], json!(["joe/a", "test/x", "test/1"]));
 	assert_eq!(second["step"], 3);
 	assert_eq!(second["saved"], json!(["joe/a", "test/x", "test/1"]));
@@ -116,15 +116,15 @@ fn switching_a_pack_off_closes_its_tabs_and_keeps_them_saved_on_again_they_retur
 			E.OpenTab("test/x"); E.OpenTab("joe/a"); E.OpenTab("test/1"); E.OpenTab("joe/b")
 			E.SelectTab(2); E.Goto(3); flush()
 			local r = { before = ids() }
-			Polestar.Guides.SetPackShown("joe", false); flush()
+			Northstar.Guides.SetPackShown("joe", false); flush()
 			r.hidden = ids()
 			r.guide = E.GetGuide().id
-			r.saved = PolestarCharDB.tabs
-			r.pin = PolestarCharDB.pins["joe/a"] or false
-			Polestar.Guides.SetPackShown("joe", true); flush()
+			r.saved = NorthstarCharDB.tabs
+			r.pin = NorthstarCharDB.pins["joe/a"] or false
+			Northstar.Guides.SetPackShown("joe", true); flush()
 			r.back = ids()
 			r.step = stepOf("joe/a")
-			r.savedBack = PolestarCharDB.tabs
+			r.savedBack = NorthstarCharDB.tabs
 			emit(r)
 		"#,
 	);
@@ -142,12 +142,12 @@ fn switching_a_pack_off_closes_its_tabs_and_keeps_them_saved_on_again_they_retur
 fn saved_absent_tabs_never_take_an_open_tab_s_place_and_at_most_max_tabs_of_them_are_kept_newest_first() {
 	let out = run(
 		false,
-		Some(r#"PolestarCharDB = { schema = 1, tabs = { "test/1", "test/2", "test/3", "test/4", "test/5", "gone/1", "gone/2" }, activeTab = 1 }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, tabs = { "test/1", "test/2", "test/3", "test/4", "test/5", "gone/1", "gone/2" }, activeTab = 1 }"#),
 		r#"
 			local r = { max = E.MAX_TABS, login = ids().tabs }
 			r.sixth = E.OpenTab("test/6") or false
 			r.seventh = E.OpenTab("test/7") or false
-			r.saved = PolestarCharDB.tabs
+			r.saved = NorthstarCharDB.tabs
 			emit(r)
 		"#,
 	);
@@ -158,8 +158,8 @@ fn saved_absent_tabs_never_take_an_open_tab_s_place_and_at_most_max_tabs_of_them
 	assert_eq!(out["saved"], json!(["test/1", "test/2", "test/3", "test/4", "test/5", "test/6", "gone/1", "gone/2"]));
 
 	let many = (1..=9).map(|i| format!("\"gone/{i}\"")).collect::<Vec<_>>().join(", ");
-	let saved = format!("PolestarCharDB = {{ schema = 1, tabs = {{ \"test/1\", {many} }}, activeTab = 1 }}");
-	let kept = run(false, Some(&saved), r#"E.OpenTab("test/2", false); emit(PolestarCharDB.tabs)"#);
+	let saved = format!("NorthstarCharDB = {{ schema = 1, tabs = {{ \"test/1\", {many} }}, activeTab = 1 }}");
+	let kept = run(false, Some(&saved), r#"E.OpenTab("test/2", false); emit(NorthstarCharDB.tabs)"#);
 	assert_eq!(kept, json!(["test/1", "test/2", "gone/4", "gone/5", "gone/6", "gone/7", "gone/8", "gone/9"]));
 }
 
@@ -167,22 +167,22 @@ fn saved_absent_tabs_never_take_an_open_tab_s_place_and_at_most_max_tabs_of_them
 fn an_absent_guide_put_into_a_tab_by_setguide_is_no_longer_absent_closed_it_stays_closed() {
 	let script = fill(
 		r#"
-			Polestar.RegisterPack({ addon = "ZedAddon", id = "zed", format = 1, title = "Zed", author = "Z", version = "1", license = "MIT" })
-			Polestar.RegisterGuide({ id = "zed/a", pack = "zed", title = "Z", category = "Exploration", ${STEPS} })
-			local G = Polestar.Guides
+			Northstar.RegisterPack({ addon = "ZedAddon", id = "zed", format = 1, title = "Zed", author = "Z", version = "1", license = "MIT" })
+			Northstar.RegisterGuide({ id = "zed/a", pack = "zed", title = "Z", category = "Exploration", ${STEPS} })
+			local G = Northstar.Guides
 			E.OpenTab("joe/a"); for i = 1, 5 do E.OpenTab("test/" .. i) end
 			G.SetPackShown("joe", false); flush()
 			E.OpenTab("test/6"); flush()
 			G.SetPackShown("joe", true); flush()
-			local r = { full = ids().tabs, savedFull = PolestarCharDB.tabs }
+			local r = { full = ids().tabs, savedFull = NorthstarCharDB.tabs }
 			E.SetGuide("joe/a"); flush()
 			r.set = ids().tabs
-			r.savedSet = PolestarCharDB.tabs
+			r.savedSet = NorthstarCharDB.tabs
 			E.CloseTab(ids().active); flush()
-			r.closed = PolestarCharDB.tabs
+			r.closed = NorthstarCharDB.tabs
 			G.SetPackShown("zed", false); flush()
 			r.afterZed = ids().tabs
-			r.savedAfterZed = PolestarCharDB.tabs
+			r.savedAfterZed = NorthstarCharDB.tabs
 			emit(r)
 		"#,
 	);
@@ -202,23 +202,23 @@ fn a_tab_reopened_after_its_pack_returns_is_no_longer_absent_closed_it_stays_clo
 		true,
 		None,
 		r#"
-			local G = Polestar.Guides
+			local G = Northstar.Guides
 			local function close(id) for i, t in ipairs(ids().tabs) do if t == id then E.CloseTab(i) end end; flush() end
 			E.OpenTab("test/x"); E.OpenTab("joe/a"); E.OpenTab("joe/b"); flush()
 			G.SetPackShown("joe", false); flush()
 			G.SetPackShown("joe", true); flush()
 			local r = { back = ids().tabs }
 			close("joe/a")
-			r.closed = PolestarCharDB.tabs
+			r.closed = NorthstarCharDB.tabs
 			G.SetPackShown("joe", false); flush()
-			r.hidden = PolestarCharDB.tabs
+			r.hidden = NorthstarCharDB.tabs
 			G.SetPackShown("joe", true); flush()
 			r.reopened = ids().tabs
 			close("joe/b")
 			G.SetPackShown("joe", false); flush()
 			G.SetPackShown("joe", true); flush()
 			r.again = ids().tabs
-			r.saved = PolestarCharDB.tabs
+			r.saved = NorthstarCharDB.tabs
 			emit(r)
 		"#,
 	);
@@ -236,7 +236,7 @@ fn the_step_view_carries_the_step_s_picture_with_its_texture_path_and_a_step_wit
 		true,
 		None,
 		r#"
-			Polestar.RegisterGuide({ id = "joe/pic", pack = "joe", title = "Pic", category = "Exploration", steps = {
+			Northstar.RegisterGuide({ id = "joe/pic", pack = "joe", title = "Pic", category = "Exploration", steps = {
 				{ note = "Inside the mine.", image = { file = "media\\cave", w = 512, h = 256 }, goals = { { t = "level", level = 50 } } },
 				{ goals = { { t = "level", level = 55 } } },
 			} })

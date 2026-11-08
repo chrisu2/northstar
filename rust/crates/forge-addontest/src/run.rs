@@ -94,7 +94,7 @@ pub fn join(dir: &Path, rel: &str) -> PathBuf {
 	out
 }
 
-/// Files an XML manifest loads, in order. Only `<Script file>` and `<Include file>` are used by Polestar's
+/// Files an XML manifest loads, in order. Only `<Script file>` and `<Include file>` are used by Northstar's
 /// manifests.
 pub fn xml_files(xml: &Path) -> Result<Vec<PathBuf>, String> {
 	static COMMENT: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?s)<!--.*?-->").unwrap());
@@ -186,7 +186,7 @@ pub fn build_program(opts: &RunAddon) -> Result<String, String> {
 end"
 		.into(),
 	);
-	// The walking maps' part addons (Polestar_Nav_EK, _Kalimdor: load on demand, Routing/PathGrid.lua asks for
+	// The walking maps' part addons (Northstar_Nav_EK, _Kalimdor: load on demand, Routing/PathGrid.lua asks for
 	// one the first time it searches its continent), loaded as the client loads them, when asked (a test's own
 	// stub.packs entry for one, stub_packs.lua, wins).
 	let mut parts = Vec::new();

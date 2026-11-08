@@ -44,10 +44,10 @@
 			]
 		},
 		{
-			"name": "Polestar recordings",
+			"name": "Northstar recordings",
 			"url": null,
 			"revision": "192a9fe9f0d70cec",
-			"license": "Polestar original work",
+			"license": "Northstar original work",
 			"copyright": null,
 			"sessions": [
 				"session-a.json",

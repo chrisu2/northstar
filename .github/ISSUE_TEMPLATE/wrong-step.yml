@@ -1,5 +1,5 @@
 # The report window's "Open on GitHub" fills these fields by their ids
-# (addon/Polestar/UI/Report.lua, R.IssueURL): rename one there too.
+# (addon/Northstar/UI/Report.lua, R.IssueURL): rename one there too.
 name: Wrong step
 description: A guide step that is wrong, never checks off or sends you the long way.
 title: "Wrong step: <guide>, step <number>"
@@ -44,7 +44,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Polestar version
+      label: Northstar version
       description: Shown at the foot of the Options sidebar and in the game's AddOns list.
       placeholder: 0.2.0
     validations:
@@ -53,4 +53,4 @@ body:
     id: addons
     attributes:
       label: Other addons
-      description: The other addons you have turned on, quest and map addons above all (Questie, TomTom, other guides). Their arrows and quest lines can look like Polestar's.
+      description: The other addons you have turned on, quest and map addons above all (Questie, TomTom, other guides). Their arrows and quest lines can look like Northstar's.

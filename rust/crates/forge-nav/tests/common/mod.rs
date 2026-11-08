@@ -1,8 +1,8 @@
 //! Where the nav parity tests read their JS references: the committed goldens (rust/tests/golden/
-//! nav-grid, nav-walks, nav-legs, nav-store; their README.md) unless POLESTAR_REF is set, which reads
-//! the old local references instead: $POLESTAR_REF (parity/*.js outputs, a scratch folder),
-//! $POLESTAR_RESET (a scratch root holding sim/ and cchtest-full/cas/walktable) and $POLESTAR_GRID
-//! (default $POLESTAR_CHECKOUT/data/local/nav4). Missing any of them: the goldens, with a note.
+//! nav-grid, nav-walks, nav-legs, nav-store; their README.md) unless NORTHSTAR_REF is set, which reads
+//! the old local references instead: $NORTHSTAR_REF (parity/*.js outputs, a scratch folder),
+//! $NORTHSTAR_RESET (a scratch root holding sim/ and cchtest-full/cas/walktable) and $NORTHSTAR_GRID
+//! (default $NORTHSTAR_CHECKOUT/data/local/nav4). Missing any of them: the goldens, with a note.
 #![allow(dead_code)]
 use std::path::{Path, PathBuf};
 
@@ -27,12 +27,12 @@ pub fn golden_dir() -> PathBuf {
 }
 
 pub fn refs() -> Refs {
-	if let Ok(refd) = std::env::var("POLESTAR_REF") {
+	if let Ok(refd) = std::env::var("NORTHSTAR_REF") {
 		let refd = PathBuf::from(refd);
-		let reset = std::env::var_os("POLESTAR_RESET").map(PathBuf::from);
-		let grid = std::env::var_os("POLESTAR_GRID").map(PathBuf::from).or_else(|| std::env::var_os("POLESTAR_CHECKOUT").map(|c| PathBuf::from(c).join("data/local/nav4")));
+		let reset = std::env::var_os("NORTHSTAR_RESET").map(PathBuf::from);
+		let grid = std::env::var_os("NORTHSTAR_GRID").map(PathBuf::from).or_else(|| std::env::var_os("NORTHSTAR_CHECKOUT").map(|c| PathBuf::from(c).join("data/local/nav4")));
 		let (Some(reset), Some(grid)) = (reset, grid) else {
-			eprintln!("POLESTAR_REF set without POLESTAR_RESET and POLESTAR_GRID (or POLESTAR_CHECKOUT): reading the goldens");
+			eprintln!("NORTHSTAR_REF set without NORTHSTAR_RESET and NORTHSTAR_GRID (or NORTHSTAR_CHECKOUT): reading the goldens");
 			return golden_refs();
 		};
 		return Refs {

@@ -87,17 +87,17 @@ fn reward_and_why_reach_the_registry_and_the_guide_list_lua_bad_shapes_are_refus
 	));
 	let file = serde_json::to_string(&pack.dir.join(at)).unwrap();
 	let out = emitted(&RunAddon {
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,
-			&format!("assert(loadfile({file}))(\"Polestar_Guides\", {{}})"),
+			&format!("assert(loadfile({file}))(\"Northstar_Guides\", {{}})"),
 			r#"local h
-for _, g in ipairs(Polestar.Guides.List()) do if g.id == "test/main" then h = g end end
+for _, g in ipairs(Northstar.Guides.List()) do if g.id == "test/main" then h = g end end
 local function bad(extra)
 	local def = { id = "test/bad", pack = "test", title = "B", steps = { { goals = { { t = "note", text = "n" } } } } }
 	for k, v in pairs(extra) do def[k] = v end
-	return { Polestar.RegisterGuide(def) }
+	return { Northstar.RegisterGuide(def) }
 end
 emit({ reward = h.reward, why = h.why, noId = bad({ reward = { { itemName = "x" } } }), why3 = bad({ why = 3 }) })"#,
 		]

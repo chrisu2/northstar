@@ -17,8 +17,8 @@ const { needs } = require('./helpers/data');
 const { TOC_MARKER } = require('../tools/lib/pack/format');
 
 const PACKS = path.join(__dirname, 'fixtures', 'packs');
-const FOLDER = 'PolestarPack_MiniPack';
-const RESTART = /New addon: restart the game once so it sees PolestarPack_MiniPack; after that \/reload shows every change\./g;
+const FOLDER = 'NorthstarPack_MiniPack';
+const RESTART = /New addon: restart the game once so it sees NorthstarPack_MiniPack; after that \/reload shows every change\./g;
 
 function miniCopy() {
 	const dir = tmpdir();
@@ -35,7 +35,7 @@ function dev(cwd, dest, ...extra) {
 	const playData = path.join(tmpdir(), 'play');
 	const art = tmpdir();
 	fs.writeFileSync(path.join(art, 'maps.json'), '{}\n');
-	const env = { ...process.env, POLESTAR_PLAY_DATA: playData, POLESTAR_CLIENT_ART: art };
+	const env = { ...process.env, NORTHSTAR_PLAY_DATA: playData, NORTHSTAR_CLIENT_ART: art };
 	const child = spawn(process.execPath, args, { cwd, env, stdio: ['ignore', 'pipe', 'pipe'] });
 	let text = '';
 	const waiters = [];
@@ -105,7 +105,7 @@ test('dev refuses to replace a folder it did not generate', { timeout: 30000 }, 
 	fs.writeFileSync(path.join(dest, FOLDER, 'notes.txt'), 'mine\n');
 	const d = dev(pack, dest);
 	try {
-		await d.waitFor(/refusing to write into .*PolestarPack_MiniPack: it is not a generated community addon/);
+		await d.waitFor(/refusing to write into .*NorthstarPack_MiniPack: it is not a generated community addon/);
 		assert.deepEqual(fs.readdirSync(path.join(dest, FOLDER)), ['notes.txt']);
 		assert.doesNotMatch(d.out(), RESTART);
 	} finally {
@@ -118,11 +118,11 @@ test('dev refuses a generated folder of another pack with the same folder name, 
 	const dest = tmpdir();
 	const other = path.join(dest, FOLDER);
 	fs.mkdirSync(other);
-	const toc = `## Title: Mini Pack\n${TOC_MARKER}\n## X-Polestar-Pack: someone-else\n`;
+	const toc = `## Title: Mini Pack\n${TOC_MARKER}\n## X-Northstar-Pack: someone-else\n`;
 	fs.writeFileSync(path.join(other, `${FOLDER}.toc`), toc);
 	const d = dev(pack, dest);
 	try {
-		await d.waitFor(/refusing to write into .*PolestarPack_MiniPack: it holds the community addon "someone-else", not "mini"; set "folder" in pack\.json/);
+		await d.waitFor(/refusing to write into .*NorthstarPack_MiniPack: it holds the community addon "someone-else", not "mini"; set "folder" in pack\.json/);
 		assert.equal(fs.readFileSync(path.join(other, `${FOLDER}.toc`), 'utf8'), toc);
 		assert.deepEqual(fs.readdirSync(other), [`${FOLDER}.toc`]);
 	} finally {

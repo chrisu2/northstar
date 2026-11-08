@@ -1,8 +1,8 @@
 {
 	"class": "SHAMAN",
-	"source": "Polestar, with ForeverDB's talent data",
+	"source": "Northstar, with ForeverDB's talent data",
 	"sourceUrl": "https://foreverdb.net/class/Shaman/talents",
-	"credit": "Written for Polestar on Forever's tree (ForeverDB lists no Shaman builds yet). ForeverDB's Shaman talent page (https://foreverdb.net/class/Shaman/talents) is used only as a reference for Forever's changed and new talents; every pick is checked against Forever's own tree.",
+	"credit": "Written for Northstar on Forever's tree (ForeverDB lists no Shaman builds yet). ForeverDB's Shaman talent page (https://foreverdb.net/class/Shaman/talents) is used only as a reference for Forever's changed and new talents; every pick is checked against Forever's own tree.",
 	"checkedOn": "WoW: Forever beta 1.60.1.70450",
 	"summary": "Level as Enhancement (Flurry, Stormstrike, Maelstrom Weapon) for steady melee with few rests, or Elemental (Lightning Overload, Lava Burst) to kill from range. Restoration heals dungeons well and levels slowly alone.",
 	"order": [

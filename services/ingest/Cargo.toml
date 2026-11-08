@@ -1,4 +1,4 @@
-# The ingest server for Polestar's recording program (docs/RECORDING.md).
+# The ingest server for Northstar's recording program (docs/RECORDING.md).
 # A standalone Cargo project with its own lock file: the forge workspace
 # never builds it, and the server image builds only this and the recording
 # library it shares with the uploader and forge.

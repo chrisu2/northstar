@@ -135,7 +135,7 @@ pub enum Nav {
 
 #[derive(Clone, Debug)]
 pub struct BuildOpts {
-	/// The Polestar checkout whose fixes the build applies (forever-db/corrections,
+	/// The Northstar checkout whose fixes the build applies (forever-db/corrections,
 	/// data/route-fixes.json); the report names its commit.
 	pub checkout: PathBuf,
 	/// Fail when a fix no longer applies (the fixes ledger's blocking rows) or the route check has a
@@ -154,7 +154,7 @@ pub struct BuildOpts {
 	/// The walks backend; None: Hybrid when Leffe's navigation maps or his saved walks (the data
 	/// pack's Leffe walk stores) are found, else Grid.
 	pub nav: Option<Nav>,
-	/// Leffe's navigation maps (the folder with Nav/); default $POLESTAR_LEFFE_NAV. Private: never
+	/// Leffe's navigation maps (the folder with Nav/); default $NORTHSTAR_LEFFE_NAV. Private: never
 	/// in the data pack.
 	pub leffe: Option<PathBuf>,
 	/// The repository checkout: data/sources, data/local (kb, nav4 grid), data/rules.json,
@@ -178,7 +178,7 @@ pub struct BuildOpts {
 	pub forever_tables: ForeverTables,
 	/// Take Forever client tables of another build than the grid's (`--allow-build-mismatch`).
 	pub allow_build_mismatch: bool,
-	/// The walking grid (default $POLESTAR_GRID, else <root>/data/local/nav4).
+	/// The walking grid (default $NORTHSTAR_GRID, else <root>/data/local/nav4).
 	pub grid: Option<PathBuf>,
 	/// The public data pack (default: fetch::default_pack_dir()): the root when the checkout has
 	/// no data/sources, and the walk stores' seed.
@@ -195,10 +195,10 @@ pub struct BuildOpts {
 	pub deathskips: bool,
 }
 
-/// A file every Polestar checkout has; [`find_checkout`] looks for it.
+/// A file every Northstar checkout has; [`find_checkout`] looks for it.
 pub const CHECKOUT_MARK: &str = "forever-db/corrections/quests.json";
 
-/// The nearest folder at or above `from` that is a Polestar checkout.
+/// The nearest folder at or above `from` that is a Northstar checkout.
 pub fn find_checkout(from: &Path) -> Option<PathBuf> {
 	from.ancestors().find(|d| d.join(CHECKOUT_MARK).is_file()).map(Path::to_path_buf)
 }
@@ -613,7 +613,7 @@ fn stage(cache: &Cache, name: &'static str, key: String, log: &mut dyn FnMut(&st
 	cache.store(name, &key, &outputs)?;
 	let seconds = t0.elapsed().as_secs_f64();
 	log(&format!("{name}: done in {seconds:.1} s, {} files", outputs.len()));
-	// The stage's phase timings (POLESTAR_BUILD_TIMES) beside its key: <out>/.forge/timings-<stage>.json.
+	// The stage's phase timings (NORTHSTAR_BUILD_TIMES) beside its key: <out>/.forge/timings-<stage>.json.
 	forge_core::timing::record(name, "stage", seconds);
 	let rows = forge_core::timing::take();
 	if forge_core::timing::on() {
@@ -859,10 +859,10 @@ pub fn v1_goals(guides: &Path, data_dir: &Path, faction: Faction, race: &str) ->
 	Ok(json!({ "faction": faction.name(), "race": race, "goals": goals }))
 }
 
-/// Leffe's navigation maps: `explicit` (--leffe), else `$POLESTAR_LEFFE_NAV`; the first of them that
+/// Leffe's navigation maps: `explicit` (--leffe), else `$NORTHSTAR_LEFFE_NAV`; the first of them that
 /// holds his `Nav.xml` (at its top or under `Nav/`). His maps are private: the data pack never has them.
 pub fn find_leffe(explicit: Option<&Path>) -> Option<PathBuf> {
-	explicit.map(Path::to_path_buf).or_else(|| std::env::var_os("POLESTAR_LEFFE_NAV").map(PathBuf::from)).filter(|p| p.join("Nav/Nav.xml").is_file() || p.join("Nav.xml").is_file())
+	explicit.map(Path::to_path_buf).or_else(|| std::env::var_os("NORTHSTAR_LEFFE_NAV").map(PathBuf::from)).filter(|p| p.join("Nav/Nav.xml").is_file() || p.join("Nav.xml").is_file())
 }
 
 /// Leffe's saved walks for a faction without his maps: the data pack's `walks/store-leffe-<faction>.psbn`,
@@ -946,10 +946,10 @@ pub fn check_install_for_grid(wow: &Path, product: &str, defs: &Path, continents
 	))
 }
 
-/// The walking grid `forge build` uses: `explicit` (--grid), else `$POLESTAR_GRID`, else
+/// The walking grid `forge build` uses: `explicit` (--grid), else `$NORTHSTAR_GRID`, else
 /// `<root>/data/local/nav4`.
 pub fn grid_dir(explicit: Option<&Path>, root: &Path) -> PathBuf {
-	explicit.map(Path::to_path_buf).or_else(|| std::env::var_os("POLESTAR_GRID").map(PathBuf::from)).unwrap_or_else(|| root.join("data/local/nav4"))
+	explicit.map(Path::to_path_buf).or_else(|| std::env::var_os("NORTHSTAR_GRID").map(PathBuf::from)).unwrap_or_else(|| root.join("data/local/nav4"))
 }
 
 /// `forge build`: every stage in order. Returns what each stage did.
@@ -964,11 +964,11 @@ pub fn build(o: &BuildOpts, log: &mut dyn FnMut(&str)) -> Result<Vec<StageRun>, 
 		if pack_manifest.is_none() {
 			return Err(format!("no data/sources in {} and no data pack at {}: run `forge data fetch` (or pass --root <checkout>)", o.root.display(), dir.display()));
 		}
-		let grid = o.grid.clone().or_else(|| std::env::var_os("POLESTAR_GRID").map(PathBuf::from));
+		let grid = o.grid.clone().or_else(|| std::env::var_os("NORTHSTAR_GRID").map(PathBuf::from));
 		let client = o.wow.clone().or_else(forge_gamedata::find_install).is_some_and(|w| forge_gamedata::casc::read_build_info(&w).is_ok_and(|b| b.iter().any(|i| i.product == GRID_PRODUCT)));
 		if !client && !grid.as_ref().is_some_and(|g| g.join("index.json").is_file()) {
 			return Err(format!(
-				"the data pack has no navigation grid (it is built from your own client) and no client with {GRID_PRODUCT} was found: pass --wow <client> or --grid <dir> (or POLESTAR_GRID)"
+				"the data pack has no navigation grid (it is built from your own client) and no client with {GRID_PRODUCT} was found: pass --wow <client> or --grid <dir> (or NORTHSTAR_GRID)"
 			));
 		}
 		log(&format!("no local sources in {}: using the data pack {}", o.root.display(), dir.display()));
@@ -999,7 +999,7 @@ pub fn build(o: &BuildOpts, log: &mut dyn FnMut(&str)) -> Result<Vec<StageRun>, 
 		(None, None) => Nav::Grid,
 		(Some(n), None) => {
 			return Err(format!(
-				"--nav {n:?}: Leffe's navigation maps not found (pass --leffe <dir> or set POLESTAR_LEFFE_NAV){}",
+				"--nav {n:?}: Leffe's navigation maps not found (pass --leffe <dir> or set NORTHSTAR_LEFFE_NAV){}",
 				if *n == Nav::Hybrid { ", and no saved Leffe walks (run `forge data fetch`)" } else { "" }
 			))
 		}
@@ -1016,20 +1016,20 @@ pub fn build(o: &BuildOpts, log: &mut dyn FnMut(&str)) -> Result<Vec<StageRun>, 
 	}
 	let maps_line = match (&nav, &leffe) {
 		(_, _) if o.walks_from.is_some() => "Walking maps: imported walks (--walks-from).".to_string(),
-		(Nav::Grid, _) => "Walking maps: **Polestar's grid alone** (no Leffe's maps or saved walks): walks and legs are not the release's.".to_string(),
+		(Nav::Grid, _) => "Walking maps: **Northstar's grid alone** (no Leffe's maps or saved walks): walks and legs are not the release's.".to_string(),
 		(Nav::Leffe, _) => "Walking maps: Leffe's navigation maps alone.".to_string(),
-		(Nav::Hybrid, Some(_)) => "Walking maps: Leffe's navigation maps first, Polestar's grid where they have no way or a detour.".to_string(),
-		(Nav::Hybrid, None) => "Walking maps: Leffe's saved walks (data pack) first, Polestar's grid for the rest and for the legs.".to_string(),
+		(Nav::Hybrid, Some(_)) => "Walking maps: Leffe's navigation maps first, Northstar's grid where they have no way or a detour.".to_string(),
+		(Nav::Hybrid, None) => "Walking maps: Leffe's saved walks (data pack) first, Northstar's grid for the rest and for the legs.".to_string(),
 	};
 	std::fs::create_dir_all(&l.out).map_err(|e| format!("{}: {e}", l.out.display()))?;
 	let cache = Cache { dir: l.out.join(".forge") };
 	// grid: forge-navbuild from the installed client into <out>/grid, unless a grid was given
-	// (--grid, POLESTAR_GRID). Keyed by the client's build (.build.info), the map frames, zones
+	// (--grid, NORTHSTAR_GRID). Keyed by the client's build (.build.info), the map frames, zones
 	// and objects it reads (the data root's data/forever) and GRID_VERSION; an unchanged key with
 	// the grid in place skips it. Without a client (or its product) the checkout's
 	// data/local/nav4 is used.
 	let mut grid_run = None;
-	let given_grid = o.grid.is_some() || std::env::var_os("POLESTAR_GRID").is_some();
+	let given_grid = o.grid.is_some() || std::env::var_os("NORTHSTAR_GRID").is_some();
 	let data_root0 = o.data_root.clone().unwrap_or_else(|| o.root.clone());
 	let client = o.wow.clone().or_else(forge_gamedata::find_install).filter(|w| forge_gamedata::casc::read_build_info(w).is_ok_and(|b| b.iter().any(|i| i.product == GRID_PRODUCT)));
 	match (&client, given_grid) {
@@ -1310,9 +1310,9 @@ pub fn build(o: &BuildOpts, log: &mut dyn FnMut(&str)) -> Result<Vec<StageRun>, 
 	}
 	let world_walks = world_walks.join(",");
 	// What the walkers answer besides the ends: their answer versions, the header's nav fingerprint.
-	let nav_fp = std::env::var("POLESTAR_NAV_FP").unwrap_or_else(|_| format!("forge-{WALKS_VERSION}"));
+	let nav_fp = std::env::var("NORTHSTAR_NAV_FP").unwrap_or_else(|_| format!("forge-{WALKS_VERSION}"));
 	let versions = walks_versions(&nav_fp);
-	let pack_json = o.root.join("addon/Polestar_Nav/PACK.json");
+	let pack_json = o.root.join("addon/Northstar_Nav/PACK.json");
 	let mut parts: Vec<Part> = vec![Part::Text(&world_walks), Part::Text(&versions), Part::File(&pack_json), Part::File(&area_table), Part::File(&zones_json)];
 	let nav_text = if o.walks_from.is_some() { "import".to_string() } else { format!("{nav:?}") };
 	parts.push(Part::Text(&nav_text));
@@ -1357,9 +1357,9 @@ pub fn build(o: &BuildOpts, log: &mut dyn FnMut(&str)) -> Result<Vec<StageRun>, 
 						forge_world::World::from_json(&std::fs::read(&world_file).map_err(|e| format!("{}: {e}", world_file.display()))?).map_err(|e| format!("{}: {e}", world_file.display()))?;
 					let table = forge_sim::walks::WalkTable::load(&src, world.points.len()).map_err(|e| format!("walks {}: {e}", f.name()))?;
 					// By their walk inputs: a data fix that moves and adds no place keeps them.
-					if !table.built_on(&world) && std::env::var_os("POLESTAR_WALKS_STALE_OK").is_none() {
+					if !table.built_on(&world) && std::env::var_os("NORTHSTAR_WALKS_STALE_OK").is_none() {
 						return Err(format!(
-							"walks {}: --walks-from {} was built on another world ({}): rebuild the walks (or set POLESTAR_WALKS_STALE_OK to force)",
+							"walks {}: --walks-from {} was built on another world ({}): rebuild the walks (or set NORTHSTAR_WALKS_STALE_OK to force)",
 							f.name(),
 							src.display(),
 							table.built_on_text(&world)
@@ -1369,7 +1369,7 @@ pub fn build(o: &BuildOpts, log: &mut dyn FnMut(&str)) -> Result<Vec<StageRun>, 
 				}
 				None => {
 					let world_json = std::fs::read(l.world.join(format!("world-{}.json", f.lower()))).map_err(|e| e.to_string())?;
-					let pack: Value = serde_json::from_slice(&std::fs::read(o.root.join("addon/Polestar_Nav/PACK.json")).map_err(|e| format!("PACK.json: {e}"))?).map_err(|e| e.to_string())?;
+					let pack: Value = serde_json::from_slice(&std::fs::read(o.root.join("addon/Northstar_Nav/PACK.json")).map_err(|e| format!("PACK.json: {e}"))?).map_err(|e| e.to_string())?;
 					let maps: Vec<i64> = pack["maps"].as_array().map(|a| a.iter().filter_map(Value::as_i64).collect()).unwrap_or_else(|| vec![0, 1]);
 					let build = forge_world::data::forever_build(&forge_world::data::DirSource::repo(&l.stage_root)).ok_or("no cached Forever AreaTable in data/sources/wago")?;
 					let area_table = l.stage_root.join(format!("data/sources/wago/{build}/AreaTable.csv"));
@@ -1713,7 +1713,7 @@ pub fn build(o: &BuildOpts, log: &mut dyn FnMut(&str)) -> Result<Vec<StageRun>, 
 
 	// legs: the walk into every step of the written guides, baked on the hybrid backend (Leffe's
 	// maps first, the grid where his have no way or a detour), one legs.json per start's tree.
-	let chokepoints = o.root.join("addon/Polestar_Nav/Nav/Chokepoints.lua");
+	let chokepoints = o.root.join("addon/Northstar_Nav/Nav/Chokepoints.lua");
 	let mut legs_parts = vec![Part::Text(&k_guides), Part::Text(&k_data), Part::Grid(&l.grid), Part::File(&chokepoints)];
 	let leffe_for_legs = leffe.as_deref().filter(|_| nav != Nav::Grid);
 	// Leffe's lift layer, when it sits with his maps (forge_nav::f4::lifts::find).

@@ -31,19 +31,19 @@ function officialGuides() {
 function stepGroups(guide, data, who, steps) {
 	const { dir, scripts } = writeTestPack([guide], data);
 	try {
-		const loads = scripts.map((f) => `assert(loadfile(${JSON.stringify(f)}))("Polestar_Guides", ns)`).join('\n');
+		const loads = scripts.map((f) => `assert(loadfile(${JSON.stringify(f)}))("Northstar_Guides", ns)`).join('\n');
 		const { emitted } = runAddon({
 			stubs: ['stub_world.lua'],
 			before: `local w = stub.world
 				w.race, w.raceName, w.faction, w.class, w.className = ${JSON.stringify(who.race)}, ${JSON.stringify(who.raceName)}, ${JSON.stringify(who.faction)}, ${JSON.stringify(who.cls)}, ${JSON.stringify(who.className)}
 				w.level = ${who.level}`,
-			addons: [{ name: 'Polestar', files: ['Core/Core.xml'] }],
-			saved: { Polestar: 'PolestarDB = { schema = 1, settings = { behavior = { autoSelectGuide = false } } }' },
+			addons: [{ name: 'Northstar', files: ['Core/Core.xml'] }],
+			saved: { Northstar: 'NorthstarDB = { schema = 1, settings = { behavior = { autoSelectGuide = false } } }' },
 			script: `do local ns = {}
 				${loads}
 				end
 				stub.login(); stub.advance(0.5)
-				local E = Polestar.Engine
+				local E = Northstar.Engine
 				E.SetGuide(${JSON.stringify(guide.id)})
 				stub.advance(0.5)
 				local out = {}

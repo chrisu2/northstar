@@ -21,11 +21,11 @@ const PLAY: &str = r#"
 ${loads}
 stub.login()
 stub.fire("QUEST_LOG_UPDATE")
-Polestar.Set("behavior.autoAccept", false)
-Polestar.Set("behavior.autoTurnin", false)
-local E, G, w = Polestar.Engine, Polestar.Guides, stub.world
+Northstar.Set("behavior.autoAccept", false)
+Northstar.Set("behavior.autoTurnin", false)
+local E, G, w = Northstar.Engine, Northstar.Guides, stub.world
 local ENDS = {}
-Polestar.On("GUIDE_END", function(id, i) ENDS[#ENDS + 1] = { id = id, undone = i.undone } end)
+Northstar.On("GUIDE_END", function(id, i) ENDS[#ENDS + 1] = { id = id, undone = i.undone } end)
 E.SetGuide(@ID@)
 stub.advance(3)
 local g = G.Get(@ID@)
@@ -95,7 +95,7 @@ local function satisfy(s, again)
 				if goal.location then w.setZone(goal.location, goal.location) end
 			elseif t == "getfp" then
 				-- The flight map records the node (Nav/Travel.lua) as the game shows it.
-				local f = Polestar.CharState().flags
+				local f = Northstar.CharState().flags
 				f.taxi = type(f.taxi) == "table" and f.taxi or {}
 				if goal.node then f.taxi[goal.node] = true end
 				w.taxi(goal.npc or 0, goal.location); w.close()
@@ -176,7 +176,7 @@ fn every_leveling_guide_ends_when_its_last_step_is_done_ahead_of_the_live_step()
 	let sources: Vec<(&str, &str)> = texts.iter().map(|(f, t)| (f.as_str(), t.as_str())).collect();
 	let compiled = compile_with(&sources, &data, None);
 	let pack = write_test_pack(&compiled.guides, &data, &our_manifest());
-	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Polestar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
+	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Northstar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
 	let loads = format!("do local ns = {{}}\n{}\nend", lines.join("\n"));
 	let mut maps = String::new();
 	for era in ["forever", "era"] {
@@ -246,7 +246,7 @@ fn every_leveling_guide_ends_when_its_last_step_is_done_ahead_of_the_live_step()
 				f = faction
 			);
 			let script = PLAY.replace("${loads}", &loads).replace("@ID@", &serde_json::to_string(&id).unwrap());
-			let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], before, addons: vec![Addon::name("Polestar")], script, ..Default::default() });
+			let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], before, addons: vec![Addon::name("Northstar")], script, ..Default::default() });
 			let r: Value = out.into_iter().next().unwrap_or(Value::Null);
 			let kinds: Vec<String> = r["kinds"].as_array().map(|a| a.iter().map(|k| k.as_str().unwrap_or("").to_string()).collect()).unwrap_or_default();
 			let who = format!("{id} ({race} {class})");

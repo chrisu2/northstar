@@ -1,13 +1,13 @@
 //! Codex packs for the addon's tests: a codex object (the data/forever/codex JSON shape, e.g.
-//! tests/fixtures/codex/sample.json) written as a loadable Polestar_Codex pack by forge-data's pack writer.
+//! tests/fixtures/codex/sample.json) written as a loadable Northstar_Codex pack by forge-data's pack writer.
 //!
 //! ```no_run
 //! use forge_addontest::codex::{sample_codex, write_codex_pack, CodexOpts};
 //! let pack = write_codex_pack(&sample_codex(), &CodexOpts::default());
-//! // RunAddon { before: pack.stub_lua.clone(), addons: vec!["Polestar".into()], .. }
+//! // RunAddon { before: pack.stub_lua.clone(), addons: vec!["Northstar".into()], .. }
 //! ```
 //!
-//! `load_lua` dofiles the pack directly (run it after Polestar has loaded); `stub_lua` makes the stubbed
+//! `load_lua` dofiles the pack directly (run it after Northstar has loaded); `stub_lua` makes the stubbed
 //! client load it when asked (C_AddOns.LoadAddOn), the way the game does.
 
 use crate::run::{lua_string, root};
@@ -55,7 +55,7 @@ pub struct CodexPack {
 	pub tmp: TempDir,
 }
 
-/// Writes `codex` as a Polestar_Codex pack into a temp folder (removed with the returned pack).
+/// Writes `codex` as a Northstar_Codex pack into a temp folder (removed with the returned pack).
 pub fn write_codex_pack(codex: &Value, opts: &CodexOpts) -> CodexPack {
 	let c = forge_guide::js::parse_json(&codex.to_string()).expect("codex JSON");
 	let part = |k: &str| {

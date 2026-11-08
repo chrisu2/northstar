@@ -38,16 +38,16 @@ fn new_verbs_emit_lua_that_loads_under_lua_5_1_and_round_trips_with_reagents_as_
 	let entry = V::obj();
 	entry.set("guide", localised.clone());
 	entry.set("source", V::str("test.guide"));
-	// Polestar's own pack writes spawn spots packed (format 8).
+	// Northstar's own pack writes spawn spots packed (format 8).
 	assert_eq!(lua, emit_guides_with(&[entry], false, true));
 	let file = serde_json::to_string(&pack.dir.join(at)).unwrap();
 	let out = emitted(&RunAddon {
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua"])],
 		script: [
 			r#"
 			local got
-			Polestar.RegisterGuide = function(g) got = g end"#,
-			&format!("\t\t\tassert(loadfile({file}))(\"Polestar_Guides\", {{}})"),
+			Northstar.RegisterGuide = function(g) got = g end"#,
+			&format!("\t\t\tassert(loadfile({file}))(\"Northstar_Guides\", {{}})"),
 			"\t\t\temit(got)",
 		]
 		.join("\n"),
@@ -68,14 +68,14 @@ fn the_compiled_new_verb_goals_pass_the_real_engine_registry() {
 	let pack = write_our_test_pack(&r.guides);
 	let file = serde_json::to_string(&pack.dir.join(pack.guides_of("test/main"))).unwrap();
 	let out = emitted(&RunAddon {
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: [
 			"",
 			&format!("\t\t\t{TEST_PACK}"),
 			r#"			local res = {}
-			local real = Polestar.RegisterGuide
-			Polestar.RegisterGuide = function(g) local ok, e = real(g); res[#res + 1] = ok and "ok" or e; return ok, e end"#,
-			&format!("\t\t\tassert(loadfile({file}))(\"Polestar_Guides\", {{}})"),
+			local real = Northstar.RegisterGuide
+			Northstar.RegisterGuide = function(g) local ok, e = real(g); res[#res + 1] = ok and "ok" or e; return ok, e end"#,
+			&format!("\t\t\tassert(loadfile({file}))(\"Northstar_Guides\", {{}})"),
 			"\t\t\temit(res)",
 		]
 		.join("\n"),

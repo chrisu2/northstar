@@ -27,9 +27,9 @@ fn src(faction: Option<&str>, body: &[&str]) -> String {
 const SCRIPT: &str = r#"
 			${TEST_PACK}
 			local got, res
-			local real = Polestar.RegisterGuide
-			Polestar.RegisterGuide = function(g) got = g; local ok, e = real(g); res = ok and "ok" or e; return ok, e end
-			assert(loadfile(${FILE}))("Polestar_Guides", {})
+			local real = Northstar.RegisterGuide
+			Northstar.RegisterGuide = function(g) got = g; local ok, e = real(g); res = ok and "ok" or e; return ok, e end
+			assert(loadfile(${FILE}))("Northstar_Guides", {})
 			emit({ res = res, title = got.steps[1].goals[2].preTitles[783], guide = got })"#;
 
 #[test]
@@ -43,7 +43,7 @@ fn farm_spots_and_prerequisite_titles_emit_lua_that_the_engine_registry_accepts_
 	assert!(is_match(lua, r#"\{ npc = 95001, npcName = "Cloth Kobold", map = 1429, x = 65\.4, y = 75\.3, f = "e", faction = "A", lvl = \{ min = 5, max = 5 \}, rate = 0\.3, spawns = 4 \}"#));
 	assert!(is_match(lua, r#"pre = \{ 9201, 783 \}, preTitles = \{ \[783\] = "A Threat Within", \[9201\] = "The First Step" \}"#));
 	let file = serde_json::to_string(&pack.dir.join(at)).unwrap();
-	let out = emitted(&RunAddon { addons: vec![Addon::files("Polestar", &["Core/Core.xml"])], script: SCRIPT.replace("${TEST_PACK}", TEST_PACK).replace("${FILE}", &file), ..Default::default() });
+	let out = emitted(&RunAddon { addons: vec![Addon::files("Northstar", &["Core/Core.xml"])], script: SCRIPT.replace("${TEST_PACK}", TEST_PACK).replace("${FILE}", &file), ..Default::default() });
 	let out = &out[0];
 	assert_eq!(out["res"], "ok");
 	assert_eq!(out["title"], "A Threat Within");

@@ -67,7 +67,7 @@ export function debounce(fn, ms) {
 	return d;
 }
 
-// The goal verbs: label, Polestar glyph and subject colour (a CSS token:
+// The goal verbs: label, Northstar glyph and subject colour (a CSS token:
 // the glyph's tint and the colour of the subject's name).
 export const VERBS = {
 	accept: { label: 'Accept', glyph: 'icon-accept', subj: 'quest' },
@@ -118,7 +118,7 @@ export function goalText(goal) {
 }
 
 // ---------------------------------------------------------------- icons
-// Two families: the Polestar glyphs (white masks tinted by CSS, for every
+// Two families: the Northstar glyphs (white masks tinted by CSS, for every
 // control) and the game's own icons (full colour, for content).
 
 export const glyphUrl = (name, px = 96) => `/glyph/${name}.png?px=${px}`;
@@ -126,7 +126,7 @@ export const glyphUrl = (name, px = 96) => `/glyph/${name}.png?px=${px}`;
 export const iconKey = (spec) => (spec.kind === 'skill' && !/^\d+$/.test(String(spec.key)) ? String(spec.key).toLowerCase().replace(/[^a-z]+/g, '-') : String(spec.key));
 export const iconUrl = (spec) => `/icon/${spec.kind}/${encodeURIComponent(iconKey(spec))}.png`;
 
-// A Polestar glyph: <i class="gl"> masked by the glyph, painted in currentColor.
+// A Northstar glyph: <i class="gl"> masked by the glyph, painted in currentColor.
 export function glyph(name, cls = '') {
 	const el = document.createElement('i');
 	el.className = cls ? `gl ${cls}` : 'gl';

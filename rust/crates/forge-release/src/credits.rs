@@ -1,4 +1,4 @@
-//! The Guiding Stars page's names (addon/Polestar/Core/Credits.lua): the supporters, kept by hand in
+//! The Guiding Stars page's names (addon/Northstar/Core/Credits.lua): the supporters, kept by hand in
 //! data/credits.json in rank order (highest Ko-fi total first; amounts are never stored), and the
 //! contributors, counted from the repository's merged pull requests on GitHub.
 
@@ -6,7 +6,7 @@ use serde_json::Value;
 use std::path::Path;
 
 pub const SOURCE: &str = "data/credits.json";
-pub const OUT: &str = "addon/Polestar/Core/Credits.lua";
+pub const OUT: &str = "addon/Northstar/Core/Credits.lua";
 pub const REPO: &str = "fitzforge/polestar";
 
 /// data/credits.json: `supporters` (names, rank order), `exclude` (logins left out: the maintainer),

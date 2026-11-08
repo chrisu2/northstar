@@ -3,7 +3,7 @@
 // game can load (SavedVariables, pfQuest database files) this can read:
 //
 //   const { luaToJson } = require('./lua');
-//   const db = luaToJson({ files: [svPath], expr: 'return PolestarRecorderDB' });
+//   const db = luaToJson({ files: [svPath], expr: 'return NorthstarRecorderDB' });
 //
 // Tables with keys exactly 1..n become arrays; everything else becomes an object
 // with string keys (integer keys printed without a decimal point). An empty

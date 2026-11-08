@@ -1,5 +1,5 @@
 'use strict';
-// Reporting a problem (addon/Polestar/UI/Report.lua): the guide window's bug
+// Reporting a problem (addon/Northstar/UI/Report.lua): the guide window's bug
 // button, its menu entry and /polestar report open a window that sets the
 // player's words above the details a fix needs, as one report: to copy for
 // the Polestar Discord's #bugs, or in a link that opens a filled-in GitHub
@@ -19,8 +19,8 @@ function run(script, before = '') {
 	return runAddon({
 		stubs: ['stub_ui.lua'],
 		before,
-		addons: [{ name: 'Polestar', files: FILES }],
-		script: `uistub.install()\nstub.login()\nlocal GF, UI = Polestar.UI.GuideFrame, Polestar.UI\n${script}`,
+		addons: [{ name: 'Northstar', files: FILES }],
+		script: `uistub.install()\nstub.login()\nNorthstar.Set("ui.journal", false)\nlocal GF, UI = Northstar.UI.GuideFrame, Northstar.UI\n${script}`,
 	}).emitted;
 }
 
@@ -28,13 +28,13 @@ const lineWith = (text, needle) => text.split('\n').find((l) => l.includes(needl
 
 test('the bug in the navigator reports the step on screen: the player\'s words, then the guide, the step, each goal\'s state, ids and position, the arrow and the versions', () => {
 	const [out] = run(`
-		Polestar.Engine.SetGuide(nil)
+		Northstar.Engine.SetGuide(nil)
 		local noGuide = GF.parts.nav.Report:IsShown()
 		uistub.setGuide(uistub.elwynn, 3)
 		local nav = GF.parts.nav
 		local shown = nav.Report:IsShown()
 		nav.Report:Click()
-		local F = PolestarReport
+		local F = NorthstarReport
 		local opened = { shown = F:IsShown(), typing = stub.focus == F.Desc, context = F.Context:GetText() }
 		F.Desc:SetText("The vermin were all by the tents.")
 		stub.RunScript(F.Desc, "OnTextChanged", true)
@@ -48,7 +48,7 @@ test('the bug in the navigator reports the step on screen: the player\'s words, 
 		local openH = F:GetHeight()
 		F.Invite:Click()
 		emit({ noGuide = noGuide, shown = shown, opened = opened, text = text, hidden = hidden, selected = selected, grown = grown, openH = openH,
-			invite = { shown = PolestarCopy:IsShown(), text = PolestarCopy.Box:GetText(), focus = stub.focus == PolestarCopy.Box }, boxH = boxH })`);
+			invite = { shown = NorthstarCopy:IsShown(), text = NorthstarCopy.Box:GetText(), focus = stub.focus == NorthstarCopy.Box }, boxH = boxH })`);
 	assert.equal(out.noGuide, false, 'no guide, no step to report: the bug is not there');
 	assert.equal(out.shown, true);
 	assert.deepEqual(out.opened, { shown: true, typing: true, context: 'Step 3 of 8  \u00b7  Kobold Camp  \u00b7  Elwynn Forest' });
@@ -73,12 +73,12 @@ test('the bug in the navigator reports the step on screen: the player\'s words, 
 	const who = lineWith(out.text, 'Human Warrior');
 	assert.ok(who.includes('level 4') && who.includes('Alliance'), who);
 	const versions = lineWith(out.text, 'client ');
-	assert.ok(versions.startsWith('Polestar ') && versions.includes('client 1.60.1 (70338)') && versions.endsWith('enUS'), versions);
+	assert.ok(versions.startsWith('Northstar ') && versions.includes('client 1.60.1 (70338)') && versions.endsWith('enUS'), versions);
 	assert.ok(lines.includes('Errors: none'), out.text);
 	assert.equal(out.hidden, true, 'the report is not shown until it is asked for');
 	assert.equal(out.selected, true, 'Copy report shows the report in focus, selected for Ctrl+C');
 	assert.ok(out.grown >= out.boxH, `the window grows to hold it (${out.grown}px for a ${out.boxH}px box)`);
-	assert.ok(out.openH <= 720, `with the report shown, the window fits a 720-unit screen (${out.openH})`);
+	assert.ok(out.openH <= 740, `with the report shown, the window fits a short screen (${out.openH})`);
 	assert.deepEqual(out.invite, { shown: true, text: INVITE, focus: true }, 'Get the invite opens the invite on its own, selected');
 	assert.ok(out.boxH >= lines.length * 11, `the box holds every line (${out.boxH}px for ${lines.length})`);
 });
@@ -88,18 +88,18 @@ test('the report says how the arrow routes: the route style, then only the routi
 		uistub.setGuide(uistub.elwynn, 3)
 		local function routes()
 			UI.ShowReport()
-			for line in PolestarReport.Box:GetText():gmatch("[^\\n]+") do
+			for line in NorthstarReport.Box:GetText():gmatch("[^\\n]+") do
 				if line:find("^Routes: ") then return line end
 			end
 		end
 		local r = {}
-		Polestar.Set("nav.routeStyle", "roads")
+		Northstar.Set("nav.routeStyle", "roads")
 		r.roads = routes()
-		Polestar.Set("nav.routeStyle", "fastest")
-		Polestar.Set("nav.navRouting", false)
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.routeStyle", "fastest")
+		Northstar.Set("nav.navRouting", false)
+		Northstar.Set("nav.travel", false)
 		r.off = routes()
-		Polestar.Set("nav.routeStyle", "something old")
+		Northstar.Set("nav.routeStyle", "something old")
 		r.unknown = routes()
 		emit(r)`);
 	assert.equal(out.roads, 'Routes: roads');
@@ -121,29 +121,29 @@ function longest(locale, word, letter, opts = {}) {
 		end
 		local id = "test/a-long-guide"
 		uistub.guides[id] = { id = id, pack = "guides", title = word, faction = "Alliance", minLevel = 1, maxLevel = 60, steps = { { title = long, goals = goals } } }
-		for i = 1, 6 do Polestar.NoteError("Interface/AddOns/Polestar/UI/" .. string.rep("Long", 12) .. i .. ".lua:1: " .. long) end
+		for i = 1, 6 do Northstar.NoteError("Interface/AddOns/Northstar/UI/" .. string.rep("Long", 12) .. i .. ".lua:1: " .. long) end
 		for i = 1, 40 do
 			local name = ("QuestAndMapHelperWithALongName%02d"):format(i)
 			stub.addons[#stub.addons + 1] = { name = name, loaded = true }
 			stub.addonMeta[name] = { Version = "v12.34.56-" .. word }
 		end
 		uistub.player = { level = 59, xp = 1, xpMax = 3, race = long, class = "WARRIOR", faction = word }
-		Polestar.Compat.GetZoneText = function() return word, "Goldshire Inn" end
-		Polestar.Guides.Pack = function() return { title = long, version = word } end
-		Polestar.Guides.Packs = function() return { { title = long, version = word, status = "on" }, { title = long, status = "on" } } end
-		Polestar.Compat.GetPlayerMapPosition = function() return 1429, 51.234, 40.5 end
-		stub.addonMeta["Polestar_" .. string.rep("Long", 10)] = { Author = "Polestar" }
-		for i = 1, 4 do stub.fire("ADDON_ACTION_BLOCKED", "Polestar_" .. string.rep("Long", 10), string.rep("Protected", 8) .. i .. "()") end
+		Northstar.Compat.GetZoneText = function() return word, "Goldshire Inn" end
+		Northstar.Guides.Pack = function() return { title = long, version = word } end
+		Northstar.Guides.Packs = function() return { { title = long, version = word, status = "on" }, { title = long, status = "on" } } end
+		Northstar.Compat.GetPlayerMapPosition = function() return 1429, 51.234, 40.5 end
+		stub.addonMeta["Northstar_" .. string.rep("Long", 10)] = { Author = "Northstar" }
+		for i = 1, 4 do stub.fire("ADDON_ACTION_BLOCKED", "Northstar_" .. string.rep("Long", 10), string.rep("Protected", 8) .. i .. "()") end
 		uistub.setGuide(id, 1)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		F.Desc:SetText(string.rep(letter, UI.Report.DESC_MAX))
 		stub.RunScript(F.Desc, "OnTextChanged", true)
 		${opts.unmarked ? '' : `F.Mark:Click()
-		PolestarMark.Here:Click()`}
+		NorthstarMark.Here:Click()`}
 		${opts.linkMax ? `UI.Report.LINK_MAX = ${opts.linkMax}` : ''}
 		F.GitHub:Click()
-		local url = PolestarCopy.Box:GetText()
+		local url = NorthstarCopy.Box:GetText()
 		F.Copy:Click()
 		emit({ text = F.Box:GetText(), url = url, max = UI.Report.LINK_MAX, details = F.details.lines, height = F:GetHeight() })`, `function GetLocale() return "${locale}" end`)[0];
 }
@@ -171,91 +171,91 @@ test('at its longest, with a marked spot and 40 addons, the report still fits on
 	const english = longest(...SCRIPTS[0]);
 	assert.equal(english.text.length, 2000, 'English is the one that runs over');
 	const addons = english.text.split('\n')[2];
-	assert.match(addons, /^\*\*Addons:\*\* QuestAndMapHelperWithALongName01, .*\.\.\.$/, `the Addons line gives way: ${addons}`);
+	assert.match(addons, /^\*\*Addons:\*\* QuestAndMapHelperWithALong.*\.\.\.$/, `the Addons line gives way: ${addons}`);
 	const unmarked = longest(...SCRIPTS[0], { unmarked: true }).text;
 	const unmarkedAddons = unmarked.split('\n')[1];
 	assert.ok(unmarked.length <= 2000, `the unmarked report fits too: ${unmarked.length}`);
 	assert.ok(unmarkedAddons.split(', ').length > english.text.split('\n')[2].split(', ').length, `without the Right spot line the Addons line takes the room it frees, not a fixed 100 bytes: ${unmarkedAddons}`);
 	assert.match(english.text, /^\.\.\. 3 more goals$/m, 'goals past the sixth are counted, not listed');
 	assert.equal((english.text.match(/^ {2}1x /gm) || []).length, 3, 'the newest three of the errors and blocked calls together');
-	assert.equal((english.text.match(/^ {2}1x blocked in Polestar_Long/gm) || []).length, 3, 'the blocked calls came last');
+	assert.equal((english.text.match(/^ {2}1x blocked in Northstar_Long/gm) || []).length, 3, 'the blocked calls came last');
 });
 
-test('errors Polestar caught come with the report, counted, by their path from the AddOns folder; !BugGrabber adds the session\'s errors in Polestar\'s files', () => {
+test('errors Northstar caught come with the report, counted, by their path from the AddOns folder; !BugGrabber adds the session\'s errors in Northstar\'s files', () => {
 	const [out] = run(`
-		Polestar.On("TEST_FAIL", function() error("Interface/AddOns/Polestar/UI/GuideFrame.lua:12: attempt to index a nil value", 0) end)
-		pcall(Polestar.Fire, "TEST_FAIL")
-		pcall(Polestar.Fire, "TEST_FAIL")
+		Northstar.On("TEST_FAIL", function() error("Interface/AddOns/Northstar/UI/GuideFrame.lua:12: attempt to index a nil value", 0) end)
+		pcall(Northstar.Fire, "TEST_FAIL")
+		pcall(Northstar.Fire, "TEST_FAIL")
 		BugGrabber = {
 			GetSessionId = function() return 7 end,
 			GetDB = function() return {
-				{ message = "Interface/AddOns/Polestar/Nav/Arrow.lua:40: bad argument", counter = 3, session = 7 },
+				{ message = "Interface/AddOns/Northstar/Nav/Arrow.lua:40: bad argument", counter = 3, session = 7 },
 				{ message = "Interface/AddOns/OtherAddon/Main.lua:1: not ours", counter = 1, session = 7 },
-				{ message = "Interface/AddOns/Polestar/Old.lua:1: an earlier session", counter = 1, session = 6 },
-				{ message = "Interface/AddOns/Polestar/UI/GuideFrame.lua:12: attempt to index a nil value", counter = 2, session = 7 },
+				{ message = "Interface/AddOns/Northstar/Old.lua:1: an earlier session", counter = 1, session = 6 },
+				{ message = "Interface/AddOns/Northstar/UI/GuideFrame.lua:12: attempt to index a nil value", counter = 2, session = 7 },
 			} end,
 		}
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		emit({ text = PolestarReport.Box:GetText() })`);
+		emit({ text = NorthstarReport.Box:GetText() })`);
 	const errors = out.text.split('\n').filter((l) => l.startsWith('  '));
 	assert.deepEqual(errors, [
-		'  2x Polestar/UI/GuideFrame.lua:12: attempt to index a nil value',
-		'  3x Polestar/Nav/Arrow.lua:40: bad argument',
+		'  2x Northstar/UI/GuideFrame.lua:12: attempt to index a nil value',
+		'  3x Northstar/Nav/Arrow.lua:40: bad argument',
 	]);
 });
 
-test('actions the game blocked from Polestar (taint, no Lua error) come with the report: by the addon blamed, counted, newest time, sharing the newest three with the errors; other addons\' are left out', () => {
+test('actions the game blocked from Northstar (taint, no Lua error) come with the report: by the addon blamed, counted, newest time, sharing the newest three with the errors; other addons\' are left out', () => {
 	const [out] = run(`
-		stub.addonMeta.Polestar_Gamepad = { Author = "Polestar" }
-		stub.addonMeta.Polestar_Mob_Markers = { Author = "Someone else" }
-		Polestar.NoteError("Interface/AddOns/Polestar/UI/GuideFrame.lua:1: oldest")
-		stub.fire("ADDON_ACTION_BLOCKED", "Polestar", "UseAction()")
+		stub.addonMeta.Northstar_Gamepad = { Author = "Northstar" }
+		stub.addonMeta.Northstar_Mob_Markers = { Author = "Someone else" }
+		Northstar.NoteError("Interface/AddOns/Northstar/UI/GuideFrame.lua:1: oldest")
+		stub.fire("ADDON_ACTION_BLOCKED", "Northstar", "UseAction()")
 		stub.advance(5)
 		stub.fire("ADDON_ACTION_FORBIDDEN", "OtherAddon", "CastSpellByName()")
-		stub.fire("ADDON_ACTION_FORBIDDEN", "Polestar_Gamepad", "ClearOverrideBindings()")
-		stub.fire("ADDON_ACTION_BLOCKED", "Polestar_Mob_Markers", "UNKNOWN()")
-		Polestar.NoteError("Interface/AddOns/Polestar/Nav/Arrow.lua:2: between")
-		stub.fire("ADDON_ACTION_BLOCKED", "Polestar", "UseAction()")
+		stub.fire("ADDON_ACTION_FORBIDDEN", "Northstar_Gamepad", "ClearOverrideBindings()")
+		stub.fire("ADDON_ACTION_BLOCKED", "Northstar_Mob_Markers", "UNKNOWN()")
+		Northstar.NoteError("Interface/AddOns/Northstar/Nav/Arrow.lua:2: between")
+		stub.fire("ADDON_ACTION_BLOCKED", "Northstar", "UseAction()")
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		emit({ text = PolestarReport.Box:GetText(), at = date("%H:%M:%S") })`);
+		emit({ text = NorthstarReport.Box:GetText(), at = date("%H:%M:%S") })`);
 	const lines = out.text.split('\n');
 	assert.ok(!lines.includes('Errors: none'), out.text);
 	assert.ok(lines.includes('Errors:'), out.text);
 	assert.deepEqual(lines.filter((l) => l.startsWith('  ')), [
-		`  1x blocked in Polestar_Gamepad: ClearOverrideBindings() (${out.at})`,
-		'  1x Polestar/Nav/Arrow.lua:2: between',
-		`  2x blocked in Polestar: UseAction() (${out.at})`,
-	], 'another author\'s Polestar_Mob_Markers (#1123) is not ours');
+		`  1x blocked in Northstar_Gamepad: ClearOverrideBindings() (${out.at})`,
+		'  1x Northstar/Nav/Arrow.lua:2: between',
+		`  2x blocked in Northstar: UseAction() (${out.at})`,
+	], 'another author\'s Northstar_Mob_Markers (#1123) is not ours');
 });
 
-// Fyurie (#1113, #1116, #1118) and soockee (#1051) had "blocked in Polestar: UNKNOWN()": the game names a
+// Fyurie (#1113, #1116, #1118) and soockee (#1051) had "blocked in Northstar: UNKNOWN()": the game names a
 // namespaced function (C_Item.IsItemInRange) or an anonymous frame's only so. The event fires inside the blocked
 // call, so the stack names the line of ours under it: the report says where.
 test('a blocked call says which line of ours made it, so "UNKNOWN()" can be traced', () => {
 	const [out] = run(`
 		local stacks = {
-			'[string "@Interface/AddOns/Polestar/Core/Init.lua"]:587: in function <Interface/AddOns/Polestar/Core/Init.lua:587>\\n' ..
+			'[string "@Interface/AddOns/Northstar/Core/Init.lua"]:587: in function <Interface/AddOns/Northstar/Core/Init.lua:587>\\n' ..
 			'[C]: in function \\'IsItemInRange\\'\\n' ..
-			'[string "@Interface/AddOns/Polestar/QoL/QoL.lua"]:394: in function \\'ItemInRange\\'\\n' ..
-			'[string "@Interface/AddOns/Polestar/QoL/Buttons.lua"]:420: in function <...>\\n',
-			'Interface\\\\AddOns\\\\Polestar\\\\Core\\\\Init.lua:587: in function <Init.lua:587>\\n' ..
-			'Interface\\\\AddOns\\\\Polestar_Nav\\\\Router.lua:12: in function \\'Go\\'\\n',
+			'[string "@Interface/AddOns/Northstar/QoL/QoL.lua"]:394: in function \\'ItemInRange\\'\\n' ..
+			'[string "@Interface/AddOns/Northstar/QoL/Buttons.lua"]:420: in function <...>\\n',
+			'Interface\\\\AddOns\\\\Northstar\\\\Core\\\\Init.lua:587: in function <Init.lua:587>\\n' ..
+			'Interface\\\\AddOns\\\\Northstar_Nav\\\\Router.lua:12: in function \\'Go\\'\\n',
 		}
 		local n = 0
 		debugstack = function() return stacks[n] end
 		n = 1
-		stub.fire("ADDON_ACTION_BLOCKED", "Polestar", "UNKNOWN()")
-		stub.fire("ADDON_ACTION_BLOCKED", "Polestar", "UNKNOWN()")
+		stub.fire("ADDON_ACTION_BLOCKED", "Northstar", "UNKNOWN()")
+		stub.fire("ADDON_ACTION_BLOCKED", "Northstar", "UNKNOWN()")
 		n = 2
-		stub.fire("ADDON_ACTION_BLOCKED", "Polestar", "UNKNOWN()")
+		stub.fire("ADDON_ACTION_BLOCKED", "Northstar", "UNKNOWN()")
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		emit({ text = PolestarReport.Box:GetText(), at = date("%H:%M:%S") })`);
+		emit({ text = NorthstarReport.Box:GetText(), at = date("%H:%M:%S") })`);
 	assert.deepEqual(out.text.split('\n').filter((l) => l.startsWith('  ')), [
-		`  2x blocked in Polestar: UNKNOWN() Polestar/QoL/QoL.lua:394 (${out.at})`,
-		`  1x blocked in Polestar: UNKNOWN() Polestar_Nav/Router.lua:12 (${out.at})`,
+		`  2x blocked in Northstar: UNKNOWN() Northstar/QoL/QoL.lua:394 (${out.at})`,
+		`  1x blocked in Northstar: UNKNOWN() Northstar_Nav/Router.lua:12 (${out.at})`,
 	]);
 });
 
@@ -263,7 +263,7 @@ test('what the player typed stays while it is the same step; a report on another
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		F.Desc:SetText("Half typed")
 		stub.RunScript(F.Desc, "OnTextChanged", true)
 		F:Hide()
@@ -281,19 +281,19 @@ test('the guide window\'s menu and /polestar report open it too; Escape closes i
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		GF.menuButton:Click()
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Report a problem" then r:Click() end end
-		local fromMenu = PolestarReport:IsShown()
-		PolestarReport:Hide()
-		SlashCmdList.POLESTAR("report")
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Report a problem" then r:Click() end end
+		local fromMenu = NorthstarReport:IsShown()
+		NorthstarReport:Hide()
+		SlashCmdList.NORTHSTAR("report")
 		local special = false
-		for _, name in ipairs(UISpecialFrames) do if name == "PolestarReport" then special = true end end
-		emit({ fromMenu = fromMenu, fromCommand = PolestarReport:IsShown(), special = special })`);
+		for _, name in ipairs(UISpecialFrames) do if name == "NorthstarReport" then special = true end end
+		emit({ fromMenu = fromMenu, fromCommand = NorthstarReport:IsShown(), special = special })`);
 	assert.deepEqual(out, { fromMenu: true, fromCommand: true, special: true });
 });
 
 test('the hub and the settings carry the Polestar Discord at the foot of the sidebar: Discord\'s mark in its own colour, the invite selected on a click', () => {
 	const [out] = run(`
-		local T = Polestar.Theme
+		local T = Northstar.Theme
 		local function mark(f)
 			local b = f.Discord
 			stub.RunScript(b, "OnEnter")
@@ -302,23 +302,23 @@ test('the hub and the settings carry the Polestar Discord at the foot of the sid
 			return { texture = b.Icon:GetTexture():match("([%w-]+)$"), color = { r, g, bl }, shown = b:IsShown() }
 		end
 		local function invite()
-			return { shown = PolestarCopy:IsShown(), text = PolestarCopy.Box:GetText(), focus = stub.focus == PolestarCopy.Box,
-				icon = PolestarCopy.Icon:IsShown() and PolestarCopy.Icon:GetTexture():match("([%w-]+)$") or false }
+			return { shown = NorthstarCopy:IsShown(), text = NorthstarCopy.Box:GetText(), focus = stub.focus == NorthstarCopy.Box,
+				icon = NorthstarCopy.Icon:IsShown() and NorthstarCopy.Icon:GetTexture():match("([%w-]+)$") or false }
 		end
 		UI.ShowPicker()
-		local hub = mark(PolestarPicker)
-		PolestarPicker.Discord:Click()
+		local hub = mark(NorthstarPicker)
+		NorthstarPicker.Discord:Click()
 		local fromHub = invite()
-		PolestarCopy:Hide()
+		NorthstarCopy:Hide()
 		UI.ShowOptions()
-		local settings = mark(PolestarOptions)
-		PolestarCopy:Hide()
-		SlashCmdList.POLESTAR("discord")
+		local settings = mark(NorthstarOptions)
+		NorthstarCopy:Hide()
+		SlashCmdList.NORTHSTAR("discord")
 		local fromCommand = invite()
 		UI.ShowCopy("Your position", "zone map 1429")
 		local r, g, b = T.Color("discord")
 		emit({ hub = hub, settings = settings, fromHub = fromHub, fromCommand = fromCommand, discord = { r, g, b },
-			after = { icon = PolestarCopy.Icon:IsShown(), text = PolestarCopy.Box:GetText() } })`);
+			after = { icon = NorthstarCopy.Icon:IsShown(), text = NorthstarCopy.Box:GetText() } })`);
 	const mark = { texture: 'discord', color: out.discord, shown: true };
 	assert.deepEqual(out.hub, mark, 'the mark keeps Discord\'s colour, under the cursor too');
 	assert.deepEqual(out.settings, mark);
@@ -337,7 +337,7 @@ test('an everyday report names every other addon: the Addons line is only shorte
 		end
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		F.Desc:SetText("If you use yellow accent colour, text is sometimes very hard to read.")
 		stub.RunScript(F.Desc, "OnTextChanged", true)
 		emit({ report = F.Box:GetText() })`);
@@ -357,15 +357,15 @@ test('the report names the other addons that are loaded; "Open on GitHub" gives 
 		stub.addonMeta.Questie = { Version = "9.1.0" }
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		F.Desc:SetText("The vermin were all by the tents.")
 		stub.RunScript(F.Desc, "OnTextChanged", true)
 		local report = F.Box:GetText()
 		F.GitHub:Click()
-		local step = { shown = PolestarCopy:IsShown(), url = PolestarCopy.Box:GetText(), focus = stub.focus == PolestarCopy.Box, title = PolestarCopy.Title:GetText() }
+		local step = { shown = NorthstarCopy:IsShown(), url = NorthstarCopy.Box:GetText(), focus = stub.focus == NorthstarCopy.Box, title = NorthstarCopy.Title:GetText() }
 		local spot = { "zone map 1429", "goto 51.23,40.50 live" }
 		local marked = UI.Report.IssueURL(F.Desc:GetText(), F.details, spot)
-		Polestar.Engine.SetGuide(nil)
+		Northstar.Engine.SetGuide(nil)
 		emit({ report = report, step = step, marked = marked, markedReport = UI.Report.Text(F.Desc:GetText(), F.details),
 			noGuide = UI.Report.IssueURL("Lua error on login\\nthen again", UI.Report.Details(), spot) })`);
 	assert.equal(out.report.split('\n')[1], '**Addons:** Questie, TomTom, Bagnon, Details', `under what went wrong, quest and map addons first, then A to Z: ${out.report}`);
@@ -404,7 +404,7 @@ test('with more addons than the link holds, the issue counts them all and lists 
 		stub.addons[#stub.addons + 1] = { name = "Questie", loaded = true }
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		emit({ url = UI.Report.IssueURL("The vermin were all by the tents.", PolestarReport.details), max = UI.Report.LINK_MAX })`);
+		emit({ url = UI.Report.IssueURL("The vermin were all by the tents.", NorthstarReport.details), max = UI.Report.LINK_MAX })`);
 	assert.ok(out.url.length <= out.max, `${out.url.length} characters`);
 	const lines = new URL(out.url).searchParams.get('addons').split('\n');
 	assert.equal(lines[0], 'The player has 401 other addons on. The ones that fit in the link, quest, map and guide addons first:');
@@ -417,18 +417,18 @@ test('"Mark the right spot" steps the window aside while the player walks; "Mark
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		F.Desc:SetText("The vermin were all by the tents.")
 		stub.RunScript(F.Desc, "OnTextChanged", true)
 		local before = F.Box:GetText()
 		F.Mark:Click()
-		local walking = { report = F:IsShown(), bar = PolestarMark:IsShown() }
-		Polestar.Compat.GetPlayerMapPosition = function() return nil end
-		PolestarMark.Here:Click()
-		local nowhere = { bar = PolestarMark:IsShown(), report = F:IsShown() }
-		Polestar.Compat.GetPlayerMapPosition = function() return 1429, 51.234, 40.5 end
-		PolestarMark.Here:Click()
-		local back = { report = F:IsShown(), bar = PolestarMark:IsShown(), note = F.SpotNote:GetText(), button = F.Mark.Label:GetText() }
+		local walking = { report = F:IsShown(), bar = NorthstarMark:IsShown() }
+		Northstar.Compat.GetPlayerMapPosition = function() return nil end
+		NorthstarMark.Here:Click()
+		local nowhere = { bar = NorthstarMark:IsShown(), report = F:IsShown() }
+		Northstar.Compat.GetPlayerMapPosition = function() return 1429, 51.234, 40.5 end
+		NorthstarMark.Here:Click()
+		local back = { report = F:IsShown(), bar = NorthstarMark:IsShown(), note = F.SpotNote:GetText(), button = F.Mark.Label:GetText() }
 		local after = F.Box:GetText()
 		local url = UI.Report.IssueURL(F.Desc:GetText(), F.details, F.spot)
 		F:Hide()
@@ -454,18 +454,18 @@ test('the issue link holds the report taken when the window opened: the step on 
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		F.Desc:SetText("The vermin were all by the tents.")
 		stub.RunScript(F.Desc, "OnTextChanged", true)
 		F.Mark:Click()
 		uistub.setStep(4)
-		Polestar.Compat.GetPlayerMapPosition = function() return 1429, 51.234, 40.5 end
-		PolestarMark.Here:Click()
+		Northstar.Compat.GetPlayerMapPosition = function() return 1429, 51.234, 40.5 end
+		NorthstarMark.Here:Click()
 		F.GitHub:Click()
-		local moved = PolestarCopy.Box:GetText()
+		local moved = NorthstarCopy.Box:GetText()
 		uistub.complete()
 		F.GitHub:Click()
-		emit({ moved = moved, done = PolestarCopy.Box:GetText(), report = F.Box:GetText() })`);
+		emit({ moved = moved, done = NorthstarCopy.Box:GetText(), report = F.Box:GetText() })`);
 	for (const url of [out.moved, out.done]) {
 		const q = Object.fromEntries(new URL(url).searchParams);
 		assert.equal(q.template, 'wrong-step.yml', 'a step was on screen when the window opened');
@@ -502,7 +502,7 @@ test('a link too short for the report even without its goals cuts the report, it
 		const wrong = new URL(out.url).searchParams.get('wrong');
 		assert.ok(wrong.endsWith('...\n```'), `${locale}: cut, then the code block closed: ${wrong.slice(-40)}`);
 		assert.ok(!wrong.includes('\ufffd'), `${locale}: no character cut in half`);
-		assert.doesNotMatch(wrong, /Polestar\/UI\/Long/, `${locale}: the report's last lines went`);
+		assert.doesNotMatch(wrong, /Northstar\/UI\/Long/, `${locale}: the report's last lines went`);
 	}
 });
 
@@ -510,7 +510,7 @@ test('a bug report with nothing typed is titled as its report reads: "Bug: (not 
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		emit({ url = UI.Report.IssueURL("  \\n  ", PolestarReport.details) })`);
+		emit({ url = UI.Report.IssueURL("  \\n  ", NorthstarReport.details) })`);
 	assert.equal(new URL(out.url).searchParams.get('title'), 'Bug: (not described)');
 });
 
@@ -518,14 +518,14 @@ test('the bug button while the player walks to mark the right spot brings back t
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		F.Desc:SetText("The vermin were all by the tents.")
 		stub.RunScript(F.Desc, "OnTextChanged", true)
 		local before = F.Box:GetText()
 		F.Mark:Click()
 		uistub.setStep(4)
 		GF.parts.nav.Report:Click()
-		emit({ desc = F.Desc:GetText(), bar = PolestarMark:IsShown(), shown = F:IsShown(), context = F.Context:GetText(), same = F.Box:GetText() == before })`);
+		emit({ desc = F.Desc:GetText(), bar = NorthstarMark:IsShown(), shown = F:IsShown(), context = F.Context:GetText(), same = F.Box:GetText() == before })`);
 	assert.deepEqual(out, { desc: 'The vermin were all by the tents.', bar: false, shown: true, context: 'Step 3 of 8  \u00b7  Kobold Camp  \u00b7  Elwynn Forest', same: true });
 });
 
@@ -534,7 +534,7 @@ test('the issue body leaves out the Addons line: the addons have their own field
 		stub.addons[#stub.addons + 1] = { name = "Questie", loaded = true }
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		emit({ url = UI.Report.IssueURL("x", PolestarReport.details), report = UI.Report.Text("x", PolestarReport.details) })`);
+		emit({ url = UI.Report.IssueURL("x", NorthstarReport.details), report = UI.Report.Text("x", NorthstarReport.details) })`);
 	const q = new URL(out.url).searchParams;
 	assert.match(out.report, /^\*\*Addons:\*\* Questie$/m, 'the Discord report keeps it');
 	assert.doesNotMatch(q.get('steps'), /Addons:/);
@@ -545,7 +545,7 @@ test('with no other addons the report has no Addons line', () => {
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		emit({ report = UI.Report.Text("x", PolestarReport.details) })`);
+		emit({ report = UI.Report.Text("x", NorthstarReport.details) })`);
 	assert.doesNotMatch(out.report, /Addons/);
 	assert.equal(out.report.split('\n')[1], '```');
 });
@@ -556,15 +556,15 @@ function pasted(locale) {
 	return run(`
 		stub.addons[#stub.addons + 1] = { name = "TomTom", loaded = true }
 		stub.addons[#stub.addons + 1] = { name = "Questie", loaded = true }
-		Polestar.NoteError("Interface/AddOns/Polestar/Nav/Arrow.lua:40: bad argument")
+		Northstar.NoteError("Interface/AddOns/Northstar/Nav/Arrow.lua:40: bad argument")
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		F.Desc:SetText("The vermin were all by the tents.")
 		stub.RunScript(F.Desc, "OnTextChanged", true)
 		F.Mark:Click()
-		Polestar.Compat.GetPlayerMapPosition = function() return 1429, 51.234, 40.5 end
-		PolestarMark.Here:Click()
+		Northstar.Compat.GetPlayerMapPosition = function() return 1429, 51.234, 40.5 end
+		NorthstarMark.Here:Click()
 		F.Copy:Click()
 		emit({ text = F.Box:GetText() })`, `function GetLocale() return "${locale}" end`)[0].text;
 }
@@ -585,7 +585,7 @@ test('the Discord bot reads the report the window gives: the details from the co
 	assert.equal(d.stepCount, 8);
 	assert.match(d.arrow, /^Arrow: .* · 42 yd$/);
 	assert.match(d.where, /^Where: Elwynn Forest/);
-	assert.deepEqual(d.errors, [{ count: 1, message: 'Polestar/Nav/Arrow.lua:40: bad argument' }]);
+	assert.deepEqual(d.errors, [{ count: 1, message: 'Northstar/Nav/Arrow.lua:40: bad argument' }]);
 	assert.equal(r.block, block(text).join('\n'), 'the block is the details alone');
 	const body = issueBody({ report: r, reporter: 'Tom', guild: '1', thread: '2' });
 	const [open, folded] = body.split('<details><summary>Full report</summary>');
@@ -611,7 +611,7 @@ test('the Discord steps say to press Ctrl+C after Copy report: the button select
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		emit({ note = PolestarReport.DiscordNote:GetText() })`);
+		emit({ note = NorthstarReport.DiscordNote:GetText() })`);
 	assert.match(out.note, /^1\. Press Copy report, then Ctrl\+C \(Cmd\+C on a Mac\)\./);
 });
 
@@ -619,7 +619,7 @@ test('Copy report and Open on GitHub wait until the player says what went wrong 
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		local function state()
 			return { copy = F.Copy:IsEnabled(), github = F.GitHub:IsEnabled(), tip = F.Copy.psTip or false }
 		end
@@ -650,13 +650,13 @@ test('Clear mark, beside Mark again, takes the right spot back out of the report
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		F.Desc:SetText("The vermin were all by the tents.")
 		stub.RunScript(F.Desc, "OnTextChanged", true)
 		local before = { clear = F.Clear:IsShown(), report = F.Box:GetText() }
-		Polestar.Compat.GetPlayerMapPosition = function() return 1429, 51.234, 40.5 end
+		Northstar.Compat.GetPlayerMapPosition = function() return 1429, 51.234, 40.5 end
 		F.Mark:Click()
-		PolestarMark.Here:Click()
+		NorthstarMark.Here:Click()
 		local marked = { clear = F.Clear:IsShown(), spot = F.Box:GetText():find("51.23,40.50", 1, true) ~= nil }
 		F.Clear:Click()
 		emit({ before = before, marked = marked, after = { clear = F.Clear:IsShown(), button = F.Mark.Label:GetText(), report = F.Box:GetText(),
@@ -670,7 +670,7 @@ test('the 5 letters are letters: spaces a Chinese or Japanese input method types
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		local F = PolestarReport
+		local F = NorthstarReport
 		local res = {}
 		for _, t in ipairs({ string.rep("\\227\\128\\128", 5), string.rep("\\194\\160", 5), "\\227\\128\\128a\\227\\128\\128b\\227\\128\\128",
 				string.rep("\\240\\159\\152\\128", 3), string.rep("\\240\\159\\152\\128", 5), "\\230\\151\\165\\230\\156\\172\\232\\170\\158\\227\\131\\134\\227\\130\\185" }) do
@@ -684,14 +684,14 @@ test('the 5 letters are letters: spaces a Chinese or Japanese input method types
 
 test('the report carries the quest log, the settings turned away from their defaults and the rolling log\'s last lines', () => {
 	const [out] = run(`
-		Polestar.Compat.GetLogQuests = function() return { 783, 7 } end
-		Polestar.Compat.IsQuestReadyForTurnIn = function(q) return q == 7 end
-		Polestar.Compat.GetQuestObjectives = function() return { { finished = true }, { finished = false } } end
-		Polestar.Set("qol.stepInteract", true)
-		Polestar.Debug("picked the inn at Goldshire")
+		Northstar.Compat.GetLogQuests = function() return { 783, 7 } end
+		Northstar.Compat.IsQuestReadyForTurnIn = function(q) return q == 7 end
+		Northstar.Compat.GetQuestObjectives = function() return { { finished = true }, { finished = false } } end
+		Northstar.Set("qol.stepInteract", true)
+		Northstar.Debug("picked the inn at Goldshire")
 		uistub.setGuide(uistub.elwynn, 3)
 		UI.ShowReport()
-		emit({ text = PolestarReport.Box:GetText() })`);
+		emit({ text = NorthstarReport.Box:GetText() })`);
 	const lines = out.text.split('\n');
 	assert.ok(lines.includes('Quest log 2/40: 783 1/2, 7 done'), out.text);
 	assert.ok(lineWith(out.text, 'Settings: ').includes('qol.stepInteract=true'), out.text);

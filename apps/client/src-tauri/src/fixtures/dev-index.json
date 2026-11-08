@@ -6,7 +6,7 @@
 		{
 			"id": "durotar-dash",
 			"addon": [
-				"PolestarPack_durotar-dash"
+				"NorthstarPack_durotar-dash"
 			],
 			"title": "Durotar Dash",
 			"author": "Tester",
@@ -18,7 +18,7 @@
 				"size": 10311
 			},
 			"toc": 16001,
-			"minPolestar": "0.2.5",
+			"minNorthstar": "0.2.5",
 			"homepage": null,
 			"changelog": "First release.",
 			"uid": "pk_dev_durotar-dash",
@@ -32,7 +32,7 @@
 		{
 			"id": "emberway",
 			"addon": [
-				"PolestarPack_emberway"
+				"NorthstarPack_emberway"
 			],
 			"title": "Emberway Routes",
 			"author": "Ashka",
@@ -44,7 +44,7 @@
 				"size": 10251
 			},
 			"toc": 16001,
-			"minPolestar": "0.2.5",
+			"minNorthstar": "0.2.5",
 			"homepage": null,
 			"changelog": "First release.",
 			"uid": "pk_dev_emberway",
@@ -58,7 +58,7 @@
 		{
 			"id": "hearthside",
 			"addon": [
-				"PolestarPack_hearthside"
+				"NorthstarPack_hearthside"
 			],
 			"title": "Hearthside Professions",
 			"author": "Mira",
@@ -70,7 +70,7 @@
 				"size": 12169
 			},
 			"toc": 16001,
-			"minPolestar": "0.2.5",
+			"minNorthstar": "0.2.5",
 			"homepage": null,
 			"changelog": "First release.",
 			"uid": "pk_dev_hearthside",
@@ -84,7 +84,7 @@
 		{
 			"id": "ironvault",
 			"addon": [
-				"PolestarPack_ironvault"
+				"NorthstarPack_ironvault"
 			],
 			"title": "Ironvault Dungeon Runs",
 			"author": "Brekka",
@@ -96,7 +96,7 @@
 				"size": 6958
 			},
 			"toc": 16001,
-			"minPolestar": "0.2.5",
+			"minNorthstar": "0.2.5",
 			"homepage": null,
 			"changelog": "First release.",
 			"uid": "pk_dev_ironvault",
@@ -110,7 +110,7 @@
 		{
 			"id": "lightforge",
 			"addon": [
-				"PolestarPack_lightforge"
+				"NorthstarPack_lightforge"
 			],
 			"title": "Lightforge Leveling",
 			"author": "Corwin",
@@ -122,7 +122,7 @@
 				"size": 9671
 			},
 			"toc": 16001,
-			"minPolestar": "0.2.5",
+			"minNorthstar": "0.2.5",
 			"homepage": null,
 			"changelog": "First release.",
 			"uid": "pk_dev_lightforge",
@@ -136,7 +136,7 @@
 		{
 			"id": "wayfarer",
 			"addon": [
-				"PolestarPack_wayfarer"
+				"NorthstarPack_wayfarer"
 			],
 			"title": "Wayfarer's Atlas",
 			"author": "Tamsin",
@@ -148,7 +148,7 @@
 				"size": 7330
 			},
 			"toc": 16001,
-			"minPolestar": "0.2.5",
+			"minNorthstar": "0.2.5",
 			"homepage": null,
 			"changelog": "First release.",
 			"uid": "pk_dev_wayfarer",

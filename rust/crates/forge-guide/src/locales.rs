@@ -1,8 +1,8 @@
 //! Port of tools/lib/i18n/locales.js.
 //!
-//! The languages of Polestar's interface (docs/TRANSLATING.md): the client
+//! The languages of Northstar's interface (docs/TRANSLATING.md): the client
 //! locales WoW: Forever ships besides English. Each has one file,
-//! addon/Polestar/Locales/<locale>.lua, loaded by Core/Core.xml once it
+//! addon/Northstar/Locales/<locale>.lua, loaded by Core/Core.xml once it
 //! exists. `status`: "reviewed" when a native speaker wrote or checked it
 //! (tooling never fills or rewrites its translations; `i18n sync` only adds
 //! the new keys commented out), "ai" when a machine made it (Options' About

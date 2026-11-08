@@ -161,7 +161,7 @@ pub(crate) struct Sim<'a> {
 	/// Engine.Goto/Next's view of another step than the live one (`pin`, `pinDone`).
 	pin: Option<usize>,
 	pin_done: Option<bool>,
-	/// A finished guide hands over through `next` by itself, as Polestar does with behavior.guideEnd
+	/// A finished guide hands over through `next` by itself, as Northstar does with behavior.guideEnd
 	/// "continue" (on by default here; playGuide without a hand-over turns it off).
 	pub auto_next: bool,
 	/// Test scripts' wraps of the stub world's helpers and of GetStepView (see [`Hooks`]).

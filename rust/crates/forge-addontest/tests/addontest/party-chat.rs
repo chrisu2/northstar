@@ -9,7 +9,7 @@ use serde_json::{json, Value};
 
 const FILES: &[&str] = &["Core/Core.xml", "Quests/Party.lua", "Quests/PartyChat.lua"];
 const STUBS: &[&str] = &["stub_world.lua", "stub_party.lua"];
-const DEFAULTS: &str = "PolestarDB = { schema = 1 }";
+const DEFAULTS: &str = "NorthstarDB = { schema = 1 }";
 
 const HELPERS: &str = r#"
 local w, p = stub.world, stub.party
@@ -28,8 +28,8 @@ fn run_with(script: &str, login: bool, saved: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: STUBS.to_vec(),
 		before: String::new(),
-		saved: vec![("Polestar".to_string(), saved.to_string())],
-		addons: vec![Addon::files("Polestar", FILES)],
+		saved: vec![("Northstar".to_string(), saved.to_string())],
+		addons: vec![Addon::files("Northstar", FILES)],
 		login,
 		script: format!("{HELPERS}\n{script}"),
 	})
@@ -45,11 +45,11 @@ fn link(q: u32, title: &str) -> String {
 }
 
 fn finished(objective: &str, q: u32, title: &str) -> String {
-	format!("PARTY [Polestar] Finished: {objective} - {}", link(q, title))
+	format!("PARTY [Northstar] Finished: {objective} - {}", link(q, title))
 }
 
 fn ready(q: u32, title: &str) -> String {
-	format!("PARTY [Polestar] Ready to turn in: {}", link(q, title))
+	format!("PARTY [Northstar] Ready to turn in: {}", link(q, title))
 }
 
 // The chat lines emitted (an empty Lua table arrives as an object).
@@ -111,7 +111,7 @@ emit(solo); emit(chat())"#;
 	let out = live(script);
 	assert_eq!(lines(&out[0]), NONE, "solo");
 	assert_eq!(lines(&out[1]), NONE, "raid");
-	let off = run_with(&format!("p.join(\"Ana\")\nstub.advance(6)\n{script}"), true, "PolestarDB = { schema = 1, settings = { party = { chat = false } } }");
+	let off = run_with(&format!("p.join(\"Ana\")\nstub.advance(6)\n{script}"), true, "NorthstarDB = { schema = 1, settings = { party = { chat = false } } }");
 	assert_eq!(lines(&off[1]), NONE, "setting off");
 }
 
@@ -244,7 +244,7 @@ stub.advance(1)
 w.progress(33, 1, 1); stub.advance(3)
 emit(chat())"#,
 	);
-	assert_eq!(lines(&out[0]), vec!["INSTANCE_CHAT [Polestar] Finished: Rabid Thistle Bear Captured 1/1 - [Plagued Lands]".to_string()]);
+	assert_eq!(lines(&out[0]), vec!["INSTANCE_CHAT [Northstar] Finished: Rabid Thistle Bear Captured 1/1 - [Plagued Lands]".to_string()]);
 }
 
 #[test]
@@ -253,7 +253,7 @@ fn party_chat_the_first_line_says_once_where_to_turn_it_off() {
 		r#"
 local function told()
 	local n = 0
-	for _, m in ipairs(stub.messages) do if m:find("Polestar told your party", 1, true) then n = n + 1 end end
+	for _, m in ipairs(stub.messages) do if m:find("Northstar told your party", 1, true) then n = n + 1 end end
 	return n
 end
 p.join("Ana")
@@ -263,7 +263,7 @@ w.accept(33, plagued(), "Plagued Lands")
 stub.advance(1)
 w.progress(33, 1, 1); stub.advance(3)
 w.progress(33, 2, 5); stub.advance(3)
-emit(before); emit(told()); emit(#p.chat); emit(PolestarDB.partyChatTold == true)"#,
+emit(before); emit(told()); emit(#p.chat); emit(NorthstarDB.partyChatTold == true)"#,
 	);
 	assert_eq!(out, vec![json!(0), json!(1), json!(2), json!(true)]);
 }

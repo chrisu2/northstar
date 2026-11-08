@@ -171,7 +171,7 @@ ${setup}"#;
 
 const SCRIPT: &str = r#"
 local out = {}
-for _, r in ipairs((Polestar.Lookup.Sources("item", 9500))) do
+for _, r in ipairs((Northstar.Lookup.Sources("item", 9500))) do
 	if r.type == "vendor" then out[#out + 1] = { label = r.label, available = r.available, why = r.why or false, whyText = r.whyText or false } end
 end
 table.sort(out, function(a, b) return a.label < b.label end)
@@ -197,7 +197,7 @@ fn repgates_lookup_blocks_each_vendor_until_its_own_side_s_standing() {
 		emitted(&RunAddon {
 			stubs: vec!["stub_world.lua", "stub_lookup_runtime.lua"],
 			before: pack.stub_lua.clone() + &BEFORE.replace("${race}", race).replace("${faction}", faction).replace("${setup}", setup),
-			addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Lookup/Lookup.xml"])],
+			addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Lookup/Lookup.xml"])],
 			login: true,
 			script: SCRIPT.into(),
 			..Default::default()

@@ -1,5 +1,5 @@
 'use strict';
-// The textures of the Halo and Blizzard skins (Polestar.Theme, "Skins"), as
+// The textures of the Halo and Blizzard skins (Northstar.Theme, "Skins"), as
 // the design handoff lists them (DIRECTION_B_HALO.md §7, DIRECTION_A_BLIZZARD.md
 // §7): white masks the addon tints at runtime, except the Blizzard dart, whose
 // gold gradient is baked in. Drawn here from signed distance shapes, so they

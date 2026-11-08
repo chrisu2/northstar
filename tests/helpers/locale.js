@@ -1,10 +1,10 @@
 'use strict';
 // A fake translation for the addon's tests: Lua for runAddon's `before` that
-// makes GetLocale() return `locale` and fills Polestar.L with `strings`
+// makes GetLocale() return `locale` and fills Northstar.L with `strings`
 // right after Core/Init.lua runs, where a locale file (Locales/<locale>.lua)
 // loads in the client. Code that looks a string up too early, or two
 // meanings sharing one key, then shows in the test. The locale must be one
-// Polestar does not ship (itIT: WoW: Forever has no Italian client), or the
+// Northstar does not ship (itIT: WoW: Forever has no Italian client), or the
 // shipped file would load after these strings and replace them.
 //
 //   const { fakeLocale } = require('./helpers/locale');
@@ -17,7 +17,7 @@ function luaString(s) {
 }
 
 function fakeLocale(locale, strings) {
-	if (LOCALES[locale]) throw new Error(`fakeLocale: Polestar ships ${locale} (tools/lib/i18n/locales.js); fake one it does not, such as itIT`);
+	if (LOCALES[locale]) throw new Error(`fakeLocale: Northstar ships ${locale} (tools/lib/i18n/locales.js); fake one it does not, such as itIT`);
 	const fill = Object.entries(strings)
 		.map(([k, v]) => `\t\tns.L[${luaString(k)}] = ${luaString(v)}`)
 		.join('\n');
@@ -26,7 +26,7 @@ do
 	local load = loadfile
 	function loadfile(file)
 		local chunk, err = load(file)
-		if not chunk or not file:match("[/\\\\]Polestar[/\\\\]Core[/\\\\]Init%.lua$") then return chunk, err end
+		if not chunk or not file:match("[/\\\\]Northstar[/\\\\]Core[/\\\\]Init%.lua$") then return chunk, err end
 		return function(name, ns)
 			chunk(name, ns)
 ${fill}

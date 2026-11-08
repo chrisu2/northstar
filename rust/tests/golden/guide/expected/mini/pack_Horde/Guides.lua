@@ -3,7 +3,7 @@
 -- Source: forever/test/01-valley.guide
 do
 	local function register()
-		Polestar.RegisterGuide({
+		Northstar.RegisterGuide({
 			id = "forever/test/01-valley",
 			pack = "guides",
 			title = "{area:363}",
@@ -17,7 +17,7 @@ do
 			next = "forever/horde/orc-troll/02-the-barrens",
 			nextChoices = { "forever/horde/orc-troll/02-the-barrens" },
 			nextWhen = { ["forever/horde/orc-troll/02-the-barrens"] = { { k = "level", op = ">=", n = 5 } } },
-			author = "Polestar",
+			author = "Northstar",
 			version = 1,
 			names = { ["area:363"] = "Valley of Trials", ["area:364"] = "Den", ["npc:10176"] = "Kaltunk", ["npc:3143"] = "Gornek" },
 			written = { ["{area:364}"] = "The Den" },

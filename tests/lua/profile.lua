@@ -8,7 +8,7 @@
 --   stub.profile.total()                   CPU ms in top-level handlers since start/reset
 --   stub.profile.measure(fn)               CPU ms fn takes, nested handlers included
 --
--- Every game event handler (frame OnEvent and Polestar's ns.RegisterEvent),
+-- Every game event handler (frame OnEvent and Northstar's ns.RegisterEvent),
 -- message bus listener (ns.On), OnUpdate script and C_Timer callback is timed
 -- with os.clock(), exclusive of nested handlers (a message fired from inside a
 -- handler is charged to its listener). A handler's key is
@@ -105,7 +105,7 @@ function C_Timer.After(s, fn) return After(s, wrap(fn)) end
 function C_Timer.NewTimer(s, fn) return NewTimer(s, wrap(fn)) end
 function C_Timer.NewTicker(s, fn, n) return NewTicker(s, wrap(fn), n) end
 
--- Polestar's own event and message registrations, wrapped as they are made
+-- Northstar's own event and message registrations, wrapped as they are made
 -- (one wrapper per function and name, so Unregister finds it again).
 local wrappers = setmetatable({}, { __mode = "k" })
 local function wrapNamed(fn, name)
@@ -139,7 +139,7 @@ local function instrument(ns)
 end
 setmetatable(_G, {
 	__newindex = function(t, k, v)
-		if k == "Polestar" and type(v) == "table" then instrument(v) end
+		if k == "Northstar" and type(v) == "table" then instrument(v) end
 		rawset(t, k, v)
 	end,
 })

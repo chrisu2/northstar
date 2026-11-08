@@ -1,4 +1,4 @@
-//! Polestar.Theme (colour schemes, custom colours, legibility, the EllesmereUI path), Polestar.Anim, and the
+//! Northstar.Theme (colour schemes, custom colours, legibility, the EllesmereUI path), Northstar.Anim, and the
 //! textures the UI shows.
 
 use forge_addontest::run::addons_dir;
@@ -6,15 +6,15 @@ use forge_addontest::{emitted, is_match, text, truthy, Addon, RunAddon};
 use serde_json::{json, Value};
 
 const FILES: &[&str] = &["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"];
-const OPEN_SANS_REGULAR: &str = "Interface\\AddOns\\Polestar\\Media\\Fonts\\OpenSans-Regular.ttf";
-const OPEN_SANS_BOLD: &str = "Interface\\AddOns\\Polestar\\Media\\Fonts\\OpenSans-Bold.ttf";
+const OPEN_SANS_REGULAR: &str = "Interface\\AddOns\\Northstar\\Media\\Fonts\\OpenSans-Regular.ttf";
+const OPEN_SANS_BOLD: &str = "Interface\\AddOns\\Northstar\\Media\\Fonts\\OpenSans-Bold.ttf";
 
 fn run_with(script: &str, before: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: before.into(),
-		addons: vec![Addon::files("Polestar", FILES)],
-		script: format!("uistub.install()\nstub.login()\nlocal T, W = Polestar.Theme, Polestar.Widgets\n{script}"),
+		addons: vec![Addon::files("Northstar", FILES)],
+		script: format!("uistub.install()\nstub.login()\nlocal T, W = Northstar.Theme, Northstar.Widgets\n{script}"),
 		..Default::default()
 	})
 	.remove(0)
@@ -77,7 +77,7 @@ fn every_colour_scheme_keeps_the_text_ladder_legible_on_every_ground_7_1_primary
 	let out = run(r#"
 		local out = {}
 		for _, key in ipairs(T.SCHEME_ORDER) do
-			Polestar.Set("ui.scheme", key)
+			Northstar.Set("ui.scheme", key)
 			out[key] = T.Palette()
 		end
 		emit(out)"#);
@@ -102,8 +102,8 @@ fn item_quality_and_quest_difficulty_colours_lifted_read_at_4_5_1_on_a_selected_
 		}
 		local out = {}
 		for _, key in ipairs(T.SCHEME_ORDER) do
-			Polestar.Set("ui.scheme", key)
-			local o = { ground = T.LightestGround(), panel = T.Palette().panel, lifted = {}, epic = { Polestar.UI.Lookup.QualityColor(4) } }
+			Northstar.Set("ui.scheme", key)
+			local o = { ground = T.LightestGround(), panel = T.Palette().panel, lifted = {}, epic = { Northstar.UI.Lookup.QualityColor(4) } }
 			for i, c in ipairs(OUTSIDE) do o.lifted[i] = { T.Legible(c[1], c[2], c[3]) } end
 			out[key] = o
 		end
@@ -123,7 +123,7 @@ fn item_quality_and_quest_difficulty_colours_lifted_read_at_4_5_1_on_a_selected_
 fn dusk_is_the_default_and_visibly_lighter_than_night_night_keeps_the_original_palette_exactly() {
 	let out = run(r#"
 		local dusk = T.Palette()
-		Polestar.Set("ui.scheme", "night")
+		Northstar.Set("ui.scheme", "night")
 		emit({ key = dusk.scheme, dusk = dusk, night = T.Palette() })"#);
 	assert_eq!(out["key"], "dusk");
 	for g in ["bg", "panel", "panelAlt", "sidebar", "footer", "sky"] {
@@ -148,18 +148,18 @@ fn custom_ground_colour_and_brightness_repaint_live_and_can_never_make_text_ille
 		local sky = T.Band(UIParent)
 		local before = { tex:GetVertexColor() }
 		local skyBefore = { sky:GetVertexColor() }
-		Polestar.Set("ui.bgColor", { 0.2, 0.05, 0.1 })
+		Northstar.Set("ui.bgColor", { 0.2, 0.05, 0.1 })
 		local custom = { tex:GetVertexColor() }
 		local skyCustom = { sky:GetVertexColor() }
-		Polestar.Set("ui.brightness", 0.5)
+		Northstar.Set("ui.brightness", 0.5)
 		local lifted = T.Palette()
-		Polestar.Set("ui.bgColor", { 1, 1, 1 })
-		Polestar.Set("ui.brightness", 1)
+		Northstar.Set("ui.bgColor", { 1, 1, 1 })
+		Northstar.Set("ui.brightness", 1)
 		local white = T.Palette()
-		Polestar.Set("ui.bgColor", nil)
-		Polestar.Set("ui.brightness", -1)
+		Northstar.Set("ui.bgColor", nil)
+		Northstar.Set("ui.brightness", -1)
 		local low = T.Palette()
-		Polestar.Set("ui.brightness", nil)
+		Northstar.Set("ui.brightness", nil)
 		emit({ before = before, custom = custom, skyBefore = skyBefore, skyCustom = skyCustom, lifted = lifted, white = white, low = low,
 			back = { tex:GetVertexColor() }, legible = T.Legibility(white) })"#);
 	assert_ne!(out["custom"], out["before"]);
@@ -183,24 +183,24 @@ fn house_style_game_font_by_default_open_sans_and_inter_on_request_polestar_gold
 		local fired = 0
 		T.OnChanged(function() fired = fired + 1 end)
 		local d = { T.Accent() }
-		Polestar.Set("ui.accent", { 1, 0.5, 0 })
+		Northstar.Set("ui.accent", { 1, 0.5, 0 })
 		local tr, tg, tb = tex:GetVertexColor()
-		Polestar.Set("ui.font", "opensans")
+		Northstar.Set("ui.font", "opensans")
 		local openSans = { fs:GetFont() }
-		Polestar.Set("ui.font", "inter")
+		Northstar.Set("ui.font", "inter")
 		local inter = { fs:GetFont() }
-		Polestar.Set("ui.bgOpacity", 0.5)
-		local bgAlpha = select(4, PolestarGuideFrame.psSkin.bg:GetVertexColor())
+		Northstar.Set("ui.bgOpacity", 0.5)
+		local bgAlpha = select(4, NorthstarGuideFrame.psSkin.bg:GetVertexColor())
 		T.SetOutline(fs, true)
 		local outlined = select(3, fs:GetFont())
 		emit({ before = before, openSans = openSans, inter = inter, default = d, tex = { tr, tg, tb }, fired = fired, eui = T.IsEllesmere(),
-			border = PolestarGuideFrame.psBorder ~= nil, shadow = PolestarGuideFrame.psShadow:IsShown(), bgAlpha = bgAlpha,
+			border = NorthstarGuideFrame.psBorder ~= nil, shadow = NorthstarGuideFrame.psShadow:IsShown(), bgAlpha = bgAlpha,
 			outlined = outlined, media = T.Media("check"), verb = T.VerbIcon("kill"),
 			band = { T.BandCoords(720, 112) }, schemes = T.SchemeChoices() })"#);
 	assert_eq!(out["before"], json!(["Fonts\\FRIZQT__.TTF", 15, ""]), "the game font for the title by default");
 	assert_eq!(out["openSans"], json!([OPEN_SANS_BOLD, 15, ""]), "ui.font = opensans gives Open Sans Bold for the title");
-	assert_eq!(out["inter"], json!(["Interface\\AddOns\\Polestar\\Media\\Fonts\\Inter-SemiBold.ttf", 15, ""]), "ui.font = inter re-fonts live");
-	assert_eq!(round(&out["default"]), vec![0.9, 0.73, 0.4], "Polestar gold");
+	assert_eq!(out["inter"], json!(["Interface\\AddOns\\Northstar\\Media\\Fonts\\Inter-SemiBold.ttf", 15, ""]), "ui.font = inter re-fonts live");
+	assert_eq!(round(&out["default"]), vec![0.9, 0.73, 0.4], "Northstar gold");
 	assert_eq!(out["tex"], json!([1, 0.5, 0]));
 	assert!(out["fired"].as_f64().unwrap() >= 1.0);
 	assert_eq!(out["eui"], false);
@@ -208,8 +208,8 @@ fn house_style_game_font_by_default_open_sans_and_inter_on_request_polestar_gold
 	assert_eq!(out["shadow"], true);
 	assert_eq!(out["bgAlpha"], 0.5);
 	assert_eq!(out["outlined"], "OUTLINE");
-	assert_eq!(out["media"], "Interface\\AddOns\\Polestar\\Media\\UI\\check");
-	assert_eq!(out["verb"], "Interface\\AddOns\\Polestar\\Media\\UI\\icon-kill");
+	assert_eq!(out["media"], "Interface\\AddOns\\Northstar\\Media\\UI\\check");
+	assert_eq!(out["verb"], "Interface\\AddOns\\Northstar\\Media\\UI\\icon-kill");
 	assert_eq!(round(&out["band"]), vec![0.0, 0.703, 0.0, 0.875], "the band is cropped to the header, never stretched");
 	assert_eq!(values(&out["schemes"]), json!(["dusk", "night", "graphite"]), "EllesmereUI is offered only when installed");
 }
@@ -217,29 +217,29 @@ fn house_style_game_font_by_default_open_sans_and_inter_on_request_polestar_gold
 #[test]
 fn fonts_keep_skin_and_user_choices_with_client_fonts_for_cjk_and_fira_for_russian_game_skins() {
 	const GAME: &str = "Fonts\\FRIZQT__.TTF";
-	const FIRA: &str = "Interface\\AddOns\\Polestar\\Media\\Fonts\\FiraSans-SemiBold.ttf";
-	const INTER: &str = "Interface\\AddOns\\Polestar\\Media\\Fonts\\Inter-SemiBold.ttf";
+	const FIRA: &str = "Interface\\AddOns\\Northstar\\Media\\Fonts\\FiraSans-SemiBold.ttf";
+	const INTER: &str = "Interface\\AddOns\\Northstar\\Media\\Fonts\\Inter-SemiBold.ttf";
 	let faces = |locale: &str| {
 		run_with(
 			r#"
 		local out = {}
 		out.default = (T.FontSpec("title"))
 		for _, skin in ipairs({ "hearth", "forever", "blizzard", "classic" }) do
-			Polestar.Set("ui.skin", skin)
+			Northstar.Set("ui.skin", skin)
 			out[skin] = (T.FontSpec("title"))
 		end
-		Polestar.Set("ui.skin", "polestar")
-		Polestar.Set("ui.font", "skin")
+		Northstar.Set("ui.skin", "polestar")
+		Northstar.Set("ui.font", "skin")
 		out.skinChoice = (T.FontSpec("title"))
-		Polestar.Set("ui.font", "game")
+		Northstar.Set("ui.font", "game")
 		out.game = (T.FontSpec("title"))
-		Polestar.Set("ui.skin", "blizzard")
+		Northstar.Set("ui.skin", "blizzard")
 		out.gameBlizzard = (T.FontSpec("title"))
-		Polestar.Set("ui.font", "opensans")
+		Northstar.Set("ui.font", "opensans")
 		out.openSansOnBlizzard = (T.FontSpec("body"))
-		Polestar.Set("ui.skin", "polestar")
+		Northstar.Set("ui.skin", "polestar")
 		out.openSans = (T.FontSpec("title"))
-		Polestar.Set("ui.font", "inter")
+		Northstar.Set("ui.font", "inter")
 		out.inter = (T.FontSpec("title"))
 		emit(out)"#,
 			&format!("function GetLocale() return \"{locale}\" end"),
@@ -289,20 +289,20 @@ fn font_application_keeps_size_and_outline_on_failure_and_skips_unchanged_fonts(
 		local body = { fs:GetFont() }
 		T.Font(fs, "title")
 		local title = { fs:GetFont() }
-		Polestar.Set("ui.font", "inter")
+		Northstar.Set("ui.font", "inter")
 		calls = 0
 		T.Refresh()
 		emit({ body = body, title = title, inter = { fs:GetFont() }, repeated = calls })"#);
 	assert_eq!(out["body"], json!(["Fonts\\FRIZQT__.TTF", 13, "OUTLINE"]));
 	assert_eq!(out["title"], json!(["Fonts\\FRIZQT__.TTF", 15, "OUTLINE"]));
-	assert_eq!(out["inter"], json!(["Interface\\AddOns\\Polestar\\Media\\Fonts\\Inter-SemiBold.ttf", 15, "OUTLINE"]));
+	assert_eq!(out["inter"], json!(["Interface\\AddOns\\Northstar\\Media\\Fonts\\Inter-SemiBold.ttf", 15, "OUTLINE"]));
 	assert_eq!(out["repeated"], 0);
 }
 
 #[test]
 fn settings_from_before_schemes_a_stored_gold_accent_was_the_old_default_any_other_stays_the_user_s_own() {
-	let ui = |accent: &str| format!("PolestarDB = {{ schema = 1, settings = {{ ui = {{ accent = {accent} }} }} }}");
-	let script = r#"emit({ accent = Polestar.Get("ui.accent"), live = { T.Accent() } })"#;
+	let ui = |accent: &str| format!("NorthstarDB = {{ schema = 1, settings = {{ ui = {{ accent = {accent} }} }} }}");
+	let script = r#"emit({ accent = Northstar.Get("ui.accent"), live = { T.Accent() } })"#;
 	let gold = run_with(script, &ui("{ 0.9, 0.73, 0.4 }"));
 	assert_eq!(gold["accent"], false);
 	assert_eq!(round(&gold["live"]), vec![0.9, 0.73, 0.4]);
@@ -317,7 +317,7 @@ fn ellesmereui_an_optional_scheme_and_follow_toggles_never_a_lock() {
 		r#"
 		local fs = UIParent:CreateFontString()
 		T.Font(fs, "body")
-		local GF = Polestar.UI.GuideFrame
+		local GF = Northstar.UI.GuideFrame
 		uistub.setGuide(uistub.elwynn, 3)
 		local function fill() local r, g, b = GF.parts.line.Fill:GetVertexColor() return { r, g, b } end
 		local before = fill()
@@ -327,47 +327,47 @@ fn ellesmereui_an_optional_scheme_and_follow_toggles_never_a_lock() {
 		local after = fill()
 		local followFont = { fs:GetFont() }
 		local schemes = T.SchemeChoices()
-		Polestar.Set("ui.scheme", "ellesmere")
+		Northstar.Set("ui.scheme", "ellesmere")
 		local euiGround = { T.Color("bg") }
 		local euiPal = T.Palette()
-		Polestar.UI.ShowOptions("appearance")
-		local look = Polestar.UI.Options.Controls("appearance")
+		Northstar.UI.ShowOptions("appearance")
+		local look = Northstar.UI.Options.Controls("appearance")
 		local swatch = look["ui.accent"]
 		local note = swatch.Note:GetText()
 		swatch:Click("LeftButton")
 		local opened = ColorPickerFrame.info ~= nil
 		ColorPickerFrame.GetColorRGB = function() return 0.1, 0.8, 0.3 end
 		ColorPickerFrame.info.swatchFunc()
-		local picked = { accent = { T.Accent() }, match = Polestar.Get("ui.matchAccent"), fill = fill() }
+		local picked = { accent = { T.Accent() }, match = Northstar.Get("ui.matchAccent"), fill = fill() }
 		ColorPickerFrame.info.cancelFunc()
-		local cancelled = { accent = Polestar.Get("ui.accent"), match = Polestar.Get("ui.matchAccent") }
-		Polestar.Set("ui.accent", { 1, 0, 0 })
-		local own = Polestar.Get("ui.matchAccent")
-		Polestar.UI.ShowOptions("integrations")
-		Polestar.UI.Options.Controls("integrations")["ui.matchAccent"]:Click()
-		local rematched = { accent = Polestar.Get("ui.accent"), live = { T.Accent() } }
-		Polestar.UI.ShowOptions("appearance")
-		look = Polestar.UI.Options.Controls("appearance")
+		local cancelled = { accent = Northstar.Get("ui.accent"), match = Northstar.Get("ui.matchAccent") }
+		Northstar.Set("ui.accent", { 1, 0, 0 })
+		local own = Northstar.Get("ui.matchAccent")
+		Northstar.UI.ShowOptions("integrations")
+		Northstar.UI.Options.Controls("integrations")["ui.matchAccent"]:Click()
+		local rematched = { accent = Northstar.Get("ui.accent"), live = { T.Accent() } }
+		Northstar.UI.ShowOptions("appearance")
+		look = Northstar.UI.Options.Controls("appearance")
 		local font = look["ui.font"]
 		local fontLabel = font.Button.Label:GetText()
 		font.Button:Click()
 		local items = {}
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then items[#items + 1] = r.Text:GetText() end end
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Inter" then r:Click() end end
-		local inter = { match = Polestar.Get("ui.matchFont"), font = { fs:GetFont() }, label = font.Button.Label:GetText() }
-		Polestar.UI.ShowOptions("integrations")
-		Polestar.UI.Options.Controls("integrations")["ui.matchFont"]:Click()
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then items[#items + 1] = r.Text:GetText() end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Inter" then r:Click() end end
+		local inter = { match = Northstar.Get("ui.matchFont"), font = { fs:GetFont() }, label = font.Button.Label:GetText() }
+		Northstar.UI.ShowOptions("integrations")
+		Northstar.UI.Options.Controls("integrations")["ui.matchFont"]:Click()
 		emit({ registered = stub.skinRegistered, eui = T.IsEllesmere(), skinned = #stub.skinned,
-			shellArt = PolestarGuideFrame.euiSkin or false, houseBg = PolestarGuideFrame.psSkin.bg:IsShown(),
+			shellArt = NorthstarGuideFrame.euiSkin or false, houseBg = NorthstarGuideFrame.psSkin.bg:IsShown(),
 			band = GF.parts.band:IsShown(), followFont = followFont, before = before, after = after, fired = fired,
 			schemes = schemes, euiGround = euiGround, euiPal = euiPal, note = note, opened = opened, enabled = swatch:IsEnabled(),
 			picked = picked, cancelled = cancelled, own = own, rematched = rematched, fontLabel = fontLabel, items = items, inter = inter,
 			refollow = { fs:GetFont() } })"#,
 		"stub.withEllesmere()",
 	);
-	assert_eq!(out["registered"], "Polestar");
+	assert_eq!(out["registered"], "Northstar");
 	assert_eq!(out["eui"], true);
-	assert_eq!(out["skinned"], 0, "no EllesmereUI primitive replaces Polestar art");
+	assert_eq!(out["skinned"], 0, "no EllesmereUI primitive replaces Northstar art");
 	assert_eq!(out["shellArt"], false);
 	assert_eq!(out["houseBg"], true);
 	assert_eq!(out["band"], true);
@@ -393,7 +393,7 @@ fn ellesmereui_an_optional_scheme_and_follow_toggles_never_a_lock() {
 	assert_eq!(out["fontLabel"], "The skin's font", "the skin picks the font by default");
 	assert_eq!(out["items"], json!(["The skin's font", "Open Sans", "Game font", "Inter", "Fira Sans", "EllesmereUI"]));
 	assert_eq!(out["inter"]["match"], false, "choosing another font turns following off");
-	assert_eq!(out["inter"]["font"], json!(["Interface\\AddOns\\Polestar\\Media\\Fonts\\Inter-Medium.ttf", 13, ""]));
+	assert_eq!(out["inter"]["font"], json!(["Interface\\AddOns\\Northstar\\Media\\Fonts\\Inter-Medium.ttf", 13, ""]));
 	assert_eq!(out["inter"]["label"], "Inter");
 	assert_eq!(out["refollow"], json!(["Interface\\AddOns\\EllesmereUI\\media\\fonts\\Expressway.ttf", 13, ""]));
 }
@@ -403,7 +403,7 @@ fn ellesmereui_font_with_an_outline_a_primary_button_s_dark_label_on_the_accent_
 	let out = run_with(
 		r#"
 		stub.euiS.GetFont = function() return "Interface\\AddOns\\EllesmereUI\\media\\fonts\\Expressway.ttf", "OUTLINE" end
-		Polestar.Set("ui.matchFont", true)
+		Northstar.Set("ui.matchFont", true)
 		local fs = UIParent:CreateFontString()
 		T.Font(fs, "body")
 		local load = W.Button(UIParent, "Load guide", nil, { primary = true })
@@ -430,7 +430,7 @@ fn ellesmereui_font_a_refresh_sets_the_text_again_a_frame_later_so_a_string_draw
 		T.Refresh()
 		stub.advance(0.1)
 		local ownFont = sets
-		Polestar.Set("ui.matchFont", true)
+		Northstar.Set("ui.matchFont", true)
 		stub.advance(0.1)
 		sets = 0
 		T.Refresh()
@@ -461,15 +461,15 @@ fn class_colour_accent_follows_the_class_lifted_to_read_and_takes_turns_with_you
 		r#"
 		UnitClass = function() return "Shaman", "SHAMAN", 7 end
 		local raw = RAID_CLASS_COLORS.SHAMAN
-		Polestar.Set("ui.classAccent", true)
+		Northstar.Set("ui.classAccent", true)
 		local shaman = { T.Accent() }
 		local pal = T.Palette()
 		local panel = pal.panel
-		local follows = { class = T.FollowsClassAccent(), eui = T.FollowsEllesmereAccent(), match = Polestar.Get("ui.matchAccent") }
-		Polestar.Set("ui.accent", { 1, 0.5, 0 })
-		local own = { class = Polestar.Get("ui.classAccent"), accent = { T.Accent() } }
-		Polestar.Set("ui.classAccent", true)
-		local back = { accent = Polestar.Get("ui.accent"), live = { T.Accent() } }
+		local follows = { class = T.FollowsClassAccent(), eui = T.FollowsEllesmereAccent(), match = Northstar.Get("ui.matchAccent") }
+		Northstar.Set("ui.accent", { 1, 0.5, 0 })
+		local own = { class = Northstar.Get("ui.classAccent"), accent = { T.Accent() } }
+		Northstar.Set("ui.classAccent", true)
+		local back = { accent = Northstar.Get("ui.accent"), live = { T.Accent() } }
 		emit({ raw = { raw.r, raw.g, raw.b }, shaman = shaman, panel = { panel[1], panel[2], panel[3] }, follows = follows, own = own, back = back })"#,
 		"stub.withEllesmere()",
 	);
@@ -486,7 +486,7 @@ fn class_colour_accent_follows_the_class_lifted_to_read_and_takes_turns_with_you
 #[test]
 fn anim_onupdate_exists_only_while_a_tween_runs_retargeting_reuses_the_record() {
 	let out = run(r#"
-		local A = Polestar.Anim
+		local A = Northstar.Anim
 		local f = CreateFrame("Frame")
 		A.To(f, "alpha", 0, 1, 0.2, "out")
 		local running = A.Active()
@@ -498,7 +498,7 @@ fn anim_onupdate_exists_only_while_a_tween_runs_retargeting_reuses_the_record() 
 		local done = false
 		A.To(f, "width", 10, 100, 0.2, "out", function() done = true end)
 		stub.advance(0.5)
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("ui.reduceMotion", true)
 		A.To(f, "width", 0, 50, 0.2)
 		local snapped = f:GetWidth()
 		emit({ running = running, mid = mid, reused = reused, done = done, final = f:GetAlpha(), width = snapped, active = A.Active() })"#);
@@ -522,7 +522,7 @@ fn every_texture_the_ui_shows_and_every_goal_verb_icon_exists_as_a_valid_tga() {
 	let list = verbs.iter().map(|v| format!("\"{v}\"")).collect::<Vec<_>>().join(", ");
 	let script = String::new()
 		+ r#"
-		local GF, UI = Polestar.UI.GuideFrame, Polestar.UI
+		local GF, UI = Northstar.UI.GuideFrame, Northstar.UI
 		local seen = {}
 		local function collect()
 			for _, f in ipairs(stub.frames) do
@@ -535,12 +535,12 @@ fn every_texture_the_ui_shows_and_every_goal_verb_icon_exists_as_a_valid_tga() {
 		uistub.openTabs({ { uistub.elwynn, 3 }, { uistub.tailoring, 2 }, { uistub.stormwindRep, 2 } }, 1); collect()
 		uistub.setStep(4); collect()
 		uistub.setStep(8); collect()
-		Polestar.Fire("GUIDE_OUTLEVELED", uistub.elwynn, "forever/alliance/02-westfall"); collect()
+		Northstar.Fire("GUIDE_OUTLEVELED", uistub.elwynn, "forever/alliance/02-westfall"); collect()
 		GF.menuButton:Click(); collect()
-		Polestar.Set("ui.compact", true); collect()
-		Polestar.Set("ui.style", "transparent"); collect()
+		Northstar.Set("ui.compact", true); collect()
+		Northstar.Set("ui.style", "transparent"); collect()
 		uistub.complete(); collect()
-		Polestar.Engine.SetGuide(nil); collect()
+		Northstar.Engine.SetGuide(nil); collect()
 		UI.ShowPicker(); collect()
 		for _, p in ipairs(UI.Options.Pages()) do
 			UI.ShowOptions(p.key); collect()
@@ -555,7 +555,7 @@ fn every_texture_the_ui_shows_and_every_goal_verb_icon_exists_as_a_valid_tga() {
 		emit(out)"#;
 	let paths = run(&script);
 	let paths: Vec<&str> = paths.as_array().unwrap().iter().map(|p| p.as_str().unwrap()).collect();
-	let prefix = "Interface\\AddOns\\Polestar\\Media\\UI\\";
+	let prefix = "Interface\\AddOns\\Northstar\\Media\\UI\\";
 	let ours: Vec<&str> = paths.iter().filter_map(|p| p.strip_prefix(prefix)).collect();
 	let others: Vec<&str> = paths.iter().copied().filter(|p| !p.starts_with(prefix)).collect();
 	assert_eq!(others, Vec::<&str>::new(), "the UI only uses its own textures");
@@ -567,7 +567,7 @@ fn every_texture_the_ui_shows_and_every_goal_verb_icon_exists_as_a_valid_tga() {
 	}
 	let mut missing: Vec<&str> = Vec::new();
 	for n in &ours {
-		let file = addons_dir().join("Polestar").join("Media").join("UI").join(format!("{n}.tga"));
+		let file = addons_dir().join("Northstar").join("Media").join("UI").join(format!("{n}.tga"));
 		if !file.exists() {
 			missing.push(n);
 			continue;
@@ -594,7 +594,7 @@ fn a_primary_button_label_has_no_drop_shadow_a_secondary_one_keeps_it_across_sch
 		local secondary = W.Button(parent, "Load guide")
 		local function alpha(b) local _, _, _, a = b.Label:GetShadowColor() return a end
 		local out = { primary = alpha(primary), secondary = alpha(secondary) }
-		Polestar.Set("ui.scheme", "night")
+		Northstar.Set("ui.scheme", "night")
 		out.primaryAfterScheme, out.secondaryAfterScheme = alpha(primary), alpha(secondary)
 		primary.psPrimary, secondary.psPrimary = false, true
 		W.RepaintButton(primary); W.RepaintButton(secondary)
@@ -652,22 +652,22 @@ fn skins_polestar_by_default_halo_and_hearth_bring_their_tokens_fonts_sizes_and_
 		local out = { key = T.SkinKey(), choices = {} }
 		for i, ch in ipairs(T.SkinChoices()) do out.choices[i] = ch.value end
 		out.houseRow, out.houseHero = T.Metric("row", 40), select(2, T.FontSpec("hero"))
-		Polestar.Set("ui.skin", "halo")
+		Northstar.Set("ui.skin", "halo")
 		out.halo = { key = T.SkinKey(), accent = c("accent"), text = c("text"), textDim = c("textDim"), npc = c("npc"), quest = c("quest"),
 			veil = c("veil"), veilWindow = c("veilWindow"), menuBg = c("menuBg"), accentLine = c("accentLine"), manual = c("manual"),
 			skipped = c("skipped"), success = c("success"), row = T.Metric("row", 40), font = { T.FontSpec("hero") }, icon = T.Icon("bug") }
-		Polestar.Set("ui.accent", { 0.2, 0.6, 1 })
+		Northstar.Set("ui.accent", { 0.2, 0.6, 1 })
 		out.ownAccent = c("accent")
-		Polestar.Set("ui.accent", nil)
-		Polestar.Set("ui.font", "inter")
+		Northstar.Set("ui.accent", nil)
+		Northstar.Set("ui.font", "inter")
 		out.haloInter = (T.FontSpec("body"))
-		Polestar.Set("ui.font", nil)
-		Polestar.Set("ui.skin", "hearth")
+		Northstar.Set("ui.font", nil)
+		Northstar.Set("ui.skin", "hearth")
 		out.bliz = { key = T.SkinKey(), title = c("title"), text = c("text"), success = c("success"), arrive = c("arrive"),
 			selected = c("selected"), row = T.Metric("row", 40), font = (T.FontSpec("body")), menuRow = T.Metric("menuRow", 26) }
-		Polestar.Set("ui.skin", "nonsense")
+		Northstar.Set("ui.skin", "nonsense")
 		out.unknown = T.SkinKey()
-		Polestar.Set("ui.skin", "forever")
+		Northstar.Set("ui.skin", "forever")
 		out.savedForever = T.SkinKey()
 		emit(out)"#);
 	assert_eq!(out["key"], "polestar");
@@ -689,10 +689,10 @@ fn skins_polestar_by_default_halo_and_hearth_bring_their_tokens_fonts_sizes_and_
 	assert_eq!(round(&h["skipped"]), vec![0.361, 0.784, 0.839, 1.0], "#5CC8D6");
 	assert_eq!(round(&h["success"]), vec![0.373, 0.816, 0.408, 1.0], "#5FD068");
 	assert_eq!(h["row"], 34);
-	assert_eq!(h["font"], json!(["Interface\\AddOns\\Polestar\\Media\\Fonts\\FiraSans-SemiBold.ttf", 24, ""]), "Fira Sans, Hero 24");
+	assert_eq!(h["font"], json!(["Interface\\AddOns\\Northstar\\Media\\Fonts\\FiraSans-SemiBold.ttf", 24, ""]), "Fira Sans, Hero 24");
 	assert_eq!(h["icon"], "flag", "the report flag");
 	assert_eq!(round(&out["ownAccent"])[..3], [0.2, 0.6, 1.0], "your own accent wins in a skin");
-	assert_eq!(out["haloInter"], "Interface\\AddOns\\Polestar\\Media\\Fonts\\Inter-Medium.ttf", "a font picked by hand wins");
+	assert_eq!(out["haloInter"], "Interface\\AddOns\\Northstar\\Media\\Fonts\\Inter-Medium.ttf", "a font picked by hand wins");
 	let b = &out["bliz"];
 	assert_eq!(b["key"], "hearth");
 	assert_eq!(round(&b["title"]), vec![1.0, 0.82, 0.0, 1.0], "NORMAL_FONT_COLOR");
@@ -710,23 +710,23 @@ fn skins_polestar_by_default_halo_and_hearth_bring_their_tokens_fonts_sizes_and_
 #[test]
 fn skins_a_window_repaints_from_the_house_style_to_halo_veil_no_fill_to_hearth_gradient_and_back_live() {
 	let out = run(r#"
-		-- A window of Polestar's own (frames a test makes stand for the game's).
-		Polestar.UI.ShowOptions()
-		local f = PolestarOptions
+		-- A window of Northstar's own (frames a test makes stand for the game's).
+		Northstar.UI.ShowOptions()
+		local f = NorthstarOptions
 		local function state()
 			local d = f.psSkin
 			return { bg = d.bg ~= nil and d.bg:IsShown(), veil = d.veil ~= nil and d.veil:IsShown(),
 				border = f.psBorder ~= nil and f.psBorder[1]:IsShown(), shadow = f.psShadow ~= nil and f.psShadow:IsShown() }
 		end
 		local out = { house = state() }
-		Polestar.Set("ui.skin", "halo")
+		Northstar.Set("ui.skin", "halo")
 		out.halo = state()
 		local v = f.psSkin.veil
 		local _, _, _, a = v.parts[5]:GetVertexColor()
 		out.veilAlpha = a
-		Polestar.Set("ui.skin", "hearth")
+		Northstar.Set("ui.skin", "hearth")
 		out.bliz = state()
-		Polestar.Set("ui.skin", "polestar")
+		Northstar.Set("ui.skin", "polestar")
 		out.back = state()
 		emit(out)"#);
 	assert_eq!(out["house"], json!({ "bg": true, "veil": false, "border": true, "shadow": true }));
@@ -736,25 +736,25 @@ fn skins_a_window_repaints_from_the_house_style_to_halo_veil_no_fill_to_hearth_g
 	assert_eq!(out["back"], out["house"], "back to the house style, as it was");
 }
 
-// #353: Polestar's faces have no Chinese or Hangul; text with them takes the client's font for that script,
+// #353: Northstar's faces have no Chinese or Hangul; text with them takes the client's font for that script,
 // unless the client's locale already draws it.
 #[test]
 fn fonts_a_chinese_or_korean_name_takes_the_client_s_font_for_its_script_and_back_when_the_text_changes_353() {
 	let out = run(r#"
-		local GF = Polestar.UI.GuideFrame
+		local GF = Northstar.UI.GuideFrame
 		local fs = W.Text(GF.parts.nav, "hero", "text")
 		local function face() return (fs:GetFont()) end
 		local out = { latin = face() }
 		fs:SetText("Hello, 张伟"); out.han = face()
 		fs:SetText("Hello, 김민준"); out.hangul = face()
 		fs:SetFormattedText("%s, %s", "Hello", "Tom — Привет"); out.back = face()
-		Polestar.Set("ui.skin", "halo"); fs:SetText("Hello, 张伟"); Polestar.Set("ui.skin", "polestar"); out.repaint = face()
+		Northstar.Set("ui.skin", "halo"); fs:SetText("Hello, 张伟"); Northstar.Set("ui.skin", "polestar"); out.repaint = face()
 		GetLocale = function() return "zhCN" end
 		fs:SetText("A"); fs:SetText("Hello, 张伟"); out.zhCN = face()
 		fs:SetText("Hello, 김민준"); out.zhCNHangul = face()
 		GetLocale = function() return "enUS" end
 		uistub.player.name = "张伟"
-		Polestar.UI.Welcome.Show("welcome")
+		Northstar.UI.Welcome.Show("welcome")
 		for _, f in ipairs(stub.frames) do
 			for _, r in ipairs(f.regions) do
 				if r.text == "Hello, 张伟" or (r.GetText and r:GetText() == "Hello, 张伟" and r ~= fs) then out.welcome = (r:GetFont()) end
@@ -778,8 +778,8 @@ fn skins_wow_forever_draws_the_client_s_atlas_blizzard_the_retail_sheet_classic_
 	let out = run_with(
 		r#"
 		T._testShowHidden = true
-		Polestar.UI.ShowOptions()
-		local f = PolestarOptions
+		Northstar.UI.ShowOptions()
+		local f = NorthstarOptions
 		local function state()
 			local d = f.psSkin
 			return { bg = d.bg ~= nil and d.bg:IsShown(), veil = d.veil ~= nil and d.veil:IsShown(),
@@ -788,7 +788,7 @@ fn skins_wow_forever_draws_the_client_s_atlas_blizzard_the_retail_sheet_classic_
 				dialog = d.kit ~= nil and d.kit.dialog ~= nil and d.kit.dialog:IsShown() or false }
 		end
 		local out = { house = state() }
-		Polestar.Set("ui.skin", "forever")
+		Northstar.Set("ui.skin", "forever")
 		out.forever = state()
 		out.foreverCorner = f.psSkin.kit.metalArt[1].texture
 		out.title = f.psSkin.kit.title:GetText()
@@ -796,13 +796,13 @@ fn skins_wow_forever_draws_the_client_s_atlas_blizzard_the_retail_sheet_classic_
 		-- The frame's own close button and drag strip; the shell's close steps aside.
 		out.close = { frame = f.psSkin.kit.closeButton:IsShown(), shell = f.Close:IsShown() }
 		out.drag = f.psSkin.kit.drag:IsShown()
-		Polestar.Set("ui.skin", "blizzard")
+		Northstar.Set("ui.skin", "blizzard")
 		out.blizzard = state()
 		out.blizzardCorner = f.psSkin.kit.metalArt[1].texture
-		Polestar.Set("ui.skin", "classic")
+		Northstar.Set("ui.skin", "classic")
 		out.classic = state()
 		out.classicEdge = f.psSkin.kit.dialog.backdrop and f.psSkin.kit.dialog.backdrop.edgeFile
-		Polestar.Set("ui.skin", "polestar")
+		Northstar.Set("ui.skin", "polestar")
 		out.back = state()
 		out.houseGame = T.GameSkin()
 		emit(out)"#,
@@ -811,7 +811,7 @@ fn skins_wow_forever_draws_the_client_s_atlas_blizzard_the_retail_sheet_classic_
 		end }"#,
 	);
 	assert_eq!(out["foreverCorner"], "atlas:UI-Frame-Metal-CornerTopLeft", "Forever: the client's own art for the atlas");
-	assert_eq!(out["title"], "Polestar", "the title on the metal bar");
+	assert_eq!(out["title"], "Northstar", "the title on the metal bar");
 	assert_eq!(out["game"], true);
 	assert_eq!(out["close"], json!({ "frame": true, "shell": false }), "the close button sits on the frame corner");
 	assert_eq!(out["drag"], true, "the title bar drags the window");
@@ -832,8 +832,8 @@ fn skins_on_forever_the_guide_strip_marks_the_active_tab_with_the_selected_row_a
 	let out = run_with(
 		r#"
 		T._testShowHidden = true
-		local GF = Polestar.UI.GuideFrame
-		Polestar.Set("ui.skin", "forever")
+		local GF = Northstar.UI.GuideFrame
+		Northstar.Set("ui.skin", "forever")
 		uistub.openTabs({ { uistub.elwynn, 3 }, { uistub.tailoring, 2 } }, 1)
 		local function art(b)
 			local k = b.psSkin and b.psSkin.kit or {}
@@ -845,9 +845,9 @@ fn skins_on_forever_the_guide_strip_marks_the_active_tab_with_the_selected_row_a
 		uistub.openTabs({ { uistub.elwynn, 3 }, { uistub.tailoring, 2 } }, 2)
 		out.moved = { first = art(GF.tabs[1]), second = art(GF.tabs[2]) }
 		-- the Options tabs are not on the window's edge: the tab outline as the client draws it
-		Polestar.UI.ShowOptions("guide")
+		Northstar.UI.ShowOptions("guide")
 		out.options = {}
-		for _, t in ipairs(PolestarOptions.tabButtons) do
+		for _, t in ipairs(NorthstarOptions.tabButtons) do
 			if t:IsShown() then out.options[#out.options + 1] = art(t) end
 		end
 		emit(out)"#,
@@ -873,8 +873,8 @@ fn skins_forever_hover_plates_use_add_blend_306c() {
 	let out = run_with(
 		r#"
 		T._testShowHidden = true
-		local GF = Polestar.UI.GuideFrame
-		Polestar.Set("ui.skin", "forever")
+		local GF = Northstar.UI.GuideFrame
+		Northstar.Set("ui.skin", "forever")
 		uistub.openTabs({ { uistub.elwynn, 3 } }, 1)
 		GF.PaintProgress(true)
 
@@ -907,8 +907,8 @@ fn skins_forever_hover_plates_use_add_blend_306c() {
 fn skins_forever_s_progress_bar_draws_its_own_fill_to_the_bar_s_value_the_frame_round_it_at_half_its_2x_margins_the_tick_boxes_fit_their_control_306() {
 	let out = run_with(
 		r#"
-		local GF = Polestar.UI.GuideFrame
-		Polestar.Set("ui.skin", "forever")
+		local GF = Northstar.UI.GuideFrame
+		Northstar.Set("ui.skin", "forever")
 		uistub.openTabs({ { uistub.elwynn, 3 } }, 1)
 		local b = GF.parts.foot.Status
 		b:SetWidth(200)
@@ -928,13 +928,13 @@ fn skins_forever_s_progress_bar_draws_its_own_fill_to_the_bar_s_value_the_frame_
 		local corner = k.statusArt[1]
 		out.cap = { select(4, corner:GetPoint(2)) - select(4, corner:GetPoint(1)) }
 		-- a tick box of the guide window (15) and one of Options (18)
-		local small = Polestar.Widgets.Checkbox(UIParent, function() end); small:SetSize(15, 15)
+		local small = Northstar.Widgets.Checkbox(UIParent, function() end); small:SetSize(15, 15)
 		T.SKIN_PAINT.forever.checkbox(small)
-		local big = Polestar.Widgets.Checkbox(UIParent, function() end); big:SetSize(18, 18)
+		local big = Northstar.Widgets.Checkbox(UIParent, function() end); big:SetSize(18, 18)
 		T.SKIN_PAINT.forever.checkbox(big)
 		out.tick = { small = small.psSkin.kit.check:GetWidth(), big = big.psSkin.kit.check:GetWidth() }
 		-- the border's frame under the window's content; the rows clear of it
-		local F = PolestarGuideFrame
+		local F = NorthstarGuideFrame
 		out.edgeLevel = F.psSkin.kit.edge:GetFrameLevel() - F:GetFrameLevel()
 		do
 			local p, rel, rp = F.psSkin.kit.edge:GetPoint(1)
@@ -957,7 +957,7 @@ fn skins_forever_s_progress_bar_draws_its_own_fill_to_the_bar_s_value_the_frame_
 			out.tickAnchor = { p, rp, y }
 		end
 		-- back to the house style: the bar's own fill again
-		Polestar.Set("ui.skin", "hearth")
+		Northstar.Set("ui.skin", "hearth")
 		out.hearth = { own = b:GetStatusBarTexture():GetAlpha(), fill = k.statusFill:IsShown(), pad = T.Metric("guidePad", 14), lit = T.Metric("guideLitInset", 4) }
 		emit(out)"#,
 		r#"C_Texture = { GetAtlasInfo = function(name)
@@ -990,12 +990,12 @@ fn text_size_scales_every_role_at_once_apart_from_the_window_scale_within_80_to_
 		local fs = UIParent:CreateFontString()
 		T.Font(fs, "title")
 		local _, base = fs:GetFont()
-		Polestar.Set("ui.textSize", 1.2)
+		Northstar.Set("ui.textSize", 1.2)
 		local _, bigger = fs:GetFont()
 		local _, spec = T.FontSpec("title")
-		Polestar.Set("ui.textSize", 3)
+		Northstar.Set("ui.textSize", 3)
 		local _, capped = T.FontSpec("title")
-		emit({ grown = bigger / base, spec = spec == bigger, capped = capped / base, scale = Polestar.Get("ui.scale") })"#);
+		emit({ grown = bigger / base, spec = spec == bigger, capped = capped / base, scale = Northstar.Get("ui.scale") })"#);
 	assert!((out["grown"].as_f64().unwrap() - 1.2).abs() < 0.05, "a text already drawn grows with the setting: {}", out["grown"]);
 	assert_eq!(out["spec"], true);
 	assert!((out["capped"].as_f64().unwrap() - 1.4).abs() < 0.05, "at most 140%: {}", out["capped"]);

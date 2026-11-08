@@ -776,7 +776,7 @@ mod grid {
 	}
 
 	impl GridSubzones {
-		/// gridDir: data/local/nav4 (or $POLESTAR_GRID); sources: data/sources (newest Forever
+		/// gridDir: data/local/nav4 (or $NORTHSTAR_GRID); sources: data/sources (newest Forever
 		/// AreaTable.csv).
 		pub fn open(grid_dir: &Path, sources: &Path) -> GridSubzones {
 			let mut table = FxHashMap::default();

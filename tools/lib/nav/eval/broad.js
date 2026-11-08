@@ -1,13 +1,13 @@
 'use strict';
-// nav eval's broad sample: how good a Polestar_Nav folder's walking graph is overall, not only on the reported
+// nav eval's broad sample: how good a Northstar_Nav folder's walking graph is overall, not only on the reported
 // walks. Random pairs of quest points per continent, drawn from the sim worlds' points (data/sim/world-<faction>.json:
 // every giver, ender and objective spot), run through the eval harness (harness.lua, the addon's own router), and
 // measured on each drawn line.
 //
 //   node tools/lib/nav/eval/broad.js sample [--per 1000] [--max 4000] [--min 40] [--seed 1] [--worlds <dir>] --out pairs.json
-//   node tools/lib/nav/eval/broad.js run --nav <Polestar_Nav dir> --pairs pairs.json [--workers N] [--grid <dir>] --out run.json
+//   node tools/lib/nav/eval/broad.js run --nav <Northstar_Nav dir> --pairs pairs.json [--workers N] [--grid <dir>] --out run.json
 //   node tools/lib/nav/eval/broad.js compare <base run.json> <cand run.json>
-//   node tools/lib/nav/eval/broad.js workers --nav <Polestar_Nav dir>     the harness processes run would use there
+//   node tools/lib/nav/eval/broad.js workers --nav <Northstar_Nav dir>     the harness processes run would use there
 //
 // sample: per continent (0, 1) `per` pairs, half from each faction's world (its profile), both points in the same
 // region (the world's islands), between `min` and `max` yd apart (flat), from a seeded generator: the same seed and

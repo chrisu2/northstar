@@ -16,7 +16,7 @@ w.titles[86784] = "Sticks and Bones"; w.titles[404] = "A Putrid Task"; w.titles[
 
 // The Brill step as the route wrote it: Bartholomew's accept, a talk, Dillinger's accept, Johaan's accept.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({ id = "test/brill", pack = "test", title = "Brill", faction = "Horde", minLevel = 1, maxLevel = 12, steps = {
+Northstar.RegisterGuide({ id = "test/brill", pack = "test", title = "Brill", faction = "Horde", minLevel = 1, maxLevel = 12, steps = {
 	{ title = "Brill", goals = {
 		{ t = "accept", quest = 86784, title = "Sticks and Bones", npc = 1742, npcName = "Deathguard Bartholomew", map = 1420, x = 58.5, y = 51.4 },
 		{ t = "talk", npc = 2127, npcName = "Rupert Boch", map = 1420, x = 61.6, y = 52.4 },
@@ -26,7 +26,7 @@ Polestar.RegisterGuide({ id = "test/brill", pack = "test", title = "Brill", fact
 	{ title = "Later", goals = { { t = "level", level = 30 } } },
 } })
 -- The live hub between Deathknell and the field, for the notices while the player pages (Prev/Next).
-Polestar.RegisterGuide({ id = "test/paging", pack = "test", title = "Paging", faction = "Horde", minLevel = 1, maxLevel = 12, steps = {
+Northstar.RegisterGuide({ id = "test/paging", pack = "test", title = "Paging", faction = "Horde", minLevel = 1, maxLevel = 12, steps = {
 	{ title = "Deathknell", goals = { { t = "turnin", quest = 380, title = "Night Web's Hollow", npc = 1570, npcName = "Executor Arren", map = 1420, x = 32.2, y = 65.9 } } },
 	{ title = "Brill", goals = {
 		{ t = "accept", quest = 86784, title = "Sticks and Bones", npc = 1742, npcName = "Deathguard Bartholomew", minLevel = 10, map = 1420, x = 58.5, y = 51.4 },
@@ -36,14 +36,14 @@ Polestar.RegisterGuide({ id = "test/paging", pack = "test", title = "Paging", fa
 	{ title = "Later", goals = { { t = "level", level = 30 } } },
 } })
 -- Gordo's Task: taken, worked, handed in (#739).
-Polestar.RegisterGuide({ id = "test/ticked", pack = "test", title = "Gordo", faction = "Horde", minLevel = 1, maxLevel = 12, steps = {
+Northstar.RegisterGuide({ id = "test/ticked", pack = "test", title = "Gordo", faction = "Horde", minLevel = 1, maxLevel = 12, steps = {
 	{ title = "Gordo", goals = { { t = "accept", quest = 5481, title = "Gordo's Task", npc = 10665, npcName = "Junior Apothecary Holland", map = 1420, x = 57.4, y = 48.9 } } },
 	{ title = "Gloom Weed", goals = { { t = "collect", item = 12737, itemName = "Gloom Weed", count = 3, quest = 5481, oi = 1, map = 1420, x = 43.5, y = 53.3 } } },
 	{ title = "Brill", goals = { { t = "turnin", quest = 5481, title = "Gordo's Task", npc = 10665, npcName = "Junior Apothecary Holland", map = 1420, x = 57.4, y = 48.9 } } },
 	{ title = "Later", goals = { { t = "level", level = 30 } } },
 } })
 -- A trainer and a vendor, the vendor twice in a row.
-Polestar.RegisterGuide({ id = "test/strict", pack = "test", title = "Strict", faction = "Horde", minLevel = 1, maxLevel = 12, steps = {
+Northstar.RegisterGuide({ id = "test/strict", pack = "test", title = "Strict", faction = "Horde", minLevel = 1, maxLevel = 12, steps = {
 	{ title = "Train", goals = { { t = "train", class = true, candidates = {
 		{ npc = 2127, npcName = "Rupert Boch", map = 1420, x = 61.6, y = 52.4, f = "e", faction = "H", classes = { "WARLOCK" } },
 		{ npc = 2128, npcName = "Cain Firesong", map = 1420, x = 61.6, y = 52.5, f = "e", faction = "H", classes = { "MAGE" } },
@@ -54,7 +54,7 @@ Polestar.RegisterGuide({ id = "test/strict", pack = "test", title = "Strict", fa
 } })
 "#;
 
-const HELPERS: &str = r#"			E = Polestar.Engine
+const HELPERS: &str = r#"			E = Northstar.Engine
 			function flush() stub.advance(0.25) end
 			function brief()
 				local out = {}
@@ -63,7 +63,7 @@ const HELPERS: &str = r#"			E = Polestar.Engine
 			end
 			stub.login()
 			E.SetGuide("test/brill")
-			Polestar.Set("behavior.autoAccept", false) -- the tests take quests themselves
+			Northstar.Set("behavior.autoAccept", false) -- the tests take quests themselves
 			flush()
 			"#;
 
@@ -71,7 +71,7 @@ fn run(script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.to_string(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: format!("{TEST_PACK}\n{TEST_SOURCE}\n{GUIDE}\n{HELPERS}{script}"),
 		..Default::default()
 	})
@@ -147,7 +147,7 @@ fn an_accept_counts_only_from_the_quest_log() {
 		-- Taken: in the log.
 		w.gossip(1496, { available = { { questID = 404 } } }); C_GossipInfo.SelectAvailableQuest(404); AcceptQuest(); flush()
 		r.taken = brief()[3]
-		r.inLog = Polestar.Compat.IsOnQuest(404)
+		r.inLog = Northstar.Compat.IsOnQuest(404)
 		emit(r)
 	"#);
 	assert_eq!(out["listed"], "active");
@@ -187,18 +187,18 @@ fn not_offered_is_never_kept_across_a_logout_and_older_saved_marks_are_dropped()
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.to_string(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: format!(
 			"{TEST_PACK}\n{TEST_SOURCE}\n{GUIDE}\n{}",
 			r#"
-			E = Polestar.Engine
+			E = Northstar.Engine
 			-- An older save holding Bartholomew's refusal.
-			PolestarCharDB = { offers = { [86784] = true } }
+			NorthstarCharDB = { offers = { [86784] = true } }
 			stub.login()
 			E.SetGuide("test/brill")
 			stub.advance(0.5)
 			local g = E.GetStepView(1).goals[1]
-			emit({ status = g.status, unavailable = g.unavailable or false, saved = PolestarCharDB.offers or false })
+			emit({ status = g.status, unavailable = g.unavailable or false, saved = NorthstarCharDB.offers or false })
 		"#
 		),
 		..Default::default()
@@ -297,7 +297,7 @@ fn a_quest_passed_over_while_the_player_looks_at_another_step_is_announced_once_
 	let out = run(r#"
 		local w = stub.world
 		local r, events = {}, {}
-		Polestar.On("STEP_SKIPPED", function(from, to, skips)
+		Northstar.On("STEP_SKIPPED", function(from, to, skips)
 			local quests = {}
 			for i, k in ipairs(skips) do quests[i] = k.quest .. ":" .. tostring(k.text) end
 			events[#events + 1] = { from = from, to = to, quests = quests, shown = E.GetStepIndex() }

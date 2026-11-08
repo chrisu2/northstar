@@ -5,7 +5,7 @@
 //! 2. the Node reader on a sample (parity/f4-ref.js's out, $F4_REF): acceptance walks, random pairs and FindMany
 //!    batches with limit and chains, bit for bit.
 //!
-//! Pack: $POLESTAR_LEFFE_NAV (a Nav folder or one holding Nav/, e.g. Leffe's candidate folder); ignored by default.
+//! Pack: $NORTHSTAR_LEFFE_NAV (a Nav folder or one holding Nav/, e.g. Leffe's candidate folder); ignored by default.
 //! cargo test --release -p forge-nav --test f4_parity -- --ignored --nocapture
 
 use forge_nav::f4::{Move, Opts, Style, Validate, F4, P};
@@ -15,8 +15,8 @@ use std::path::PathBuf;
 use std::time::Instant;
 
 fn open(cache_mb: usize) -> F4 {
-	let d = std::env::var_os("POLESTAR_LEFFE_NAV").map(PathBuf::from).expect("needs POLESTAR_LEFFE_NAV (a format-4 Nav folder)");
-	assert!(d.join("Nav.xml").exists() || d.join("Nav").join("Nav.xml").exists(), "no format-4 pack at POLESTAR_LEFFE_NAV ({})", d.display());
+	let d = std::env::var_os("NORTHSTAR_LEFFE_NAV").map(PathBuf::from).expect("needs NORTHSTAR_LEFFE_NAV (a format-4 Nav folder)");
+	assert!(d.join("Nav.xml").exists() || d.join("Nav").join("Nav.xml").exists(), "no format-4 pack at NORTHSTAR_LEFFE_NAV ({})", d.display());
 	F4::open(&d, cache_mb).unwrap()
 }
 
@@ -42,7 +42,7 @@ fn f(v: &Value) -> f64 {
 }
 
 #[test]
-#[ignore = "needs POLESTAR_LEFFE_NAV (a format-4 Nav folder)"]
+#[ignore = "needs NORTHSTAR_LEFFE_NAV (a format-4 Nav folder)"]
 fn zephras_matches_the_lua_reader() {
 	let nav = open(256);
 	let fx: Value = serde_json::from_str(&std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/nav4-parity-zephras.json")).unwrap()).unwrap();
@@ -107,7 +107,7 @@ fn same_f(a: f64, b: &Value) -> bool {
 
 /// The Node reader's answers on the sample (F4_REF), bit for bit; timings and the cache on the way.
 #[test]
-#[ignore = "needs POLESTAR_LEFFE_NAV and F4_REF (parity/f4-ref.js output)"]
+#[ignore = "needs NORTHSTAR_LEFFE_NAV and F4_REF (parity/f4-ref.js output)"]
 fn sample_matches_the_node_reader() {
 	let file = std::env::var("F4_REF").expect("needs F4_REF (parity/f4-ref.js output)");
 	let cache_mb: usize = std::env::var("F4_CACHE_MB").ok().and_then(|v| v.parse().ok()).unwrap_or(1024);
@@ -271,7 +271,7 @@ fn acceptance() -> Vec<Value> {
 /// and the Undercity, left by its west sewer pipe there, are walked over their lifts: one ride, a leg of the Lift
 /// move up or down the shaft, priced as our grid prices a ride; FindMany prices the walk as the route does.
 #[test]
-#[ignore = "needs POLESTAR_LEFFE_NAV (the 70532 candidate, its lift-layer/ beside it)"]
+#[ignore = "needs NORTHSTAR_LEFFE_NAV (the 70532 candidate, its lift-layer/ beside it)"]
 fn lifts_thunder_bluffs_bluff_and_the_undercity_are_walked_over_their_lifts() {
 	let lifted = open(512);
 	assert!(lifted.lift_layer().is_some(), "Leffe's lift layer is spliced");
@@ -314,7 +314,7 @@ fn lifts_thunder_bluffs_bluff_and_the_undercity_are_walked_over_their_lifts() {
 /// and 1 whose route rides no lift (cost, points, legs, events), and FindMany from each acceptance start to every
 /// acceptance end of its map, for each target whose chain passes no landing (costs, yards, jumps, reasons).
 #[test]
-#[ignore = "needs POLESTAR_LEFFE_NAV (the 70532 candidate, its lift-layer/ beside it)"]
+#[ignore = "needs NORTHSTAR_LEFFE_NAV (the 70532 candidate, its lift-layer/ beside it)"]
 fn lifts_leave_every_walk_no_lift_serves_as_his_reader_answers_it() {
 	let lifted = open(1024);
 	assert!(lifted.lift_layer().is_some(), "Leffe's lift layer is spliced");
@@ -369,9 +369,9 @@ fn lifts_leave_every_walk_no_lift_serves_as_his_reader_answers_it() {
 
 /// A lift layer for another build of the grid is refused: no lifts on the maps.
 #[test]
-#[ignore = "needs POLESTAR_LEFFE_NAV (the 70532 candidate, its lift-layer/ beside it)"]
+#[ignore = "needs NORTHSTAR_LEFFE_NAV (the 70532 candidate, its lift-layer/ beside it)"]
 fn lifts_a_layer_for_another_grid_build_is_refused() {
-	let d = std::env::var_os("POLESTAR_LEFFE_NAV").map(PathBuf::from).unwrap();
+	let d = std::env::var_os("NORTHSTAR_LEFFE_NAV").map(PathBuf::from).unwrap();
 	let nav = if d.join("Nav.xml").exists() { d.clone() } else { d.join("Nav") };
 	let layer = forge_nav::f4::lifts::find(&nav).expect("a lift layer with the pack");
 	let tmp = std::env::temp_dir().join(format!("f4-lifts-other-build-{}", std::process::id()));

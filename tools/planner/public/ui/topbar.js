@@ -31,7 +31,7 @@ export function topbar(root, ctx) {
 	const changes = h('button.btn.ghost', { title: 'Changed guide files, revert, lint', onclick: ctx.toggleChanges }, glyph('list'), 'Changes', chgCount);
 	const compile = h('button.btn.primary', { title: 'Compile the pack into its addon folder', onclick: ctx.compile }, glyph('export'), 'Compile');
 	clear(root).append(
-		h('div.brand', h('span.emblem', { role: 'img', 'aria-label': 'Polestar' }), 'Planner'),
+		h('div.brand', h('span.emblem', { role: 'img', 'aria-label': 'Northstar' }), 'Planner'),
 		h('span.bar-sep'),
 		h('button.btn.ghost', { onclick: ctx.openLibrary, title: 'Choose the guide the route starts with' }, glyph('guides'), 'Library'),
 		h('div.crumbs', pack, glyph('chevron-right', 'sep'), title),

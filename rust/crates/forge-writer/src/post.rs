@@ -11,7 +11,7 @@ use forge_core::jsnum::js_hypot;
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::collections::BTreeMap;
 
-/// Hearth advice is the arrow's (Polestar 0.3.3): a written guide never tells the player to hearth.
+/// Hearth advice is the arrow's (Northstar 0.3.3): a written guide never tells the player to hearth.
 /// Every `hearth` goal goes (the route still plans its hearth legs; the guide leads on to where the
 /// leg lands), and a step left with no goal with it (no_empty_steps, which names a "Hearth to X" step
 /// that keeps other work for X); a walk `when !bound "X"` is then for everyone, and a tip's sentence

@@ -1,8 +1,8 @@
 # An example to start from: a short walk from Goldshire to the Westfall
-# border that hands over to Polestar's Westfall guide. Lines starting with #
+# border that hands over to Northstar's Westfall guide. Lines starting with #
 # are notes for you; players never see them. Replace it with your own route.
 # Every line the format has, with an example each: docs/GUIDE_CHEATSHEET.md
-# in Polestar's source.
+# in Northstar's source.
 
 # The guide's id: your pack id, a slash, then a name of your own.
 guide {{id}}/example

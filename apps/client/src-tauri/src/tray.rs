@@ -1,4 +1,4 @@
-//! The tray icon: the Polestar emblem, the status in its menu, and Open,
+//! The tray icon: the Northstar emblem, the status in its menu, and Open,
 //! Pause/Resume and Quit. Closing the window only hides it; the client keeps
 //! watching from here.
 

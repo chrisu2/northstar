@@ -8,12 +8,12 @@ const sim = require('../tools/lib/sim');
 const { runQueries } = require('../tools/lib/nav/eval/run');
 const walks = require('../tools/lib/sim/walks');
 
-const NAV_DIR = path.join(__dirname, '..', 'addon', 'Polestar_Nav');
+const NAV_DIR = path.join(__dirname, '..', 'addon', 'Northstar_Nav');
 
 // The real-data travel cases (spec R19, R21): the sim's walks against the
 // router, and the walks players reported. They need a sim dir with walks
-// (POLESTAR_SIM_DIR, default the sim command's data/sim) and its calibrated params.json.
-const SIM = process.env.POLESTAR_SIM_DIR || path.join(__dirname, '..', 'data', 'sim');
+// (NORTHSTAR_SIM_DIR, default the sim command's data/sim) and its calibrated params.json.
+const SIM = process.env.NORTHSTAR_SIM_DIR || path.join(__dirname, '..', 'data', 'sim');
 const DATA = needs('quests.json', 'npcs.json', 'travel.json', 'spawnz.json');
 const NAV = !fs.existsSync(path.join(__dirname, '..', 'data', 'local', 'nav4', 'index.json')) && 'no walking grid: data/local/nav4/index.json is missing';
 const noWalks = (f) => !fs.existsSync(path.join(SIM, `walks-${f}.json`)) && `no walks in ${SIM} (sim walks --faction ${f} --sim ${SIM})`;

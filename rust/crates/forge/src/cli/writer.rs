@@ -22,7 +22,7 @@ Westfall on) are written once, from the shared order of every route of the facti
   --world          the simulator world the route's points index (world-horde.json, world-alliance.json)
   --walks          the walk file for walking yards (default walks-<faction>.bin beside --world)
   --data           the game data (default <root>/data/forever)
-  --root           the Polestar checkout (default: the nearest folder above here with data/forever)
+  --root           the Northstar checkout (default: the nearest folder above here with data/forever)
   --checkout       the checkout whose data/places.json and data/guide-fixes.json are applied to the
                    written guides, last (default: --root); each record's state is printed
   --no-route-legs  keep the guides' own travel lines, checked by playing them (--no-repair: unchecked)
@@ -35,7 +35,7 @@ Westfall on) are written once, from the shared order of every route of the facti
   --no-warnings    no `Careful:` tips from the quest notes (ambushes, stealthed mobs, adds)
   --no-groups      the route's elite and group quests unasked: no `when group`, no elite tip or group
                    size on them, no solo grind for a player who skips them
-  --format-0-3     also `when group`, `task`/`cast`, `abandon`, `skipto` (guide pack format 5, Polestar 0.3.0)
+  --format-0-3     also `when group`, `task`/`cast`, `abandon`, `skipto` (guide pack format 5, Northstar 0.3.0)
 
 usage: forge writer apply-routes <routes dir> --sim <dir> --out <dir> [--starts Orc,Human,...]
                            [--guides <dir>] [--data <dir>] [--root <checkout>] [--checkout <dir>]

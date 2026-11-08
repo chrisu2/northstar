@@ -481,10 +481,10 @@ const ARC_HEADER: &[&str] = &[
 ];
 const PART_NOTE: &str = "-- Compressed terrain for on-demand decoding (Shortest Path Forever's pack_nav.py layout).";
 const CREDIT: &[&str] = &[
-	"-- Polestar's walking maps (format 2: ground classes and per-faction costs) of the navigation grid, written by",
+	"-- Northstar's walking maps (format 2: ground classes and per-faction costs) of the navigation grid, written by",
 	"-- tools/lib/nav/pack.js, started from Shortest Path Forever's walking-map format (github.com/cjber/shortest-path-forever):",
 	"-- a port of his tools/baker/gen_nav.py and tools/pack_nav.py, used with his permission.",
-	"-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15.",
+	"-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.",
 ];
 
 /// The name of a map (pack.js NAMES).
@@ -624,7 +624,7 @@ pub fn pack_files(
 	meta.push("}".into());
 	meta.push(String::new());
 	files.push((format!("Nav{map}.lua"), meta.join("\n")));
-	// A continent's part addon may load where Polestar_Nav dropped its map (API.lua: no decoder, a part missing) or
+	// A continent's part addon may load where Northstar_Nav dropped its map (API.lua: no decoder, a part missing) or
 	// never loaded: it then adds nothing.
 	let header = match addon {
 		Some(_) => format!("{gen}\n{PART_NOTE}\n---@type SPFNavData\nlocal data = {global} and {global}[{map}]\nif not data then return end\n-- stylua: ignore start\n"),

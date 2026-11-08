@@ -1,4 +1,4 @@
-//! `when cooldown` during play (addon/Polestar/Core/Engine.lua, Own.onCooldown): the step applies while the item
+//! `when cooldown` during play (addon/Northstar/Core/Engine.lua, Own.onCooldown): the step applies while the item
 //! (Compat.GetItemCooldown) or spell (Compat.GetSpellCooldown) is on cooldown, the global cooldown (1.5 s or
 //! less) aside. A cooldown starting re-evaluates the guide (BAG_UPDATE_COOLDOWN, SPELL_UPDATE_COOLDOWN), and so
 //! does its end, which has no event (a timer). A step the route has passed keeps its stored outcome. Real Core
@@ -25,7 +25,7 @@ function C_Spell.GetSpellCooldown(id) local c = CD["s" .. id]; return { startTim
 // Step 2 is the conditional one, between taking and handing in A Threat Within: WHEN is Lua for its
 // predicates.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/cd", pack = "test", title = "Cooldown", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Deputy Willem", goals = {
@@ -42,7 +42,7 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 function state() local v = E.GetStepView(2); return { live = E.GetLiveStep(), status = v.status } end
 "#;
@@ -51,7 +51,7 @@ const HEARTH: &str = r#"{ { k = "cooldown", item = 6948 } }"#;
 const HEARTH_READY: &str = r#"{ { k = "cooldown", item = 6948, neg = true } }"#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 fn run(when: &str, login: &str, script: &str) -> Vec<Value> {
@@ -60,7 +60,7 @@ fn run(when: &str, login: &str, script: &str) -> Vec<Value> {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/cd" }"#.into())],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/cd" }"#.into())],
 		script: [TEST_PACK, TEST_SOURCE, &guide, HELPERS, "stub.login()", login, r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 		..Default::default()
 	})
@@ -111,7 +111,7 @@ fn guides_validate_takes_a_cooldown_predicate_with_one_item_or_one_spell_and_ref
 		stubs: vec!["stub_world.lua"],
 		addons: vec![core()],
 		script: r#"
-			local V = Polestar.Guides.Validate
+			local V = Northstar.Guides.Validate
 			local function g(pred) return { id = "t/v", pack = "test", title = "V", minLevel = 1, maxLevel = 10, steps = { { when = { pred }, goals = { { t = "note", text = "x" } } } } } end
 			emit({
 				item = V(g({ k = "cooldown", item = 6948 })) or "ok",

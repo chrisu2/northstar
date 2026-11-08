@@ -599,10 +599,10 @@ function Minimap.GetZoom() return stub.minimapZoom or 0 end
 function Minimap.GetZoomLevels() return 6 end
 ---------------------------------------------------------------------------
 -- Map frames: the shape of Blizzard_MapCanvas (WorldMapFrame, and
--- BattlefieldMapFrame through stub.newMapCanvas) that Polestar reads
+-- BattlefieldMapFrame through stub.newMapCanvas) that Northstar reads
 -- (Core/MapCanvas.lua): a canvas (ScrollContainer.Child) that shows and
--- hides with the map, the getters Polestar may call, and Blizzard's own
--- tables Polestar must never touch (dataProviders, pinPools).
+-- hides with the map, the getters Northstar may call, and Blizzard's own
+-- tables Northstar must never touch (dataProviders, pinPools).
 --   map.mapID (WorldMapFrame: stub.worldMapID), map.ScrollContainer.currentScale,
 --   map.ScrollContainer.zoomPercent, map.globalPinScale, map.globalAlpha
 --   stub.runMapFrame(map, dt)   one frame on the map: its frames' OnUpdate scripts
@@ -780,7 +780,7 @@ end
 -- the next gamepad action there is blocked. The hook walks the parents up to
 -- UIParent. Here, stricter: CreateFrame called from addon code with a parent
 -- that is, or is under, a frame addon code did not make (UIParent ends the
--- walk) raises and is listed in stub.underGameFrames ("Polestar/Nav/Pins.lua:764
+-- walk) raises and is listed in stub.underGameFrames ("Northstar/Nav/Pins.lua:764
 -- under WorldMapFrame (a frame under it)"). Frames the test stubs make for
 -- the game, even when addon code's call makes them, are the game's.
 -- SetParent is not hooked: a frame made with no parent, then set under a
@@ -903,7 +903,7 @@ RAID_CLASS_COLORS = {
 	DRUID = { r = 1.0, g = 0.49, b = 0.04 },
 }
 
--- The client's own words for the game terms Polestar shows as the client
+-- The client's own words for the game terms Northstar shows as the client
 -- writes them (docs/ARCHITECTURE.md, "Localisation"): the English client's
 -- GlobalStrings (build 1.60.1.70425).
 FACTION_STANDING_LABEL1, FACTION_STANDING_LABEL2, FACTION_STANDING_LABEL3, FACTION_STANDING_LABEL4 = "Hated", "Hostile", "Unfriendly", "Neutral"

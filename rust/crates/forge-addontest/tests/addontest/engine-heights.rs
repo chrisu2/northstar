@@ -16,7 +16,7 @@ w.zone, w.subzone = "Undercity", "Undercity"
 "#;
 
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({ id = "test/z", pack = "test", title = "Heights", category = "Leveling", minLevel = 1, maxLevel = 60, steps = {
+Northstar.RegisterGuide({ id = "test/z", pack = "test", title = "Heights", category = "Leveling", minLevel = 1, maxLevel = 60, steps = {
 	{ goals = { { t = "talk", npc = 6522, npcName = "Andron Gant", map = 1458, x = 54.81, y = 76.33, z = -66 } } },
 	{ goals = { { t = "kill", npc = 1, target = "Rat", count = 99, map = 1458, x = 40, y = 40, z = -40,
 		spots = { { x = 40, y = 40, r = 15, n = 1 }, { x = 70, y = 70, r = 15, n = 1 }, { x = 90, y = 90, z = -12, r = 15, n = 1 } } } } },
@@ -35,8 +35,8 @@ fn run(script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		script: [TEST_PACK, TEST_SOURCE, GUIDE, "E = Polestar.Engine", "stub.login()", script].join("\n"),
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		script: [TEST_PACK, TEST_SOURCE, GUIDE, "E = Northstar.Engine", "stub.login()", script].join("\n"),
 		..Default::default()
 	})
 }

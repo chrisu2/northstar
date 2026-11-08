@@ -1,6 +1,6 @@
 //! The Lookup runtime: Lookup.Sources ranking for the character (faction, race, class, level, professions,
 //! reputation, distance, drop chance), curated and generated guides, Search over guides and Codex entities,
-//! Polestar.Hooks (tooltip lines, item clicks), the mount spotter, tooltip source lines, Alt-click and the
+//! Northstar.Hooks (tooltip lines, item clicks), the mount spotter, tooltip source lines, Alt-click and the
 //! options page. The Codex is a synthetic pack (tests/fixtures/codex/lookup.json) loaded the way the client
 //! loads it.
 
@@ -59,7 +59,7 @@ impl Default for Opts {
 
 const ROWS: &str = r#"
 local function rows(kind, id)
-	local list, entity = Polestar.Lookup.Sources(kind, id)
+	local list, entity = Northstar.Lookup.Sources(kind, id)
 	local out = {}
 	for i, r in ipairs(list) do
 		out[i] = { type = r.type, label = r.label, detail = r.detail, available = r.available, why = r.why, whyText = r.whyText,
@@ -87,8 +87,8 @@ fn run_with(script: &str, o: &Opts) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_lookup_runtime.lua"],
 		before,
-		addons: vec![Addon::files("Polestar", o.files)],
-		saved: o.saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		addons: vec![Addon::files("Northstar", o.files)],
+		saved: o.saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		login: true,
 		script: format!("{ROWS}{script}"),
 	})
@@ -187,7 +187,7 @@ fn sources_professions_gate_crafts_unless_the_character_can_still_learn_them() {
 	let low = run_with(script, &Opts { setup: r#"w.learnSkill(197, "Tailoring", 80, 150)"#.into(), ..Default::default() }).remove(0);
 	let high = run_with(script, &Opts { setup: r#"w.learnSkill(197, "Tailoring", 120, 150)"#.into(), ..Default::default() }).remove(0);
 	let stubbed = run(r#"
-		Polestar.Compat.GetSkillRank = function(line) if line == 197 then return 150, 225 end end
+		Northstar.Compat.GetSkillRank = function(line) if line == 197 then return 150, 225 end end
 		emit((rows("item", 8005)))
 	"#)
 	.remove(0);
@@ -301,11 +301,11 @@ fn sources_a_names_pack_landing_late_renames_the_cached_rows() {
 	let [before, after] = first::<2>(run(r#"
 		local label = function() return rows("quest", 7001)[1].label end
 		emit(label())
-		local N = Polestar.Names
+		local N = Northstar.Names
 		N.Localised = function() return true end
 		local cached = N.Cached
 		N.Cached = function(kind, id) if kind == "npc" and id == 5008 then return "Ancien Rowan" end return cached(kind, id) end
-		Polestar.Fire("NAMES_LOADED")
+		Northstar.Fire("NAMES_LOADED")
 		emit(label())
 	"#));
 	assert_eq!(before, "Elder Rowan");
@@ -326,7 +326,7 @@ const GUIDES_LUA: &str = r#"
 local function g(id, extra)
 	local def = { id = id, pack = "test", title = id, category = "Collectibles", steps = { { goals = { { t = "note", text = "x" } } } } }
 	for k, v in pairs(extra) do def[k] = v end
-	assert(Polestar.RegisterGuide(def))
+	assert(Northstar.RegisterGuide(def))
 end
 g("test/horde-strider", { faction = "Horde", collects = { 8000 } })
 g("test/alliance-strider", { faction = "Alliance", collects = { 8000, 8013 } })
@@ -343,33 +343,33 @@ fn guides() -> String {
 fn curated_guides_the_one_for_this_character_and_class_mounts_by_keyword() {
 	let [alliance, spell, none, opened, tabs] = first::<5>(run(&(guides()
 		+ r#"
-		local L = Polestar.Lookup
+		local L = Northstar.Lookup
 		emit(L.CuratedGuide("mount", 8000)); emit(L.CuratedGuide("spell", 9503)); emit(L.CuratedGuide("item", 8004) or false)
 		emit(L.Guide("pet", 8013))
-		local t = Polestar.Engine.GetTabs(); emit({ t[#t].guideId, Polestar.Engine.GetGuide().id })
+		local t = Northstar.Engine.GetTabs(); emit({ t[#t].guideId, Northstar.Engine.GetGuide().id })
 	"#)));
 	assert_eq!(alliance, "test/alliance-strider");
 	assert_eq!(spell, "test/shadowsteed");
 	assert_eq!(none, false);
 	assert_eq!(opened, "test/alliance-strider");
 	assert_eq!(tabs, json!(["test/alliance-strider", "test/alliance-strider"]));
-	let horde = run_with(&(guides() + r#" emit(Polestar.Lookup.CuratedGuide("mount", 8000))"#), &Opts { race: "Orc", faction: "Horde", ..Default::default() }).remove(0);
+	let horde = run_with(&(guides() + r#" emit(Northstar.Lookup.CuratedGuide("mount", 8000))"#), &Opts { race: "Orc", faction: "Horde", ..Default::default() }).remove(0);
 	assert_eq!(horde, "test/horde-strider");
 }
 
 #[test]
 fn generated_guides_registered_unsaved_in_pack_lookup_opened_in_a_tab_rebuilt_for_another_source() {
 	let [first_id, def, second, tabs, step] = first::<5>(run(r#"
-		local L = Polestar.Lookup
+		local L = Northstar.Lookup
 		emit({ L.Guide("item", 8004) })
-		local g = Polestar.Guides.Get("lookup/item/8004")
+		local g = Northstar.Guides.Get("lookup/item/8004")
 		emit({ pack = g.pack, category = g.category, title = g.title, steps = #g.steps, step1 = g.steps[1].title,
-			goals = { g.steps[1].goals[1].t, g.steps[1].goals[2].t, g.steps[1].goals[3].t }, pack2 = Polestar.Guides.Pack("lookup").id })
+			goals = { g.steps[1].goals[1].t, g.steps[1].goals[2].t, g.steps[1].goals[3].t }, pack2 = Northstar.Guides.Pack("lookup").id })
 		emit({ L.Guide("item", 8004, 2) })
-		local t = Polestar.Engine.GetTabs(); local ids = {}
+		local t = Northstar.Engine.GetTabs(); local ids = {}
 		for i, x in ipairs(t) do ids[i] = x.guideId end
 		emit(ids)
-		emit(Polestar.Engine.GetGuide().steps[1].title)
+		emit(Northstar.Engine.GetGuide().steps[1].title)
 	"#));
 	assert_eq!(first_id, json!(["lookup/item/8004"]));
 	assert_eq!(def, json!({ "pack": "lookup", "category": "Lookup", "title": "Boar Tusk", "steps": 1, "step1": "Bristle Boar", "goals": ["goto", "kill", "collect"], "pack2": "lookup" }));
@@ -381,14 +381,14 @@ fn generated_guides_registered_unsaved_in_pack_lookup_opened_in_a_tab_rebuilt_fo
 #[test]
 fn polestar_holds_the_internal_lookup_pack_from_load_a_pack_claiming_it_later_is_refused_listed_and_lookup_still_works() {
 	let [claim, rows, held, opened] = first::<4>(run(r#"
-		emit({ Polestar.RegisterPack({ addon = "SneakyLookup", id = "lookup", format = 1, title = "Mine", author = "X", version = "1", license = "MIT", internal = true }) })
+		emit({ Northstar.RegisterPack({ addon = "SneakyLookup", id = "lookup", format = 1, title = "Mine", author = "X", version = "1", license = "MIT", internal = true }) })
 		stub.addonLoaded("SneakyLookup")
 		local rows = {}
-		for _, r in ipairs(Polestar.Guides.Packs()) do rows[#rows + 1] = { id = r.id, addon = r.addon or false, status = r.status, reason = r.reason or false } end
+		for _, r in ipairs(Northstar.Guides.Packs()) do rows[#rows + 1] = { id = r.id, addon = r.addon or false, status = r.status, reason = r.reason or false } end
 		emit(rows)
-		local p = Polestar.Guides.Pack("lookup")
+		local p = Northstar.Guides.Pack("lookup")
 		emit({ internal = p.internal or false, status = p.status, addon = p.addon or false })
-		emit({ Polestar.Lookup.Guide("item", 8004) })
+		emit({ Northstar.Lookup.Guide("item", 8004) })
 	"#));
 	assert_eq!(claim[0], false);
 	let sneaky: Vec<&Value> = arr(&rows).iter().filter(|r| r["addon"] == "SneakyLookup").collect();
@@ -402,9 +402,9 @@ fn polestar_holds_the_internal_lookup_pack_from_load_a_pack_claiming_it_later_is
 #[test]
 fn generated_guides_no_guide_for_sources_without_a_place_disabled_module() {
 	let [world, disabled] = first::<2>(run(r#"
-		local function try(...) local id, why = Polestar.Lookup.Guide(...); return { id = id or false, why = why or false } end
+		local function try(...) local id, why = Northstar.Lookup.Guide(...); return { id = id or false, why = why or false } end
 		emit(try("item", 8015))
-		Polestar.Set("lookup.enabled", false)
+		Northstar.Set("lookup.enabled", false)
 		emit(try("item", 8004))
 	"#));
 	assert_eq!(world, json!({ "id": false, "why": "noguide" }));
@@ -418,7 +418,7 @@ fn generated_guides_a_live_frame_point_is_a_goal_without_a_frame_an_era_one_keep
 	let [live, era] = first::<2>(run(r#"
 		local q = { id = 1, title = "Test", start = { npc = { 777001 } }, ["end"] = { npc = { 777001 } }, objectives = {} }
 		local function frames(f)
-			local step = Polestar.Lookup.QuestStep(q, { map = 9001, x = 50, y = 50 }, { inside = function() return { map = 9001, x = 40, y = 40, f = f, name = "Inside" } end })
+			local step = Northstar.Lookup.QuestStep(q, { map = 9001, x = 50, y = 50 }, { inside = function() return { map = 9001, x = 40, y = 40, f = f, name = "Inside" } end })
 			local out = {}
 			for i, g in ipairs(step.goals) do out[i] = { g.t, g.f or false } end
 			return out
@@ -432,7 +432,7 @@ fn generated_guides_a_live_frame_point_is_a_goal_without_a_frame_an_era_one_keep
 // A guide built from a mount's best source would leave out level 40, riding and the gold: only a
 // curated mount guide (by `collects`, or a class mount's spell by `keywords`) is offered.
 const MOUNT_GUIDE_LUA: &str = r#"
-	local function try(...) local id, why = Polestar.Lookup.Guide(...); return { id = id or false, why = why or false } end
+	local function try(...) local id, why = Northstar.Lookup.Guide(...); return { id = id or false, why = why or false } end
 	local function tip(id)
 		GameTooltip:SetOwner(UIParent)
 		lookuprt.showItem(GameTooltip, id, "|cffffffff|Hitem:" .. id .. "::::::::20:::::|h[x]|h|r")
@@ -446,7 +446,7 @@ fn guide_me_builds_no_guide_to_a_mount_without_a_curated_one_an_ordinary_item_st
 	let [vendor, spell, tooltip, shows, chosen, item, item_tip] = first::<7>(run(&(MOUNT_GUIDE_LUA.to_string()
 		+ r#"
 		local shows = {}
-		Polestar.On("SHOW_LOOKUP", function(q, kind, id) shows[#shows + 1] = { q or false, kind or false, id or false } end)
+		Northstar.On("SHOW_LOOKUP", function(q, kind, id) shows[#shows + 1] = { q or false, kind or false, id or false } end)
 		emit(try("mount", 8000)); emit(try("spell", 9500)); emit(tip(8000))
 		stub.keys.alt = true
 		lookuprt.clickItem("|cffffffff|Hitem:8000::::::::20:::::|h[x]|h|r")
@@ -480,11 +480,11 @@ fn guide_me_opens_a_curated_mount_guide_a_class_mount_by_keyword_a_vendor_mount_
 fn generated_guides_a_saved_lookup_tab_is_rebuilt_before_the_engine_reopens_tabs() {
 	let [tabs, active] = first::<2>(run_with(
 		r#"
-		local t = Polestar.Engine.GetTabs(); local ids = {}
+		local t = Northstar.Engine.GetTabs(); local ids = {}
 		for i, x in ipairs(t) do ids[i] = x.guideId end
-		emit(ids); emit(Polestar.Engine.GetGuide() and Polestar.Engine.GetGuide().id)
+		emit(ids); emit(Northstar.Engine.GetGuide() and Northstar.Engine.GetGuide().id)
 	"#,
-		&Opts { saved: Some(r#"PolestarCharDB = { schema = 1, tabs = { "lookup/item/8004", "lookup/mount/8000" }, activeTab = 2 }"#), ..Default::default() },
+		&Opts { saved: Some(r#"NorthstarCharDB = { schema = 1, tabs = { "lookup/item/8004", "lookup/mount/8000" }, activeTab = 2 }"#), ..Default::default() },
 	));
 	assert_eq!(tabs, json!(["lookup/item/8004", "lookup/mount/8000"]));
 	assert_eq!(active, "lookup/mount/8000");
@@ -495,11 +495,11 @@ fn generated_guides_a_saved_lookup_tab_is_rebuilt_before_the_engine_reopens_tabs
 // ---------------------------------------------------------------------------
 
 const SEARCH_LUA: &str = r#"
-assert(Polestar.RegisterGuide({ id = "test/pathfinder", pack = "test", title = "Amber Vale Pathfinder", zoneName = "Amber Vale", minLevel = 15, maxLevel = 20,
+assert(Northstar.RegisterGuide({ id = "test/pathfinder", pack = "test", title = "Amber Vale Pathfinder", zoneName = "Amber Vale", minLevel = 15, maxLevel = 20,
 	keywords = { "strider" }, steps = { { goals = { { t = "note", text = "x" } } } } }))
-assert(Polestar.RegisterGuide({ id = "lookup/item/1", pack = "lookup", title = "Amber Generated", steps = { { goals = { { t = "note", text = "x" } } } } }))
+assert(Northstar.RegisterGuide({ id = "lookup/item/1", pack = "lookup", title = "Amber Generated", steps = { { goals = { { t = "note", text = "x" } } } } }))
 local function q(text, opts)
-	local res, counts = Polestar.Search.Query(text, opts)
+	local res, counts = Northstar.Search.Query(text, opts)
 	local out = {}
 	for i, r in ipairs(res) do out[i] = { kind = r.kind, id = r.id, title = r.title, subtitle = r.subtitle, quality = r.quality } end
 	return { res = out, counts = counts }
@@ -524,7 +524,7 @@ fn search_tiers_kind_order_guides_with_keywords_filters_and_counts() {
 		+ r#"
 		emit(q("amber")); emit(q("Amber Vale")); emit(q("boar")); emit(q("boar", { kinds = { npc = true } }))
 		emit(q("strider")); emit(q("rider")); emit(q("reins strider")); emit(q("M\195\174RA"))
-		emit({ Polestar.Search.Status() })
+		emit({ Northstar.Search.Status() })
 	"#)));
 	assert_eq!(titles(&amber), ["guide:Amber Vale Pathfinder", "mount:Amber Strider Reins", "zone:Amber Vale"]);
 	assert_eq!(amber["res"][0], json!({ "kind": "guide", "id": "test/pathfinder", "title": "Amber Vale Pathfinder", "subtitle": "Amber Vale \u{b7} 15-20" }));
@@ -545,9 +545,9 @@ fn search_tiers_kind_order_guides_with_keywords_filters_and_counts() {
 fn search_folding_quests_and_dungeons_limits_a_missing_codex_pack_lookup_switched_off() {
 	let [fold, quest, crypt, limited, status] = first::<5>(run(&(search_guides()
 		+ r#"
-		emit(Polestar.Search.Fold("\195\129mber V\195\161le's  Path-finder"))
+		emit(Northstar.Search.Fold("\195\129mber V\195\161le's  Path-finder"))
 		emit(q("trouble")); emit(q("crypt")); emit(q("a", { limit = 2 }))
-		emit({ Polestar.Search.Status() })
+		emit({ Northstar.Search.Status() })
 	"#)));
 	assert_eq!(fold, " amber vales path finder");
 	assert_eq!(quest["res"], json!([{ "kind": "quest", "id": 7001, "title": "Trouble in the Vale", "subtitle": "Level 18 \u{b7} Amber Vale" }]));
@@ -558,7 +558,7 @@ fn search_folding_quests_and_dungeons_limits_a_missing_codex_pack_lookup_switche
 	let [st0, res, st1] = first::<3>(run_with(
 		&(search_guides()
 			+ r#"
-		emit({ Polestar.Search.Status() }); emit(q("amber")); emit({ Polestar.Search.Status() })
+		emit({ Northstar.Search.Status() }); emit(q("amber")); emit({ Northstar.Search.Status() })
 	"#),
 		&Opts { with_pack: false, ..Default::default() },
 	));
@@ -567,8 +567,8 @@ fn search_folding_quests_and_dungeons_limits_a_missing_codex_pack_lookup_switche
 	assert_eq!(st1, json!([false, "missing"]));
 	let [off_status, off_res, loaded] = first::<3>(run(&(search_guides()
 		+ r#"
-		Polestar.Set("lookup.enabled", false)
-		emit({ Polestar.Search.Status() }); emit(q("amber")); emit(Polestar.Codex.IsLoaded())
+		Northstar.Set("lookup.enabled", false)
+		emit({ Northstar.Search.Status() }); emit(q("amber")); emit(Northstar.Codex.IsLoaded())
 	"#)));
 	assert_eq!(off_status, json!([false, "off"]));
 	assert_eq!(kinds(&off_res), ["guide"]);
@@ -592,15 +592,15 @@ fn search_and_sources_obtainable_before_retired_curated_guide_backed_before_name
 		"\n",
 		TEST_SOURCE,
 		r#"
-			assert(Polestar.RegisterGuide({ id = "test/sabers", pack = "test", title = "Striped Sabers", collects = { 8102 },
+			assert(Northstar.RegisterGuide({ id = "test/sabers", pack = "test", title = "Striped Sabers", collects = { 8102 },
 				steps = { { goals = { { t = "note", text = "x" } } } } }))
-			local res = Polestar.Search.Query("saber")
+			local res = Northstar.Search.Query("saber")
 			local out = {}
 			for i, r in ipairs(res) do out[i] = { kind = r.kind, id = r.id, status = r.status or false, curated = r.curated or false } end
 			emit(out)
-			local list = Polestar.Lookup.Sources("mount", 8100)
+			local list = Northstar.Lookup.Sources("mount", 8100)
 			emit({ available = list[1].available, why = list[1].why, whyText = list[1].whyText, guideable = list[1].guideable })
-			local id, why = Polestar.Lookup.Guide("mount", 8100)
+			local id, why = Northstar.Lookup.Guide("mount", 8100)
 			emit({ id = id or false, why = why or false })
 		"#,
 	]
@@ -634,22 +634,22 @@ fn search_an_item_only_a_third_pack_collects_ranks_as_curated_only_while_that_pa
 		"\n",
 		TEST_SOURCE,
 		r#"
-			Polestar.RegisterPack({ addon = "Polestar_Other", id = "other", format = 1, title = "Other", author = "O", version = "1", license = "MIT" })
+			Northstar.RegisterPack({ addon = "Northstar_Other", id = "other", format = 1, title = "Other", author = "O", version = "1", license = "MIT" })
 			local function g(id, extra)
 				local def = { id = id, pack = "other", title = id, steps = { { goals = { { t = "note", text = "x" } } } } }
 				for k, v in pairs(extra) do def[k] = v end
-				assert(Polestar.RegisterGuide(def))
+				assert(Northstar.RegisterGuide(def))
 			end
 			g("other/sabers", { category = "Collectibles", collects = { 8102 } })
 			g("other/route", { category = "Leveling", minLevel = 1, maxLevel = 60 })
 			local function flag()
-				for _, r in ipairs(Polestar.Search.Query("striped saber")) do
+				for _, r in ipairs(Northstar.Search.Query("striped saber")) do
 					if r.kind == "mount" and r.id == 8102 then return r.curated or false end
 				end
 				return "missing"
 			end
 			emit(flag())
-			Polestar.Set("behavior.suggestFrom", "other")
+			Northstar.Set("behavior.suggestFrom", "other")
 			emit(flag())
 		"#,
 	]
@@ -667,25 +667,25 @@ fn search_one_letter_queries_read_name_prefixes_only_capped_paging_with_offset_l
 		local names = {}
 		for i = 1, 400 do names[i] = { 100000 + i, (i % 2 == 0 and "Kestrel " or "Old Kestrel ") .. i } end
 		local lines = {}
-		for i, e in ipairs(names) do lines[i] = "\2" .. Polestar.Search.Fold(e[2]):sub(2) .. "\1" .. e[1] .. ",2,," .. #e[2] .. "\n" end
+		for i, e in ipairs(names) do lines[i] = "\2" .. Northstar.Search.Fold(e[2]):sub(2) .. "\1" .. e[1] .. ",2,," .. #e[2] .. "\n" end
 		local blob = table.concat(lines)
 		local byId = {}
 		for _, e in ipairs(names) do byId[e[1]] = e[2] end
 		local none = function() return nil end
-		Polestar.Codex = { IsLoaded = function() return true end, Load = function() return true end,
+		Northstar.Codex = { IsLoaded = function() return true end, Load = function() return true end,
 			Index = function(kind) if kind == "item" then return blob end end,
 			Name = function(kind, id) return byId[id] end,
 			Item = none, Npc = none, Quest = none, Object = none, Instance = none, Zone = none, Faction = none, Spell = none }
-		local res, counts, more = Polestar.Search.Query("k", { kinds = { item = true } })
+		local res, counts, more = Northstar.Search.Query("k", { kinds = { item = true } })
 		emit({ n = #res, count = counts.item, more = more.item or false, first = res[1] and res[1].title })
-		local a = Polestar.Search.Query("kestrel", { kinds = { item = true }, perKind = 50, subtitles = false })
-		local b = Polestar.Search.Query("kestrel", { kinds = { item = true }, perKind = 50, offset = 50, subtitles = false })
+		local a = Northstar.Search.Query("kestrel", { kinds = { item = true }, perKind = 50, subtitles = false })
+		local b = Northstar.Search.Query("kestrel", { kinds = { item = true }, perKind = 50, offset = 50, subtitles = false })
 		emit({ n = #a, first = a[1].title, last = a[#a].title }); emit({ n = #b, first = b[1].title })
 		local calls = 0
-		Polestar.Lookup = { Subtitle = function(kind, id) calls = calls + 1; return "Sub " .. id end }
-		local c = Polestar.Search.Query("kestrel 3", { kinds = { item = true }, subtitles = false })
+		Northstar.Lookup = { Subtitle = function(kind, id) calls = calls + 1; return "Sub " .. id end }
+		local c = Northstar.Search.Query("kestrel 3", { kinds = { item = true }, subtitles = false })
 		local before = calls
-		local s1 = Polestar.Search.Subtitle(c[1]); Polestar.Search.Subtitle(c[1])
+		local s1 = Northstar.Search.Subtitle(c[1]); Northstar.Search.Subtitle(c[1])
 		emit({ before = before, after = calls, s1 = s1 })
 	"#,
 		&Opts { with_pack: false, ..Default::default() },
@@ -730,19 +730,19 @@ fn search_a_keystroke_costs_a_few_scans_of_the_names_and_grows_linearly_from_2_5
 				for i = 1, n do
 					local name = word() .. " " .. word() .. (rnd(3) == 1 and (" " .. word()) or "")
 					names[kind][i] = name
-					lines[i] = "\2" .. Polestar.Search.Fold(name):sub(2) .. "\1" .. i .. ",2,," .. #name .. "\n"
+					lines[i] = "\2" .. Northstar.Search.Fold(name):sub(2) .. "\1" .. i .. ",2,," .. #name .. "\n"
 				end
 				blobs[kind] = table.concat(lines)
 			end
 			local none = function() return nil end
-			Polestar.Codex = { IsLoaded = function() return true end, Load = function() return true end,
+			Northstar.Codex = { IsLoaded = function() return true end, Load = function() return true end,
 				Index = function(kind) return blobs[kind] end,
 				Name = function(kind, id) return names[kind] and names[kind][id] end,
 				Item = none, Npc = none, Quest = none, Object = none, Instance = none, Zone = none, Faction = none, Spell = none }
-			Polestar.Search.Query("warmup", { subtitles = false })
+			Northstar.Search.Query("warmup", { subtitles = false })
 			-- The batches: every query 4 times; 40 scans of every index.
 			local keys = median(function()
-				for _ = 1, 4 do for _, text in ipairs(queries) do Polestar.Search.Query(text, { subtitles = false }) end end
+				for _ = 1, 4 do for _, text in ipairs(queries) do Northstar.Search.Query(text, { subtitles = false }) end end
 			end, 7) / (4 * #queries)
 			local scan = median(function()
 				for _ = 1, 40 do for _, blob in pairs(blobs) do string.find(blob, "\2qqqq", 1, true) end end
@@ -819,7 +819,7 @@ fn rebuild_script(c: &Rebuild, body: &str) -> String {
 fn hooks_clear_hooks_install_once_per_frame_preserve_handlers_and_survive_registration_changes() {
 	let [items, object] = first::<2>(run_bare(
 		r#"
-		local H, installs, clears = Polestar.Hooks, {}, {}
+		local H, installs, clears = Northstar.Hooks, {}, {}
 		local function annotation(tt) H.AddLine(tt, "Annotation") end
 		H.ItemLines("installation-test", annotation)
 		for _, tt in ipairs({ GameTooltip, ItemRefTooltip }) do
@@ -859,7 +859,7 @@ fn hooks_clear_hooks_install_once_per_frame_preserve_handlers_and_survive_regist
 fn clear_hook_api_failure(failure: &str) {
 	let [out] = first::<1>(run_bare(
 		&r#"
-			local H, tt, checks, attempts, calls, handlerCalls = Polestar.Hooks, GameTooltip, 0, 0, 0, 0
+			local H, tt, checks, attempts, calls, handlerCalls = Northstar.Hooks, GameTooltip, 0, 0, 0, 0
 			local messages = #stub.messages
 			geterrorhandler = function() return function() handlerCalls = handlerCalls + 1 end end
 			tt.HasScript = function()
@@ -877,7 +877,7 @@ fn clear_hook_api_failure(failure: &str) {
 				tt:ClearLines(); tt:AddLine("Client")
 				for j = 1, 3 do lookuprt.showItem(tt, 1234, "item:1234") end
 			end
-			local errors = Polestar.Errors()
+			local errors = Northstar.Errors()
 			emit({ checks = checks, attempts = attempts, calls = calls, lines = tt.lines,
 				errors = #errors, error = errors[1] and { msg = errors[1].msg, count = errors[1].count } or false,
 				handlerCalls = handlerCalls, messages = #stub.messages - messages })
@@ -922,7 +922,7 @@ fn hooks_hookscript_clear_hook_api_failure_preserves_annotations_without_retryin
 fn processor_unavailable_fallback(frame: &str, kind: &str) {
 	let [initial, rebuilt] = first::<2>(run_with(
 		&r#"
-			local H, tt, calls = Polestar.Hooks, {FRAME}, 0
+			local H, tt, calls = Northstar.Hooks, {FRAME}, 0
 			lookuprt.units.mouseover = { guid = "Creature-0-1-0-1-1234-00000001" }
 			GameTooltip.GetUnit = function() return "Synthetic unit", "mouseover" end
 			tt.link = "item:1234"
@@ -965,7 +965,7 @@ fn hooks_repeated_and_appended_callbacks_keep_annotations_once_without_clearing(
 			c,
 			r#"
 			{SETUP}
-			local tt, H, calls, clears = {FRAME}, Polestar.Hooks, 0, 0
+			local tt, H, calls, clears = {FRAME}, Northstar.Hooks, 0, 0
 			tt:HookScript("OnTooltipCleared", function() clears = clears + 1 end)
 			H.{REGISTER}("rebuild-test", function(tip) calls = calls + 1; H.AddLine(tip, "Annotation") end)
 			tt:ClearLines()
@@ -994,7 +994,7 @@ fn hooks_restore_annotations_after_a_same_subject_clear_and_rebuild_with_an_equa
 					c,
 					r#"
 				{SETUP}
-				local tt, H, calls, clears = {FRAME}, Polestar.Hooks, 0, 0
+				local tt, H, calls, clears = {FRAME}, Northstar.Hooks, 0, 0
 				tt:HookScript("OnTooltipCleared", function() clears = clears + 1 end)
 				H.{REGISTER}("rebuild-test", function(tip) calls = calls + 1; H.AddLine(tip, "Annotation") end)
 				tt:ClearLines()
@@ -1026,7 +1026,7 @@ fn hooks_restore_annotations_after_a_same_subject_clear_and_rebuild_with_an_equa
 fn hooks_item_frames_keep_independent_annotation_state_when_one_is_cleared() {
 	let [initial, refreshed] = first::<2>(run_bare(
 		r#"
-		local H, calls = Polestar.Hooks, { game = 0, ref = 0 }
+		local H, calls = Northstar.Hooks, { game = 0, ref = 0 }
 		H.ItemLines("independent-test", function(tt)
 			local key = tt == GameTooltip and "game" or "ref"
 			calls[key] = calls[key] + 1
@@ -1052,7 +1052,7 @@ fn hooks_item_frames_keep_independent_annotation_state_when_one_is_cleared() {
 fn hooks_a_reused_tooltip_dispatches_annotations_for_changed_subjects_and_kinds() {
 	let out = run_bare(
 		r#"
-		local H, tt = Polestar.Hooks, GameTooltip
+		local H, tt = Northstar.Hooks, GameTooltip
 		H.ItemLines("transition-test", function(tip, _, id) H.AddLine(tip, "Item " .. id) end)
 		H.ObjectLines("transition-test", function(tip, id) H.AddLine(tip, "Object " .. id) end)
 		local function clientLines(n)
@@ -1085,7 +1085,7 @@ fn hooks_a_reused_tooltip_dispatches_annotations_for_changed_subjects_and_kinds(
 fn hooks_item_lines_once_per_tooltip_show_in_order_errors_isolated_forbidden_and_secret_skipped() {
 	let [once, cleared, forbidden, secret, other, item_ref, replaced] = first::<7>(run_with(
 		r#"
-		local H = Polestar.Hooks
+		local H = Northstar.Hooks
 		H.ItemLines("a", function(tt, link, id) H.AddLine(tt, "A " .. id, link and "link" or nil) end)
 		H.ItemLines("b", function() error("boom") end)
 		H.ItemLines("c", function(tt, link, id) H.AddLine(tt, "C " .. id) end)
@@ -1126,7 +1126,7 @@ fn hooks_item_lines_once_per_tooltip_show_in_order_errors_isolated_forbidden_and
 fn hooks_unit_lines_get_the_unit_token_item_clicks_get_the_item_id() {
 	let [unit, clicks] = first::<2>(run_with(
 		r#"
-		local H = Polestar.Hooks
+		local H = Northstar.Hooks
 		local seen = {}
 		H.UnitLines("t", function(tt, unit) seen[#seen + 1] = unit; H.AddLine(tt, "U " .. unit) end)
 		lookuprt.units.mouseover = { guid = "Player-1-00000042", player = true }
@@ -1151,7 +1151,7 @@ fn hooks_unit_lines_get_the_unit_token_item_clicks_get_the_item_id() {
 fn hooks_object_lines_get_the_object_id_data_or_guid_and_name_secret_safe() {
 	let out = run_with(
 		r#"
-		local H = Polestar.Hooks
+		local H = Northstar.Hooks
 		local seen = {}
 		H.ObjectLines("q", function(tt, id, name) seen[#seen + 1] = { id or false, name or false }; H.AddLine(tt, "O " .. tostring(id)) end)
 		local function show(data) GameTooltip:SetOwner(UIParent); lookuprt.showObject(GameTooltip, data); return #GameTooltip.lines end
@@ -1182,7 +1182,7 @@ fn spotter_a_player_s_mount_from_their_auras_secret_safe() {
 	let out = run(&[
 		MOUNTED,
 		r#"
-		local L = Polestar.Lookup
+		local L = Northstar.Lookup
 		emit(L.UnitMount("target"))
 		lookuprt.auras.target = { { spellId = 9503, name = "Summon Shadowsteed" } }; emit(L.UnitMount("target"))
 		lookuprt.auras.target = { { spellId = 7777, name = "Gale" } }; lookuprt.journal[7777] = { id = 55, name = "Swift Gale", icon = 7 }
@@ -1212,19 +1212,19 @@ fn spotter_mount_spotted_the_unit_tooltip_line_and_polestar_mount() {
 		MOUNTED,
 		r#"
 		local got = {}
-		Polestar.On("MOUNT_SPOTTED", function(unit, info) got[#got + 1] = { unit, info.item } end)
+		Northstar.On("MOUNT_SPOTTED", function(unit, info) got[#got + 1] = { unit, info.item } end)
 		local shows = {}
-		Polestar.On("SHOW_LOOKUP", function(q, kind, id) shows[#shows + 1] = { q or false, kind or false, id or false } end)
+		Northstar.On("SHOW_LOOKUP", function(q, kind, id) shows[#shows + 1] = { q or false, kind or false, id or false } end)
 		stub.fire("PLAYER_TARGET_CHANGED")
 		emit(got)
 		GameTooltip:SetOwner(UIParent); lookuprt.showUnit(GameTooltip, "target"); emit(GameTooltip.lines)
-		SlashCmdList.POLESTAR("mount"); emit(shows[#shows])
+		SlashCmdList.NORTHSTAR("mount"); emit(shows[#shows])
 		lookuprt.auras.target = { { spellId = 9503, name = "Summon Shadowsteed" } }
-		SlashCmdList.POLESTAR("mount"); emit(shows[#shows])
+		SlashCmdList.NORTHSTAR("mount"); emit(shows[#shows])
 		lookuprt.auras.target = {}
-		local before = #stub.messages; SlashCmdList.POLESTAR("mount"); emit(stub.messages[#stub.messages])
-		SlashCmdList.POLESTAR("lookup boar tusk"); emit(shows[#shows])
-		Polestar.Set("lookup.mounts", false)
+		local before = #stub.messages; SlashCmdList.NORTHSTAR("mount"); emit(stub.messages[#stub.messages])
+		SlashCmdList.NORTHSTAR("lookup boar tusk"); emit(shows[#shows])
+		Northstar.Set("lookup.mounts", false)
 		lookuprt.auras.target = { { spellId = 9500, name = "Amber Strider" } }
 		got = {}; stub.fire("PLAYER_TARGET_CHANGED")
 		GameTooltip:SetOwner(UIParent); lookuprt.showUnit(GameTooltip, "target")
@@ -1250,8 +1250,8 @@ fn item_tooltips_the_best_sources_the_alt_click_hint_and_the_settings() {
 			return GameTooltip.lines
 		end
 		emit(show(8000)); emit(show(8002)); emit(show(8015))
-		Polestar.Set("lookup.tooltip", false); emit(#show(8000)); Polestar.Set("lookup.tooltip", true)
-		Polestar.Set("lookup.enabled", false); emit(#show(8000))
+		Northstar.Set("lookup.tooltip", false); emit(#show(8000)); Northstar.Set("lookup.tooltip", true)
+		Northstar.Set("lookup.enabled", false); emit(#show(8000))
 	"#));
 	assert_eq!(strider, json!(["From Mira Saddler | Vendor \u{b7} Amber Vale"]), "a mount without a curated guide: no Alt-click promise");
 	assert_eq!(peril, json!(["From Bristle Boar | Drop \u{b7} Amber Vale", "From High Peril | Requires level 30", "Alt-click: guide me"]));
@@ -1264,15 +1264,15 @@ fn item_tooltips_the_best_sources_the_alt_click_hint_and_the_settings() {
 fn alt_click_opens_a_guide_for_the_item_else_the_lookup_window_only_a_plain_alt_left_click() {
 	let [opened, shown, shift, right, off] = first::<5>(run(r#"
 		local shows = {}
-		Polestar.On("SHOW_LOOKUP", function(q, kind, id) shows[#shows + 1] = { q or false, kind or false, id or false } end)
+		Northstar.On("SHOW_LOOKUP", function(q, kind, id) shows[#shows + 1] = { q or false, kind or false, id or false } end)
 		local function link(id) return "|cffffffff|Hitem:" .. id .. "::::::::20:::::|h[x]|h|r" end
-		local function tabs() local t, ids = Polestar.Engine.GetTabs(), {}; for i, x in ipairs(t) do ids[i] = x.guideId end; return ids end
+		local function tabs() local t, ids = Northstar.Engine.GetTabs(), {}; for i, x in ipairs(t) do ids[i] = x.guideId end; return ids end
 		stub.keys.alt = true
 		lookuprt.clickItem(link(8004)); emit(tabs())
 		lookuprt.clickItem(link(8015)); emit(shows)
 		stub.keys.shift = true; lookuprt.clickItem(link(8009)); stub.keys.shift = false; emit(tabs())
 		lookuprt.button = "RightButton"; lookuprt.clickItem(link(8009)); lookuprt.button = "LeftButton"; emit(tabs())
-		Polestar.Set("lookup.altClick", false); lookuprt.clickItem(link(8009)); emit(tabs())
+		Northstar.Set("lookup.altClick", false); lookuprt.clickItem(link(8009)); emit(tabs())
 	"#));
 	assert_eq!(opened, json!(["lookup/item/8004"]));
 	assert_eq!(shown, json!([[false, "item", 8015]]));
@@ -1286,13 +1286,13 @@ fn options_the_lookup_tab_of_discovery_and_its_defaults() {
 	let [controls, defaults] = first::<2>(run_with(
 		r#"
 		local out = {}
-		for _, spec in ipairs(Polestar.Widgets.OptionsRegistry) do
+		for _, spec in ipairs(Northstar.Widgets.OptionsRegistry) do
 			if spec.page == "Discovery" and spec.tab == "Lookup" then
 				for _, c in ipairs(spec.controls) do out[#out + 1] = { key = c.key, kind = c.kind, label = c.label, help = c.help ~= nil } end
 			end
 		end
 		emit(out)
-		emit({ Polestar.Get("lookup.enabled"), Polestar.Get("lookup.tooltip"), Polestar.Get("lookup.altClick"), Polestar.Get("lookup.mounts") })
+		emit({ Northstar.Get("lookup.enabled"), Northstar.Get("lookup.tooltip"), Northstar.Get("lookup.altClick"), Northstar.Get("lookup.mounts") })
 	"#,
 		&Opts { files: &["Core/Core.xml", "Theme/Theme.xml", "Lookup/Lookup.xml"], ..Default::default() },
 	));

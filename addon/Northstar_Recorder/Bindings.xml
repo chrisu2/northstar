@@ -1,0 +1,8 @@
+<Bindings>
+	<Binding name="NORTHSTAR_RECORDER_TRAIL" category="ADDONS">
+		NorthstarRecorder_Command("trail toggle")
+	</Binding>
+	<Binding name="NORTHSTAR_RECORDER_WINDOW" category="ADDONS">
+		NorthstarRecorder_Command("ui")
+	</Binding>
+</Bindings>

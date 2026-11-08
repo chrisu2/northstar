@@ -1,8 +1,8 @@
 {
 	"class": "PRIEST",
-	"source": "Polestar, with ForeverDB's talent data",
+	"source": "Northstar, with ForeverDB's talent data",
 	"sourceUrl": "https://foreverdb.net/class/Priest/talents",
-	"credit": "Written for Polestar on Forever's tree (ForeverDB lists no Priest builds yet). ForeverDB's Priest talent page (https://foreverdb.net/class/Priest/talents) is used only as a reference for Forever's changed and new talents; every pick is checked against Forever's own tree.",
+	"credit": "Written for Northstar on Forever's tree (ForeverDB lists no Priest builds yet). ForeverDB's Priest talent page (https://foreverdb.net/class/Priest/talents) is used only as a reference for Forever's changed and new talents; every pick is checked against Forever's own tree.",
 	"checkedOn": "WoW: Forever beta 1.60.1.70450",
 	"summary": "Level as Shadow (Spirit Tap, Mind Flay, Shadowform) for the fastest kills and least drinking. Discipline levels with Smite and Penance behind a strong shield; Holy is the dungeon healer and slower alone.",
 	"order": [

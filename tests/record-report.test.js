@@ -187,7 +187,7 @@ test('record report CLI: text, --json, --guide, and no recordings', () => {
 	assert.match(empty.stderr, /no sessions/);
 });
 
-test('sessions without Polestar (no step snapshots) report nothing instead of failing', () => {
+test('sessions without Northstar (no step snapshots) report nothing instead of failing', () => {
 	const plain = session('Gamma', 1791300000, [
 		{ t: 0, e: 'zone', map: 1429, zone: 'Elwynn Forest' },
 		{ t: 30, e: 'pos', ...at },

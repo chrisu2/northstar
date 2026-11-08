@@ -79,7 +79,7 @@ function glow(size) {
 	return c;
 }
 
-// Four-pointed star: Polestar's mark, used at the centre of map pins; `turn`
+// Four-pointed star: Northstar's mark, used at the centre of map pins; `turn`
 // radians round from upright.
 function star(cx, cy, outer, inner, turn = 0) {
 	const pts = [];

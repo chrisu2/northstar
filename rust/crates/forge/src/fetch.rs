@@ -8,19 +8,19 @@ use serde_json::Value;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
-/// The release asset `forge data fetch` reads by default ($POLESTAR_DATA_PACK_URL overrides): the
+/// The release asset `forge data fetch` reads by default ($NORTHSTAR_DATA_PACK_URL overrides): the
 /// fixed `data-pack` release, so Forge's own releases never move it.
 pub const DEFAULT_URL: &str = "https://github.com/fitzforge/polestar/releases/download/data-pack/polestar-data-pack.json";
 
 pub fn default_url() -> String {
-	std::env::var("POLESTAR_DATA_PACK_URL").unwrap_or_else(|_| DEFAULT_URL.to_string())
+	std::env::var("NORTHSTAR_DATA_PACK_URL").unwrap_or_else(|_| DEFAULT_URL.to_string())
 }
 
-/// Where the pack lives: $POLESTAR_DATA_PACK, else the user's data folder
+/// Where the pack lives: $NORTHSTAR_DATA_PACK, else the user's data folder
 /// (`$XDG_DATA_HOME` or `~/.local/share` on Linux, `~/Library/Application Support` on macOS,
 /// `%LOCALAPPDATA%` on Windows) + `polestar/data-pack`.
 pub fn default_pack_dir() -> Option<PathBuf> {
-	if let Some(p) = std::env::var_os("POLESTAR_DATA_PACK") {
+	if let Some(p) = std::env::var_os("NORTHSTAR_DATA_PACK") {
 		return Some(PathBuf::from(p));
 	}
 	let base = if cfg!(windows) {

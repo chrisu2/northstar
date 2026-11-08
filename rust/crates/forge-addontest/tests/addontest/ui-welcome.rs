@@ -1,6 +1,6 @@
-//! The welcome (addon/Polestar/UI/Welcome.lua) against the real Core + Theme + UI manifests and the fake Engine
-//! of tests/lua/stub_ui.lua: once per new character (PolestarCharDB.welcomeSeen = 1), with setup and the route
-//! style only while the account has not had one (PolestarDB.welcomeSeen = 1); never in combat, never during a
+//! The welcome (addon/Northstar/UI/Welcome.lua) against the real Core + Theme + UI manifests and the fake Engine
+//! of tests/lua/stub_ui.lua: once per new character (NorthstarCharDB.welcomeSeen = 1), with setup and the route
+//! style only while the account has not had one (NorthstarDB.welcomeSeen = 1); never in combat, never during a
 //! cinematic, never over the route choice; four pages (welcome, setup, route, start; two for a later character)
 //! with step dots; setup choices that write their settings, the scheme cards applying live; the route style's
 //! cards setting nav.routeStyle; a start page that names the suggested guide for the character, the beta callout
@@ -13,23 +13,23 @@ use serde_json::{json, Value};
 
 const FILES: [&str; 3] = ["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"];
 
-// Saved variables: an account that has had its welcome, a character Polestar knew before the welcome had a
+// Saved variables: an account that has had its welcome, a character Northstar knew before the welcome had a
 // flag, one that has seen it, one still due.
-const ACCOUNT_SEEN: &str = "PolestarDB = { schema = 1, settings = {}, welcomeSeen = 1 }";
-const ACCOUNT_NEW: &str = "PolestarDB = { schema = 1, settings = {} }";
-const CHAR_KNOWN: &str = "PolestarCharDB = { schema = 1 }";
-const CHAR_SEEN: &str = "PolestarCharDB = { schema = 1, welcomeSeen = 1 }";
-const CHAR_DUE: &str = "PolestarCharDB = { schema = 1, welcomeSeen = 0 }";
+const ACCOUNT_SEEN: &str = "NorthstarDB = { schema = 1, settings = {}, welcomeSeen = 1 }";
+const ACCOUNT_NEW: &str = "NorthstarDB = { schema = 1, settings = {} }";
+const CHAR_KNOWN: &str = "NorthstarCharDB = { schema = 1 }";
+const CHAR_SEEN: &str = "NorthstarCharDB = { schema = 1, welcomeSeen = 1 }";
+const CHAR_DUE: &str = "NorthstarCharDB = { schema = 1, welcomeSeen = 0 }";
 
-const HEAD: &str = r#"local savedSeen = PolestarDB and PolestarDB.welcomeSeen
-local savedChar = PolestarCharDB and PolestarCharDB.welcomeSeen
+const HEAD: &str = r#"local savedSeen = NorthstarDB and NorthstarDB.welcomeSeen
+local savedChar = NorthstarCharDB and NorthstarCharDB.welcomeSeen
 uistub.install()
-Polestar.DB().welcomeSeen = savedSeen
-Polestar.CharState().welcomeSeen = savedChar"#;
+Northstar.DB().welcomeSeen = savedSeen
+Northstar.CharState().welcomeSeen = savedChar"#;
 
 const TAIL: &str = r#"stub.login()
-local Wel = Polestar.UI.Welcome
-function shown() return PolestarWelcome ~= nil and PolestarWelcome:IsShown() end
+local Wel = Northstar.UI.Welcome
+function shown() return NorthstarWelcome ~= nil and NorthstarWelcome:IsShown() end
 function title() return (select(4, Wel.Page())) end
 function key() return (Wel.Page()) end
 -- "2 of 4": the page's place, as the step dots show it.
@@ -38,7 +38,7 @@ function step() local _, at, n = Wel.Page(); return at .. " of " .. n end
 -- grown: the width it is going to).
 function dots()
 	local n, on, widest, ties = 0, nil, 0, 0
-	for i, d in ipairs(PolestarWelcome.Dots.list) do
+	for i, d in ipairs(NorthstarWelcome.Dots.list) do
 		if d:IsShown() then
 			n = n + 1
 			local w = d.psW or d:GetWidth()
@@ -52,8 +52,8 @@ function titles()
 	local out = {}
 	repeat
 		out[#out + 1] = title()
-		if not PolestarWelcome.Next:IsShown() then break end
-		PolestarWelcome.Next:Click()
+		if not NorthstarWelcome.Next:IsShown() then break end
+		NorthstarWelcome.Next:Click()
 	until not shown() or #out > 6
 	return out
 end
@@ -64,8 +64,8 @@ function plain(s) return (s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end"#
 fn run_with(script: &str, saved: Option<String>, before: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", &FILES)],
-		saved: saved.map(|s| ("Polestar".to_string(), s)).into_iter().collect(),
+		addons: vec![Addon::files("Northstar", &FILES)],
+		saved: saved.map(|s| ("Northstar".to_string(), s)).into_iter().collect(),
 		script: format!("{HEAD}\n{before}\n{TAIL}\n{script}"),
 		..Default::default()
 	})
@@ -84,10 +84,10 @@ fn a_new_character_sees_the_welcome_once_shortly_after_login_opening_it_marks_th
 		local after = shown()
 		local first = title()
 		local at = { step = step(), dots = dots() }
-		local open = { char = PolestarCharDB.welcomeSeen, account = PolestarDB.welcomeSeen or false }
-		PolestarWelcome.Skip:Click()
+		local open = { char = NorthstarCharDB.welcomeSeen, account = NorthstarDB.welcomeSeen or false }
+		NorthstarWelcome.Skip:Click()
 		emit({ atLogin = atLogin, after = after, first = first, at = at, open = open, closed = not shown(),
-			char = PolestarCharDB.welcomeSeen, account = PolestarDB.welcomeSeen })"#);
+			char = NorthstarCharDB.welcomeSeen, account = NorthstarDB.welcomeSeen })"#);
 	assert_eq!(
 		out,
 		json!({ "atLogin": false, "after": true, "first": "Hello, Testchar", "at": { "step": "1 of 4", "dots": "4:1" },
@@ -98,7 +98,7 @@ fn a_new_character_sees_the_welcome_once_shortly_after_login_opening_it_marks_th
 
 #[test]
 fn a_character_with_saved_data_and_no_flag_never_gets_it_unasked_even_on_an_account_that_never_saw_it() {
-	let out = run_with("stub.advance(10)\nemit({ shown = shown(), char = PolestarCharDB.welcomeSeen, account = PolestarDB.welcomeSeen or false })", Some(format!("{ACCOUNT_NEW}\n{CHAR_KNOWN}")), "");
+	let out = run_with("stub.advance(10)\nemit({ shown = shown(), char = NorthstarCharDB.welcomeSeen, account = NorthstarDB.welcomeSeen or false })", Some(format!("{ACCOUNT_NEW}\n{CHAR_KNOWN}")), "");
 	assert_eq!(out, json!({ "shown": false, "char": 1, "account": false }));
 }
 
@@ -115,9 +115,9 @@ fn a_new_character_on_an_account_that_has_had_its_welcome_gets_it_without_setup_
 		stub.advance(3)
 		local login = titles()
 		local loginDots = dots()
-		SlashCmdList.POLESTAR("welcome")
+		SlashCmdList.NORTHSTAR("welcome")
 		local asked = titles()
-		emit({ login = login, loginDots = loginDots, asked = asked, askedDots = dots(), char = PolestarCharDB.welcomeSeen })"#,
+		emit({ login = login, loginDots = loginDots, asked = asked, askedDots = dots(), char = NorthstarCharDB.welcomeSeen })"#,
 		Some(ACCOUNT_SEEN.to_string()),
 		"",
 	);
@@ -137,7 +137,7 @@ fn a_due_welcome_that_never_opened_shows_at_the_next_login() {
 #[test]
 fn an_account_that_saw_the_old_beta_notice_still_gets_the_welcome_on_a_new_character_and_the_old_flag_goes() {
 	let out =
-		run_with("stub.advance(3)\nemit({ shown = shown(), old = PolestarDB.betaNoticeSeen or false })", Some("PolestarDB = { schema = 1, settings = {}, betaNoticeSeen = true }".to_string()), "");
+		run_with("stub.advance(3)\nemit({ shown = shown(), old = NorthstarDB.betaNoticeSeen or false })", Some("NorthstarDB = { schema = 1, settings = {}, betaNoticeSeen = true }".to_string()), "");
 	assert_eq!(out, json!({ "shown": true, "old": false }));
 }
 
@@ -145,7 +145,7 @@ fn an_account_that_saw_the_old_beta_notice_still_gets_the_welcome_on_a_new_chara
 fn the_first_page_greets_the_character_by_name_says_what_polestar_does_and_shows_its_three_parts() {
 	let out = run(r#"
 		Wel.Show()
-		local F = PolestarWelcome
+		local F = NorthstarWelcome
 		local named = title()
 		local body = F.pages.welcome.Body
 		local function said(fs) return fs ~= nil and fs:IsShown() and (fs:GetText() or "") ~= "" end
@@ -159,8 +159,8 @@ fn the_first_page_greets_the_character_by_name_says_what_polestar_does_and_shows
 		Wel.Show()
 		emit({ named = named, line = line, cards = cards, anonymous = title() })"#);
 	assert_eq!(out["named"], "Hello, Testchar");
-	assert_eq!(out["anonymous"], "Welcome to Polestar", "without a name");
-	assert_eq!(out["line"], true, "a line on what Polestar does");
+	assert_eq!(out["anonymous"], "Welcome to Northstar", "without a name");
+	assert_eq!(out["line"], true, "a line on what Northstar does");
 	let part = json!({ "shown": true, "title": true, "line": true, "media": true });
 	assert_eq!(out["cards"], json!([part, part, part]), "three parts, each a card with its miniature, title and line");
 }
@@ -169,23 +169,23 @@ fn the_first_page_greets_the_character_by_name_says_what_polestar_does_and_shows
 fn the_start_page_names_the_suggested_guide_on_its_painting_for_this_character_leaving_out_what_is_unknown() {
 	let out = run(r#"
 		local g = uistub.guides[uistub.suggest]
-		local function facts() return plain(PolestarWelcome.pages.start.Hero.For:GetText()) end
-		local function again() PolestarWelcome:Hide(); Wel.Show("start"); return facts() end
+		local function facts() return plain(NorthstarWelcome.pages.start.Hero.For:GetText()) end
+		local function again() NorthstarWelcome:Hide(); Wel.Show("start"); return facts() end
 		Wel.Show("start")
-		local h = PolestarWelcome.pages.start.Hero
+		local h = NorthstarWelcome.pages.start.Hero
 		local first = { title = title(), chip = h.Chip:IsShown() and h.Chip.Text:GetText(), facts = facts(),
-			start = PolestarWelcome.Start.Label:GetText() }
+			start = NorthstarWelcome.Start.Label:GetText() }
 		g.title = "First Steps"
 		local other = again()
 		uistub.player = { name = "Testchar", level = 7 }
 		local levelOnly = again()
 		uistub.player = {}
-		Polestar.Compat.GetZoneText = function() return nil end
+		Northstar.Compat.GetZoneText = function() return nil end
 		local nothing = again()
 		uistub.suggest = nil
 		local none = again()
 		emit({ first = first, other = other, levelOnly = levelOnly, nothing = nothing,
-			none = { title = title(), facts = none, chip = h.Chip:IsShown(), start = PolestarWelcome.Start.Label:GetText() } })"#);
+			none = { title = title(), facts = none, chip = h.Chip:IsShown(), start = NorthstarWelcome.Start.Label:GetText() } })"#);
 	assert_eq!(
 		out["first"],
 		json!({ "title": "Elwynn Forest", "chip": "Levels 1\u{2013}13",
@@ -197,7 +197,7 @@ fn the_start_page_names_the_suggested_guide_on_its_painting_for_this_character_l
 	assert_eq!(out["nothing"], "Your first guide");
 	assert_eq!(
 		out["none"],
-		json!({ "title": "Choose your first guide", "facts": "Polestar has no guide to suggest for where you are.",
+		json!({ "title": "Choose your first guide", "facts": "Northstar has no guide to suggest for where you are.",
 			"chip": false, "start": "Choose a guide" })
 	);
 }
@@ -206,14 +206,14 @@ fn the_start_page_names_the_suggested_guide_on_its_painting_for_this_character_l
 fn the_and_escape_close_it_and_mark_it_seen_too() {
 	let out = run(r#"
 		stub.advance(3)
-		PolestarWelcome.Close:Click()
-		local x = { closed = not shown(), seen = PolestarCharDB.welcomeSeen }
-		PolestarCharDB.welcomeSeen = 0
+		NorthstarWelcome.Close:Click()
+		local x = { closed = not shown(), seen = NorthstarCharDB.welcomeSeen }
+		NorthstarCharDB.welcomeSeen = 0
 		Wel.Show()
 		local special = false
-		for _, n in ipairs(UISpecialFrames) do if n == "PolestarWelcome" then special = true end end
-		PolestarWelcome:Hide()
-		emit({ x = x, special = special, seen = PolestarCharDB.welcomeSeen })"#);
+		for _, n in ipairs(UISpecialFrames) do if n == "NorthstarWelcome" then special = true end end
+		NorthstarWelcome:Hide()
+		emit({ x = x, special = special, seen = NorthstarCharDB.welcomeSeen })"#);
 	assert_eq!(out, json!({ "x": { "closed": true, "seen": 1 }, "special": true, "seen": 1 }));
 }
 
@@ -222,10 +222,10 @@ fn in_combat_it_waits_for_the_fight_to_end() {
 	let out = run_with(
 		r#"
 		stub.advance(3)
-		local during = { shown = shown(), char = PolestarCharDB.welcomeSeen }
+		local during = { shown = shown(), char = NorthstarCharDB.welcomeSeen }
 		stub.inCombat = false
 		stub.fire("PLAYER_REGEN_ENABLED")
-		emit({ during = during, after = shown(), seen = PolestarDB.welcomeSeen or false })"#,
+		emit({ during = during, after = shown(), seen = NorthstarDB.welcomeSeen or false })"#,
 		None,
 		"stub.inCombat = true",
 	);
@@ -252,15 +252,15 @@ fn the_intro_cinematic_does_not_use_it_up_closed_as_the_cinematic_starts_it_come
 	let out = run_with(
 		r#"
 		stub.advance(3)
-		PolestarWelcome.Next:Click()
+		NorthstarWelcome.Next:Click()
 		local before = { shown = shown(), step = step() }
 		cinematic(true)
 		stub.advance(5)
-		local during = { shown = shown(), account = PolestarDB.welcomeSeen or false }
+		local during = { shown = shown(), account = NorthstarDB.welcomeSeen or false }
 		cinematic(false)
 		stub.advance(2)
 		emit({ before = before, during = during, after = shown(), step = step(), key = key(),
-			account = PolestarDB.welcomeSeen or false })"#,
+			account = NorthstarDB.welcomeSeen or false })"#,
 		None,
 		CINEMATIC,
 	);
@@ -280,10 +280,10 @@ fn a_cinematic_playing_when_the_welcome_is_due_holds_it_until_the_cinematic_ends
 		r#"
 		cinematic(true)
 		stub.advance(3)
-		local during = { shown = shown(), char = PolestarCharDB.welcomeSeen }
+		local during = { shown = shown(), char = NorthstarCharDB.welcomeSeen }
 		cinematic(false)
 		stub.advance(2)
-		emit({ during = during, after = shown(), first = title(), char = PolestarCharDB.welcomeSeen })"#,
+		emit({ during = during, after = shown(), first = title(), char = NorthstarCharDB.welcomeSeen })"#,
 		None,
 		CINEMATIC,
 	);
@@ -294,20 +294,20 @@ fn a_cinematic_playing_when_the_welcome_is_due_holds_it_until_the_cinematic_ends
 fn it_never_opens_over_the_route_choice_it_waits_for_that_window_to_close_and_steps_aside_if_one_opens() {
 	let out = run_with(
 		r#"
-		local E = Polestar.Engine
+		local E = Northstar.Engine
 		E.GetRouteChoice = function(id)
 			return { from = id, options = { { id = "a", title = "A", recommended = true }, { id = "b", title = "B" } } }
 		end
 		E.PendingRouteChoice = function() return "x" end
-		local RC = Polestar.UI.RouteChoice
-		Polestar.Fire("ROUTE_CHOICE", "x")
+		local RC = Northstar.UI.RouteChoice
+		Northstar.Fire("ROUTE_CHOICE", "x")
 		stub.advance(3)
 		local underChoice = shown()
 		RC.Hide()
 		local afterChoice = shown()
-		PolestarWelcome.Next:Click()
-		Polestar.Fire("ROUTE_CHOICE", "x")
-		local overWelcome = { welcome = shown(), choice = RC.IsShown(), char = PolestarCharDB.welcomeSeen }
+		NorthstarWelcome.Next:Click()
+		Northstar.Fire("ROUTE_CHOICE", "x")
+		local overWelcome = { welcome = shown(), choice = RC.IsShown(), char = NorthstarCharDB.welcomeSeen }
 		RC.Hide()
 		emit({ underChoice = underChoice, afterChoice = afterChoice, overWelcome = overWelcome, back = shown(), key = key(),
 			step = step() })"#,
@@ -326,7 +326,7 @@ fn it_never_opens_over_the_route_choice_it_waits_for_that_window_to_close_and_st
 fn four_pages_with_next_and_back_and_the_step_dots_the_last_page_holds_the_guide_buttons() {
 	let out = run(r#"
 		Wel.Show()
-		local F = PolestarWelcome
+		local F = NorthstarWelcome
 		local keys, steps, marks, buttons = {}, {}, {}, {}
 		for i = 1, 4 do
 			keys[i], steps[i], marks[i] = key(), step(), dots()
@@ -343,7 +343,7 @@ fn four_pages_with_next_and_back_and_the_step_dots_the_last_page_holds_the_guide
 		local first = key()
 		stub.advance(1)
 		emit({ keys = keys, steps = steps, marks = marks, buttons = buttons, height = height, back = back, first = first,
-			idle = Polestar.Anim.Active() })"#);
+			idle = Northstar.Anim.Active() })"#);
 	assert_eq!(out["keys"], json!(["welcome", "setup", "route", "start"]));
 	assert_eq!(out["steps"], json!(["1 of 4", "2 of 4", "3 of 4", "4 of 4"]));
 	assert_eq!(out["marks"], json!(["4:1", "4:2", "4:3", "4:4"]), "the current page is the accent capsule");
@@ -365,12 +365,12 @@ fn four_pages_with_next_and_back_and_the_step_dots_the_last_page_holds_the_guide
 fn the_beta_callout_on_the_start_page_follows_ns_routesbeta() {
 	let out = run(r#"
 		Wel.Show("start")
-		local F = PolestarWelcome
+		local F = NorthstarWelcome
 		local n = F.pages.start.Body.Beta
 		local function note() return { chip = n.Chip:IsShown(), head = n.Head:IsShown(), text = n.Text:IsShown() and (n.Text:GetText() or "") ~= "" } end
 		local beta = note()
 		F:Hide()
-		Polestar.routesBeta = false
+		Northstar.routesBeta = false
 		Wel.Show("start")
 		emit({ beta = beta, proven = note() })"#);
 	assert_eq!(out["beta"], json!({ "chip": true, "head": true, "text": true }), "the note and its Beta chip while the routes are in beta");
@@ -381,19 +381,19 @@ fn the_beta_callout_on_the_start_page_follows_ns_routesbeta() {
 fn the_start_page_invites_the_player_to_the_discord_community_its_mark_and_the_invite_as_a_link_that_opens_the_copy_window() {
 	let out = run(r#"
 		Wel.Show("start")
-		local F = PolestarWelcome
+		local F = NorthstarWelcome
 		local n = F.pages.start.Body.Discord
 		local mark = n.Glyph
 		local r, g, b = mark:GetVertexColor()
-		local dr, dg, db = Polestar.Theme.Color("discord")
+		local dr, dg, db = Northstar.Theme.Color("discord")
 		local link = F.Discord
 		local seen = { link = link:IsVisible() and link.Label:GetText(),
 			head = n.Head:IsShown() and (n.Head:GetText() or "") ~= "", line = n.Text:IsShown() and (n.Text:GetText() or "") ~= "",
 			mark = mark:IsVisible() and tostring(mark:GetTexture()):find("discord", 1, true) ~= nil,
 			own = r == dr and g == dg and b == db, kind = link:GetObjectType() }
 		link:Click()
-		emit({ seen = seen, copy = PolestarCopy ~= nil and PolestarCopy:IsShown() and PolestarCopy.Box:GetText(),
-			shared = Polestar.DiscordURL })"#);
+		emit({ seen = seen, copy = NorthstarCopy ~= nil and NorthstarCopy:IsShown() and NorthstarCopy.Box:GetText(),
+			shared = Northstar.DiscordURL })"#);
 	assert_eq!(out["seen"], json!({ "link": "discord.gg/polestar", "head": true, "line": true, "mark": true, "own": true, "kind": "Button" }), "the address reads as a link, not a field");
 	assert!(truthy(&out["shared"]) && out["copy"] == out["shared"], "the copy window holds the shared invite: {}", out["copy"]);
 }
@@ -402,7 +402,7 @@ fn the_start_page_invites_the_player_to_the_discord_community_its_mark_and_the_i
 fn the_start_page_says_what_community_guides_are_with_a_link_to_browse_them() {
 	let out = run(r#"
 		Wel.Show("start")
-		local F = PolestarWelcome
+		local F = NorthstarWelcome
 		local n = F.pages.start.Body.Packs
 		emit({ head = n.Head:IsShown() and (n.Head:GetText() or "") ~= "", line = n.Text:IsShown() and (n.Text:GetText() or "") ~= "",
 			link = n.Link == F.Browse and F.Browse:IsVisible() })"#);
@@ -413,15 +413,15 @@ fn the_start_page_says_what_community_guides_are_with_a_link_to_browse_them() {
 fn the_setup_page_writes_its_settings_quest_automation_both_ways_the_login_guide_and_the_scheme_from_its_cards() {
 	let out = run(r#"
 		Wel.Show("setup")
-		local get = Polestar.Get
-		local F = PolestarWelcome
+		local get = Northstar.Get
+		local F = NorthstarWelcome
 		local start = { title = title(), on = F.AutoQuest.checked,
 			desc = uistub.findText(F, "Never picks between rewards") ~= nil, login = uistub.findText(F, "when no tab is open") ~= nil }
 		F.AutoQuest:Click()
 		local off = { get("behavior.autoAccept"), get("behavior.autoTurnin"), F.AutoQuest.checked }
 		F.AutoQuest:Click()
 		local on = { get("behavior.autoAccept"), get("behavior.autoTurnin"), F.AutoQuest.checked }
-		Polestar.Set("behavior.autoTurnin", false)
+		Northstar.Set("behavior.autoTurnin", false)
 		local partly = F.AutoQuest.checked
 		F.AutoGuide:Click()
 		local guide = get("behavior.autoSelectGuide")
@@ -432,9 +432,9 @@ fn the_setup_page_writes_its_settings_quest_automation_both_ways_the_login_guide
 				if c.psSelected then selected = c.Name:GetText() end
 			end
 		end
-		local before = { Polestar.Theme.Color("bg") }
+		local before = { Northstar.Theme.Color("bg") }
 		F.Schemes[3]:Click()
-		local after = { Polestar.Theme.Color("bg") }
+		local after = { Northstar.Theme.Color("bg") }
 		local now
 		for _, c in ipairs(F.Schemes) do if c.psSelected then now = c.Name:GetText() end end
 		F.Schemes[3]:Click("RightButton")
@@ -459,8 +459,8 @@ fn the_setup_page_writes_its_settings_quest_automation_both_ways_the_login_guide
 fn right_clicking_the_quest_automation_switch_puts_accepting_and_turning_in_back_to_their_defaults() {
 	let out = run(r#"
 		Wel.Show("setup")
-		local get = Polestar.Get
-		local F = PolestarWelcome
+		local get = Northstar.Get
+		local F = NorthstarWelcome
 		F.AutoQuest:Click()
 		local off = { get("behavior.autoAccept"), get("behavior.autoTurnin") }
 		F.AutoQuest:Click("RightButton")
@@ -476,8 +476,8 @@ fn right_clicking_the_quest_automation_switch_puts_accepting_and_turning_in_back
 fn the_route_page_three_styles_with_what_each_does_balanced_picked_on_a_fresh_account_a_click_sets_nav_routestyle_right_click_puts_balanced_back_options_moves_the_pick() {
 	let out = run(r#"
 		Wel.Show("route")
-		local get = Polestar.Get
-		local F = PolestarWelcome
+		local get = Northstar.Get
+		local F = NorthstarWelcome
 		local function pick()
 			local on
 			for _, c in ipairs(F.Styles) do if c.psSelected then on = c.Name:GetText() end end
@@ -492,7 +492,7 @@ fn the_route_page_three_styles_with_what_each_does_balanced_picked_on_a_fresh_ac
 		local roads = { get("nav.routeStyle"), pick() }
 		F.Styles[3]:Click("RightButton")
 		local reset = { get("nav.routeStyle") or "balanced", pick() }
-		Polestar.Set("nav.routeStyle", "fastest")
+		Northstar.Set("nav.routeStyle", "fastest")
 		local options = pick()
 		local route = F.pages.route
 		local function said(w) return w ~= nil and w:IsShown() and (w:GetText() or "") ~= "" end
@@ -521,7 +521,7 @@ fn the_route_page_three_styles_with_what_each_does_balanced_picked_on_a_fresh_ac
 fn the_start_page_start_guide_opens_the_suggested_guide_browse_guides_opens_the_picker_both_close_it() {
 	let out = run(r#"
 		Wel.Show("start")
-		local F = PolestarWelcome
+		local F = NorthstarWelcome
 		F.Start:Click()
 		local opened
 		for _, c in ipairs(uistub.calls) do if c[1] == "OpenTab" or c[1] == "SetGuide" then opened = c[2] end end
@@ -529,7 +529,7 @@ fn the_start_page_start_guide_opens_the_suggested_guide_browse_guides_opens_the_
 		Wel.Show("start")
 		F.Browse:Click()
 		emit({ opened = opened, suggest = uistub.suggest, closed = closed,
-			picker = PolestarPicker ~= nil and PolestarPicker:IsShown(), browseClosed = not shown(), seen = PolestarDB.welcomeSeen })"#);
+			picker = NorthstarPicker ~= nil and NorthstarPicker:IsShown(), browseClosed = not shown(), seen = NorthstarDB.welcomeSeen })"#);
 	assert_eq!(out["opened"], out["suggest"]);
 	assert_eq!(out["closed"], true);
 	assert_eq!(out["picker"], true);
@@ -539,8 +539,8 @@ fn the_start_page_start_guide_opens_the_suggested_guide_browse_guides_opens_the_
 	let none = run(r#"
 		uistub.suggest = nil
 		Wel.Show("start")
-		PolestarWelcome.Start:Click()
-		emit({ picker = PolestarPicker ~= nil and PolestarPicker:IsShown(), closed = not shown() })"#);
+		NorthstarWelcome.Start:Click()
+		emit({ picker = NorthstarPicker ~= nil and NorthstarPicker:IsShown(), closed = not shown() })"#);
 	assert_eq!(none, json!({ "picker": true, "closed": true }));
 }
 
@@ -560,13 +560,13 @@ fn show_takes_a_page_by_key_or_by_number_among_the_pages_shown() {
 fn about_and_polestar_welcome_reopen_it_on_its_first_page() {
 	let out = run(r#"
 		stub.advance(3)
-		PolestarWelcome.Next:Click()
-		PolestarWelcome.Skip:Click()
-		Polestar.UI.ShowOptions("about")
-		Polestar.UI.Options.view.Welcome:Click()
+		NorthstarWelcome.Next:Click()
+		NorthstarWelcome.Skip:Click()
+		Northstar.UI.ShowOptions("about")
+		Northstar.UI.Options.view.Welcome:Click()
 		local about = { shown = shown(), title = title(), step = step() }
-		PolestarWelcome:Hide()
-		SlashCmdList.POLESTAR("welcome")
+		NorthstarWelcome:Hide()
+		SlashCmdList.NORTHSTAR("welcome")
 		emit({ about = about, command = shown(), title = title() })"#);
 	assert_eq!(out, json!({ "about": { "shown": true, "title": "Hello, Testchar", "step": "1 of 4" }, "command": true, "title": "Hello, Testchar" }));
 }

@@ -1,7 +1,7 @@
 //! Port of tools/lib/dsl/when.js.
 //! `when` on a step (docs/GUIDE_FORMAT.md, "Conditions checked during play"):
 //! the step applies only while each of its predicates holds when the route
-//! reaches it. The addon checks them (addon/Polestar/Core/Engine.lua,
+//! reaches it. The addon checks them (addon/Northstar/Core/Engine.lua,
 //! Own.whenFails) and keeps the outcome once the route has moved past the step.
 //!
 //! parse_when(rest) -> Ok(value) | Err(WhenError { error, hint })

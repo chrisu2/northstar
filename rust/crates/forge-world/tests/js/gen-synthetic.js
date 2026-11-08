@@ -1,8 +1,8 @@
 // Synthetic world fixtures for the Rust parity test: data sets of tests/fixtures/sim/synthetic.js
 // and the JS buildWorld output for both factions (no grid: heights none).
-const ROOT = process.env.POLESTAR_JS;
+const ROOT = process.env.NORTHSTAR_JS;
 if (!ROOT) {
-	console.error('usage: POLESTAR_JS=<checkout whose tools/ and tests/fixtures/sim are the JS reference> node gen-synthetic.js');
+	console.error('usage: NORTHSTAR_JS=<checkout whose tools/ and tests/fixtures/sim are the JS reference> node gen-synthetic.js');
 	process.exit(2);
 }
 const fs = require('node:fs');

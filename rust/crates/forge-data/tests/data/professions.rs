@@ -33,8 +33,8 @@ fn professions_match_golden() {
 	check.file("report.txt", &report, &want.join("report.txt"));
 	let warnings: String = out.warnings.iter().map(|w| format!("warning: {w}\n")).collect();
 	check.file("warnings.txt", &warnings, &want.join("warnings.txt"));
-	// POLESTAR_BLESS=1 rewrites the golden from this build (review the diff before committing).
-	if std::env::var_os("POLESTAR_BLESS").is_some() {
+	// NORTHSTAR_BLESS=1 rewrites the golden from this build (review the diff before committing).
+	if std::env::var_os("NORTHSTAR_BLESS").is_some() {
 		for (name, text) in &out.files {
 			std::fs::write(want.join(name), text).unwrap();
 		}

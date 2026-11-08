@@ -5,7 +5,7 @@
 //! again (all from the store). The straight-line fast path's share, and its answers against the
 //! router's for the same pairs. The JS router's base table imported into a store answers the pairs it
 //! holds as the Rust router does. Golden: rust/tests/golden/nav-walks (route-horde.json, a synthetic
-//! route over its world) on the grid of nav-grid; POLESTAR_REF reads the old local references
+//! route over its world) on the grid of nav-grid; NORTHSTAR_REF reads the old local references
 //! (the reset-base Orc Warrior route; tests/common/mod.rs).
 //! cargo test --release -p forge-nav --test route_walks -- --nocapture
 

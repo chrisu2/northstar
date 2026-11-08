@@ -1,8 +1,8 @@
 {
 	"class": "MAGE",
-	"source": "Polestar, with ForeverDB's talent data",
+	"source": "Northstar, with ForeverDB's talent data",
 	"sourceUrl": "https://foreverdb.net/class/Mage/talents",
-	"credit": "Written for Polestar on Forever's tree (ForeverDB lists no Mage builds yet). ForeverDB's Mage talent page (https://foreverdb.net/class/Mage/talents) is used only as a reference for Forever's changed and new talents; every pick is checked against Forever's own tree.",
+	"credit": "Written for Northstar on Forever's tree (ForeverDB lists no Mage builds yet). ForeverDB's Mage talent page (https://foreverdb.net/class/Mage/talents) is used only as a reference for Forever's changed and new talents; every pick is checked against Forever's own tree.",
 	"checkedOn": "WoW: Forever beta 1.60.1.70450",
 	"summary": "Level as Frost (the safest: slows, freezes and Ice Barrier) or Fire (more damage, with Pyroblast openers and Blast Wave). Arcane builds around Arcane Blast and Arcane Power and wants more mana between pulls.",
 	"order": [

@@ -75,8 +75,8 @@ const { profileFor, RUN } = require('./move');
 const Costs = require('./costs');
 const { MODEL, HUB, FACE, CLIMB, WALK, MIN_MULT, ROAD_BIT, stepMult, metricKey } = require('./edgecost');
 
-// The walking grid: $POLESTAR_GRID (another grid, until it becomes data/local/nav4), else data/local/nav4.
-const GRID_DIR = process.env.POLESTAR_GRID ? path.resolve(process.env.POLESTAR_GRID) : path.join(ROOT, 'data', 'local', 'nav4');
+// The walking grid: $NORTHSTAR_GRID (another grid, until it becomes data/local/nav4), else data/local/nav4.
+const GRID_DIR = process.env.NORTHSTAR_GRID ? path.resolve(process.env.NORTHSTAR_GRID) : path.join(ROOT, 'data', 'local', 'nav4');
 const HUBS_FILE = path.join(ROOT, 'data', 'local', 'nav-layers', 'hubs.json');
 const ROADS_DIR = path.join(ROOT, 'data', 'local', 'nav-layers', 'roads');
 // Walked yards per cell-path yard for format 2: the drawn line (route's smoothing) ÷ the searched

@@ -4,7 +4,7 @@ name: Data release
 # release: build forge, check that the tag names forever-db/index.json's version, run the guard
 # (`forge data publish --check forever-db`), and attach forever-db-<version>.zip (the folder) and
 # forever-db-<version>.sqlite.zst (the tables as one sqlite file). The release is never the
-# repository's latest: Polestar's own `v*` releases stay that.
+# repository's latest: Northstar's own `v*` releases stay that.
 on:
   push:
     tags: ["data-v*"]

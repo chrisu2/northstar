@@ -34,9 +34,9 @@ fn pack() -> CodexPack {
 	write_codex_pack(&sample_codex(), &CodexOpts { ..Default::default() })
 }
 
-const PRELUDE: &str = r#"local R = Polestar.Rares
+const PRELUDE: &str = r#"local R = Northstar.Rares
 local got = {}
-Polestar.On("RARE_SPOTTED", function(a) got[#got + 1] = a end)
+Northstar.On("RARE_SPOTTED", function(a) got[#got + 1] = a end)
 local function names() local out = {} for i, a in ipairs(got) do out[i] = a.name end return out end
 "#;
 
@@ -46,8 +46,8 @@ fn run_with(script: &str, at: [i32; 3], settings: Option<&str>) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_rares.lua"],
 		before: format!("{}\nlocal w = stub.world\n{}\nw.moveTo({}, {}, {})\nw.setLevel(10)\n", pack.stub_lua, maps(&codex), at[0], at[1], at[2]),
-		addons: vec![Addon::files("Polestar", &FILES)],
-		saved: settings.map(|s| ("Polestar".to_string(), format!("PolestarDB = {{ schema = 1, settings = {{ rares = {s} }} }}"))).into_iter().collect(),
+		addons: vec![Addon::files("Northstar", &FILES)],
+		saved: settings.map(|s| ("Northstar".to_string(), format!("NorthstarDB = {{ schema = 1, settings = {{ rares = {s} }} }}"))).into_iter().collect(),
 		login: true,
 		script: format!("{PRELUDE}{script}"),
 	})
@@ -161,7 +161,7 @@ fn nearby_a_spotted_rare_stays_while_the_client_shows_it_goes_when_it_dies_or_is
 	let out = run(r#"
 local U = stub.rares
 local fired = 0
-Polestar.On("RARE_NEARBY", function() fired = fired + 1 end)
+Northstar.On("RARE_NEARBY", function() fired = fired + 1 end)
 emit(#R.Nearby())
 U.unit("nameplate1", { npc = 61, name = "Thuros Lightfingers", level = 11, class = "rare" })
 stub.fire("NAME_PLATE_UNIT_ADDED", "nameplate1")
@@ -205,7 +205,7 @@ U.unit("nameplate3", { guid = "Player-1-0000BEEF", name = "Someone", level = 10,
 U.unit("nameplate4", { npc = 99, name = "Tamed Rare", level = 10, class = "rare", controlled = true })
 U.unit("nameplate5", { npc = 100, name = "Hidden", level = 10, class = "rare", secret = true })
 for i = 1, 5 do stub.fire("NAME_PLATE_UNIT_ADDED", "nameplate" .. i) end
-Polestar.Set("rares.mouseover", false)
+Northstar.Set("rares.mouseover", false)
 U.unit("mouseover", { npc = 61, name = "Thuros Lightfingers", level = 11, class = "rare" })
 stub.fire("UPDATE_MOUSEOVER_UNIT")
 local n = 0
@@ -224,7 +224,7 @@ local U = stub.rares
 U.unit("target", { npc = 61, name = "Thuros Lightfingers", level = 11, class = "normal" })
 stub.fire("PLAYER_TARGET_CHANGED")
 local before = #got
-Polestar.Codex.Load()
+Northstar.Codex.Load()
 stub.advance(4)
 stub.fire("PLAYER_TARGET_CHANGED")
 local a = got[1]
@@ -239,13 +239,13 @@ fn a_rare_in_sight_sets_its_waypoint_where_it_was_seen_not_at_a_known_spawn_acro
 	let out = run_with(
 		r#"
 local U = stub.rares
-Polestar.Codex.Load()
+Northstar.Codex.Load()
 U.unit("nameplate1", { npc = 61, name = "Thuros Lightfingers", level = 11, class = "rare" })
 stub.fire("NAME_PLATE_UNIT_ADDED", "nameplate1")
 local a = got[1]
 local distance = R.Toast.Distance(a)
-PolestarRareToast.Waypoint:Click()
-local t = Polestar.Nav.GetTarget()
+NorthstarRareToast.Waypoint:Click()
+local t = Northstar.Nav.GetTarget()
 emit({ map = a.map, x = a.x, y = a.y, spawn = a.spawnYards or false, distance = distance, target = { t.map, t.x, t.y } })"#,
 		[1429, 75, 60],
 		None,
@@ -257,7 +257,7 @@ emit({ map = a.map, x = a.x, y = a.y, spawn = a.spawnYards or false, distance = 
 fn a_vignette_without_a_position_its_nearest_known_spawn_said_so_and_the_live_position_once_the_vignette_has_one() {
 	let out = run(r#"
 local U = stub.rares
-Polestar.Codex.Load()
+Northstar.Codex.Load()
 -- On the minimap, but no position on the player's map yet.
 U.vignette("V1", { npc = 61, name = "Thuros Lightfingers" })
 stub.fire("VIGNETTE_MINIMAP_UPDATED", "V1", true)
@@ -265,8 +265,8 @@ local a = got[1]
 emit({ map = a.map, x = a.x, f = a.f, spawn = a.spawnYards and math.floor(a.spawnYards + 0.5), inSight = a.inSight or false, distance = R.Toast.Distance(a) })
 -- By the click it has one: the waypoint goes there, not to the spawn.
 U.vignette("V1", { npc = 61, name = "Thuros Lightfingers", map = 1429, x = 80, y = 70 })
-PolestarRareToast.Waypoint:Click()
-local t = Polestar.Nav.GetTarget()
+NorthstarRareToast.Waypoint:Click()
+local t = Northstar.Nav.GetTarget()
 emit({ t.map, t.x, t.y, t.f or false })"#);
 	assert_eq!(out[0], json!({ "map": 1429, "x": 89.4, "f": "e", "spawn": 57, "inSight": false, "distance": "Known spawn 55 yd" }));
 	assert_eq!(out[1], json!([1429, 80, 70, false]));
@@ -277,11 +277,11 @@ fn a_vignette_without_a_position_and_no_spawn_on_this_continent_offers_no_waypoi
 	let out = run_with(
 		r#"
 local U = stub.rares
-Polestar.Codex.Load()
+Northstar.Codex.Load()
 U.vignette("V1", { npc = 61, name = "Thuros Lightfingers" })
 stub.fire("VIGNETTE_MINIMAP_UPDATED", "V1", true)
 local a = got[1]
-emit({ n = #got, map = a.map or false, button = PolestarRareToast.Waypoint:IsShown() })"#,
+emit({ n = #got, map = a.map or false, button = NorthstarRareToast.Waypoint:IsShown() })"#,
 		[1438, 50, 50],
 		None,
 	);
@@ -345,7 +345,7 @@ end
 local function notificationState()
 	local e = R.History()["rare:61"]
 	return { alerts = #got, sounds = #stub.sounds,
-		toast = PolestarRareToast and PolestarRareToast:IsShown() or false,
+		toast = NorthstarRareToast and NorthstarRareToast:IsShown() or false,
 		alerted = e ~= nil and e.alerted ~= nil }
 end
 "#;
@@ -421,7 +421,7 @@ fn held_then(change: &str) -> Value {
 
 #[test]
 fn held_rare_alert_no_notification_or_cooldown_when_alerts_are_disabled() {
-	assert_eq!(held_then(r#"Polestar.Set("rares.alerts", false)"#), quiet());
+	assert_eq!(held_then(r#"Northstar.Set("rares.alerts", false)"#), quiet());
 }
 
 #[test]
@@ -431,7 +431,7 @@ fn held_rare_alert_no_notification_or_cooldown_when_the_rare_is_ignored() {
 
 #[test]
 fn held_rare_alert_no_notification_or_cooldown_when_its_detection_source_is_disabled() {
-	assert_eq!(held_then(r#"Polestar.Set("rares.target", false)"#), quiet());
+	assert_eq!(held_then(r#"Northstar.Set("rares.target", false)"#), quiet());
 }
 
 #[test]
@@ -484,7 +484,7 @@ fn held_rare_alert_an_uncertain_death_does_not_cancel_a_sighting_both_guids_unav
 fn held_rare_alert_release_respects_a_newer_alert_cooldown_without_changing_its_timestamp() {
 	let out = run_held(
 		r#"
-Polestar.Set("rares.combatAlerts", true)
+Northstar.Set("rares.combatAlerts", true)
 stub.advance(4)
 stub.fire("PLAYER_TARGET_CHANGED")
 local alerted = R.History()["rare:61"].alerted
@@ -512,7 +512,7 @@ stub.fire("VIGNETTE_MINIMAP_UPDATED", "V1", true)
 emit({ recorded = R.History()["rare:61"].dead ~= nil, sightings = R.History()["rare:61"].n, held = R.Held() ~= nil })
 stub.inCombat = false
 stub.fire("PLAYER_REGEN_ENABLED")
-emit({ alerts = #got, sounds = #stub.sounds, toast = PolestarRareToast and PolestarRareToast:IsShown() or false,
+emit({ alerts = #got, sounds = #stub.sounds, toast = NorthstarRareToast and NorthstarRareToast:IsShown() or false,
 	alerted = R.History()["rare:61"].alerted ~= nil })"#);
 	assert_eq!(out[0], json!({ "recorded": true, "sightings": 2, "held": false }));
 	assert_eq!(out[1], quiet());
@@ -533,7 +533,7 @@ emit({ notification = notificationState(), empty = next(R.History()) == nil })"#
 fn held_rare_alert_disabling_the_module_prevents_a_notification_after_combat() {
 	let out = run_held(
 		r#"
-Polestar.Set("rares.enabled", false)
+Northstar.Set("rares.enabled", false)
 finishCombat()
 emit({ notification = notificationState(), paths = R.Detect.Paths(), recorded = R.History()["rare:61"] ~= nil })"#,
 	);
@@ -558,7 +558,7 @@ emit({ held = R.Held() ~= nil, alerts = #got, sounds = #stub.sounds })
 stub.advance(4)
 stub.inCombat = false
 stub.fire("PLAYER_REGEN_ENABLED")
-emit({ alerts = #got, sounds = #stub.sounds, toast = PolestarRareToast and PolestarRareToast:IsShown() or false,
+emit({ alerts = #got, sounds = #stub.sounds, toast = NorthstarRareToast and NorthstarRareToast:IsShown() or false,
 	name = got[1] and got[1].name, alerted = R.History()["rare:61"].alerted ~= nil })"#);
 	assert_eq!(out[0], json!({ "recorded": true, "alerted": false, "alerts": 0, "sounds": 0 }));
 	assert_eq!(out[1], json!({ "held": true, "alerts": 0, "sounds": 0 }));
@@ -605,7 +605,7 @@ U.unit("target", { npc = 61, name = "Thuros Lightfingers", level = 11, class = "
 stub.fire("PLAYER_TARGET_CHANGED")
 emit({ n = #got })
 stub.world.inInstance = false
-Polestar.Set("rares.enabled", false)
+Northstar.Set("rares.enabled", false)
 stub.advance(4)
 stub.fire("PLAYER_TARGET_CHANGED")
 emit({ n = #got, paths = R.Detect.Paths() })"#);
@@ -618,11 +618,11 @@ fn the_toast_shows_the_alert_name_facts_line_distance_actions_show_rare_opens_th
 	let out = run(r#"
 local U = stub.rares
 local opened
-Polestar.On("SHOW_RARES", function(kind, id) opened = { kind, id } end)
-Polestar.Codex.Load()
+Northstar.On("SHOW_RARES", function(kind, id) opened = { kind, id } end)
+Northstar.Codex.Load()
 U.vignette("V1", { npc = 61, name = "Thuros Lightfingers", map = 1429, x = 90, y = 78 })
 stub.fire("VIGNETTE_MINIMAP_UPDATED", "V1", true)
-local f = PolestarRareToast
+local f = NorthstarRareToast
 local shown = f:IsShown()
 local facts, distance = f.Facts:GetText(), f.Distance:IsShown() and f.Distance:GetText()
 local name = f.Name:GetText()
@@ -642,9 +642,9 @@ emit({ shown = shown, name = name, facts = facts, distance = distance, label = l
 #[test]
 fn the_treasure_toast_names_what_it_opens_show_treasure() {
 	let out = run(r#"
-Polestar.Codex.Load()
-Polestar.Fire("RARE_SPOTTED", R.AlertOf({ source = "vignette", kind = "treasure", id = 2843, name = "Battered Chest" }, { map = 1429, x = 79.6, y = 55.7 }, true))
-emit({ label = PolestarRareToast.Open.Label:GetText() })"#);
+Northstar.Codex.Load()
+Northstar.Fire("RARE_SPOTTED", R.AlertOf({ source = "vignette", kind = "treasure", id = 2843, name = "Battered Chest" }, { map = 1429, x = 79.6, y = 55.7 }, true))
+emit({ label = NorthstarRareToast.Open.Label:GetText() })"#);
 	assert_eq!(out[0]["label"], "Show treasure");
 }
 
@@ -656,10 +656,10 @@ fn signature_drop_one_the_codex_knows_only_from_this_rare_first_then_quality_the
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_rares.lua"],
 		before: pack.stub_lua.clone(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml", "Lookup/Lookup.xml", "UI/UI.xml", "Rares/Rares.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml", "Lookup/Lookup.xml", "UI/UI.xml", "Rares/Rares.xml"])],
 		login: true,
-		script: r#"Polestar.Codex.Load()
-local R, sig = Polestar.Rares, Polestar.UI.RaresSection.Signature
+		script: r#"Northstar.Codex.Load()
+local R, sig = Northstar.Rares, Northstar.UI.RaresSection.Signature
 local rec = R.Info("rare", 61)
 local real = sig(rec, R.Codex(false))
 -- Fakes: a better green from a quest beats nothing exclusive; an exclusive white beats it.
@@ -736,7 +736,7 @@ fn pin_layers_follow_the_settings_minimap_kinds_load_the_codex_after_login_world
 	let off = run_with(
 		r#"
 stub.advance(6)
-emit({ codex = Polestar.Codex.IsLoaded(), rare = Polestar.Pins.GetLayer("rares.rare") ~= nil })"#,
+emit({ codex = Northstar.Codex.IsLoaded(), rare = Northstar.Pins.GetLayer("rares.rare") ~= nil })"#,
 		[1429, 88, 78],
 		Some("{ worldRares = true, worldTreasures = true }"),
 	);
@@ -746,16 +746,16 @@ emit({ codex = Polestar.Codex.IsLoaded(), rare = Polestar.Pins.GetLayer("rares.r
 	let on = run_with(
 		r#"
 local opts, calls = {}, 0
-local set = Polestar.Pins.SetLayer
-Polestar.Pins.SetLayer = function(name, pins, o) calls = calls + 1; opts[name] = { n = #pins, world = o.world, minimap = o.minimap } return set(name, pins, o) end
+local set = Northstar.Pins.SetLayer
+Northstar.Pins.SetLayer = function(name, pins, o) calls = calls + 1; opts[name] = { n = #pins, world = o.world, minimap = o.minimap } return set(name, pins, o) end
 stub.advance(6)
-emit({ codex = Polestar.Codex.IsLoaded(), rare = opts["rares.rare"], treasure = opts["rares.treasure"] })
+emit({ codex = Northstar.Codex.IsLoaded(), rare = opts["rares.rare"], treasure = opts["rares.treasure"] })
 WorldMapFrame:Show()
 stub.advance(0.1)
 emit({ treasure = opts["rares.treasure"] })
-Polestar.Set("rares.worldTreasures", false)
-emit({ treasure = Polestar.Pins.GetLayer("rares.treasure") ~= nil, rare = opts["rares.rare"] })
-Polestar.Set("rares.ignored", { ["rare:61"] = true })
+Northstar.Set("rares.worldTreasures", false)
+emit({ treasure = Northstar.Pins.GetLayer("rares.treasure") ~= nil, rare = opts["rares.rare"] })
+Northstar.Set("rares.ignored", { ["rare:61"] = true })
 emit({ rare = opts["rares.rare"] })"#,
 		[1429, 88, 78],
 		Some("{ worldRares = true, worldTreasures = true, minimapRares = true }"),
@@ -776,14 +776,14 @@ fn loading_the_codex_decodes_nothing_for_the_pins_until_a_layer_is_due_and_never
 local decoded = 0
 local info = R.Info
 R.Info = function(...) decoded = decoded + 1 return info(...) end
-Polestar.Codex.Load()
+Northstar.Codex.Load()
 local during = decoded
 stub.advance(1)
 local idle = decoded
 -- A minimap kind turned on: the build starts on the next frame, in batches.
-Polestar.Set("rares.minimapRares", true)
+Northstar.Set("rares.minimapRares", true)
 local sync = decoded
 stub.advance(0.1)
-emit({ during = during, idle = idle, sync = sync, built = decoded > 0, layer = Polestar.Pins.GetLayer("rares.rare") ~= nil })"#);
+emit({ during = during, idle = idle, sync = sync, built = decoded > 0, layer = Northstar.Pins.GetLayer("rares.rare") ~= nil })"#);
 	assert_eq!(out[0], json!({ "during": 0, "idle": 0, "sync": 0, "built": true, "layer": true }));
 }

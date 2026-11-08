@@ -40,11 +40,11 @@ pub const USAGE: &str = "usage: forge record import [--wtf <path>] [--vouch <nam
        forge record pull [--server <url>] [--key-file <path>] [--root <checkout>] [--out <dir>]
        forge record resession [--root <checkout>] [--out <dir>]
 
-import: read the Recorder's file (WTF/Account/<account>/SavedVariables/Polestar_Recorder.lua) of every
+import: read the Recorder's file (WTF/Account/<account>/SavedVariables/Northstar_Recorder.lua) of every
 account of every WoW: Forever install found (or of --wtf: a WTF folder, a game folder or its _forever_
-folder, or a Polestar_Recorder.lua a player sent in, or the folder holding it; $POLESTAR_WTF does the
+folder, or a Northstar_Recorder.lua a player sent in, or the folder holding it; $NORTHSTAR_WTF does the
 same), archive its chunks in <out>/raw/<contributor>/<install>/ and write the sessions as
-<out>/<session>.json. The contributor is `local` (this PC's own installs). A Polestar_Recorder.lua that
+<out>/<session>.json. The contributor is `local` (this PC's own installs). A Northstar_Recorder.lua that
 is not inside this PC's own game folders is a file someone sent in and needs one of:
   --vouch <name>  you vouch for the sender: the contributor is `sent-<name>` (a-z, 0-9 and -, up to 32,
                   your choice, never taken from the file), trusted like your own recordings;
@@ -64,7 +64,7 @@ their sessions are removed. A contributor's archive holds at most maxContributor
 default 200) MB; chunks past it are skipped and reported. Last, with all of it on disk, the pull is
 acknowledged (POST /v1/export/ack): the server deletes the chunks up to there once they are past its
 retention period (the server is a buffer; this folder is the archive). --server: the recording server's
-base URL, https:// (http:// only for localhost; default: $POLESTAR_INGEST_URL, else the public recording
+base URL, https:// (http:// only for localhost; default: $NORTHSTAR_INGEST_URL, else the public recording
 server); --key-file: the maintainer key (default <root>/data/local/ingest/maintainer.key). Lines the
 server flagged (a build it does not accept) or found suspect are skipped, and so are malformed ones and
 ones whose install folder another contributor owns.
@@ -73,7 +73,7 @@ resession: normalise every archive in <out>/raw/ again and rewrite its sessions,
 acknowledged. Run it after updating forge, so record kinds an older forge skipped (it drops kinds it
 does not know) reach the sessions from the chunks already archived.
 
---out: the recordings folder (default <root>/data/recordings); --root: the Polestar checkout (default:
+--out: the recordings folder (default <root>/data/recordings); --root: the Northstar checkout (default:
 the one above the current folder). A recordings folder of the older layout (raw/<install>/) is moved to
 raw/<contributor>/<install>/ and its sessions rewritten first.";
 
@@ -115,7 +115,7 @@ fn run() -> Result<(), Fail> {
 	match sub.as_str() {
 		"import" => {
 			check_args(rest, &["--wtf", "--vouch", "--root", "--out"], &["--anonymize"], 0).map_err(usage)?;
-			let wtf = opt(rest, "--wtf").or_else(|| std::env::var("POLESTAR_WTF").ok().filter(|s| !s.is_empty()));
+			let wtf = opt(rest, "--wtf").or_else(|| std::env::var("NORTHSTAR_WTF").ok().filter(|s| !s.is_empty()));
 			let who = match (opt(rest, "--vouch"), rest.iter().any(|x| x == "--anonymize")) {
 				(Some(_), true) => return Err(usage("--vouch and --anonymize exclude each other")),
 				(Some(n), false) if valid_vouch(&n) => Who::Vouch(n),
@@ -463,7 +463,7 @@ fn sha16(s: &str) -> String {
 }
 
 /// The accounts to read, the folders searched, and the loose file when --wtf names a
-/// Polestar_Recorder.lua (or the folder holding it) rather than a WTF or game folder.
+/// Northstar_Recorder.lua (or the folder holding it) rather than a WTF or game folder.
 fn accounts_of(wtf: Option<&Path>) -> Result<(Vec<install::Account>, Vec<String>, Option<PathBuf>), Fail> {
 	if let Some(dir) = wtf {
 		// A file a player sent in: the file itself, or a folder holding it.
@@ -923,7 +923,7 @@ fn resession(out: &Path) -> Result<(), Fail> {
 fn pull(out: &Path, server: Option<String>, key_file: &Path) -> Result<(), Fail> {
 	let state_file = out.join(".pull-state.json");
 	let mut state: PullState = read_json(&state_file)?;
-	let server = server.or_else(|| std::env::var("POLESTAR_INGEST_URL").ok().filter(|s| !s.is_empty())).unwrap_or_else(|| DEFAULT_SERVER.to_string());
+	let server = server.or_else(|| std::env::var("NORTHSTAR_INGEST_URL").ok().filter(|s| !s.is_empty())).unwrap_or_else(|| DEFAULT_SERVER.to_string());
 	let server = server.trim_end_matches('/').trim_end_matches("/v1").to_string();
 	check_server(&server)?;
 	if state.server.as_deref().is_some_and(|s| s != server) {

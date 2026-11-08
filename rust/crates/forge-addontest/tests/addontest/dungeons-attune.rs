@@ -1,5 +1,5 @@
 //! Attunements and keys: the builder (tools/lib/codex/attunements.js through the journal), the cited goal table
-//! (data/codex/attunements.json), the runtime's states and guide (addon/Polestar/Dungeons/Attune.lua) in the real
+//! (data/codex/attunements.json), the runtime's states and guide (addon/Northstar/Dungeons/Attune.lua) in the real
 //! engine over the stub world, and the Attunement tab (UI/Dungeons.lua) over the fake engine of
 //! tests/lua/stub_ui.lua.
 //!
@@ -349,7 +349,7 @@ fn maps_lua(codex: &Value) -> String {
 }
 
 const LUA: &str = r#"
-local D = Polestar.Dungeons
+local D = Northstar.Dungeons
 local function att(key, id) for _, a in ipairs(D.Attunements(key)) do if a.id == id then return a end end end
 local function states(key, id)
 	local st = D.AttunementState(att(key, id))
@@ -374,10 +374,10 @@ const UI_PRELUDE: &str = r#"uistub.install()
 stub.login()
 uistub.player.level, uistub.player.race, uistub.player.class, uistub.player.faction = 18, "Tauren", "WARRIOR", "Horde"
 local done, log = {}, {}
-Polestar.Compat.IsQuestCompleted = function(id) return done[id] or false end
-Polestar.Compat.IsOnQuest = function(id) return log[id] or false end
-Polestar.Compat.IsQuestReadyForTurnIn = function() return false end
-local DS = Polestar.UI.DungeonsSection
+Northstar.Compat.IsQuestCompleted = function(id) return done[id] or false end
+Northstar.Compat.IsOnQuest = function(id) return log[id] or false end
+Northstar.Compat.IsQuestReadyForTurnIn = function() return false end
+local DS = Northstar.UI.DungeonsSection
 local function plain(s) return (s or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "") end
 local function rows()
 	local out = {}
@@ -386,7 +386,7 @@ local function rows()
 end
 local function tabs()
 	local out = {}
-	for _, t in ipairs(PolestarPicker.tabButtons) do if t:IsShown() then out[#out + 1] = t.Label:GetText() end end
+	for _, t in ipairs(NorthstarPicker.tabButtons) do if t:IsShown() then out[#out + 1] = t.Label:GetText() end end
 	return out
 end
 "#;
@@ -421,7 +421,7 @@ impl Fx {
 		emitted(&RunAddon {
 			stubs: vec!["stub_world.lua"],
 			before,
-			addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Lookup/Lookup.xml", "Dungeons/Dungeons.xml"])],
+			addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Lookup/Lookup.xml", "Dungeons/Dungeons.xml"])],
 			login: true,
 			script: format!("{LUA}\n{script}"),
 			..Default::default()
@@ -436,7 +436,7 @@ impl Fx {
 		emitted(&RunAddon {
 			stubs: vec!["stub_ui.lua"],
 			before: format!("{}\n{locale}", self.pack.stub_lua),
-			addons: vec![Addon::files("Polestar", &UI_FILES)],
+			addons: vec![Addon::files("Northstar", &UI_FILES)],
 			script: UI_PRELUDE.to_string() + script,
 			..Default::default()
 		})
@@ -502,7 +502,7 @@ local last = def.steps[#def.steps]
 emit({ title = def.title, steps = describe(def), goto = { last.goals[2].map, last.goals[2].x, last.goals[2].y, last.goals[2].text }, note = last.goals[1].text })
 local gid = D.Attune("wailing-caverns", "fang")
 local tabs = {}
-for i, t in ipairs(Polestar.Engine.GetTabs()) do tabs[i] = t.guideId end
+for i, t in ipairs(Northstar.Engine.GetTabs()) do tabs[i] = t.guideId end
 emit({ gid = gid, tabs = tabs })
 stub.world.complete({ 90002, 90003 })
 local none, why = D.AttuneGuide("wailing-caverns", "fang")
@@ -623,7 +623,7 @@ end
 local notes = {}
 for i, s in ipairs(def.steps) do notes[i] = s.note or false end
 emit({ steps = describe(def), at = at, notes = notes })
-local E = Polestar.Engine
+local E = Northstar.Engine
 D.Attune("wailing-caverns", "heart")
 stub.advance(0.6)
 local walk = {}
@@ -706,7 +706,7 @@ fn the_attunement_tab_the_head_with_its_facts_and_note_a_row_per_step_of_this_si
 	let f = Fx::new();
 	let out = f.run_ui(
 		r#"
-Polestar.Dungeons.Open("wailing-caverns")
+Northstar.Dungeons.Open("wailing-caverns")
 DS.SetTab("attune")
 local h = DS.atts[1]
 emit({ tab = DS.Tab(), tabs = tabs(), title = h.Title:GetText(), meta = h.Meta:GetText(), note = h.Note:GetText(), chip = h.State:IsShown(),
@@ -715,10 +715,10 @@ done[90001] = true
 log[90002] = true
 DS.Render()
 local asked = {}
-Polestar.Dungeons.Attune = function(key, id) asked[#asked + 1] = key .. ":" .. id return "lookup/attune/" .. key .. ":" .. id end
+Northstar.Dungeons.Attune = function(key, id) asked[#asked + 1] = key .. ":" .. id return "lookup/attune/" .. key .. ":" .. id end
 h.Guide:Click()
-emit({ chip = h.State.Text:GetText(), rows = rows(), asked = asked, hub = PolestarPicker:IsShown() })
-Polestar.Dungeons.Open("deadmines")
+emit({ chip = h.State.Text:GetText(), rows = rows(), asked = asked, hub = NorthstarPicker:IsShown() })
+Northstar.Dungeons.Open("deadmines")
 local tabsDm = tabs()
 DS.SetTab("attune")
 emit({ tabs = tabsDm, heads = { DS.atts[1].Title:GetText(), DS.atts[2] and DS.atts[2]:IsShown() or false }, rows = rows(), owned = DS.atts[1].Owned:GetText() })"#,
@@ -757,7 +757,7 @@ fn the_attunement_tab_the_kind_beside_the_title_is_in_the_client_language() {
 	let f = Fx::new();
 	let out = f.run_ui(
 		r#"
-Polestar.Dungeons.Open("wailing-caverns")
+Northstar.Dungeons.Open("wailing-caverns")
 DS.SetTab("attune")
 emit(DS.atts[1].Meta:GetText())"#,
 		&fake_locale("itIT", &[("Attunement", "Zugangsquest"), ("Everyone entering needs it", "Jeder braucht sie"), ("From level %d", "Ab Stufe %d")]),

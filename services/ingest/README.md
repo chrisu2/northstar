@@ -1,6 +1,6 @@
 # polestar-ingest
 
-The server side of Polestar's recording program. Polestar Client registers
+The server side of Northstar's recording program. Polestar Client registers
 with it for a token, then sends it the Recorder's chunks; it checks every
 chunk with the recording library (`rust/crates/polestar-recording`), stores
 it, and serves the totals, each contributor's own view and deletion, the

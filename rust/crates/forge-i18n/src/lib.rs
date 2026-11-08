@@ -1,4 +1,4 @@
-//! Polestar's translations (docs/TRANSLATING.md), `forge i18n`: the interface strings of each addon
+//! Northstar's translations (docs/TRANSLATING.md), `forge i18n`: the interface strings of each addon
 //! (addon/<addon>/Locales/<locale>.lua: their keys, state, sync and import), a guide pack's texts in
 //! other languages (`<pack>/locales/<locale>/`) and the English a non-English client would show
 //! (`i18n leaks`). Port of tools/commands/i18n.js and tools/lib/i18n. The file layout and the guide
@@ -19,14 +19,14 @@ pub mod project;
 /// leaks-baseline.json.
 pub const DATA_DIR: &str = "data/i18n";
 
-/// An addon with interface translations, each with Locales/<locale>.lua: Polestar's own (loaded by
+/// An addon with interface translations, each with Locales/<locale>.lua: Northstar's own (loaded by
 /// Core/Core.xml) and the Recorder's (its TOC).
 pub struct Addon {
 	pub name: &'static str,
 	pub title: &'static str,
 }
 
-pub const ADDONS: [Addon; 2] = [Addon { name: "Polestar", title: "Polestar's interface strings" }, Addon { name: "Polestar_Recorder", title: "Polestar Recorder's interface strings" }];
+pub const ADDONS: [Addon; 2] = [Addon { name: "Northstar", title: "Northstar's interface strings" }, Addon { name: "Northstar_Recorder", title: "Northstar Recorder's interface strings" }];
 
 /// `n word` or `n words`.
 pub fn plural(n: usize, word: &str) -> String {

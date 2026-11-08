@@ -29,7 +29,7 @@
 	}
 </script>
 
-<PageHeader title="Help improve Polestar's guides" subtitle="Optional. Share what the Polestar Recorder notes as you play, and the guides, routes and data get better for everyone." />
+<PageHeader title="Help improve Northstar's guides" subtitle="Optional. Share what the Northstar Recorder notes as you play, and the guides, routes and data get better for everyone." />
 
 <div class="body">
 	<div class="column">
@@ -60,7 +60,7 @@
 				{#if recorder?.installed}
 					Uses the Recorder {recorder.installed} you have installed; it starts recording at your next login (or /reload).
 				{:else}
-					Needs the Polestar Recorder addon:
+					Needs the Northstar Recorder addon:
 					<button class="link small-link" onclick={() => go('addons')}>install it from Addons</button>; it starts recording at your next login.
 				{/if}
 				Stop any time in Settings.

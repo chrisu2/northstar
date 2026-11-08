@@ -2,11 +2,11 @@
 //! commands/maps.js). Same inputs give byte-identical output.
 //!
 //! build: each zone's level range from data/forever (forge_world::zonelevels, the heuristic) ->
-//! addon/Polestar/Maps/ZoneLevels.lua. Forever-only zones (maps with Forever frames and no Era
+//! addon/Northstar/Maps/ZoneLevels.lua. Forever-only zones (maps with Forever frames and no Era
 //! frames in map-frames.json) are held to the sparse thresholds.
 //!
 //! overlays: every world map overlay (the explored-area paintings) of every zone map, from the
-//! client's DB2 tables -> addon/Polestar/UI/ZoneArtOverlays.lua, so the zone art can show a map
+//! client's DB2 tables -> addon/Northstar/UI/ZoneArtOverlays.lua, so the zone art can show a map
 //! without fog of war. Keyed by UiMapArtID: the addon draws a table only when C_Map.GetMapArtID
 //! returns the art it was built for.
 //!   UiMapXMapArt         uiMapID -> UiMapArtID (every phase)

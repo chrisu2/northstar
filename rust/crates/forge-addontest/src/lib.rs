@@ -9,10 +9,10 @@
 //! let out = emitted(&RunAddon {
 //! 	stubs: vec!["stub_world.lua"],                    // more files of tests/lua, after wow_stub.lua
 //! 	before: "stub.world.setLevel(3)".into(),          // Lua run after the stubs, before any addon file
-//! 	addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-//! 	saved: vec![("Polestar".into(), "PolestarDB = { schema = 1 }".into())], // before its ADDON_LOADED
+//! 	addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+//! 	saved: vec![("Northstar".into(), "NorthstarDB = { schema = 1 }".into())], // before its ADDON_LOADED
 //! 	login: true,                                      // PLAYER_LOGIN / PLAYER_ENTERING_WORLD after loading
-//! 	script: format!("{TEST_PACK}\n{TEST_SOURCE}\nemit(Polestar.Engine.GetStepIndex())"),
+//! 	script: format!("{TEST_PACK}\n{TEST_SOURCE}\nemit(Northstar.Engine.GetStepIndex())"),
 //! });
 //! assert_eq!(out[0], 1);
 //! ```
@@ -36,7 +36,7 @@
 //!    `concat!`/`+` instead). `${TEST_PACK}` / `${TEST_SOURCE}` are [`TEST_PACK`] / [`TEST_SOURCE`].
 //!    `luaValue(x)` is [`lua_value`]`(&json!(x))`.
 //! 3. `runAddon({...}).emitted` is [`emitted`]`(&RunAddon { ..Default::default() })`; `{ name, files }` is
-//!    [`Addon::files`], `{ name, dir }` [`Addon::dir`], a string [`Addon::name`] (or `"Polestar".into()`).
+//!    [`Addon::files`], `{ name, dir }` [`Addon::dir`], a string [`Addon::name`] (or `"Northstar".into()`).
 //!    `assert.throws(() => runAddon(..), /re/)` is `let e = run_addon(..).unwrap_err(); assert!(is_match(&e, "re"))`.
 //! 4. Assertions: `assert.equal(a, b)` → `assert_eq!(a, b)` (a `Value` compares with `i32`, `f64`, `bool`,
 //!    `&str` directly: `assert_eq!(v["step"], 2)`); `assert.deepEqual(a, {...})` → `assert_eq!(a, json!({...}))`
@@ -70,13 +70,13 @@ pub use locale::fake_locale;
 pub use run::{build_program, emitted, lua_string, lua_value, run_addon, run_addon_output, Addon, Output, RunAddon, Session};
 
 /// The Lua line registering the pack the tests put their guides in: pack `test`, guide ids under `test/`
-/// (docs/PACK_FORMAT.md, "Rules Polestar enforces").
-pub const TEST_PACK: &str = r#"Polestar.RegisterPack({ addon = "Polestar_Test", id = "test", format = 1, title = "Test", author = "Test", version = "1", license = "MIT" })"#;
+/// (docs/PACK_FORMAT.md, "Rules Northstar enforces").
+pub const TEST_PACK: &str = r#"Northstar.RegisterPack({ addon = "Northstar_Test", id = "test", format = 1, title = "Test", author = "Test", version = "1", license = "MIT" })"#;
 
 /// The Lua line making the test pack the suggestion source (behavior.suggestFrom): only ours and the chosen
 /// pack are ever suggested, so a test whose character is to be given a test guide (Suggest, a guide loaded
 /// at login) runs it too.
-pub const TEST_SOURCE: &str = r#"Polestar.Set("behavior.suggestFrom", "test")"#;
+pub const TEST_SOURCE: &str = r#"Northstar.Set("behavior.suggestFrom", "test")"#;
 
 /// JS truthiness of an emitted value (`assert.ok`): null, false, 0 and "" are false.
 pub fn truthy(v: &serde_json::Value) -> bool {

@@ -1,7 +1,7 @@
 -- A contract-faithful stand-in for the Engine, the guide registry, Nav and
 -- Compat (docs/ARCHITECTURE.md), plus sample guides, for the UI's tests and
 -- for `node tools/polestar.js preview`. Load after wow_stub.lua; call
--- uistub.install() once the addon has loaded (it replaces Polestar.Engine,
+-- uistub.install() once the addon has loaded (it replaces Northstar.Engine,
 -- .Guides, .Nav and .Compat), then stub.login().
 --
 --   uistub.calls              every Engine/Nav call the UI made: { fn, args... }
@@ -41,7 +41,7 @@ local elwynn = {
 	id = "forever/alliance/human/01-elwynn-forest", pack = "guides",
 	title = "Elwynn Forest", faction = "Alliance", races = { "Human" },
 	minLevel = 1, maxLevel = 13, category = "Leveling", zone = ELWYNN, zoneName = "Elwynn Forest",
-	next = "forever/alliance/02-westfall", author = "Polestar", version = 1,
+	next = "forever/alliance/02-westfall", author = "Northstar", version = 1,
 	steps = {
 		{ title = "Deputy Willem", goals = {
 			G("accept", { verb = "Accept", subject = "A Threat Within", subjectKind = "quest", quest = 783, npc = 823, npcName = "Deputy Willem", map = ELWYNN, x = 48.2, y = 42.0, status = "done" }),
@@ -86,7 +86,7 @@ local STORMWIND = 1453
 local tailoring = {
 	id = "forever/professions/tailoring", pack = "guides",
 	title = "Tailoring 1-300", faction = nil, minLevel = 5, maxLevel = 60, category = "Professions",
-	zone = 947, zoneName = "Azeroth", author = "Polestar", version = 1,
+	zone = 947, zoneName = "Azeroth", author = "Northstar", version = 1,
 	steps = {
 		{ title = "Apprentice Tailoring", goals = {
 			G("train", { verb = "Train at", subject = "Georgio Bolero", subjectKind = "npc", npc = 1346, map = STORMWIND, x = 53.2, y = 81.6, status = "done",
@@ -121,7 +121,7 @@ local tailoring = {
 local stormwindRep = {
 	id = "forever/reputation/stormwind", pack = "guides",
 	title = "Stormwind Reputation", faction = "Alliance", minLevel = 12, maxLevel = 60, category = "Reputation",
-	zone = STORMWIND, zoneName = "Stormwind City", author = "Polestar", version = 1,
+	zone = STORMWIND, zoneName = "Stormwind City", author = "Northstar", version = 1,
 	steps = {
 		{ title = "Into the City", goals = {
 			G("goto", { verb = "Go to", subject = "the Trade District", subjectKind = "place", map = STORMWIND, x = 62.0, y = 70.0, status = "done" }),
@@ -155,7 +155,7 @@ local function simple(id, title, faction, lo, hi, zoneName, category, races, n, 
 	end
 	local g = {
 		id = id, pack = "guides", title = title, faction = faction, races = races,
-		minLevel = lo, maxLevel = hi, category = category, zone = ZONE_MAP[zoneName] or 0, zoneName = zoneName, author = "Polestar", version = 1,
+		minLevel = lo, maxLevel = hi, category = category, zone = ZONE_MAP[zoneName] or 0, zoneName = zoneName, author = "Northstar", version = 1,
 		steps = steps,
 	}
 	for k, v in pairs(extra or {}) do g[k] = v end
@@ -344,13 +344,13 @@ end
 
 local function tabsChanged()
 	local list, a = Engine.GetTabs()
-	Polestar.Fire("TABS_CHANGED", list, a)
+	Northstar.Fire("TABS_CHANGED", list, a)
 end
 
 local function activated()
-	Polestar.Fire("GUIDE_CHANGED", guide and guide.id or nil)
-	Polestar.Fire("STEP_CHANGED", current)
-	Polestar.Fire("WAYPOINT_CHANGED", nil)
+	Northstar.Fire("GUIDE_CHANGED", guide and guide.id or nil)
+	Northstar.Fire("STEP_CHANGED", current)
+	Northstar.Fire("WAYPOINT_CHANGED", nil)
 end
 
 function Engine.GetTabs()
@@ -483,7 +483,7 @@ local function move(i)
 	current = i
 	uistub.aim = nil
 	saveTab()
-	Polestar.Fire("STEP_CHANGED", i)
+	Northstar.Fire("STEP_CHANGED", i)
 	tabsChanged()
 end
 function Engine.Next() record("Next"); if guide and current then move(current < #guide.steps and current + 1 or nil) end end
@@ -494,7 +494,7 @@ function Engine.Skip()
 	local s = current
 	if s then uistub.skipped[s] = true end
 	Engine.Next()
-	if s then Polestar.Fire("PLAYER_SKIPPED_STEP", guide.id, s) end
+	if s then Northstar.Fire("PLAYER_SKIPPED_STEP", guide.id, s) end
 	return s
 end
 function Engine.Unskip(i)
@@ -522,7 +522,7 @@ function Engine.ToggleGoal(s, g)
 	if not goal or goal.t == "note" then return false end
 	goal.ticked = not goal.ticked
 	goal.status = goal.ticked and "done" or "active"
-	Polestar.Fire("STEP_UPDATED", s)
+	Northstar.Fire("STEP_UPDATED", s)
 	return true
 end
 -- A quest skips, with every goal of it, and comes back (on = false).
@@ -542,13 +542,13 @@ function Engine.SkipQuest(q, on)
 			end
 		end
 	end
-	Polestar.Fire("STEP_UPDATED", current)
+	Northstar.Fire("STEP_UPDATED", current)
 	if on ~= false then
 		local title
 		for _, step in ipairs(guide and guide.steps or {}) do
 			for _, goal in ipairs(step.goals) do if goal.quest == q and not title then title = goal.subject end end
 		end
-		Polestar.Fire("PLAYER_SKIPPED_QUEST", q, title)
+		Northstar.Fire("PLAYER_SKIPPED_QUEST", q, title)
 	end
 	return true
 end
@@ -560,7 +560,7 @@ function Engine.SkipGoal(s, g)
 	if not (goal and goal.optional) then return false end
 	goal.dismissed = not goal.dismissed or nil
 	goal.status = goal.dismissed and "skipped" or "active"
-	Polestar.Fire("STEP_UPDATED", s)
+	Northstar.Fire("STEP_UPDATED", s)
 	return true
 end
 -- A goal of the step shown with a place: the arrow is aimed there
@@ -570,7 +570,7 @@ function Engine.AimGoal(s, g)
 	local goal = guide and guide.steps[s] and guide.steps[s].goals[g]
 	if not (s == current and goal and goal.x) then return false end
 	uistub.aim = { s, g }
-	Polestar.Fire("WAYPOINT_CHANGED", Engine.GetWaypoint())
+	Northstar.Fire("WAYPOINT_CHANGED", Engine.GetWaypoint())
 	return true
 end
 local function waypointOf(g, goal)
@@ -601,10 +601,10 @@ function Engine.GetProgress()
 end
 function Engine.ResetProgress() record("ResetProgress") end
 -- The dungeons run in leveling guides, per character (CharState().dungeons).
-function Engine.DungeonChosen(map) return Polestar.CharState().dungeons[map] == true end
+function Engine.DungeonChosen(map) return Northstar.CharState().dungeons[map] == true end
 function Engine.ChooseDungeon(map, on)
 	record("ChooseDungeon", map, on)
-	Polestar.CharState().dungeons[map] = on and true or nil
+	Northstar.CharState().dungeons[map] = on and true or nil
 end
 -- Group quests (`when group`): uistub.groupQuestion = { quest, title } is the
 -- one the live step waits on until answered; answers per character
@@ -615,13 +615,13 @@ uistub.groupQuests = {}
 function Engine.GroupQuests() return uistub.groupQuests end
 function Engine.GroupQuestion()
 	local g = uistub.groupQuestion
-	if not g or Polestar.CharState().groupQuests[g.quest] ~= nil then return nil end
+	if not g or Northstar.CharState().groupQuests[g.quest] ~= nil then return nil end
 	return g.quest, g.title
 end
-function Engine.GroupAnswer(q) return Polestar.CharState().groupQuests[q] end
+function Engine.GroupAnswer(q) return Northstar.CharState().groupQuests[q] end
 function Engine.AnswerGroup(q, answer)
 	record("AnswerGroup", q, answer)
-	Polestar.CharState().groupQuests[q] = answer
+	Northstar.CharState().groupQuests[q] = answer
 end
 -- Candidate goals: the next-best trainer/vendor/inn.
 function Engine.CycleCandidate(s, g)
@@ -636,7 +636,7 @@ function Engine.CycleCandidate(s, g)
 	else
 		goal.subject, goal.npc, goal.map, goal.x, goal.y = c.npcName, c.npc, c.map, c.x, c.y
 	end
-	Polestar.Fire("STEP_UPDATED", s)
+	Northstar.Fire("STEP_UPDATED", s)
 end
 -- Goals with spawn areas: the next spot (recorded only).
 function Engine.CycleSpot(s, g, index) record("CycleSpot", s, g, index) end
@@ -669,14 +669,14 @@ function Nav.SetTarget(map, x, y, label, f, stop, z)
 	record("SetTarget", map, x, y, label, f)
 	-- `stop` and `z` sit after a nil `f` for most callers, so they are kept here, not in the call record.
 	uistub.target = { map = map, x = x, y = y, label = label, f = f, stop = stop, z = z }
-	Polestar.Fire("WAYPOINT_CHANGED", uistub.target)
+	Northstar.Fire("WAYPOINT_CHANGED", uistub.target)
 end
 function Nav.ClearTarget() record("ClearTarget"); uistub.target = nil end
 -- Drops a point picked by hand: the Engine's waypoint is the target again.
 function Nav.ReleaseTarget()
 	record("ReleaseTarget")
 	uistub.target = nil
-	Polestar.Fire("WAYPOINT_CHANGED", Engine.GetWaypoint())
+	Northstar.Fire("WAYPOINT_CHANGED", Engine.GetWaypoint())
 end
 function Nav.GetTarget() return uistub.target or Engine.GetWaypoint() end
 function Nav.GetDistance() return 42 end
@@ -702,7 +702,7 @@ Nav.nearby = {
 		record("NearbyEndTrip")
 		local was = uistub.trip ~= nil
 		uistub.trip = nil
-		Polestar.Fire("NEARBY_TRIP", nil)
+		Northstar.Fire("NEARBY_TRIP", nil)
 		return was
 	end,
 }
@@ -742,29 +742,29 @@ function uistub.install(opts)
 	if opts.noTabs then
 		for _, k in ipairs({ "GetTabs", "OpenTab", "CloseTab", "SelectTab", "MoveTab", "GetGuideState" }) do Engine[k] = nil end
 	end
-	Polestar.Engine = Engine
+	Northstar.Engine = Engine
 	-- The real registry stays reachable for pages that show its records
-	-- (the Community guides page): Polestar.Guides = uistub.realGuides.
-	if Polestar.Guides ~= Guides then uistub.realGuides = Polestar.Guides end
-	Polestar.Guides = Guides
-	if not opts.noNav then Polestar.Nav = Nav end
+	-- (the Community guides page): Northstar.Guides = uistub.realGuides.
+	if Northstar.Guides ~= Guides then uistub.realGuides = Northstar.Guides end
+	Northstar.Guides = Guides
+	if not opts.noNav then Northstar.Nav = Nav end
 	-- Whether another addon is there: the real check, over the C_AddOns stub.
-	if Polestar.Compat ~= Compat then Compat.AddOnPresent = Polestar.Compat.AddOnPresent end
-	Polestar.Compat = Compat
+	if Northstar.Compat ~= Compat then Compat.AddOnPresent = Northstar.Compat.AddOnPresent end
+	Northstar.Compat = Compat
 	-- The real modules register these; the fakes stand in for them.
-	if not opts.noNav and Polestar.GetDefault("nav.arrow") == nil then
-		Polestar.RegisterDefaults("nav", { arrow = true, arrowStyle = "3d", arrowScale = 1, arrowAlpha = 1, arrowEta = true,
+	if not opts.noNav and Northstar.GetDefault("nav.arrow") == nil then
+		Northstar.RegisterDefaults("nav", { arrow = true, arrowStyle = "3d", arrowScale = 1, arrowAlpha = 1, arrowEta = true,
 			worldPins = true, minimapPins = true, trailDots = true, tomtom = true, useTomTomArrow = false, blizzardWaypoint = false, arrivalSound = true, travel = true,
 			arrowColor = false, arrowNearColor = false })
 	end
-	if Polestar.GetDefault("behavior.autoAccept") == nil then
-		Polestar.RegisterDefaults("behavior", { autoAccept = true, autoTurnin = true, guideEnd = "ask", autoSelectGuide = true, skipGrey = false, offerClassQuests = true, groupQuests = "ask" })
+	if Northstar.GetDefault("behavior.autoAccept") == nil then
+		Northstar.RegisterDefaults("behavior", { autoAccept = true, autoTurnin = true, guideEnd = "ask", autoSelectGuide = true, skipGrey = false, offerClassQuests = true, groupQuests = "ask" })
 	end
 	-- An account and a character that have seen the welcome, so it never
 	-- opens over windows under test; tests/ui-welcome.test.js restores the
 	-- saved values.
-	Polestar.DB().welcomeSeen = 1
-	Polestar.CharState().welcomeSeen = 1
+	Northstar.DB().welcomeSeen = 1
+	Northstar.CharState().welcomeSeen = 1
 end
 
 -- Show guide `id` at step `step` in the active tab (opening a first tab).
@@ -788,7 +788,7 @@ function uistub.setGuide(id, step)
 		end
 		uistub.started[id] = true
 	end
-	Polestar.Fire("GUIDE_CHANGED", id)
+	Northstar.Fire("GUIDE_CHANGED", id)
 	if Engine.GetTabs then tabsChanged() end
 end
 
@@ -800,25 +800,25 @@ function uistub.openTabs(list, active)
 		uistub.started[e[1]] = true
 	end
 	loadTab(active or 1)
-	Polestar.Fire("GUIDE_CHANGED", guide and guide.id)
+	Northstar.Fire("GUIDE_CHANGED", guide and guide.id)
 	tabsChanged()
 end
 
 function uistub.setStep(i)
 	current = i
 	saveTab()
-	Polestar.Fire("STEP_CHANGED", i)
+	Northstar.Fire("STEP_CHANGED", i)
 end
 
 function uistub.complete()
 	current = nil
 	saveTab()
-	Polestar.Fire("GUIDE_COMPLETED", guide.id)
-	Polestar.Fire("STEP_CHANGED", nil)
+	Northstar.Fire("GUIDE_COMPLETED", guide.id)
+	Northstar.Fire("STEP_CHANGED", nil)
 end
 
 function uistub.goal(s, g) return guide.steps[s].goals[g] end
-function uistub.update() Polestar.Fire("STEP_UPDATED", current) end
+function uistub.update() Northstar.Fire("STEP_UPDATED", current) end
 
 -- Frames the UI created so far.
 function uistub.frameCount() return #stub.frames end

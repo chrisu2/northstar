@@ -173,7 +173,7 @@ fn the_fixture_database_keeps_quest_related_entities_only_in_the_documented_layo
 	assert_eq!(db.items[&772], vals(json!(["Large Candle", 2, 6, 40, 40, 20.5, 1, 77, 100, 253])));
 	assert_eq!(db.npcs[&197], vals(json!(["Marshal McBride", 1429, 0, 1, 48.9, 41.6, 0])));
 	let frames = file(&out, "MapFrames.lua");
-	assert!(frames.contains("Polestar.RegisterMapFrames({ era = {"), "{frames}");
+	assert!(frames.contains("Northstar.RegisterMapFrames({ era = {"), "{frames}");
 	assert!(frames.contains("[1429] = {bottom=-1500,c=0,left=1500,right=-1500,top=500},"), "{frames}");
 	assert!(file(&out, "LICENSE-DATA.txt").contains("Fixture notice."));
 }
@@ -226,8 +226,8 @@ fn builds_are_byte_identical_and_the_toc_is_a_load_on_demand_polestar_addon() {
 	for n in names(&a) {
 		assert_eq!(std::fs::read(a.join(&n)).unwrap(), std::fs::read(b.join(&n)).unwrap(), "{n}");
 	}
-	let toc = std::fs::read_to_string(a.join("Polestar_QuestDB.toc")).unwrap();
-	for line in ["## Interface: 16001", "## LoadOnDemand: 1", "## Dependencies: Polestar"] {
+	let toc = std::fs::read_to_string(a.join("Northstar_QuestDB.toc")).unwrap();
+	for line in ["## Interface: 16001", "## LoadOnDemand: 1", "## Dependencies: Northstar"] {
 		assert!(toc.lines().any(|l| l == line), "{line}\n{toc}");
 	}
 	// A stale data file from an older layout is removed on rebuild.

@@ -1,4 +1,4 @@
-//! Conditions checked during play (`when` on a step, addon/Polestar/Core/Engine.lua): a step applies only while
+//! Conditions checked during play (`when` on a step, addon/Northstar/Core/Engine.lua): a step applies only while
 //! its predicates hold, checked on the live state until the route moves past the step; from then on the outcome
 //! is stored (CharState().when), so a passed step never comes back when the condition changes, and a reload
 //! keeps it. Real Core manifest, stub world (a level 1 Human Warrior in Elwynn Forest).
@@ -16,7 +16,7 @@ w.titles[783] = "A Threat Within"; w.titles[7] = "Kobold Camp Cleanup"
 // Step 2 is the conditional one: a trainer visit between taking and handing in A Threat Within. `when` is Lua
 // for step 2's predicates.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/when", pack = "test", title = "When", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Deputy Willem", goals = {
@@ -37,16 +37,16 @@ fn guide(when: &str) -> String {
 }
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 -- The live step and step 2's status.
 function state() local v = E.GetStepView(2); return { live = E.GetLiveStep(), status = v.status } end
 "#;
 
-const DEFAULT_SAVED: &str = r#"PolestarCharDB = { schema = 1, guide = "test/when" }"#;
+const DEFAULT_SAVED: &str = r#"NorthstarCharDB = { schema = 1, guide = "test/when" }"#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 // `login` runs right after PLAYER_LOGIN; the quest log is read (QUEST_LOG_UPDATE) after it.
@@ -55,7 +55,7 @@ fn run(when: &str, before: &str, saved: Option<&str>, login: &str, script: &str)
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), saved.unwrap_or(DEFAULT_SAVED).into())],
+		saved: vec![("Northstar".into(), saved.unwrap_or(DEFAULT_SAVED).into())],
 		script: [TEST_PACK, TEST_SOURCE, &guide(when), HELPERS, "stub.login()", login, r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 		..Default::default()
 	})
@@ -96,7 +96,7 @@ fn once_the_route_has_moved_past_a_step_its_outcome_is_stored_a_failed_when_neve
 			stub.world.addItem(159, -1); flush()
 			emit(state())
 			stub.fire("PLAYER_LOGOUT")
-			emit({ skipped = PolestarCharDB.skipped, when = PolestarCharDB.when })
+			emit({ skipped = NorthstarCharDB.skipped, when = NorthstarCharDB.when })
 		"#,
 	);
 	assert_eq!(out[0], json!({ "live": 3, "status": "skipped" }));
@@ -104,7 +104,7 @@ fn once_the_route_has_moved_past_a_step_its_outcome_is_stored_a_failed_when_neve
 	assert_eq!(out[1], json!({ "live": 3, "status": "skipped" }));
 	assert_eq!(out[2], json!({ "skipped": { "test/when": { "2": true } }, "when": {} }));
 
-	let saved = format!("PolestarCharDB = {}", lua_value(&json!({ "schema": 1, "guide": "test/when", "skipped": { "test/when": { "2": true } } })));
+	let saved = format!("NorthstarCharDB = {}", lua_value(&json!({ "schema": 1, "guide": "test/when", "skipped": { "test/when": { "2": true } } })));
 	let reloaded = run(r#"{ { k = "has", item = 159, n = 1, neg = true } }"#, TAKEN, Some(&saved), "", "emit(state())");
 	assert_eq!(reloaded[0], json!({ "live": 3, "status": "skipped" }));
 }
@@ -113,7 +113,7 @@ fn once_the_route_has_moved_past_a_step_its_outcome_is_stored_a_failed_when_neve
 fn nothing_is_stored_before_the_quest_log_can_be_read_a_step_whose_when_reads_the_log_is_decided_once_it_can() {
 	// Step 1's accept checked off by hand (which never stands for the quest log, #739); 783 shows in the log
 	// only with QUEST_LOG_UPDATE.
-	let saved = format!("PolestarCharDB = {}", lua_value(&json!({ "schema": 1, "guide": "test/when", "manual": { "test/when": { "1:1": true } } })));
+	let saved = format!("NorthstarCharDB = {}", lua_value(&json!({ "schema": 1, "guide": "test/when", "manual": { "test/when": { "1:1": true } } })));
 	let out = run(
 		r#"{ { k = "onquest", q = { 783 } } }"#,
 		"",
@@ -122,7 +122,7 @@ fn nothing_is_stored_before_the_quest_log_can_be_read_a_step_whose_when_reads_th
 		r#"
 			emit(state())
 			stub.fire("PLAYER_LOGOUT")
-			emit({ skipped = PolestarCharDB.skipped, when = PolestarCharDB.when })
+			emit({ skipped = NorthstarCharDB.skipped, when = NorthstarCharDB.when })
 		"#,
 	);
 	assert_eq!(out[0], json!({ "live": 1, "status": "na" }), "the tick alone keeps the guide at Willem");
@@ -141,7 +141,7 @@ fn a_step_stored_off_can_be_unskipped_and_then_applies_whatever_its_when() {
 			emit(state())
 			E.Unskip(2); flush()
 			emit(state())
-			emit(PolestarCharDB.when)
+			emit(NorthstarCharDB.when)
 		"#,
 	);
 	assert_eq!(out[0], json!({ "live": 3, "status": "skipped" }));
@@ -179,10 +179,10 @@ fn quest_predicates_onquest_any_of_complete_turnedin_and_their_negations() {
 		None,
 		"",
 		r#"
-			local G = Polestar.Guides.Get("test/when")
+			local G = Northstar.Guides.Get("test/when")
 			local w = stub.world
 			local out = {}
-			local function check(label, preds) PolestarCharDB.when["test/when"] = nil; G.steps[2].when = preds; flush(); out[#out + 1] = label .. "=" .. E.GetStepView(2).status end
+			local function check(label, preds) NorthstarCharDB.when["test/when"] = nil; G.steps[2].when = preds; flush(); out[#out + 1] = label .. "=" .. E.GetStepView(2).status end
 			check("onquest 7,783", { { k = "onquest", q = { 7, 783 } } })
 			check("onquest 7", { { k = "onquest", q = { 7 } } })
 			check("!onquest 7", { { k = "onquest", q = { 7 }, neg = true } })
@@ -209,10 +209,10 @@ fn available_not_taken_or_done_the_level_reached_prerequisites_done_and_nothing_
 		None,
 		"",
 		r#"
-			local G = Polestar.Guides.Get("test/when")
+			local G = Northstar.Guides.Get("test/when")
 			local w = stub.world
 			local out = {}
-			local function check(label, pred) pred.k = "available"; PolestarCharDB.when["test/when"] = nil; G.steps[2].when = { pred }; flush(); out[#out + 1] = label .. "=" .. E.GetStepView(2).status end
+			local function check(label, pred) pred.k = "available"; NorthstarCharDB.when["test/when"] = nil; G.steps[2].when = { pred }; flush(); out[#out + 1] = label .. "=" .. E.GetStepView(2).status end
 			check("free", { q = 60 })
 			check("in log", { q = 783 })
 			check("level 4", { q = 60, minLevel = 4 })
@@ -242,9 +242,9 @@ fn zone_subzone_and_bound_read_the_area_name_in_the_client_s_language_else_the_n
 		None,
 		"",
 		r#"
-			local G = Polestar.Guides.Get("test/when")
+			local G = Northstar.Guides.Get("test/when")
 			local out = {}
-			local function check(label, pred) PolestarCharDB.when["test/when"] = nil; G.steps[2].when = { pred }; flush(); out[#out + 1] = label .. "=" .. E.GetStepView(2).status end
+			local function check(label, pred) NorthstarCharDB.when["test/when"] = nil; G.steps[2].when = { pred }; flush(); out[#out + 1] = label .. "=" .. E.GetStepView(2).status end
 			check("zone area", { k = "zone", name = "Elwynn Forest", area = 12 })
 			check("zone name", { k = "zone", name = "Forêt d'Elwynn" })
 			check("zone other", { k = "zone", name = "Westfall" })
@@ -268,11 +268,11 @@ fn a_turn_in_whose_only_accept_sits_in_a_step_passed_by_its_when_goes_with_it() 
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/side" }"#.into())],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/side" }"#.into())],
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,
-			r#"Polestar.RegisterGuide({
+			r#"Northstar.RegisterGuide({
 	id = "test/side", pack = "test", title = "Side", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Side quest", when = { { k = "level", op = ">=", n = 5 } }, goals = {
@@ -304,7 +304,7 @@ fn a_guide_with_a_malformed_when_is_refused() {
 		before: WORLD.into(),
 		addons: vec![core()],
 		script: r#"
-local V = Polestar.Guides.Validate
+local V = Northstar.Guides.Validate
 local function step(when) return { id = "test/x", title = "X", steps = { { when = when, goals = { { t = "level", level = 2 } } } } } end
 emit({
 	ok = V(step({ { k = "level", op = "<", n = 3 }, { k = "onquest", q = { 7 } }, { k = "has", item = 159 }, { k = "zone", name = "Elwynn Forest" }, { k = "dungeon", name = "Ragefire Chasm", map = 389 }, { k = "dungeon", name = "Ragefire Chasmm" } })) or false,

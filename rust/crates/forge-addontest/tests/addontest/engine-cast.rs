@@ -1,4 +1,4 @@
-//! `cast <spellId>` during play (addon/Polestar/Core/Engine.lua, Own.latchCast): the player's own successful
+//! `cast <spellId>` during play (addon/Northstar/Core/Engine.lua, Own.latchCast): the player's own successful
 //! cast of that spell (UNIT_SPELLCAST_SUCCEEDED) ticks the goal while it is open, in the step the guide is at
 //! or an along step listed under it. A cast before that, or of another spell, or by another unit, does not
 //! count. Real Core manifest, stub world (a level 1 Human Warrior in Elwynn Forest), as
@@ -17,7 +17,7 @@ w.onQuest(783, {})
 
 // Step 1 waits on a task, step 2 is the campfire, step 3 hands in A Threat Within.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/cast", pack = "test", title = "Cast", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "First", goals = { { t = "task", text = "Gather wood" } } },
@@ -30,7 +30,7 @@ Polestar.RegisterGuide({
 "#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 fn run(guide: &str, script: &str) -> Vec<Value> {
@@ -38,8 +38,8 @@ fn run(guide: &str, script: &str) -> Vec<Value> {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/cast" }"#.into())],
-		script: [TEST_PACK, TEST_SOURCE, guide, "E = Polestar.Engine", "function flush() stub.advance(0.25) end", "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script]
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/cast" }"#.into())],
+		script: [TEST_PACK, TEST_SOURCE, guide, "E = Northstar.Engine", "function flush() stub.advance(0.25) end", "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script]
 			.join("\n"),
 		..Default::default()
 	})
@@ -63,7 +63,7 @@ fn a_cast_before_the_goal_is_open_does_not_count_once_open_only_that_spell_by_th
 		stub.world.cast(818); flush()
 		out.cast = E.GetLiveStep()
 		stub.fire("PLAYER_LOGOUT")
-		out.saved = PolestarCharDB.manual["test/cast"]["2:1"] or false
+		out.saved = NorthstarCharDB.manual["test/cast"]["2:1"] or false
 		emit(out)
 	"#,
 	);
@@ -80,7 +80,7 @@ fn a_cast_before_the_goal_is_open_does_not_count_once_open_only_that_spell_by_th
 fn an_along_step_listed_under_the_live_step_is_ticked_by_the_cast_too() {
 	// Step 1 (the campfire, along until step 3) is listed under step 2, where the guide is.
 	let guide = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/cast", pack = "test", title = "Cast", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Campfire", along = "end", goals = { { t = "cast", spell = 818, spellName = "Basic Campfire" } } },
@@ -102,7 +102,7 @@ fn guides_validate_takes_cast_with_a_spell_and_a_name_and_refuses_one_without() 
 		stubs: vec!["stub_world.lua"],
 		addons: vec![core()],
 		script: r#"
-			local V = Polestar.Guides.Validate
+			local V = Northstar.Guides.Validate
 			local function g(goal) return { id = "t/v", pack = "test", title = "V", minLevel = 1, maxLevel = 10, steps = { { goals = { goal } } } } end
 			emit({ ok = V(g({ t = "cast", spell = 818, spellName = "Basic Campfire" })) or "ok", none = V(g({ t = "cast", spellName = "Basic Campfire" })) or "ok" })
 		"#

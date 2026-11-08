@@ -16,7 +16,7 @@ w.addMap(1429, { name = "Elwynn Forest", c = 0, left = 1500, right = -1500, top 
 
 const HELPERS: &str = r#"
 function flush() stub.advance(0.25) end
-E = Polestar.Engine
+E = Northstar.Engine
 w = stub.world
 function at(x) w.moveTo(1429, x, 50); stub.advance(1); local wp = E.GetWaypoint(); return { wp.goalIndex, wp.x } end
 "#;
@@ -25,7 +25,7 @@ fn run(guides: &str, before: &str, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: [TEST_PACK, TEST_SOURCE, guides, HELPERS, "stub.login()", script].join("\n"),
 		login: false,
 		..Default::default()
@@ -36,7 +36,7 @@ fn run(guides: &str, before: &str, script: &str) -> Value {
 // Westfall's north loop after Sentinel Hill (player at x 40): the Goretusks (Snouts) and Harvest Watchers, level
 // 14-15, are nearest; the Defias Smugglers and Trappers, 11-12, lie further out.
 const WESTFALL: &str = r#"
-Polestar.RegisterGuide({ id = "test/westfall", pack = "test", title = "Westfall", zone = 1429, steps = {
+Northstar.RegisterGuide({ id = "test/westfall", pack = "test", title = "Westfall", zone = 1429, steps = {
 	{ title = "Westfall: kill these as you meet them", goals = {
 		{ t = "kill", target = "Defias Smuggler", npc = 95, count = 15, quest = 12, oi = 2, map = 1429, x = 70, y = 50, spread = true, lvl = 12,
 			spots = { { x = 70, y = 50, r = 40, n = 4 }, { x = 85, y = 50, r = 40, n = 3 } } },
@@ -87,7 +87,7 @@ fn westfall_at_12_the_arrow_takes_the_defias_before_the_nearer_goretusks_at_14_o
 // the player, a Watcher field (15), two Golem fields (12), each of those carrying its own level; and a Smuggler
 // camp far east as the step's other goal.
 const GYRO: &str = r#"
-Polestar.RegisterGuide({ id = "test/gyro", pack = "test", title = "Gyro", zone = 1429, steps = {
+Northstar.RegisterGuide({ id = "test/gyro", pack = "test", title = "Gyro", zone = 1429, steps = {
 	{ title = "Westfall: kill these as you meet them", goals = {
 		{ t = "collect", item = 255010, itemName = "Harvester Gyrostabilizer", count = 5, quest = 92909, oi = 2, map = 1429, x = 42, y = 50, spread = true, lvl = 18,
 			spots = { { x = 42, y = 50, r = 40, n = 5 }, { x = 52, y = 50, r = 40, n = 4, lvl = 15 },
@@ -125,7 +125,7 @@ fn gyrostabilizer_at_12_the_search_walks_the_golem_fields_never_the_reapers_whil
 fn goals_and_places_without_a_level_count_as_at_the_player_s_level_a_step_of_them_picks_the_nearest_as_before() {
 	// Doom Weed (an object: no level) between a level-20 camp beside the player and a level-5 one further out.
 	const MIXED: &str = r#"
-Polestar.RegisterGuide({ id = "test/mixed", pack = "test", title = "Mixed", zone = 1429, steps = {
+Northstar.RegisterGuide({ id = "test/mixed", pack = "test", title = "Mixed", zone = 1429, steps = {
 	{ goals = {
 		{ t = "kill", target = "Ogre", npc = 300, count = 1, quest = 7, oi = 1, map = 1429, x = 42, y = 50, lvl = 20, spots = { { x = 42, y = 50, r = 10, n = 3 } } },
 		{ t = "collect", item = 2848, itemName = "Doom Weed", quest = 9, oi = 1, count = 10, map = 1429, x = 55, y = 50, spots = { { x = 55, y = 50, r = 10, n = 4 } } },
@@ -185,7 +185,7 @@ fn a_loop_step_s_places_carry_no_level_its_written_order_holds_an_ordinary_step_
 	assert_eq!(levels(&field), vec![(json!(40), vec![Value::Null]), (json!(1), vec![Value::Null])], "the mobs' level, once per goal");
 	assert_eq!(levels(&looped), vec![(Value::Null, vec![Value::Null]), (Value::Null, vec![Value::Null])], "a loop's points: none");
 	// Frames left out: the stub's Elwynn places both alike.
-	let register = |g: &Value| format!("local g = {}\nfor _, st in ipairs(g.steps) do for _, go in ipairs(st.goals) do go.f = nil end end\nPolestar.RegisterGuide(g)", lua_value(g));
+	let register = |g: &Value| format!("local g = {}\nfor _, st in ipairs(g.steps) do for _, go in ipairs(st.goals) do go.f = nil end end\nNorthstar.RegisterGuide(g)", lua_value(g));
 	let arrow = |g: &Value, id: &str| {
 		run(
 			&register(g),

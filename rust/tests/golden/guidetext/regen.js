@@ -41,12 +41,12 @@ for (const f of ['horde', 'alliance']) fs.writeFileSync(path.join(simDir, `world
 fs.copyFileSync(path.join(GOLDEN, 'sim/params.json'), path.join(simDir, 'params.json'));
 const env = {
 	...process.env,
-	POLESTAR_JUDGE_SIM: simDir,
-	POLESTAR_JUDGE_GUIDES: GUIDES,
-	POLESTAR_JUDGE_DATA: DATA,
-	POLESTAR_JUDGE_EXPORT: path.join(tmp, 'no-export'),
-	POLESTAR_GRID: path.join(ROOT, 'data/local/nav4'),
-	POLESTAR_CAS: 'off',
+	NORTHSTAR_JUDGE_SIM: simDir,
+	NORTHSTAR_JUDGE_GUIDES: GUIDES,
+	NORTHSTAR_JUDGE_DATA: DATA,
+	NORTHSTAR_JUDGE_EXPORT: path.join(tmp, 'no-export'),
+	NORTHSTAR_GRID: path.join(ROOT, 'data/local/nav4'),
+	NORTHSTAR_CAS: 'off',
 };
 // guidetext.js leaves the sim's data and sources dirs at the checkout's: point them at the slice.
 const preload = path.join(tmp, 'slice-defaults.js');

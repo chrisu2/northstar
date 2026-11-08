@@ -1,6 +1,6 @@
 local _, ns = ...
 
--- Synthetic: written for Polestar's golden tests, not the addon's data.
+-- Synthetic: written for Northstar's golden tests, not the addon's data.
 ns.Racials = {
     [1] = { -- Human
         statMult = { spi = 1.05 },

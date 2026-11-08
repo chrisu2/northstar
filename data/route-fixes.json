@@ -1,5 +1,5 @@
 {
-	"about": "Polestar's route fixes, read by every Forge build from this checkout (never built into forge): `deliberate` holds v1's deliberate orders, the player-report fixes every route cut keeps; `overrides` holds the maintainer's hard rules (include, skip, revert, pairs). Each entry says why (`why`, or `reason` and `issue`). Check an edit with `forge data check-corrections`; docs/forge/routes.md sections 5 and 11 describe every key. $POLESTAR_ROUTE_FIXES names another file.",
+	"about": "Northstar's route fixes, read by every Forge build from this checkout (never built into forge): `deliberate` holds v1's deliberate orders, the player-report fixes every route cut keeps; `overrides` holds the maintainer's hard rules (include, skip, revert, pairs). Each entry says why (`why`, or `reason` and `issue`). Check an edit with `forge data check-corrections`; docs/forge/routes.md sections 5 and 11 describe every key. $NORTHSTAR_ROUTE_FIXES names another file.",
 	"deliberate": {
 		"about": "v1's deliberate orders (player-report fixes pinned by tests/guides-reported.test.js and the guides' 'Order changes against the export' headers) as hard precedence pairs: every step of `a` comes before every step of `b` when both are in the order. Kinds: accept, task (an objective site of the quest), turnin. `group`: {q, size, why}: the group an elite or group quest wants (1 soloable elite, 2-4 a group of that many, 5 never taken) where Forever's creature data reads it wrong; the route may take it with a solo fallback (docs/forge/routes.md, Group quests).",
 		"pairs": [
@@ -1818,7 +1818,7 @@
 					"accept",
 					5441
 				],
-				"why": "c19r read (maintainer, Durotar, Valley of Trials): Lazy Peons (5441) needs level 3. Taken with Galgar's quest on the first Den visit (the c13 together 4402/5441 records) it came at level 2.6, and a level-2 player is held at Foreman Thazz'ril; it is taken on the Den return after the valley loop instead (level 4 by then), the peons by the Den woken right after and handed in before Thazz'ril's Pick (6394), as Polestar 0.3.1 ships it"
+				"why": "c19r read (maintainer, Durotar, Valley of Trials): Lazy Peons (5441) needs level 3. Taken with Galgar's quest on the first Den visit (the c13 together 4402/5441 records) it came at level 2.6, and a level-2 player is held at Foreman Thazz'ril; it is taken on the Den return after the valley loop instead (level 4 by then), the peons by the Den woken right after and handed in before Thazz'ril's Pick (6394), as Northstar 0.3.1 ships it"
 			},
 			{
 				"a": [

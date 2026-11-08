@@ -2,7 +2,7 @@
 -- title, level, minLevel, races, classes, faction, start, finish, startItem, pre (one of), excl, objectives, zone, events, skill, holiday, preAll (every one), raceHigh, items (handed over)
 -- One record a line, "<id>\t<fields>" (forge-data questdb.rs payload), read on demand.
 
-local Q = Polestar and Polestar.QuestDB
+local Q = Northstar and Northstar.QuestDB
 if not (Q and Q.AddChunk) then return end
 local R = Q.AddChunk
 R("quests", 5, 783, [[

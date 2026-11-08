@@ -1,6 +1,6 @@
-# Polestar: architecture and contracts
+# Northstar: architecture and contracts
 
-Polestar is a leveling-guide system for **World of Warcraft: Forever** (client
+Northstar is a leveling-guide system for **World of Warcraft: Forever** (client
 1.60.1, `## Interface: 16001`, install folder `_classic_beta_` during beta).
 This file is the contract between modules: the code follows it, and a change
 to a contract changes this file with it.
@@ -18,28 +18,28 @@ Reference material, checked out locally (gitignored):
 
 ## Overview
 
-Polestar is a set of addons, a folder of guides and the Node tools that turn
+Northstar is a set of addons, a folder of guides and the Node tools that turn
 one into the other. The addons:
 
 | Addon | What it holds | Built by (`node tools/polestar.js …`) | In git | Ships |
 |---|---|---|---|---|
-| `Polestar` (`addon/Polestar/`) | The addon: engine, navigation, quests, gear, maps, quality of life, Lookup, Dungeons, Rares and every window | hand-written, plus a few generated data files | yes | yes |
-| `Polestar_Guides` (`addon/Polestar_Guides/`, with `Polestar_Guides_Alliance` and `Polestar_Guides_Horde`) | Polestar's own pack (pack id `guides`): the factionless guides, and each faction's in a part loaded on demand, the player's faction's with the pack (PACK_FORMAT, "Format 8") | `compile`, from `guides/` | yes (generated) | yes |
-| community addons | Addons by other authors (`X-Polestar-Pack` in their TOC; `docs/PACKS.md`, `docs/PACK_FORMAT.md`) | the same compiler, from their own repositories | in their own repositories | by their authors |
-| `Polestar_ItemDB` (`addon/Polestar_ItemDB/`) | Item stats and Forever reward choices for the gear advice; loaded on demand | `forge data itemdb` (`Items.lua`), then `forge data gear` (`Forever.lua`) | yes (generated) | yes |
-| `Polestar_<locale>` (`addon/Polestar_deDE/` … `zhTW/`) | The language folder of one client language: our guides' texts (`Texts.lua`, for `Polestar.GuideTexts`) and the quest, NPC, object and item names (`Names.lua`, for `Polestar.Names`); loaded on demand, only the client's own, never in English. It replaced `Polestar_Guides_<locale>` and `Polestar_Names_<locale>` in 0.3.0 | `forge guide compile` (`Texts.lua`) and `forge data names` (`Names.lua`, from the client's tables, DingDB (pinned) and pfQuest); each writes the one TOC alike (`forge_guide::toc::language_toc`) and leaves the other's file alone | yes (generated) | yes |
-| `Polestar_QuestDB` (`addon/Polestar_QuestDB/`) | The quest database behind quest markers and tooltips; loaded on demand | `forge data questdb` | no (local, gitignored) | yes, when built |
-| `Polestar_Codex` (`addon/Polestar_Codex/`) | Lookup's Codex, and the Dungeons and Rares data; loaded on demand | `forge data codex`, from release-safe inputs (`--local-extras` builds a local-only one) | no (generated, gitignored) | yes, always: `pack` fails without it |
-| `Polestar_Nav` (`addon/Polestar_Nav/`) | Polestar's walking router (started from Shortest Path Forever v1.16.0 by Cillian Berragan, GPL-3.0-or-later; Polestar's since 2026-10-16) with the walking maps of Eastern Kingdoms, Kalimdor and Zephras Isle (maps format 5: Leffe's navigation maps, his surfaces, graph, jumps and drops, with our area names and chokepoints; format 3 from our grid when packed without `--leffe`) and the walk's chokepoints, for the arrow's walking routes; loaded on demand at login, never while an installed Shortest Path Forever guides (the target handed to it, or a journey of its own running; Nav, "In-game walking routes (Polestar_Nav)", "Hand-off to Shortest Path Forever") | the router hand-written (`Routing/`); `forge nav pack --leffe` (the maps, `PACK.json`, from Leffe's navigation maps, the navigation grid and the ground layers) | yes | yes, always |
-| `Polestar_Nav_EK`, `Polestar_Nav_Kalimdor` (`addon/Polestar_Nav_EK/`, `addon/Polestar_Nav_Kalimdor/`) | The map parts of each continent's walking maps when they are Leffe's (maps format 5; their metadata stays in Polestar_Nav); loaded on demand by Polestar_Nav's router the first time it searches that continent (Polestar searches only the player's continent and those already loaded), never in combat ("Leffe's navigation maps in game") | `forge nav pack --leffe` | yes | yes, when written |
-| `Polestar_Travel` (`addon/Polestar_Travel/`) | Zone crossings for the travel planner, from an optional local crossings file; loaded with Polestar | `travel build` | no (local, gitignored) | no, never packaged (Nav, "Travel planner and zone crossings") |
-| `Polestar_Recorder` (`addon/Polestar_Recorder/`) | The optional standalone recorder of play sessions, for authoring | hand-written | yes | yes, as its own zip |
+| `Northstar` (`addon/Northstar/`) | The addon: engine, navigation, quests, gear, maps, quality of life, Lookup, Dungeons, Rares and every window | hand-written, plus a few generated data files | yes | yes |
+| `Northstar_Guides` (`addon/Northstar_Guides/`, with `Northstar_Guides_Alliance` and `Northstar_Guides_Horde`) | Northstar's own pack (pack id `guides`): the factionless guides, and each faction's in a part loaded on demand, the player's faction's with the pack (PACK_FORMAT, "Format 8") | `compile`, from `guides/` | yes (generated) | yes |
+| community addons | Addons by other authors (`X-Northstar-Pack` in their TOC; `docs/PACKS.md`, `docs/PACK_FORMAT.md`) | the same compiler, from their own repositories | in their own repositories | by their authors |
+| `Northstar_ItemDB` (`addon/Northstar_ItemDB/`) | Item stats and Forever reward choices for the gear advice; loaded on demand | `forge data itemdb` (`Items.lua`), then `forge data gear` (`Forever.lua`) | yes (generated) | yes |
+| `Northstar_<locale>` (`addon/Northstar_deDE/` … `zhTW/`) | The language folder of one client language: our guides' texts (`Texts.lua`, for `Northstar.GuideTexts`) and the quest, NPC, object and item names (`Names.lua`, for `Northstar.Names`); loaded on demand, only the client's own, never in English. It replaced `Northstar_Guides_<locale>` and `Northstar_Names_<locale>` in 0.3.0 | `forge guide compile` (`Texts.lua`) and `forge data names` (`Names.lua`, from the client's tables, DingDB (pinned) and pfQuest); each writes the one TOC alike (`forge_guide::toc::language_toc`) and leaves the other's file alone | yes (generated) | yes |
+| `Northstar_QuestDB` (`addon/Northstar_QuestDB/`) | The quest database behind quest markers and tooltips; loaded on demand | `forge data questdb` | no (local, gitignored) | yes, when built |
+| `Northstar_Codex` (`addon/Northstar_Codex/`) | Lookup's Codex, and the Dungeons and Rares data; loaded on demand | `forge data codex`, from release-safe inputs (`--local-extras` builds a local-only one) | no (generated, gitignored) | yes, always: `pack` fails without it |
+| `Northstar_Nav` (`addon/Northstar_Nav/`) | Northstar's walking router (started from Shortest Path Forever v1.16.0 by Cillian Berragan, GPL-3.0-or-later; Northstar's since 2026-10-16) with the walking maps of Eastern Kingdoms, Kalimdor and Zephras Isle (maps format 5: Leffe's navigation maps, his surfaces, graph, jumps and drops, with our area names and chokepoints; format 3 from our grid when packed without `--leffe`) and the walk's chokepoints, for the arrow's walking routes; loaded on demand at login, never while an installed Shortest Path Forever guides (the target handed to it, or a journey of its own running; Nav, "In-game walking routes (Northstar_Nav)", "Hand-off to Shortest Path Forever") | the router hand-written (`Routing/`); `forge nav pack --leffe` (the maps, `PACK.json`, from Leffe's navigation maps, the navigation grid and the ground layers) | yes | yes, always |
+| `Northstar_Nav_EK`, `Northstar_Nav_Kalimdor` (`addon/Northstar_Nav_EK/`, `addon/Northstar_Nav_Kalimdor/`) | The map parts of each continent's walking maps when they are Leffe's (maps format 5; their metadata stays in Northstar_Nav); loaded on demand by Northstar_Nav's router the first time it searches that continent (Northstar searches only the player's continent and those already loaded), never in combat ("Leffe's navigation maps in game") | `forge nav pack --leffe` | yes | yes, when written |
+| `Northstar_Travel` (`addon/Northstar_Travel/`) | Zone crossings for the travel planner, from an optional local crossings file; loaded with Northstar | `travel build` | no (local, gitignored) | no, never packaged (Nav, "Travel planner and zone crossings") |
+| `Northstar_Recorder` (`addon/Northstar_Recorder/`) | The optional standalone recorder of play sessions, for authoring | hand-written | yes | yes, as its own zip |
 
 A guide goes from a `.guide` file to the game in four steps. An author
-writes it in a pack (`guides/` for Polestar's own). `lint` and
+writes it in a pack (`guides/` for Northstar's own). `lint` and
 `compile` parse it and fill in names, places and coordinates from the
 reference data in `data/forever`. `compile` writes the result as Lua into the
-pack's addon folder (`addon/Polestar_Guides` for ours). `install` copies that
+pack's addon folder (`addon/Northstar_Guides` for ours). `install` copies that
 folder into the game, where the pack registers its guides with
 `Core/Guides.lua` at load time and the Engine plays them ("Guide data" and
 "Engine" below).
@@ -50,7 +50,7 @@ table; [tools/README.md](../tools/README.md) lists the commands, every
 generated file and the rebuild order; [tests/README.md](../tests/README.md)
 describes the test layers and the fake client.
 
-`addon/Polestar/Polestar.toc` loads thirteen XML manifests in this order. Each
+`addon/Northstar/Northstar.toc` loads thirteen XML manifests in this order. Each
 module's manifest lists that module's files.
 The module sections below follow this order.
 
@@ -79,28 +79,28 @@ TOC and these manifests, so tests always load exactly what the client loads.
 Only these globals may be assigned anywhere under `addon/` (enforced by
 `rust/crates/forge-addontest/tests/addontest/syntax.rs` via `luac -l`):
 
-`Polestar`, `PolestarDB`, `PolestarCharDB`, `PolestarRecorderDB`,
-`SLASH_POLESTAR<n>`, `SLASH_POLESTARREC<n>`, `SLASH_POLESTARWAY<n>` (`/way`,
-claimed only while no addon has it), `BINDING_HEADER_POLESTAR`,
-`BINDING_NAME_POLESTAR_*`, in `Polestar_Nav` only `Polestar_NavEngine`
-(the engine's handoff), `PolestarPathData` (the walking maps) and, in
-`Routing/Costs.lua` only, `Polestar_NavCosts` (the router's ground-class
+`Northstar`, `NorthstarDB`, `NorthstarCharDB`, `NorthstarRecorderDB`,
+`SLASH_NORTHSTAR<n>`, `SLASH_NORTHSTARREC<n>`, `SLASH_NORTHSTARWAY<n>` (`/way`,
+claimed only while no addon has it), `BINDING_HEADER_NORTHSTAR`,
+`BINDING_NAME_NORTHSTAR_*`, in `Northstar_Nav` only `Northstar_NavEngine`
+(the engine's handoff), `NorthstarPathData` (the walking maps) and, in
+`Routing/Costs.lua` only, `Northstar_NavCosts` (the router's ground-class
 costs), and in `Nav/Journey.lua` only `TomTom` (its stand-in, set while TomTom is not
 installed and cleared when it stands down; "Nav API").
 
-Everything else is `local` or lives on the `Polestar` table. Named frames must
-be prefixed `Polestar`.
+Everything else is `local` or lives on the `Northstar` table. Named frames must
+be prefixed `Northstar`.
 
 ## Core
 
-`local ADDON, ns = ...` in every file; `Polestar = ns` is set once in
+`local ADDON, ns = ...` in every file; `Northstar = ns` is set once in
 `Core/Init.lua` (first file loaded). Packs reach it as the global.
 
 ### Lifecycle
 
 ```lua
-Polestar.OnInit(fn)    -- ADDON_LOADED("Polestar"). Saved settings are loaded; Get falls back to defaults.
-Polestar.OnLogin(fn)   -- PLAYER_LOGIN, in registration order. Player info valid.
+Northstar.OnInit(fn)    -- ADDON_LOADED("Northstar"). Saved settings are loaded; Get falls back to defaults.
+Northstar.OnLogin(fn)   -- PLAYER_LOGIN, in registration order. Player info valid.
 ```
 
 **SavedVariables may come back nil after a cold client restart** on Forever
@@ -112,11 +112,11 @@ chosen guide, and manual check-offs; losing it must degrade gracefully.
 ### Message bus
 
 ```lua
-local h = Polestar.On(msg, fn)   -- fn(...) ; returns handle
-Polestar.Off(h)
-Polestar.Fire(msg, ...)
-Polestar.RegisterEvent(event, fn)    -- game events, one shared hidden frame; fn(event, ...)
-Polestar.UnregisterEvent(event, fn)
+local h = Northstar.On(msg, fn)   -- fn(...) ; returns handle
+Northstar.Off(h)
+Northstar.Fire(msg, ...)
+Northstar.RegisterEvent(event, fn)    -- game events, one shared hidden frame; fn(event, ...)
+Northstar.UnregisterEvent(event, fn)
 ```
 
 Messages:
@@ -149,8 +149,8 @@ Messages:
 | `SHOW_DISCORD` | — | `/polestar discord` → UI/Report.lua |
 | `SHOW_QUEST_ROOM` | — | `/polestar questlog`, the full-log banner's Make room → UI/QuestRoom.lua |
 | `SHOW_IMPORT` | — | `/polestar import` (Core/Import.lua) → UI/Import.lua: the hub at Import |
-| `TOGGLE_PICKER` / `TOGGLE_OPTIONS` | — | key bindings and gamepad chords (`POLESTAR_MENU`, `POLESTAR_OPTIONS`) → UI: open, or close when open |
-| `TOGGLE_FOCUS` | — | `POLESTAR_FOCUS` → UI/GamepadGuide.lua (focus mode) |
+| `TOGGLE_PICKER` / `TOGGLE_OPTIONS` | — | key bindings and gamepad chords (`NORTHSTAR_MENU`, `NORTHSTAR_OPTIONS`) → UI: open, or close when open |
+| `TOGGLE_FOCUS` | — | `NORTHSTAR_FOCUS` → UI/GamepadGuide.lua (focus mode) |
 
 Modules fire their own (`TABS_CHANGED`, `ROUTE_*`, `TRAIN_DUE`,
 `CLASS_TRAINED`, `GUIDE_OUTLEVELED`, `QUESTDB_*`, `CODEX_LOADED`,
@@ -162,12 +162,12 @@ with their module.
 ### Settings
 
 ```lua
-Polestar.RegisterDefaults(section, tbl)  -- at file load; section = "ui" | "nav" | "behavior" | ...
-Polestar.Get("ui.scale")                 -- dotted path; falls back to defaults
-Polestar.Set("ui.scale", 1.1)            -- writes PolestarDB.settings, fires SETTING_CHANGED
-Polestar.CharState()                      -- PolestarCharDB, always a table
-Polestar.IsNewCharacter()                 -- true when there was no saved PolestarCharDB as the addon loaded
-Polestar.FormatDistance(yards, opts)      -- "120 yd", or "110 m" / "1.2 km" under nav.distanceUnit = "metres"
+Northstar.RegisterDefaults(section, tbl)  -- at file load; section = "ui" | "nav" | "behavior" | ...
+Northstar.Get("ui.scale")                 -- dotted path; falls back to defaults
+Northstar.Set("ui.scale", 1.1)            -- writes NorthstarDB.settings, fires SETTING_CHANGED
+Northstar.CharState()                      -- NorthstarCharDB, always a table
+Northstar.IsNewCharacter()                 -- true when there was no saved NorthstarCharDB as the addon loaded
+Northstar.FormatDistance(yards, opts)      -- "120 yd", or "110 m" / "1.2 km" under nav.distanceUnit = "metres"
 ```
 
 Every distance a player reads goes through `FormatDistance` (the arrow, the
@@ -177,14 +177,14 @@ the nearest 5, `opts.compact` writes yards from 1000 as "1.2k yd"
 (`Rares.YardsText`); metres turn to kilometres from 1000 m. The bug report
 keeps yards for whoever reads it.
 
-`PolestarDB = { schema = 1, settings = { [section] = { ... } }, packs = { [packId] = { off = true } }, imports = { [guideId] = { format, license, guide, frames } }, welcomeSeen = 1, gamepad = { chords = { [action] = "PADRSHOULDER+PADDUP" } } }`
-`PolestarCharDB = { schema = 1, guide = id|nil, tabs = { guideId, ... }, activeTab = n, absentAt = { [guideId] = place }, manual = { [guideId] = { ["s:g"] = true|"tick" } }, skipped = { [guideId] = { [stepIndex] = true, ["s:g"] = true } }, pins = { [guideId] = { step, done } }, offers = { [questID] = true }, skippedQuests = { [questID] = true }, shapes = { [guideId] = shape }, stepKeys = { [guideId] = { hash, ... } }, flags = { fp = { [name] = true }, ... }, dungeons = { [mapId] = true }, welcomeSeen = 0|1 }`
+`NorthstarDB = { schema = 1, settings = { [section] = { ... } }, packs = { [packId] = { off = true } }, imports = { [guideId] = { format, license, guide, frames } }, welcomeSeen = 1, gamepad = { chords = { [action] = "PADRSHOULDER+PADDUP" } } }`
+`NorthstarCharDB = { schema = 1, guide = id|nil, tabs = { guideId, ... }, activeTab = n, absentAt = { [guideId] = place }, manual = { [guideId] = { ["s:g"] = true|"tick" } }, skipped = { [guideId] = { [stepIndex] = true, ["s:g"] = true } }, pins = { [guideId] = { step, done } }, offers = { [questID] = true }, skippedQuests = { [questID] = true }, shapes = { [guideId] = shape }, stepKeys = { [guideId] = { hash, ... } }, flags = { fp = { [name] = true }, ... }, dungeons = { [mapId] = true }, welcomeSeen = 0|1 }`
 
 `packs[<id>].off` hides a pack's guides account-wide (the Community guides page's
 switch). `imports` holds the guides pasted on the Import page, as decoded
 ("The guide registry", imported guides). `welcomeSeen` (UI/Welcome.lua) is the version of the welcome last
-seen: in `PolestarDB`, the account has had its welcome (later characters skip
-its Set up and Route style pages); in `PolestarCharDB`, this character has (0 while due).
+seen: in `NorthstarDB`, the account has had its welcome (later characters skip
+its Set up and Route style pages); in `NorthstarCharDB`, this character has (0 while due).
 `dungeons` (per character) holds the dungeons this character runs in leveling
 guides, by the instance's Map id (`Engine.ChooseDungeon`, `when dungeon`).
 `behavior.suggestFrom` (default `"guides"`) is the pack suggestions come from.
@@ -215,7 +215,7 @@ ids) lets a pack update carry them to the steps it kept (see "Placement").
 ### Commands
 
 ```lua
-Polestar.RegisterCommand(name, fn(argString), help)
+Northstar.RegisterCommand(name, fn(argString), help)
 ```
 
 `/polestar` and `/pole`. No argument fires `TOGGLE_FRAME`. `help` lists
@@ -239,36 +239,36 @@ instance or on a map without a position it prints why instead.
 ### Caught errors and the Polestar Discord
 
 ```lua
-Polestar.SafeCall(fn, ...)    -- runs fn; an error is noted, then handed to the error handler (the same message at most once every 30 s)
-Polestar.Safe(fn) -> fn'      -- fn through SafeCall (nil stays nil): every OnUpdate script's handler
-Polestar.After(s, fn) / NewTicker(s, fn, n) / NewTimer(s, fn)   -- C_Timer's, the callback through Safe; every timer of the addon's
-Polestar.Log(text)            -- a line into the rolling log (the last 200, "HH:MM:SS text"), kept whether or not debug is on
-Polestar.DebugLog(n?) -> { line, ... }   -- its last n lines, oldest first
-Polestar.NoteError(err)       -- notes an error Polestar caught (SafeCall, Hooks' callbacks)
-Polestar.Errors() -> { { msg, count, seq }, ... }   -- this session's, oldest first, the last 5 kept
-Polestar.NoteBlocked(addon, fn)   -- notes a protected call the game blocked from Polestar or Polestar_*
-Polestar.Blocked() -> { { addon, fn, count, at, seq }, ... }   -- this session's, oldest first, the last 5 kept
-Polestar.DiscordURL           -- the Polestar Discord's invite
+Northstar.SafeCall(fn, ...)    -- runs fn; an error is noted, then handed to the error handler (the same message at most once every 30 s)
+Northstar.Safe(fn) -> fn'      -- fn through SafeCall (nil stays nil): every OnUpdate script's handler
+Northstar.After(s, fn) / NewTicker(s, fn, n) / NewTimer(s, fn)   -- C_Timer's, the callback through Safe; every timer of the addon's
+Northstar.Log(text)            -- a line into the rolling log (the last 200, "HH:MM:SS text"), kept whether or not debug is on
+Northstar.DebugLog(n?) -> { line, ... }   -- its last n lines, oldest first
+Northstar.NoteError(err)       -- notes an error Northstar caught (SafeCall, Hooks' callbacks)
+Northstar.Errors() -> { { msg, count, seq }, ... }   -- this session's, oldest first, the last 5 kept
+Northstar.NoteBlocked(addon, fn)   -- notes a protected call the game blocked from Northstar or Northstar_*
+Northstar.Blocked() -> { { addon, fn, count, at, seq }, ... }   -- this session's, oldest first, the last 5 kept
+Northstar.DiscordURL           -- the Polestar Discord's invite
 ```
 
 Every message and game-event handler, init and login callback and command
 runs through `SafeCall`, and Hooks' callbacks through their own `pcall`, so
-the errors Polestar catches are noted by their first line, counted, for the
-report a player copies (UI, "Reporting a problem"). Polestar never replaces
+the errors Northstar catches are noted by their first line, counted, for the
+report a player copies (UI, "Reporting a problem"). Northstar never replaces
 the game's error handler: wrapping it would shift the stack the game and
 !BugGrabber show for every error. Taint is no Lua error: `ADDON_ACTION_BLOCKED`
 and `ADDON_ACTION_FORBIDDEN` (the addon blamed, then the function) go to
-`NoteBlocked`, which keeps those blaming Polestar or a `Polestar_*` addon
+`NoteBlocked`, which keeps those blaming Northstar or a `Northstar_*` addon
 with the addon, how often and the time it last came (`%H:%M:%S`), so a
 report on a broken gamepad or button does not read "Errors: none". `seq`,
 one counter for both lists, says which came last.
 
 OnUpdate scripts and timer callbacks are run by the client, not the bus:
-each goes through `Polestar.Safe` / `Polestar.After`, so their errors are
+each goes through `Northstar.Safe` / `Northstar.After`, so their errors are
 noted and passed on like a handler's. An error handed on is passed to the
 game's handler at most once every 30 seconds per message (a loop that keeps
 failing would flood it); every one is still noted and counted. The rolling
-log holds `Polestar.Debug` lines, caught errors and blocked calls whether or
+log holds `Northstar.Debug` lines, caught errors and blocked calls whether or
 not `/polestar debug` prints them; the report ends its details with its last
 five lines under "Log:", before anything else gives way to Discord's 2000
 characters, after the quest log ("Quest log 12/40: 783 1/3, 7 done, …") and
@@ -278,20 +278,20 @@ each left out when empty.
 ### Frames under the game's UI
 
 ```lua
-Polestar.CreateFrameUnder(kind, name, parent, template) -> frame   -- CreateFrame with no parent, then SetParent(parent)
+Northstar.CreateFrameUnder(kind, name, parent, template) -> frame   -- CreateFrame with no parent, then SetParent(parent)
 ```
 
 Forever's gamepad interface hooks `CreateFrame`
 (`Blizzard_GamepadSmartNavigation`, `SetupFrameHooks`): when the parent is,
 or is under, one of its open panels (the world map, the quest frame, the
 talents, the settings...), it rebuilds that panel's button groups inside the
-caller's code. Called from Polestar, the panel's tables are left tainted and
+caller's code. Called from Northstar, the panel's tables are left tainted and
 the next gamepad action there is blocked ("An action was blocked because of
-taint from Polestar"; seen in game as a quest reward was taken, then on every
-panel after it). `SetParent` is not hooked. So every frame of Polestar's
+taint from Northstar"; seen in game as a quest reward was taken, then on every
+panel after it). `SetParent` is not hooked. So every frame of Northstar's
 whose parent is a game frame, or is under one (the map canvases, the
 minimap, the quest reward and talent buttons, the XP bar, and the frames
-under those), is made through `CreateFrameUnder`; frames under Polestar's
+under those), is made through `CreateFrameUnder`; frames under Northstar's
 own windows, which hang off `UIParent`, are made with `CreateFrame`. No
 `CreateFramePool` with a game frame either: it calls `CreateFrame` with its
 parent. `tests/lua/wow_stub.lua`'s `CreateFrame` raises on a call from addon
@@ -303,9 +303,9 @@ code whose parent is, or is under, a frame addon code did not make
 ### Gamepad interface
 
 ```lua
-Polestar.GamepadUI() -> bool   -- Forever's Gamepad interface style is on (read once, as the addon loads)
-Polestar.CloseOnEscape(name)   -- add a Polestar window to UISpecialFrames, except with the gamepad interface
-Polestar.RunCommand(msg)       -- what /polestar runs; registered as a slash command only with the keyboard and mouse
+Northstar.GamepadUI() -> bool   -- Forever's Gamepad interface style is on (read once, as the addon loads)
+Northstar.CloseOnEscape(name)   -- add a Northstar window to UISpecialFrames, except with the gamepad interface
+Northstar.RunCommand(msg)       -- what /polestar runs; registered as a slash command only with the keyboard and mouse
 ```
 
 With Forever's Gamepad interface on (Options, Gamepad, Enable Gamepad UI;
@@ -320,18 +320,18 @@ code running in that flow gets them blocked, and the "AddOn blocked"
 popup's own gamepad handling blocks the next one, thousands of times, until
 the client freezes. An addon whose only code is an empty slash command
 reproduces it (Blizzard forum threads 2367777 and 2370253). Other Forever
-addons (EllesmereUI, Olympus, Questie) do the same as Polestar: with the
+addons (EllesmereUI, Olympus, Questie) do the same as Northstar: with the
 gamepad interface on, they keep to their own windows.
 
 `GamepadUI()` reads the style once, as `Core/Init.lua` loads (the client
-reloads the UI when it changes). With it on, Polestar:
+reloads the UI when it changes). With it on, Northstar:
 
 - registers no slash command: `/polestar`, `/pole`, `/way` (Nav/Journey)
-  and `/psrec` (Polestar_Recorder, which reads the style itself). The chat
+  and `/psrec` (Northstar_Recorder, which reads the style itself). The chat
   box calls a command's function, then closes itself in that function's
   taint. The minimap button, on by default then (`maps.minimapButton`), and
-  the key bindings open Polestar; the Recorder page calls
-  `PolestarRecorder_Command`;
+  the key bindings open Northstar; the Recorder page calls
+  `NorthstarRecorder_Command`;
 - adds no entry to the world map and minimap tracking menus
   (`Menu.ModifyMenu`, Nav/Nearby) or to the quest log and objective
   tracker menus (UI/QuestLinks);
@@ -339,9 +339,9 @@ reloads the UI when it changes). With it on, Polestar:
   gamepad's menus read and close;
 - opens no world map (`Compat.OpenWorldMap`; a dungeon page has no "Show
   on map") and adds no canvas click handler to it (Nav/Journey);
-- never closes the game's Settings panel for "Open Polestar settings"
+- never closes the game's Settings panel for "Open Northstar settings"
   (UI/Options: the chat says to close it);
-- hooks no button the gamepad's navigation moves over: no Polestar line on
+- hooks no button the gamepad's navigation moves over: no Northstar line on
   talent tooltips (Talents/Overlay), no route on the flight map
   (QoL/Flight; the node keeps its mark), no quest levels in the game's
   quest windows (Quests/QuestLevels, whose surfaces lay out windows the
@@ -349,7 +349,7 @@ reloads the UI when it changes). With it on, Polestar:
 - leaves the game's request dialogs for the player (QoL/Social) and the
   error-message setting off (QoL/Toggles, which writes the game's
   `BLACK_LISTED_MESSAGE_TYPES`);
-- sets no override binding on the gamepad's buttons: a Polestar window
+- sets no override binding on the gamepad's buttons: a Northstar window
   holding the gamepad reads them through its own frame only; binds no chord
   unasked and names every chord on LB or RB as the game's own; and only
   reads the gamepad's focused window, never calls into its managers
@@ -359,7 +359,7 @@ Frames under the game's frames are made through `CreateFrameUnder` and the
 maps are only read (MapCanvas) with either style. The quest automation, the
 vendor and the trainer stay on: they call the game's API, never its
 windows, and the game opens and closes those from its own event handlers.
-`rust/crates/forge-addontest/tests/addontest/gamepad-ui.rs` loads Polestar with each style, and lists every
+`rust/crates/forge-addontest/tests/addontest/gamepad-ui.rs` loads Northstar with each style, and lists every
 line of addon code that reaches into the game's UI (slash commands,
 `UISpecialFrames`, menus, panels, popups, the world map's tables, the error
 frame's settings, override bindings, the gamepad's managers): a new one fails
@@ -367,7 +367,7 @@ there until it is guarded and listed.
 
 ### Localisation
 
-`Polestar.L[key]`: a key is the English text, and a missing key returns
+`Northstar.L[key]`: a key is the English text, and a missing key returns
 itself, so a client without a translation reads English. A locale file
 (`Locales/<locale>.lua`, one per language of forge-guide's `locales.rs`,
 loaded by `Core/Core.xml` right after `Core/Init.lua` and returning at once on
@@ -377,15 +377,15 @@ commands register in Core/Commands.lua). docs/TRANSLATING.md describes the
 files and `forge i18n`.
 
 A word with more than one meaning gets a key per meaning:
-`Polestar.LC(context, text)` is the translation of `"<context>: <text>"`, and
+`Northstar.LC(context, text)` is the translation of `"<context>: <text>"`, and
 `text` while there is none: a dungeon boss that is a chest is
 `LC("boss", "Chest")`.
 
 A game term the client names itself is shown in the client's words and has no
-key: reputation standings (`Polestar.StandingName(n)`,
+key: reputation standings (`Northstar.StandingName(n)`,
 `FACTION_STANDING_LABELn` in the character's gender through `GetText`), item
-qualities (`Polestar.QualityName(q)`, `ITEM_QUALITYn_DESC`), the factions
-(`Polestar.FactionName(f)`, `FACTION_ALLIANCE`, `FACTION_HORDE`), gear slots
+qualities (`Northstar.QualityName(q)`, `ITEM_QUALITYn_DESC`), the factions
+(`Northstar.FactionName(f)`, `FACTION_ALLIANCE`, `FACTION_HORDE`), gear slots
 (`Gear.SlotName`, `HEADSLOT`…) and the Dungeon Journal (`ENCOUNTER_JOURNAL`).
 The test client (`tests/lua/wow_stub.lua`) holds their English values.
 Class and race names come from the client too, keeping their keys only as the
@@ -405,19 +405,19 @@ Talents/Builds.lua's `specs` and the Dungeons attunement notes of
 `data/codex/attunements.json`). Generated files carry their prose as
 literal keys too: `forge data talents build` writes the plan summary and per-level notes
 as `L["..."]` in `Talents/Builds.lua`. Data that names a game thing carries
-its id instead, and the display asks `Polestar.Names` (quests, NPCs, objects,
+its id instead, and the display asks `Northstar.Names` (quests, NPCs, objects,
 items, spells, factions, instances, areas, flight points, encounters). The
 optional Recorder has its own `ns.L` and `Locales/<locale>.lua` (listed in
 its TOC); `forge i18n check` and `sync` cover it too.
 
-`Polestar.AI_LOCALES` names the languages whose translation is AI-made
+`Northstar.AI_LOCALES` names the languages whose translation is AI-made
 (`status: "ai"` in locales.rs; the forge-i18n tests keep the two equal). On
-such a client with its file loaded, `Polestar.AITranslation()` is true and
+such a client with its file loaded, `Northstar.AITranslation()` is true and
 Options > About says so, with the Discord invite.
 
 ### Names
 
-`Polestar.Names` (`Core/Names.lua`) names quests, NPCs, objects, items,
+`Northstar.Names` (`Core/Names.lua`) names quests, NPCs, objects, items,
 spells, factions, areas, instances, flight points and dungeon encounters in
 the client's language. The guides and data packs keep their English; where a
 name is shown or matched, the caller asks Names first and keeps its English
@@ -434,7 +434,7 @@ Names.Cached(kind, id) -> name | nil   -- never asks the server; items from the 
 Names.Learn(unit) -> name | nil        -- keeps the name the client shows for unit
 Names.Localised() -> bool              -- false on enUS and enGB
 Names.Ready() -> bool                  -- the pack is in, or will not load this session
-Names.PackName() -> "Polestar_<locale>" | nil   -- the language folder
+Names.PackName() -> "Northstar_<locale>" | nil   -- the language folder
 Names.AddChunk(locale, kind, lo, hi, text)   -- the pack's files only; any kind
 ```
 
@@ -448,7 +448,7 @@ Names.AddChunk(locale, kind, lo, hi, text)   -- the pack's files only; any kind
   somewhere other than the current zone (an older client ignores the
   argument). Flight points (`taxi`) and encounters are the pack's only.
   Then the names pack of the client's
-  language, `Names.lua` in the language folder `Polestar_<GetLocale()>`,
+  language, `Names.lua` in the language folder `Northstar_<GetLocale()>`,
   loaded through `Data.Pack` on the
   first ask, or already in when Guide texts loaded the folder (refused in
   combat, it loads when combat ends, fires `NAMES_LOADED` and redraws the
@@ -461,7 +461,7 @@ Names.AddChunk(locale, kind, lo, hi, text)   -- the pack's files only; any kind
   (`GOSSIP_SHOW`, `QUEST_GREETING`, `QUEST_DETAIL`, `QUEST_PROGRESS`,
   `QUEST_COMPLETE`, `MERCHANT_SHOW`, `TRAINER_SHOW`: the `npc` unit, a
   quest-giving object's GUID too) `Names.Learn` keeps the unit's name by its
-  GUID's id in `PolestarDB.names[<locale>].npc` / `.object` (account-wide,
+  GUID's id in `NorthstarDB.names[<locale>].npc` / `.object` (account-wide,
   per client language, read through `ns.DB()` each time; player-controlled
   units are skipped; a name equal to the pack's is not kept; at most 2,000
   ids, `order` oldest first, the oldest tenth dropped past the cap).
@@ -500,14 +500,14 @@ Names.AddChunk(locale, kind, lo, hi, text)   -- the pack's files only; any kind
   `fromKind`), so the goal line names them in the client's language;
   `from` and `fromAlso` are the English for older packs and English clients.
 - **The packs.** One load-on-demand language folder per language,
-  `addon/Polestar_<locale>/`, shared with our guides' texts (Guide texts):
+  `addon/Northstar_<locale>/`, shared with our guides' texts (Guide texts):
   `Names.lua` handing `Names.AddChunk`
   each kind's names as LuaChunks text, `"<id>\t<name>"` lines of up to 500
   names a chunk, cut out when a name is asked (about 1 MB resident instead
   of 3 to 4), `LICENSE-DATA.txt`, Ding's `CREDITS.md`, and the folder's TOC,
   which `forge data names` and `forge guide compile` write alike (each leaves
   the other's files alone; `forge data names` removes the folder only once
-  no `Texts.lua` is left in it, and the old `Polestar_Names_<locale>`),
+  no `Texts.lua` is left in it, and the old `Northstar_Names_<locale>`),
   committed and shipped. Kinds: `quest`, `npc`, `object`, `item`, and `map`
   (instance maps), `encounter` (DungeonEncounter ids), `faction`, `taxi`
   (TaxiNodes ids) and `objective` (the objective text of the dungeon quests
@@ -530,13 +530,13 @@ Names.AddChunk(locale, kind, lo, hi, text)   -- the pack's files only; any kind
   `--no-questie` leaves DingDB out. `Data.CheckInstall` checks the client's
   language folder like the other optional data packs: never missing, named
   when its version differs. It also lists the languages whose old folders,
-  `Polestar_Guides_<locale>` or `Polestar_Names_<locale>` (before 0.3.0),
-  are still installed: Polestar never loads them, and at login one line asks
+  `Northstar_Guides_<locale>` or `Northstar_Names_<locale>` (before 0.3.0),
+  are still installed: Northstar never loads them, and at login one line asks
   the player to delete them.
 
 ### Guide texts
 
-`Polestar.GuideTexts` (`Core/GuideTexts.lua`) shows a guide's own words in
+`Northstar.GuideTexts` (`Core/GuideTexts.lua`) shows a guide's own words in
 the client's language. A compiled guide's texts (its `title`, `why`, `pitch`,
 `pros`, `cons` and reward `text`; each step's `title` and `note`; each goal's
 `note` and `text`) carry the game's names as tokens, `{kind:id}`, and the
@@ -553,15 +553,15 @@ texts; a folder named after a class reads as `LOCALIZED_CLASS_NAMES_MALE`'s.
 ```
 GuideTexts.Prepare(def, live) / GuideTexts.Refresh(def) -> changed
 GuideTexts.Load(addon) -> "loaded" | "combat" | nil
-GuideTexts.TextsAddon(addon) -> "<addon>_<locale>" | nil   -- nil on English; our pack's "Polestar_<locale>"
+GuideTexts.TextsAddon(addon) -> "<addon>_<locale>" | nil   -- nil on English; our pack's "Northstar_<locale>"
 GuideTexts.PackText(packId, text) -> translation | text
-Polestar.RegisterGuideTexts(locale, packId, { pack = {...}, guides = { [id] = {...} } })
+Northstar.RegisterGuideTexts(locale, packId, { pack = {...}, guides = { [id] = {...} } })
 ```
 
 - **Loading.** The translations of a pack are its texts addon for the
   client's language, `<pack addon>_<locale>` (load on demand, generated by
   `compile` from the pack's `locales/<locale>/` files; our own pack's,
-  `Polestar_Guides`, are `Texts.lua` in the language folder `Polestar_<locale>`
+  `Northstar_Guides`, are `Texts.lua` in the language folder `Northstar_<locale>`
   beside the game's names, so one load brings both): only that one loads,
   only on that client, through `Data.Pack`, at the pack's own
   `ADDON_LOADED`. While the pack's files load, its guides show their English
@@ -582,13 +582,13 @@ Polestar.RegisterGuideTexts(locale, packId, { pack = {...}, guides = { [id] = {.
 ### Compat — the client's game data goes through here
 
 UI, Nav and Engine read the client's quests, map, units and items through
-`Polestar.Compat`, with these exceptions that call the client themselves:
+`Northstar.Compat`, with these exceptions that call the client themselves:
 Nav's Blizzard user waypoint (`C_Map`, `C_SuperTrack`, and Waypoint UI's
 `WaypointUIAPI.Navigation` when that addon is loaded; `Nav/Bridges.lua`),
 the minimap's radius, shape, rotation and indoors state (`Nav/Pins.lua`;
 `Maps/RouteLines.lua` reads them through `Pins.MinimapView()`), the gamepad's
 map cursor and A (`SoftCursor`, `IsKeyDown`; `Nav/Pins.lua`), the map frames
-Polestar draws on (only read; `Nav/MapCanvas.lua`),
+Northstar draws on (only read; `Nav/MapCanvas.lua`),
 the run speed, taxi nodes, hearthstone cooldown and ghost state (`GetUnitSpeed`,
 `C_TaxiMap`, item cooldown, `UnitIsGhost`; `Nav/Travel.lua`), the player's
 height for the walking engine (`Compat.GetPlayerUnitPosition`, `Nav/Walk.lua`), the zone art's map art
@@ -597,7 +597,7 @@ layers and exploration (`UI/ZoneArt.lua`), the class name in the options
 (`GetQuestDifficultyColor`, `UI/Dungeons.lua`), item names, icons and
 quality colours (`C_Item`; `UI/Dungeons.lua`, `UI/GearPick.lua`,
 `UI/Lookup.lua`, `Rares/View.lua`), the game's item and spell tooltips
-and modified clicks on Polestar's item and spell buttons
+and modified clicks on Northstar's item and spell buttons
 (`GameTooltip:SetHyperlink`, `SetSpellByID`, `HandleModifiedItemClick`,
 `ChatFrameUtil.InsertLink`; `W.ItemTip`, `W.SpellTip`, `W.ItemClick`,
 `W.SpellClick` in `Theme/Widgets.lua`), the
@@ -635,7 +635,7 @@ gamepad and key binding API (`C_GamePad`, `C_InputInterfaceStyle`,
 `C_KeyBindings`, `SetBinding`, `GetBindingKey`, `SetOverrideBindingClick`,
 `IsKeyDown`; `UI/Gamepad.lua`). Frame and system calls (`GetTime`, `GetServerTime`, `C_Timer`,
 `InCombatLockdown`, the cursor, CVars, addon loading, the build and locale)
-are not routed either. `Polestar_Nav` is a separate addon whose router
+are not routed either. `Northstar_Nav` is a separate addon whose router
 (started from Shortest Path Forever's) has no Compat, so it calls the client directly:
 `C_EncodingUtil.DecodeBase64` and `C_EncodingUtil.DecompressString` with
 `Enum.CompressionMethod.Zlib` (decoding a map cluster, `Routing/PathGrid.lua`),
@@ -702,7 +702,7 @@ Compat.InCombat()                      -> bool
 Compat.IsInInstance()                  -> bool, instanceType ("party" | "raid" | "pvp" | ... inside)
 Compat.IsIndoors()                     -> bool | nil (the client's indoor state; nil without IsIndoors or when secret)
 Compat.IsShiftKeyDown()                -> bool
-Compat.AddOnPresent(name)              -> bool   (installed and enabled: loaded, or loadable after Polestar)
+Compat.AddOnPresent(name)              -> bool   (installed and enabled: loaded, or loadable after Northstar)
 Compat.Supports(feature)               -> bool   ("skill" | "spell" | "faction" | "explore" | "achievement")
 Compat.GetSkillRank(skillLineOrName)   -> rank, maxRank | nil  (profession/secondary skill)
 Compat.IsSpellKnown(spellID)           -> bool
@@ -720,11 +720,11 @@ Plaguelands, Redridge Mountains, Stormwind City), and more may. Packs embed
 the Era world bounds for every map they reference:
 
 ```lua
-Polestar.RegisterMapFrames({ era = { [uiMapID] = { c = continentMapID, left = wy0, right = wy1, top = wx0, bottom = wx1 }, ... } }, packId)
+Northstar.RegisterMapFrames({ era = { [uiMapID] = { c = continentMapID, left = wy0, right = wy1, top = wx0, bottom = wx1 }, ... } }, packId)
 ```
 
-`packId` nil is Polestar itself (its data addons, class trainers). Frames from
-Polestar and our pack (`guides`) win for a map both cover, whatever the load
+`packId` nil is Northstar itself (its data addons, class trainers). Frames from
+Northstar and our pack (`guides`) win for a map both cover, whatever the load
 order; another pack only adds maps they lack (lint warns where its frame
 differs).
 
@@ -740,20 +740,20 @@ Shared by every module (summarised in `docs/SUITE.md`, "Runtime services");
 each file's header lists its full API.
 
 ```lua
-Polestar.Data.Pack(name) -> loaded, reason|nil   -- C_AddOns.LoadAddOn once per session; never in combat ("combat", retried later)
-Polestar.Data.Info(name) -> { loaded, reason, memoryKB }
-Polestar.Data.CheckInstall() -> missing, stale, retired   -- stale: "name version" of every Polestar_* folder (loaded or not, Polestar_Recorder aside) whose known version differs from Polestar's
-Polestar.Data.InstallLine() -> string|nil   -- a mixed install in one English line for the report ("mixed: Polestar 0.3.5, Polestar_Guides 0.3.4")
+Northstar.Data.Pack(name) -> loaded, reason|nil   -- C_AddOns.LoadAddOn once per session; never in combat ("combat", retried later)
+Northstar.Data.Info(name) -> { loaded, reason, memoryKB }
+Northstar.Data.CheckInstall() -> missing, stale, retired   -- stale: "name version" of every Northstar_* folder (loaded or not, Northstar_Recorder aside) whose known version differs from Northstar's
+Northstar.Data.InstallLine() -> string|nil   -- a mixed install in one English line for the report ("mixed: Northstar 0.3.5, Northstar_Guides 0.3.4")
 
-Polestar.Hooks.ItemLines(owner, fn(tooltip, link, itemID))       -- GameTooltip, ItemRefTooltip
-Polestar.Hooks.UnitLines(owner, fn(tooltip, unit))               -- GameTooltip
-Polestar.Hooks.ObjectLines(owner, fn(tooltip, objectID, name))   -- GameTooltip; either may be nil
-Polestar.Hooks.ItemClick(owner, fn(link, itemID))                -- modified clicks on chat links, bag and loot items
-Polestar.Hooks.AddLine(tooltip, left, right?, r, g, b, rr, rg, rb)
+Northstar.Hooks.ItemLines(owner, fn(tooltip, link, itemID))       -- GameTooltip, ItemRefTooltip
+Northstar.Hooks.UnitLines(owner, fn(tooltip, unit))               -- GameTooltip
+Northstar.Hooks.ObjectLines(owner, fn(tooltip, objectID, name))   -- GameTooltip; either may be nil
+Northstar.Hooks.ItemClick(owner, fn(link, itemID))                -- modified clicks on chat links, bag and loot items
+Northstar.Hooks.AddLine(tooltip, left, right?, r, g, b, rr, rg, rb)
 
-Polestar.Search.Query(text, opts) -> results, counts, more   -- opts = { kinds, limit = 60, perKind, offset, subtitles = false }
+Northstar.Search.Query(text, opts) -> results, counts, more   -- opts = { kinds, limit = 60, perKind, offset, subtitles = false }
    -- result = { kind, id, title, subtitle, quality, score, status, curated }; exact > prefix > word prefix > substring
-Polestar.Search.Subtitle(result) ; Search.KINDS ; Search.Status() -> codexLoaded, reason
+Northstar.Search.Subtitle(result) ; Search.KINDS ; Search.Status() -> codexLoaded, reason
 ```
 
 `Hooks` owns the client hooks: `TooltipDataProcessor.AddTooltipPostCall`
@@ -783,18 +783,18 @@ Generated by `forge guide compile` from `.guide` sources
 `Pack.lua`, `MapFrames.lua`, `Guides.lua` (one `RegisterGuide` per guide, each
 built in its own function) and `LICENSE-DATA.txt`, plus `LICENSE.txt` (the
 pack's `LICENSE`) when the pack folder has one. Ours is
-`addon/Polestar_Guides/`; a community pack's is `<pack>/dist/<folder>/`. Our
-faction parts (`Polestar_Guides_Alliance`, `Polestar_Guides_Horde`) carry the
+`addon/Northstar_Guides/`; a community pack's is `<pack>/dist/<folder>/`. Our
+faction parts (`Northstar_Guides_Alliance`, `Northstar_Guides_Horde`) carry the
 same `LICENSE-DATA.txt`, and `forge release pack` refuses a guide part
 without one, as it refuses a data addon without its notice. The
 full contract for pack authors' tools is `docs/PACK_FORMAT.md`.
 
 ```lua
 local ADDON = ...
-Polestar.RegisterPack({ addon = ADDON, id = "guides", format = 2, title = "Polestar Guides",
-  author = "Polestar", version = "0.2.0", license = "GPL-3.0-only" })   -- optional: website, source, notes
+Northstar.RegisterPack({ addon = ADDON, id = "guides", format = 2, title = "Northstar Guides",
+  author = "Northstar", version = "0.2.0", license = "GPL-3.0-only" })   -- optional: website, source, notes
 
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
   id = "forever/alliance/human/01-elwynn-forest",
   pack = "guides",
   title = "Elwynn Forest",
@@ -805,7 +805,7 @@ Polestar.RegisterGuide({
   category = "Leveling",
   zone = 1429, zoneName = "Elwynn Forest",
   next = "forever/alliance/02-westfall",   -- or nil
-  author = "Polestar", version = 1,
+  author = "Northstar", version = 1,
   group = true,                    -- or nil: a goal of the route (not optional) needs a group
   reward = { { spell = 23161, spellName = "Summon Dreadsteed" } },  -- or nil: what the goal gives (format 2)
   why = "...",                     -- or nil: one line on why it is worth doing (format 2)
@@ -830,7 +830,7 @@ Goal fields. Common: `t` (verb), `text` (display override), `note`,
 radius in yards), `group` (group content, below). A goal placed at an NPC or
 object that spawns at several
 places carries spawn areas, `spots = { { x, y, r, n, alt }, ... }` (in
-Polestar's own pack one string, `spotsPacked`, built into these tables on the
+Northstar's own pack one string, `spotsPacked`, built into these tables on the
 goal's first read of `spots`; PACK_FORMAT, "Format 8"): cluster
 centre in the goal's `map` and frame, radius in yards, spawn count; together
 they cover every spawn of the target on that map. Camps nearest to the goal's
@@ -850,7 +850,7 @@ candidate's `z`, else the chosen spot's, else the goal's while the waypoint is
 the goal's own point), and on the step view's goals and groups, so a click on
 a goal's row, header or map pin and the training reminder's and Nearby's class
 trainer (`Nav.SetTarget`'s `z`) keep it; the walk to it is searched with it
-("Walking paths" under Nav). Packs stay format 2: an older Polestar ignores it.
+("Walking paths" under Nav). Packs stay format 2: an older Northstar ignores it.
 
 Group content (format 2; GUIDE_FORMAT, "Group content"): `group = { kind =
 "elite", rank = 1|2|3 }`, `{ kind = "dungeon"|"raid", name = "Dire Maul" }` or
@@ -868,7 +868,7 @@ quest's accept, `complete` and objective goals, derived by
 `tools/lib/dsl/escort.js`. Display only: the Engine carries it into the goal
 view as `escort` and the guide window says it under the goal
 (`UI.EscortLine`: "Escort: if the NPC is not there, wait for it to
-respawn"), once per card. Older Polestar ignores it.
+respawn"), once per card. Older Northstar ignores it.
 
 A guide's `reward` (format 2; GUIDE_FORMAT, `reward`) lists what its goal
 gives: `{ item, itemName, quality, choice }`, `{ spell, spellName }` or
@@ -938,7 +938,7 @@ negations.
 
 Every guide belongs to a registered pack. The rules a pack meets (ids, no
 overrides, clashes, map frames, format, problems, literal text, packs on disk
-and their statuses) are in PACK_FORMAT.md, "Rules Polestar enforces"; lint
+and their statuses) are in PACK_FORMAT.md, "Rules Northstar enforces"; lint
 applies the same ones (`rust/crates/forge-addontest/tests/addontest/packs-parity.rs`). Where `Core/Guides.lua`
 implements them:
 
@@ -952,7 +952,7 @@ implements them:
   until that addon's `ADDON_LOADED`; guides registered before their pack are
   refused, their ids kept in a per-pack list and listed as `guide-refused`
   problems when it comes.
-- Format: `Guides.FORMATS` (the formats this Polestar reads, `1` to `4`);
+- Format: `Guides.FORMATS` (the formats this Northstar reads, `1` to `4`);
   `Guides.Validate` checks each guide against the `REQUIRED` verb table
   (`Guides.VERBS`).
 - Problems: each refusal goes on the pack's record,
@@ -960,29 +960,29 @@ implements them:
   and to `ns.Debug`.
 - Literal text: `ns.EscapeText` (`|` doubled), ids excepted.
 - Packs on disk: `Guides.ScanInstalled`, at login before `GUIDES_REGISTERED`,
-  gives every addon whose TOC has `X-Polestar-Pack` and never registered a
+  gives every addon whose TOC has `X-Northstar-Pack` and never registered a
   record from its TOC.
 
 A pack record: `id`, `addon`, `format`, `title`, `author`, `version`,
 `license`, `website`, `source`, `notes`, `official` (ours), `imported` (the
 imported guides' pack), `status` (the
-statuses of PACK_FORMAT rule 9; `off` from `PolestarDB.packs[id].off`),
+statuses of PACK_FORMAT rule 9; `off` from `NorthstarDB.packs[id].off`),
 `reason`, `needs`, `problems`, `guides` (ids), `guideCount`.
 
 ```lua
-Polestar.RegisterPack(meta) -> ok, err
-Polestar.RegisterGuide(def) -> ok, err      -- def.pack must be registered and own def.id; validates shape
-Polestar.RegisterMapFrames(frames, packId)
-Polestar.Guides.Packs() -> { record, ... }  -- every pack but internal ones and `imported`, ours first, then by title
-Polestar.Guides.Pack(id) -> record | nil
-Polestar.Guides.PackShown(id) -> bool
-Polestar.Guides.SetPackShown(id, shown)     -- PolestarDB.packs[id].off; fires PACKS_CHANGED(id)
-Polestar.Guides.ProblemCount() -> n         -- over every listed pack (the Options dot)
-Polestar.Guides.OwnsId(packId, guideId) -> bool
-Polestar.Guides.SuggestSources() -> { packId, ... }  -- "guides", then shown packs with leveling guides (never `imported`)
-Polestar.Guides.SuggestSource() -> packId   -- behavior.suggestFrom when it can, else "guides"
-Polestar.Guides.OfferedBy(id) -> { guide, ... }      -- shown guides whose route choice offers id now (Engine.RouteOffered)
-Polestar.Guides.DropImported(id) -> bool    -- takes an imported guide out (Import.Delete), nothing else
+Northstar.RegisterPack(meta) -> ok, err
+Northstar.RegisterGuide(def) -> ok, err      -- def.pack must be registered and own def.id; validates shape
+Northstar.RegisterMapFrames(frames, packId)
+Northstar.Guides.Packs() -> { record, ... }  -- every pack but internal ones and `imported`, ours first, then by title
+Northstar.Guides.Pack(id) -> record | nil
+Northstar.Guides.PackShown(id) -> bool
+Northstar.Guides.SetPackShown(id, shown)     -- NorthstarDB.packs[id].off; fires PACKS_CHANGED(id)
+Northstar.Guides.ProblemCount() -> n         -- over every listed pack (the Options dot)
+Northstar.Guides.OwnsId(packId, guideId) -> bool
+Northstar.Guides.SuggestSources() -> { packId, ... }  -- "guides", then shown packs with leveling guides (never `imported`)
+Northstar.Guides.SuggestSource() -> packId   -- behavior.suggestFrom when it can, else "guides"
+Northstar.Guides.OfferedBy(id) -> { guide, ... }      -- shown guides whose route choice offers id now (Engine.RouteOffered)
+Northstar.Guides.DropImported(id) -> bool    -- takes an imported guide out (Import.Delete), nothing else
 ```
 
 **Imported guides** (`Core/Import.lua`; the string's format: PACK_FORMAT.md,
@@ -990,12 +990,12 @@ Polestar.Guides.DropImported(id) -> bool    -- takes an imported guide out (Impo
 Import page belongs to the reserved pack `imported`, which Import.lua
 registers (`imported = true`) as its file loads, before any pack can. Its
 guides keep their authors' ids (`yendi/cozy-sleeping-bag`), carry
-`license` (the string's) and are kept in `PolestarDB.imports[id]` as
+`license` (the string's) and are kept in `NorthstarDB.imports[id]` as
 decoded. Guides.lua's login handler calls `Import.Load` after
 `ScanInstalled` and before `GUIDES_REGISTERED`, so every stored guide goes
 through the same checks as a pasted string with every community addon
 known. The reader: the client's `C_EncodingUtil.DecodeBase64` and
-`DecompressString` (zlib, as `Polestar_Nav`'s maps; a client without them
+`DecompressString` (zlib, as `Northstar_Nav`'s maps; a client without them
 is told it cannot read strings), Adler-32 over the payload, a JSON parser of
 its own (no `null`, 12 levels deep at most), then the guide built field by
 field from a fixed schema of the compiler's keys and types (`Import.KEYS`;
@@ -1009,13 +1009,13 @@ place is taken by its open tab where it stands (Engine, `PACKS_CHANGED`:
 `restoredTab`, so ticks and skips follow the steps it kept).
 
 ```lua
-Polestar.Import.Decode(text) -> entry | nil, reason   -- entry = { format, license, guide, frames }
-Polestar.Import.Preview(text) -> info | nil, reason   -- info: entry, id, title, author, version, steps, minLevel, maxLevel, faction, license, state ("new"|"update"|"same"|"older"), have
-Polestar.Import.Save(entry) -> ok, reason             -- checks again, registers, stores
-Polestar.Import.Delete(id) -> bool
-Polestar.Import.List() -> { { id, title, author, version, license, steps, problem }, ... }  -- by title
-Polestar.Import.Load()                                -- at login
-Polestar.Import.LIMITS                                -- { length = 50000, steps = 60, payload = 262144, text = 4096 }
+Northstar.Import.Decode(text) -> entry | nil, reason   -- entry = { format, license, guide, frames }
+Northstar.Import.Preview(text) -> info | nil, reason   -- info: entry, id, title, author, version, steps, minLevel, maxLevel, faction, license, state ("new"|"update"|"same"|"older"), have
+Northstar.Import.Save(entry) -> ok, reason             -- checks again, registers, stores
+Northstar.Import.Delete(id) -> bool
+Northstar.Import.List() -> { { id, title, author, version, license, steps, problem }, ... }  -- by title
+Northstar.Import.Load()                                -- at login
+Northstar.Import.LIMITS                                -- { length = 50000, steps = 60, payload = 262144, text = 4096 }
 ```
 
 Only guides of shown packs (`on`, plus the internal `lookup`) are visible to
@@ -1026,40 +1026,40 @@ window, Lookup and the Engine's tabs ("Tabs", absent guides).
 ### Engine
 
 ```lua
-Polestar.Guides.Get(id) -> guide | nil
-Polestar.Guides.List() -> { header, ... }   -- header = guide without steps, plus stepCount
-Polestar.Guides.Suggestions() -> { id, ... } -- the leveling guides of the suggestion source (Guides.SuggestSource) for the player's faction/race/class/level, best first; ours fill in where it has none; none fits: the nearest upcoming one alone
-Polestar.Guides.Suggest() -> id | nil       -- the first of Suggestions()
+Northstar.Guides.Get(id) -> guide | nil
+Northstar.Guides.List() -> { header, ... }   -- header = guide without steps, plus stepCount
+Northstar.Guides.Suggestions() -> { id, ... } -- the leveling guides of the suggestion source (Guides.SuggestSource) for the player's faction/race/class/level, best first; ours fill in where it has none; none fits: the nearest upcoming one alone
+Northstar.Guides.Suggest() -> id | nil       -- the first of Suggestions()
 
-Polestar.Engine.GetGuide() -> guide | nil
-Polestar.Engine.SetGuide(id)                -- persists CharState().guide, recomputes, fires GUIDE_CHANGED
-Polestar.Engine.GetStepIndex() -> i | nil
-Polestar.Engine.GetStepCount() -> n
-Polestar.Engine.GetStepView(i) -> view | nil
-Polestar.Engine.Next() / Prev() / Goto(i)    -- look at another step; changes nothing (Goto un-skips its target)
-Polestar.Engine.Skip() -> stepIndex         -- skip the step shown, saved; fires PLAYER_SKIPPED_STEP
-Polestar.Engine.Unskip(i) -> bool           -- undo a skip
-Polestar.Engine.GetLiveStep() -> i | nil    -- the first open step, whatever step is shown
-Polestar.Engine.LevelTarget(level?) -> N, stepIndex, frac | nil   -- the first `level N` goal from the step shown for this character (step `only`/`when`, goal `only`; skips left out) with N above `level` (default: the character's), or a point inside that level (`frac`) not reached yet; QoL's XP bar mark
-Polestar.Engine.KeptItems() -> { [itemID] = stepIndex }   -- items the active guide still needs in the bags (see "Items kept for later"); built once per evaluation, read only
-Polestar.Engine.StartGate(id) -> gate | nil -- a Class guide this character cannot start yet: { level } or { pre, preTitle }, with giver, map (see "Not yet available")
-Polestar.Engine.AwayStart(id) -> away | nil -- another race's starting zone the player has not reached: { races, zone, zoneName } (see "Another race's starting zone")
-Polestar.Engine.GoalDone(stepIndex, goalIndex) -> bool     -- the goal is done (live state, arrival or check-off); Nav/Walk.lua's FollowsGoto asks it of a guide `goto`
-Polestar.Engine.ToggleGoal(stepIndex, goalIndex) -> bool   -- tick any goal but a note done, or clear its check-off
-Polestar.Engine.SkipGoal(stepIndex, goalIndex) -> bool     -- skip an optional goal, or bring it back
-Polestar.Engine.SkipQuest(questID, on) -> bool               -- skip a quest and what follows from it, in every guide; on = false brings it back
-Polestar.Engine.IsQuestSkipped(questID) -> bool
-Polestar.Engine.SkipLoses(questID?) -> { { id, title }, ... } | nil   -- the open accepts of this guide (other quests, other steps) that skipping questID, or with none the live step, would leave out; tried on the saved state and put back (see "Quests the player skipped")
-Polestar.Engine.LostQuestion() -> questID, title | nil      -- a quest the route had passed that left the log, held for the player's answer (see "Quests that leave the log")
-Polestar.Engine.AnswerLost(questID, "back" | "skip")        -- go back to its giver, or skip it and what follows (SkipQuest)
-Polestar.Engine.AimGoal(stepIndex, goalIndex) -> bool      -- lead the arrow to a goal of the current step (row click)
-Polestar.Engine.GetAlong() -> { { index, title, untilStep?, goals = { goal view, ... } }, ... }  -- open goals of along steps behind the live step; untilStep: an `along until` step's labelled step
-Polestar.Engine.AimAlong(stepIndex, goalIndex) -> bool     -- lead the arrow to one of them (row click); holds while it is listed
-Polestar.Engine.GetWaypoint() -> waypoint | nil
-Polestar.Engine.GetProgress() -> doneSteps, totalSteps
-Polestar.Engine.StepNumber(i) -> number, hidden     -- step i of the active guide as the player counts it (see "Steps the character has")
-Polestar.Engine.StepTotal() -> number               -- the steps the player sees
-Polestar.Engine.StepNumberOf(guide, i) -> number, hidden; Polestar.Engine.StepTotalOf(guide) -> number  -- the same for any guide
+Northstar.Engine.GetGuide() -> guide | nil
+Northstar.Engine.SetGuide(id)                -- persists CharState().guide, recomputes, fires GUIDE_CHANGED
+Northstar.Engine.GetStepIndex() -> i | nil
+Northstar.Engine.GetStepCount() -> n
+Northstar.Engine.GetStepView(i) -> view | nil
+Northstar.Engine.Next() / Prev() / Goto(i)    -- look at another step; changes nothing (Goto un-skips its target)
+Northstar.Engine.Skip() -> stepIndex         -- skip the step shown, saved; fires PLAYER_SKIPPED_STEP
+Northstar.Engine.Unskip(i) -> bool           -- undo a skip
+Northstar.Engine.GetLiveStep() -> i | nil    -- the first open step, whatever step is shown
+Northstar.Engine.LevelTarget(level?) -> N, stepIndex, frac | nil   -- the first `level N` goal from the step shown for this character (step `only`/`when`, goal `only`; skips left out) with N above `level` (default: the character's), or a point inside that level (`frac`) not reached yet; QoL's XP bar mark
+Northstar.Engine.KeptItems() -> { [itemID] = stepIndex }   -- items the active guide still needs in the bags (see "Items kept for later"); built once per evaluation, read only
+Northstar.Engine.StartGate(id) -> gate | nil -- a Class guide this character cannot start yet: { level } or { pre, preTitle }, with giver, map (see "Not yet available")
+Northstar.Engine.AwayStart(id) -> away | nil -- another race's starting zone the player has not reached: { races, zone, zoneName } (see "Another race's starting zone")
+Northstar.Engine.GoalDone(stepIndex, goalIndex) -> bool     -- the goal is done (live state, arrival or check-off); Nav/Walk.lua's FollowsGoto asks it of a guide `goto`
+Northstar.Engine.ToggleGoal(stepIndex, goalIndex) -> bool   -- tick any goal but a note done, or clear its check-off
+Northstar.Engine.SkipGoal(stepIndex, goalIndex) -> bool     -- skip an optional goal, or bring it back
+Northstar.Engine.SkipQuest(questID, on) -> bool               -- skip a quest and what follows from it, in every guide; on = false brings it back
+Northstar.Engine.IsQuestSkipped(questID) -> bool
+Northstar.Engine.SkipLoses(questID?) -> { { id, title }, ... } | nil   -- the open accepts of this guide (other quests, other steps) that skipping questID, or with none the live step, would leave out; tried on the saved state and put back (see "Quests the player skipped")
+Northstar.Engine.LostQuestion() -> questID, title | nil      -- a quest the route had passed that left the log, held for the player's answer (see "Quests that leave the log")
+Northstar.Engine.AnswerLost(questID, "back" | "skip")        -- go back to its giver, or skip it and what follows (SkipQuest)
+Northstar.Engine.AimGoal(stepIndex, goalIndex) -> bool      -- lead the arrow to a goal of the current step (row click)
+Northstar.Engine.GetAlong() -> { { index, title, untilStep?, goals = { goal view, ... } }, ... }  -- open goals of along steps behind the live step; untilStep: an `along until` step's labelled step
+Northstar.Engine.AimAlong(stepIndex, goalIndex) -> bool     -- lead the arrow to one of them (row click); holds while it is listed
+Northstar.Engine.GetWaypoint() -> waypoint | nil
+Northstar.Engine.GetProgress() -> doneSteps, totalSteps
+Northstar.Engine.StepNumber(i) -> number, hidden     -- step i of the active guide as the player counts it (see "Steps the character has")
+Northstar.Engine.StepTotal() -> number               -- the steps the player sees
+Northstar.Engine.StepNumberOf(guide, i) -> number, hidden; Northstar.Engine.StepTotalOf(guide) -> number  -- the same for any guide
 ```
 
 #### Smart logic
@@ -1067,13 +1067,13 @@ Polestar.Engine.StepNumberOf(guide, i) -> number, hidden; Polestar.Engine.StepTo
 - **Candidate goals.** A compiled goal may carry `candidates = { { npc, npcName, map, x, y, z?, f, faction = "A"|"H"|"AH", races?, classes? }, ... }`
   (from `train <Profession>`, `train class`, `buy … nearest`, `vendor nearest`, `sethome nearest`; see GUIDE_FORMAT).
   The Engine filters by the character's faction (and races/classes when given),
-  then picks the cheapest by `Polestar.Nav.EstimateTravel(from, to)` seconds when
+  then picks the cheapest by `Northstar.Nav.EstimateTravel(from, to)` seconds when
   Nav provides it, else world distance on the same continent with a large penalty
   across continents. A candidate in a zone whose level range (`Maps.GetZoneLevels`)
   starts more than 10 levels above the character comes after every other
   choice, other continents included. It re-picks on step start, zone change and landing, never per
   frame. The goal view then carries the chosen `npc`, `npcName`, `map`, `x`, `y`,
-  `f`, plus `alternatives = n`; `Polestar.Engine.CycleCandidate(stepIndex, goalIndex)`
+  `f`, plus `alternatives = n`; `Northstar.Engine.CycleCandidate(stepIndex, goalIndex)`
   moves to the next-best one. Profession `train` goals are done when the
   profession's max rank reaches that rank's cap (75/150/225/300), so a trainer
   anywhere counts. `train class` is done on a spell learned at a candidate
@@ -1143,8 +1143,8 @@ Polestar.Engine.StepNumberOf(guide, i) -> number, hidden; Polestar.Engine.StepTo
 - **Class-training reminder.** Class trainers ship in the core:
   `Core/ClassTrainers.lua` (generated by `forge data trainers`,
   one trainer per town and class, with the Era frames of their maps) calls
-  `Polestar.RegisterClassTrainers({ { npc, npcName, map, x, y, f, faction, classes }, ... })`,
-  then `Polestar.RegisterClassTrainerIds({ WARRIOR = { npcId, ... }, ... })`
+  `Northstar.RegisterClassTrainers({ { npc, npcName, map, x, y, f, faction, classes }, ... })`,
+  then `Northstar.RegisterClassTrainerIds({ WARRIOR = { npcId, ... }, ... })`
   with every class trainer in `trainers.json`, not only one per town.
   `Engine.NearestClassTrainer()` returns the best one for the character (same
   ranking as candidate goals) or nil; `Engine.IsClassTrainer(npc)` whether an
@@ -1184,7 +1184,7 @@ Polestar.Engine.StepNumberOf(guide, i) -> number, hidden; Polestar.Engine.StepTo
   (`Engine.DungeonChosen(map)`: `CharState().dungeons[map]`, set by
   `Engine.ChooseDungeon(map, on)` from the Options' "Dungeons in leveling
   guides", none by default; a predicate without `map` never holds),
-  Polestar's gear advice on an item (`Own.isUpgrade`: `Gear.IsUpgrade`,
+  Northstar's gear advice on an item (`Own.isUpgrade`: `Gear.IsUpgrade`,
   counted as an upgrade when the advice is off or cannot judge the item), a
   profession's rank (`Compat.GetSkillRank` by skill line, else by name; not
   learned is 0), and an item or spell on cooldown (`Own.onCooldown`: longer
@@ -1501,7 +1501,7 @@ Polestar.Engine.StepNumberOf(guide, i) -> number, hidden; Polestar.Engine.StepTo
   another race's start of their own faction (`Guides.OtherStart`: a Leveling
   guide from level 1 with `races` they are not, their faction, their class;
   the one exception to `Guides.GuideMatches`, and no other race-locked guide
-  is one). Polestar does not guide them there: while the player is outside the
+  is one). Northstar does not guide them there: while the player is outside the
   guide's `zone` and nothing of it is played (as above), `Engine.AwayStart(id)`
   gives `{ races, zone, zoneName }` and the guide window shows "Another race's
   starting zone" with where to make their own way to and that the class
@@ -1620,16 +1620,16 @@ carry `pitch`, `pros`, `cons` (see GUIDE_FORMAT). `next <id> when ...` adds
 `nextChoices` then lists the options even when there is one.
 
 ```lua
-Polestar.Engine.GetRouteChoice(fromId) -> { from, fromTitle, recommended, chosen, joinsAt,
+Northstar.Engine.GetRouteChoice(fromId) -> { from, fromTitle, recommended, chosen, joinsAt,
     options = { { id, title, zoneName, minLevel, maxLevel, pitch, pros, cons, seconds,
                   quests, steps, recommended, chosen, outleveled, open }, ... } } | nil
-Polestar.Engine.ChooseRoute(fromId, toId) -> bool   -- remembers, loads, fires ROUTE_CHOSEN
-Polestar.Engine.PendingRouteChoice() -> fromId | nil -- the active tab's finished guide waiting for a choice
-Polestar.Engine.RouteChoiceFor(id) -> fromId | nil  -- the choice that offers guide `id` to this character
-Polestar.Engine.RouteOffered(fromId, toId) -> bool  -- fromId's `next` names toId and its `when`, if any, holds now
-Polestar.Engine.NextGuide(fromId) -> id | nil       -- where the hand-off goes now; nil: none offered, or the player chooses
-Polestar.Engine.OfferRouteChoice() -> fromId | nil  -- /polestar path: fires ROUTE_CHOICE
-Polestar.Engine.GuideFocus(id) -> x, y | nil       -- live-frame percent of where the guide is for this character, for the
+Northstar.Engine.ChooseRoute(fromId, toId) -> bool   -- remembers, loads, fires ROUTE_CHOSEN
+Northstar.Engine.PendingRouteChoice() -> fromId | nil -- the active tab's finished guide waiting for a choice
+Northstar.Engine.RouteChoiceFor(id) -> fromId | nil  -- the choice that offers guide `id` to this character
+Northstar.Engine.RouteOffered(fromId, toId) -> bool  -- fromId's `next` names toId and its `when`, if any, holds now
+Northstar.Engine.NextGuide(fromId) -> id | nil       -- where the hand-off goes now; nil: none offered, or the player chooses
+Northstar.Engine.OfferRouteChoice() -> fromId | nil  -- /polestar path: fires ROUTE_CHOICE
+Northstar.Engine.GuideFocus(id) -> x, y | nil       -- live-frame percent of where the guide is for this character, for the
                                                     -- guide menu's zone art: open in a tab and unfinished, the current
                                                     -- step's first goal on the guide's zone map (`zone`); else (or when
                                                     -- that step is elsewhere) its first goal on it: a route option's focusX/Y
@@ -1671,10 +1671,10 @@ Polestar.Engine.GuideFocus(id) -> x, y | nil       -- live-frame percent of wher
   hand-in plan (`Core/RoutePlan.lua`) treats a guide with a conditional
   option like a choice not made yet, unless the remembered choice is an
   unconditional option.
-- **UI** (`UI/RouteChoice.lua`, frame `PolestarRouteChoice`): one card per
+- **UI** (`UI/RouteChoice.lua`, frame `NorthstarRouteChoice`): one card per
   option. Each card opens on the zone's art (`UI.ZoneArt`, below) framed on
   `focusX/focusY` (where the route starts), lightly desaturated, fading into
-  the card with the zone's name on it. Polestar ships no zone art; without the
+  the card with the zone's name on it. Northstar ships no zone art; without the
   API or art for the map, a stretch of the night band stands in. Straight
   under the art, at the same y on every card, the stat row: levels (in text),
   travel time and quest count. Then the state chip, the pitch, at most 3 pros
@@ -1685,15 +1685,15 @@ Polestar.Engine.GuideFocus(id) -> x, y | nil       -- live-frame percent of wher
   waits out combat. The guide window's completed state and the out-levelled
   banner open it when a choice applies; Options → Guide → Automation →
   "Where to level next".
-  `POLESTAR_CLIENT_ART=<folder>` lets `preview` draw real map art from a local
+  `NORTHSTAR_CLIENT_ART=<folder>` lets `preview` draw real map art from a local
   cache of decoded client tiles (base and overlay tiles, `maps.json` with each
   map's `artID`); those renders go to `<folder>/preview/`, never into `docs/`.
 
 #### End of a leveling guide
 
 ```lua
-Polestar.Engine.GuideEnded(id) -> bool       -- the player reached the end of leveling guide `id` (this character)
-Polestar.Engine.StartNext(fromId) -> bool    -- the guide after fromId (NextGuide) in fromId's tab, as the hand-off;
+Northstar.Engine.GuideEnded(id) -> bool       -- the player reached the end of leveling guide `id` (this character)
+Northstar.Engine.StartNext(fromId) -> bool    -- the guide after fromId (NextGuide) in fromId's tab, as the hand-off;
                                              -- false with none or a route choice to make first
 ```
 
@@ -1740,7 +1740,7 @@ and both of its values start on `"ask"`.
   while a step is live).
 - **Ask:** no hand-off by itself (the catch-up still passes guides done
   whole); `GUIDE_END` fires after the evaluation and the guide-end window
-  (`UI/GuideEnd.lua`, frame `PolestarGuideEnd`) says "You've completed
+  (`UI/GuideEnd.lua`, frame `NorthstarGuideEnd`) says "You've completed
   <guide>" or "You've reached the end of <guide>" with the open steps left,
   and offers Start <next> (`StartNext`), Choose where to go next (the route
   choice window) or Pick a guide (the guide menu); the second button (Not now,
@@ -1755,11 +1755,11 @@ and both of its values start on `"ask"`.
 #### Tabs (several guides at once)
 
 ```lua
-Polestar.Engine.GetTabs() -> { { guideId, title, category, stepIndex, stepCount, done, total, complete }, ... }, activeIndex
-Polestar.Engine.OpenTab(guideId [, activate])  -> index   -- already open: just activates it (when activate ~= false)
-Polestar.Engine.CloseTab(index)                            -- the last tab may be closed (no guide)
-Polestar.Engine.SelectTab(index)
-Polestar.Engine.MoveTab(from, to)
+Northstar.Engine.GetTabs() -> { { guideId, title, category, stepIndex, stepCount, done, total, complete }, ... }, activeIndex
+Northstar.Engine.OpenTab(guideId [, activate])  -> index   -- already open: just activates it (when activate ~= false)
+Northstar.Engine.CloseTab(index)                            -- the last tab may be closed (no guide)
+Northstar.Engine.SelectTab(index)
+Northstar.Engine.MoveTab(from, to)
 ```
 
 Up to 6 tabs per character, persisted as `CharState().tabs = { guideId, ... }` and
@@ -1977,7 +1977,7 @@ that window (`CloseQuest`, `C_GossipInfo.CloseGossip`) on the next frame when
 it shows nothing the guide takes: no `accept` goal not yet taken, no quest in
 the log with a `turnin` goal, no `direct` goal, in the live step,
 whatever the automation settings. Only the first quest or gossip
-window at the same NPC within 2 seconds of Polestar's accept or turn-in
+window at the same NPC within 2 seconds of Northstar's accept or turn-in
 counts; a later window, one at another NPC or one the player opens from a
 list stays. Never in combat, with Shift held, on a progress or reward
 window, or on a gossip window with options of its own (a vendor, trainer or
@@ -1988,8 +1988,8 @@ With `behavior.spokenDelay` on (the default; Options, Integrations, Spoken,
 shown and honoured only while Spoken Quests is installed) each quest or
 gossip window waits 200 ms before automation acts on it, and `QoL/Rewards.lua`'s reward pick waits the same
 (`Automation.Delay`). Spoken Quests records a quest page in its own handler of
-the event that opened the window; it loads after Polestar, so an accept made
-in Polestar's handler leaves it nothing to record and the page is never read.
+the event that opened the window; it loads after Northstar, so an accept made
+in Northstar's handler leaves it nothing to record and the page is never read.
 Everything is decided when the wait ends, so Shift held then skips the action.
 A newer window replaces the wait, and only a close of its own kind drops it:
 `QUEST_FINISHED` for a quest window, `GOSSIP_CLOSED` for a gossip window, since
@@ -2000,9 +2000,9 @@ come after the quest window it opened. The test is the events, not
 ## Theme — used by UI and Nav
 
 ```lua
-Polestar.Theme.Accent() -> r, g, b
-Polestar.Theme.ClassColor(classFile) -> r, g, b | nil     -- the client's colour for a class file; nil: the player's class
-Polestar.Theme.Color(name) -> r, g, b, a
+Northstar.Theme.Accent() -> r, g, b
+Northstar.Theme.ClassColor(classFile) -> r, g, b | nil     -- the client's colour for a class file; nil: the player's class
+Northstar.Theme.Color(name) -> r, g, b, a
    -- grounds "bg","panel","panelAlt","sidebar","footer","sky"; text "text","textDim","textMuted";
    -- "accent","ink" (hairlines/washes),"star","shade" (wells, text shadows, art fades),
    -- "scrim" (dark grounds on zone art),"onAccent" (text on accent fills),"shadow";
@@ -2010,24 +2010,24 @@ Polestar.Theme.Color(name) -> r, g, b, a
    -- "dungeon" (dungeon and raid entrances); "mapUnexplored" (tint multiplied onto unexplored
    -- world map overlays: game art, the same in every scheme, outside the legibility guard);
    -- "discord" (Discord's Blurple, on its own mark only, outside the legibility guard)
-Polestar.Theme.Wash(role) -> r, g, b, a     -- ink at the role's alpha: "border","divider","hover",
+Northstar.Theme.Wash(role) -> r, g, b, a     -- ink at the role's alpha: "border","divider","hover",
    -- "selected","progress","track","toggle","box","thumb","swatch","chip","watermark","mover"
-Polestar.Theme.Hex(name) -> "ffrrggbb"     -- for |c escapes
-Polestar.Theme.Palette() -> { name = { r, g, b, a }, ..., scheme = key }  -- resolved, read-only
-Polestar.Theme.SchemeKey() -> "dusk" | "night" | "graphite" | "ellesmere"
-Polestar.Theme.Band(parent, layer, sub) -> sky texture  -- the night-sky band (sky mask + stars)
-Polestar.Theme.GroundAlpha() -> a          -- ui.bgOpacity, every Polestar window's ground
-Polestar.Theme.Font(fontString, role)     -- role: "hero","display","title","heading","body","label","note","small","number","caption","goal","name","mono"
-Polestar.Theme.FontSpec(role) -> path, size, flags
-Polestar.Theme.Skin(frame, kind)          -- "window","panel","inset","button","editbox","checkbox","dropdown","scrollbar","tab","close"
-Polestar.Theme.Media(name) -> texturePath -- e.g. "icon-accept", "check", "white", "glow"
-Polestar.Theme.OnChanged(fn)              -- fn() on any scheme/colour/font change
-Polestar.Theme.IsEllesmere() -> bool
-Polestar.Theme.SkinKey() -> "polestar" | "halo" | "blizzard"   -- ui.skin
-Polestar.Theme.SkinChoices() -> { { value, text }, ... }
-Polestar.Theme.Metric(key, house) -> n   -- a size in the skin in use; `house` in the house style
-Polestar.Theme.Icon(name) -> name        -- a glyph a skin draws its own way ("bug" -> "flag")
-Polestar.Theme.FontKey() -> "opensans" | "game" | "inter" | "fira"   -- ui.font, "skin" resolved
+Northstar.Theme.Hex(name) -> "ffrrggbb"     -- for |c escapes
+Northstar.Theme.Palette() -> { name = { r, g, b, a }, ..., scheme = key }  -- resolved, read-only
+Northstar.Theme.SchemeKey() -> "dusk" | "night" | "graphite" | "ellesmere"
+Northstar.Theme.Band(parent, layer, sub) -> sky texture  -- the night-sky band (sky mask + stars)
+Northstar.Theme.GroundAlpha() -> a          -- ui.bgOpacity, every Northstar window's ground
+Northstar.Theme.Font(fontString, role)     -- role: "hero","display","title","heading","body","label","note","small","number","caption","goal","name","mono"
+Northstar.Theme.FontSpec(role) -> path, size, flags
+Northstar.Theme.Skin(frame, kind)          -- "window","panel","inset","button","editbox","checkbox","dropdown","scrollbar","tab","close"
+Northstar.Theme.Media(name) -> texturePath -- e.g. "icon-accept", "check", "white", "glow"
+Northstar.Theme.OnChanged(fn)              -- fn() on any scheme/colour/font change
+Northstar.Theme.IsEllesmere() -> bool
+Northstar.Theme.SkinKey() -> "polestar" | "halo" | "blizzard"   -- ui.skin
+Northstar.Theme.SkinChoices() -> { { value, text }, ... }
+Northstar.Theme.Metric(key, house) -> n   -- a size in the skin in use; `house` in the house style
+Northstar.Theme.Icon(name) -> name        -- a glyph a skin draws its own way ("bug" -> "flag")
+Northstar.Theme.FontKey() -> "opensans" | "game" | "inter" | "fira"   -- ui.font, "skin" resolved
 ```
 
 **Skins** (`ui.skin`, Appearance > Windows > Frame): `polestar`, the house
@@ -2066,7 +2066,7 @@ house style, the `halo` dart in Halo, the `hearth` dart in Hearth and the
 game's looks; Nav/Arrow.lua). The skins' textures are drawn by
 `tools/media/skins.js`.
 
-**The game's looks** (Theme/GameSkins.lua) draw Polestar in the client's art,
+**The game's looks** (Theme/GameSkins.lua) draw Northstar in the client's art,
 the three looks EllesmereUI offers on the Forever client (its visual spec
 only; nothing of that addon is used), composed as the client's own FrameXML
 composes its windows: SharedUIPanelTemplates (ButtonFrameTemplateNoPortrait,
@@ -2098,7 +2098,7 @@ margins by `node tools/polestar.js media game-art`, tools/media/game-art.js);
 BackdropTemplate).
 
 No client art is copied into the addon; the kits name files and atlases. With
-POLESTAR_CLIENT_ART holding the client's UI textures decoded to <fileID>.tga
+NORTHSTAR_CLIENT_ART holding the client's UI textures decoded to <fileID>.tga
 plus atlases.json and files.json, `node tools/polestar.js preview` draws them
 (SetAtlas, GetAtlasInfo and file paths resolve) and renders the local-only
 `skins-game-*` scenes into that folder.
@@ -2119,7 +2119,7 @@ scheme.
 - Accent: `ui.accent` (`false` or `{ r, g, b }`) > the class colour when
   `ui.classAccent` (default off; `C_ClassColor`/`RAID_CLASS_COLORS`, moved
   toward the text colour until it reads at 4.5:1 on the panel) > EllesmereUI's
-  when `ui.matchAccent` (default on) or the EllesmereUI scheme > Polestar gold.
+  when `ui.matchAccent` (default on) or the EllesmereUI scheme > Northstar gold.
   One source at a time: turning one of `ui.accent`, `ui.classAccent`,
   `ui.matchAccent` on turns the other two off.
 - Grounds: `ui.bgColor` (`false` or `{ r, g, b }`; every ground derived from it
@@ -2165,12 +2165,12 @@ colour change repaints live without a reload.
 ## Nav
 
 ```lua
-Polestar.Nav.SetTarget(map, x, y, label, f, stop, z)   -- user picked a goal; overrides the engine waypoint until the step changes;
+Northstar.Nav.SetTarget(map, x, y, label, f, stop, z)   -- user picked a goal; overrides the engine waypoint until the step changes;
                                                         -- stop: what stands there ("dungeon", "trainer", ...), for the hand-off below;
                                                         -- z: the height of the NPC or object there, optional (the walk ends on its floor)
-Polestar.Nav.ClearTarget()
-Polestar.Nav.GetTarget() -> waypoint | nil
-Polestar.Nav.GetDistance() -> yards | nil      -- to an area target's edge, 0 inside it
+Northstar.Nav.ClearTarget()
+Northstar.Nav.GetTarget() -> waypoint | nil
+Northstar.Nav.GetDistance() -> yards | nil      -- to an area target's edge, 0 inside it
 ```
 
 Settings live under `nav.*`; `nav.distanceUnit` (`"yards"`, the default, or
@@ -2210,7 +2210,7 @@ Every place the current step's open goals spawn is a region on the map
 (`Layers.lua`, read from `Engine.GetGuide().steps[step].goals[i].spots` for
 the goals `GetStepView` shows active or pending). `Layers.Regions(goal)`
 groups a goal's spots once per goal (cached by the compiled goal table)
-through `Polestar.Regions.Of(cs, xs, ys, rs [, work])` (`Nav/Regions.lua`,
+through `Northstar.Regions.Of(cs, xs, ys, rs [, work])` (`Nav/Regions.lua`,
 shared with the quest objective areas): each
 spot's disc (its radius covers its spawns, at least 15 yd, plus 10 yd) joins
 the spots on its continent whose discs come within 90 yd, nearest first, while the region stays
@@ -2241,35 +2241,35 @@ dropped when the guide's step changes.
 
 ```lua
 -- Public, for other addons. Points: a uiMapID and x, y as 0-1 fractions (as TomTom and C_Map).
-Polestar.Nav.API.version                      -- 1
-Polestar.Nav.API.Estimate(fromMap, fromX, fromY, toMap, toX, toY) -> seconds | nil, "invalid" | "unknown" | "busy"
+Northstar.Nav.API.version                      -- 1
+Northstar.Nav.API.Estimate(fromMap, fromX, fromY, toMap, toX, toY) -> seconds | nil, "invalid" | "unknown" | "busy"
     -- the travel planner's estimate (Nav.EstimateTravel: flights, boats, timetables, cached a few
     -- seconds per start cell and destination), else a straight run on one continent; fromMap nil:
     -- from the player, the Hearthstone counted. An uncached call runs a full route plan
-    -- (up to its 40 ms cap). Once a frame has spent 25 ms planning estimates (Polestar's own
+    -- (up to its 40 ms cap). Once a frame has spent 25 ms planning estimates (Northstar's own
     -- included) no new plan starts for the API and the answer is nil, "busy": ask again next frame
-Polestar.Nav.API.Navigate(owner, map, x, y, title) -> true | false   -- owner: a non-empty string
-Polestar.Nav.API.Cancel(owner) -> true | false  -- that owner's target, while it is the one shown, lets go
-Polestar.Nav.API.Active() -> active, owner      -- anything guided to; owner while an API caller's target shows
+Northstar.Nav.API.Navigate(owner, map, x, y, title) -> true | false   -- owner: a non-empty string
+Northstar.Nav.API.Cancel(owner) -> true | false  -- that owner's target, while it is the one shown, lets go
+Northstar.Nav.API.Active() -> active, owner      -- anything guided to; owner while an API caller's target shows
 -- Internal
-Polestar.Nav.journey.PlanTo(map, x, y, label, f) -> ok   -- onto the zone under a continent spot; refuses open sea
-Polestar.Nav.journey.Estimate(from, to, budgeted) -> seconds | nil[, "busy"] -- from, to = { map, x, y, f } (percent); from nil: the player; "busy" only when budgeted (the API)
-Polestar.Nav.nearby.Find(kind, skillLine) -> place, seconds | nil, "kind" | "codex" | "combat" | "none"
-Polestar.Nav.nearby.Go(kind, skillLine) -> ok           -- weapon: skillLine is the weapon skill's line, or nil for any
-Polestar.Nav.nearby.Trip() -> { target, name, label } | nil   -- the trip Go started, while its target is the one shown
-Polestar.Nav.nearby.EndTrip(arrived) -> ok                -- back to the guide: the trip's target lets go
-Polestar.Nav.nearby.Weapons() -> { { line, label, known, level }, ... }   -- the weapons the class can use that a master of its side teaches
-Polestar.Nav.nearby.MenuItems() -> items                  -- the guide window button's list (vendor first; a weapons page)
-Polestar.Pins.MinimapCursor() -> dNorth, dWest | nil      -- yards from the player to the cursor on the minimap
+Northstar.Nav.journey.PlanTo(map, x, y, label, f) -> ok   -- onto the zone under a continent spot; refuses open sea
+Northstar.Nav.journey.Estimate(from, to, budgeted) -> seconds | nil[, "busy"] -- from, to = { map, x, y, f } (percent); from nil: the player; "busy" only when budgeted (the API)
+Northstar.Nav.nearby.Find(kind, skillLine) -> place, seconds | nil, "kind" | "codex" | "combat" | "none"
+Northstar.Nav.nearby.Go(kind, skillLine) -> ok           -- weapon: skillLine is the weapon skill's line, or nil for any
+Northstar.Nav.nearby.Trip() -> { target, name, label } | nil   -- the trip Go started, while its target is the one shown
+Northstar.Nav.nearby.EndTrip(arrived) -> ok                -- back to the guide: the trip's target lets go
+Northstar.Nav.nearby.Weapons() -> { { line, label, known, level }, ... }   -- the weapons the class can use that a master of its side teaches
+Northstar.Nav.nearby.MenuItems() -> items                  -- the guide window button's list (vendor first; a weapons page)
+Northstar.Pins.MinimapCursor() -> dNorth, dWest | nil      -- yards from the player to the cursor on the minimap
 ```
 
 - **Plan to anywhere** (`nav.mapPlan`, on): Shift-click empty space on the
   world map (a canvas click handler, so it takes the click before the map
   zooms) or the minimap; Alt-click anywhere on the world map, its icons
   included (`GLOBAL_MOUSE_DOWN`; the icon's name labels the target), except
-  Polestar's own clickable pins. The label is "Zone x, y". Shift- or
+  Northstar's own clickable pins. The label is "Zone x, y". Shift- or
   Alt-clicking within 1.5% of the map's width (8% of the minimap's radius) of
-  the shown pick, or Shift-clicking its pin (`Pins.OnWorldClick`; Polestar's
+  the shown pick, or Shift-clicking its pin (`Pins.OnWorldClick`; Northstar's
   pins are its own frames, `Pins.WorldPinOf` tells them under the mouse),
   lets it go. With a chat edit box
   open Shift-click stays Blizzard's (links into chat). A spot on no zone (open
@@ -2283,7 +2283,7 @@ Polestar.Pins.MinimapCursor() -> dNorth, dWest | nil      -- yards from the play
   `RemoveWaypoint`, `ClearWaypoint`, `ClearAllWaypoints`, `SetCrazyArrow`,
   `IsValidWaypoint`, `WaypointExists`, `GetDistanceToWaypoint`, `GetKey` and
   `SetClosestWaypoint` through `API.Navigate("TomTom", ...)`, one waypoint at a
-  time; `corpse` waypoints (the death helper's job) and `from = "Polestar"`
+  time; `corpse` waypoints (the death helper's job) and `from = "Northstar"`
   ones are refused. Any other method name with an upper-case first letter
   (TomTom's style) is a no-op returning nil, so an addon calling more of
   TomTom's API never errors; fields (`TomTom.db`, profiles) are not provided
@@ -2292,19 +2292,19 @@ Polestar.Pins.MinimapCursor() -> dNorth, dWest | nil      -- yards from the play
   back (cleared) when the setting goes off or TomTom loads. `Nav/Bridges.lua`
   never mirrors into it, nor into Shortest Path Forever's own stand-in (the
   global while it is installed and TomTom is not): a waypoint there starts a
-  journey of its own, which Polestar steps aside for (#306). Default off: the
+  journey of its own, which Northstar steps aside for (#306). Default off: the
   stand-in has methods only, so an addon that finds the global and reads
   TomTom's settings (`TomTom.db`, its profile) would error; the option ("Let
   other addons set waypoints", Options, Integrations, TomTom) says so. With it
   off nothing sets `TomTom` and `/way` is not claimed.
 - **Following TomTom** (`nav.followTomTom`, off; real TomTom only): hooks on
-  TomTom's table: `SetCrazyArrow(uid)` points Polestar's arrow at that
-  waypoint (not `corpse`, not `from = "Polestar"`), `RemoveWaypoint` and
+  TomTom's table: `SetCrazyArrow(uid)` points Northstar's arrow at that
+  waypoint (not `corpse`, not `from = "Northstar"`), `RemoveWaypoint` and
   `ClearWaypoint` of it let it go ("Remove all waypoints" clears through
   `ClearWaypoint` alone). Waypoints TomTom restores at login are followed one
   frame after `PLAYER_ENTERING_WORLD`, the one its arrow was left on, unless
   something is picked already. A followed waypoint is not mirrored back.
-- **`/way`** (with `nav.answerTomTom`): claimed at login (`SLASH_POLESTARWAY1`)
+- **`/way`** (with `nav.answerTomTom`): claimed at login (`SLASH_NORTHSTARWAY1`)
   only when TomTom is not loaded and no `SLASH_*` global spells `/way`.
   `/way [#mapID | zone] x y [title]`: the zone is any name under the player's
   world, exactly, the one zone it begins, else the one it is part of
@@ -2367,31 +2367,31 @@ called, as its `minor` grows) the two never guide at once:
 
 - **Hand-off** (`nav.spfHandoff` on; an option, off by default since 0.2.5:
   Options, Integrations, Shortest Path Forever: "Hand guiding to Shortest
-  Path Forever", shown only with it installed): Polestar's target is guided
-  by it and Polestar's own guidance steps aside.
-- **Yield** (the option off, the default): Polestar guides, and steps aside
+  Path Forever", shown only with it installed): Northstar's target is guided
+  by it and Northstar's own guidance steps aside.
+- **Yield** (the option off, the default): Northstar guides, and steps aside
   exactly as it does when handing off while Shortest Path Forever runs a
-  journey that is not Polestar's (`Active()` true and no
-  `CurrentStop("Polestar")`: one the player started there, or another
+  journey that is not Northstar's (`Active()` true and no
+  `CurrentStop("Northstar")`: one the player started there, or another
   addon's). It looks on `Subscribe`'s news (else on Nav's once-a-second
   tick), at `PLAYER_ENTERING_WORLD` and when the option is turned off; never
   in combat (the news waits for `PLAYER_REGEN_ENABLED`). When that journey
-  ends Polestar guides again (`Nav.Reapply()`, the TomTom stand-in with it).
+  ends Northstar guides again (`Nav.Reapply()`, the TomTom stand-in with it).
   `Nav.SayHandedOff()` then says "Shortest Path Forever is guiding a journey
-  of its own. Polestar's arrow comes back when it ends."
-  A journey of Polestar's left running in it from 0.2.4 (which handed off by
+  of its own. Northstar's arrow comes back when it ends."
+  A journey of Northstar's left running in it from 0.2.4 (which handed off by
   default) is cancelled once with the option off, at the first
-  `PLAYER_ENTERING_WORLD` (in combat, when combat ends; until then Polestar
+  `PLAYER_ENTERING_WORLD` (in combat, when combat ends; until then Northstar
   steps aside as if yielding, since that journey may still guide).
   `Subscribe` is called at `PLAYER_ENTERING_WORLD` and when the option
   changes, never in combat (then once combat ends); turning the option off in
-  combat cancels Polestar's journey there once combat ends.
+  combat cancels Northstar's journey there once combat ends.
 
 ```lua
-Polestar.Nav.HandedOff() -> bool   -- the one predicate: handing off (installed, on, the last stop not refused, and it guides that stop), or yielding
-Polestar.Nav.Reapply()             -- (Nav.lua) re-plan and tell every module the same target again, unannounced
-Polestar.Nav.handoff.Available() -> bool
-Polestar.Nav.handoff.Yielding() -> bool  -- the option off and a journey not Polestar's runs in it
+Northstar.Nav.HandedOff() -> bool   -- the one predicate: handing off (installed, on, the last stop not refused, and it guides that stop), or yielding
+Northstar.Nav.Reapply()             -- (Nav.lua) re-plan and tell every module the same target again, unannounced
+Northstar.Nav.handoff.Available() -> bool
+Northstar.Nav.handoff.Yielding() -> bool  -- the option off and a journey not Northstar's runs in it
 ```
 
 - **What steps aside.** While `Nav.HandedOff()`: the arrow hides
@@ -2399,7 +2399,7 @@ Polestar.Nav.handoff.Yielding() -> bool  -- the option off and a journey not Pol
   are no route lines, journey steps (`UI/JourneyPanel.lua`), travel button
   (`Nav/Prompts.lua`) or leg alerts; the trail is cleared (`Layers.lua`);
   transport alerts are off (`Alerts.Check`); `Nav/Walk.lua` neither loads
-  `Polestar_Nav` (`Data.Pack` is never called) nor searches; Shift/Alt map
+  `Northstar_Nav` (`Data.Pack` is never called) nor searches; Shift/Alt map
   clicks plan nothing, the TomTom stand-in is not installed and `/way` is not
   claimed (`Nav/Journey.lua`, at login and when the setting changes; the
   addon then claims its own); `Nav/Bridges.lua` mirrors into neither TomTom
@@ -2407,7 +2407,7 @@ Polestar.Nav.handoff.Yielding() -> bool  -- the option off and a journey not Pol
   The guide window, the target pin, spawn regions, every other pin and the
   Engine's own arrival checks stay. When the predicate flips,
   `Nav.Reapply()` brings each surface back or sends it away again.
-- **The stop.** One stop through `NavigateRoute("Polestar", { stop })`
+- **The stop.** One stop through `NavigateRoute("Northstar", { stop })`
   (`Navigate` with title and kind when only that exists): the target's live
   map point (`Nav.LiveCoords`, as 0-1), its label as the title, and a kind:
   the hand-set target's `stop` (Dungeons' entrances, Nearby's trainers, inns
@@ -2428,30 +2428,30 @@ Polestar.Nav.handoff.Yielding() -> bool  -- the option off and a journey not Pol
   churn. In combat, without a position or in an instance nothing is called and
   the stop waits (`PLAYER_REGEN_ENABLED`, `PLAYER_ENTERING_WORLD`,
   `ZONE_CHANGED_NEW_AREA`); a call refused because combat began waits the
-  same way. No target: `Cancel("Polestar")` while its journey runs. Dead or a
+  same way. No target: `Cancel("Northstar")` while its journey runs. Dead or a
   ghost (`UnitIsDeadOrGhost`): no call at all, as it guides corpse runs
   itself; alive again the target goes as it is (the same stop is not resent).
 - **Not fighting.** `Subscribe` (else Nav's once-a-second tick) reads
-  `Ended("Polestar")` and `CurrentStop`: once the journey arrived or was
+  `Ended("Northstar")` and `CurrentStop`: once the journey arrived or was
   cleared or replaced it is left ended, nothing is resent and no `Cancel`
-  is called, until Polestar's target changes.
+  is called, until Northstar's target changes.
 - **Refused.** A stop refused out of combat (its Journeys off, or a point it
-  cannot place) and a target with no live point: Polestar guides that target
+  cannot place) and a target with no live point: Northstar guides that target
   itself (`Nav.HandedOff()` false) and cancels its earlier journey; the next
   target, or a zone change, offers a stop again, and the first one taken hands
   back.
 - **No way there.** A stop it took that it then guides nothing to (its
-  `CurrentStop("Polestar")` set but `Active()` false: its search found no
+  `CurrentStop("Northstar")` set but `Active()` false: its search found no
   way, `StopGuide` in its `Journey.lua`, the tracker saying "No way there
-  from here."; or its guidance turned off in its tracker): Polestar guides
+  from here."; or its guidance turned off in its tracker): Northstar guides
   that target itself (`Nav.HandedOff()` false), leaving its journey in place
   and sending nothing. It is read on `Subscribe`'s news (else Nav's tick) and
   at death and coming back; it is never set while dead or a ghost (its corpse
-  run). Polestar goes on guiding after that journey ends, and steps aside as
+  run). Northstar goes on guiding after that journey ends, and steps aside as
   soon as it guides anything again (that journey, the player's own, another
   addon's, its corpse run); the next stop taken hands back.
-- **Off.** Turning `nav.spfHandoff` off cancels the journey and Polestar
-  guides again (`Polestar_Nav` loads then), unless a journey not Polestar's
+- **Off.** Turning `nav.spfHandoff` off cancels the journey and Northstar
+  guides again (`Northstar_Nav` loads then), unless a journey not Northstar's
   runs (yield, above); on again sends the stop anew.
 - **Options and commands.** `Nav.HandoffOption(control)` wraps every option
   that has no effect while handing off: its `disabled` also answers
@@ -2465,7 +2465,7 @@ Polestar.Nav.handoff.Yielding() -> bool  -- the option off and a journey not Pol
   Path Forever is guiding. Turn off "Hand guiding to Shortest Path Forever"
   ...", or the yield's line above) instead of `/polestar arrow show`
   (or the bare toggle turning it on), `/polestar route` and
-  `/polestar skipleg`. Polestar's arrival chime is silent meanwhile.
+  `/polestar skipleg`. Northstar's arrival chime is silent meanwhile.
 
 Tested by `rust/crates/forge-addontest/tests/addontest/nav-handoff.rs` against a fake API written to its
 `docs/api.md` (v1.16.0).
@@ -2473,12 +2473,12 @@ Tested by `rust/crates/forge-addontest/tests/addontest/nav-handoff.rs` against a
 ### MapCanvas — drawing on Blizzard's map frames
 
 ```lua
-local view = Polestar.MapCanvas.Watch(map, fn)  -- map: WorldMapFrame or BattlefieldMapFrame; one view per map frame
+local view = Northstar.MapCanvas.Watch(map, fn)  -- map: WorldMapFrame or BattlefieldMapFrame; one view per map frame
 -- fn(view, what, elapsed): what = "show" | "map" | "size" | "scale" | "alpha" | "hide" | "tick"
 -- view.map, view.canvas, view.shown, view.mapID, view.width, view.height, view.scale, view.zoom, view.pinScale, view.alpha
 view:Level(levelType)              -- the frame level the map gives its pins of that level type
 view:PinScale(startScale, endScale) -- a map pin's scale under SetScalingLimits(1, startScale, endScale)
-Polestar.MapCanvas.Get(map) -> view | nil
+Northstar.MapCanvas.Get(map) -> view | nil
 ```
 
 The world map and the battlefield map are Lua (`Blizzard_MapCanvas`,
@@ -2488,7 +2488,7 @@ cursor hovered, then `FrameControlsManager` refreshes its focus and
 `Blizzard_GamepadActionBars` calls the protected
 `SetPreferredGamepadInteractTarget`). A value an addon wrote into the map's
 tables taints that code and the game blocks the call ("An action was blocked
-because of taint from Polestar"). So every module draws on the maps through
+because of taint from Northstar"). So every module draws on the maps through
 `Nav/MapCanvas.lua` and never writes into them: no data provider, no pin
 pool, no `AcquirePin`, no map method that writes, no hook on the map. Its
 frames are children of `map:GetCanvas()` (parenting is the client's, in C:
@@ -2510,11 +2510,11 @@ reads on the frames it finds there (`owningMap` on the mouse focus,
 scans), and none is a button to the gamepad's navigation: as the gamepad
 interface focuses the map, `SmartNavigation_CanFocusFrame` takes a Button,
 an EditBox or a frame with an OnMouseDown or OnMouseUp script for one and
-reads that script back (`GetScript`), which put Polestar's function in its
+reads that script back (`GetScript`), which put Northstar's function in its
 secure code (seen in game: the map's `FocusGamepad` registered its callbacks
-tainted). Polestar's world map pins take the mouse with OnEnter and OnLeave
+tainted). Northstar's world map pins take the mouse with OnEnter and OnLeave
 only; a click is a `GLOBAL_MOUSE_DOWN` and a `GLOBAL_MOUSE_UP` of one button
-(not the right one, which passes through to the map) on the pin. A view is a frame of Polestar's on the canvas whose OnUpdate runs
+(not the right one, which passes through to the map) on the pin. A view is a frame of Northstar's on the canvas whose OnUpdate runs
 only while the map is shown; each frame it compares the map ID, the canvas
 size, scale and zoom, the pin scale and the alpha, and tells its listeners
 what changed ("show" with fresh values on the map's first frame open).
@@ -2526,10 +2526,10 @@ or the minimap.
 ### Pins — map and minimap icons for every module
 
 ```lua
-Polestar.Pins.SetLayer(layer, pins, opts)   -- replace a layer; opts = { world = true, minimap = true, edge = false, scale = 1,
+Northstar.Pins.SetLayer(layer, pins, opts)   -- replace a layer; opts = { world = true, minimap = true, edge = false, scale = 1,
                                             --   minimapAreas = false, minMapType = nil, worldLayout = nil }
-Polestar.Pins.ClearLayer(layer)
-Polestar.Pins.SetLayerVisible(layer, visible)
+Northstar.Pins.ClearLayer(layer)
+Northstar.Pins.SetLayerVisible(layer, visible)
 -- pin = { map, x, y, f, icon (Theme.Media name, texture path, or "map:<name>": a map mark), size, minimapSize,
 --         color = { r, g, b, a }, tooltip = string | function(tooltip), onClick = function(button, owner), priority,
 --         glow (soft halo), ring = { r, g, b } (ring round the disc), backdrop (scrim disc), area (yards),
@@ -2546,7 +2546,7 @@ in `Media/Map/icon-<name>` (`tools/media/map.js`, 64 px over 27 units of a
 drawn at 27/24 of the mark's size, tinted with the pin's colour. Each sits in
 a medallion 1.4 times the mark (rounded to even), the one untinted piece: the
 icon pack's (`nav.mapIcons`; `Pins.IconPack()`: "skin", the default, takes
-Polestar's, Halo's, or Hearth's for Hearth and the game's looks; "bare"
+Northstar's, Halo's, or Hearth's for Hearth and the game's looks; "bare"
 draws no medallion). The kit is tinted too: `ring` 5 px and `ring2` 11 px
 wider than the medallion, the glow 2.3 times it (only where a pin asks:
 the guide's target, a focused quest turn-in), the badge 14 px high. A mark
@@ -2601,7 +2601,7 @@ within 0.6 map percent of an earlier pin's joins it ("4+", every step in the
 tooltip). Rebuilt on step, guide and tab changes and the two settings.
 
 Pins are projected on the minimap; `edge = true` clamps that layer's
-out-of-range pins to the minimap rim. On the world map they are Polestar's own
+out-of-range pins to the minimap rim. On the world map they are Northstar's own
 frames on the canvas, at the frame levels the map gives its own pins (MapCanvas,
 below): pins at `PIN_FRAME_LEVEL_SUPER_TRACKED_QUEST`, scaled as a map pin
 with `SetScalingLimits(1, 0.7, 0.9)` is (above), tooltip and click, the right button
@@ -2649,12 +2649,12 @@ same way; a hull is laid out again only when its pin, the zoom, the minimap's
 size or (rotating) the facing changed, and walking moves only the first
 piece, which the others are anchored to. `GetMinimapHulls(layer)` lists the
 drawn hulls with their outlines (tests); `AreaStats()` counts hulls, pieces
-and discs per surface (in game: `/dump Polestar.Pins.AreaStats()`).
+and discs per surface (in game: `/dump Northstar.Pins.AreaStats()`).
 
 ```lua
-Polestar.Pins.SetTrail(runs, opts)   -- runs = { { live = true?, { c, wx, wy }, ... }, ... }; opts = { world, minimap, color }
-Polestar.Pins.ClearTrail()
-Polestar.Pins.TrailDots(points, spacing, phase, rect, cap) -> count, positions   -- pure placement (tests)
+Northstar.Pins.SetTrail(runs, opts)   -- runs = { { live = true?, { c, wx, wy }, ... }, ... }; opts = { world, minimap, color }
+Northstar.Pins.ClearTrail()
+Northstar.Pins.TrailDots(points, spacing, phase, rect, cap) -> count, positions   -- pure placement (tests)
 ```
 
 The trail: animated dots along straight lines between consecutive points
@@ -2679,10 +2679,10 @@ view width / 60) yd rounded up to 15 yd times a power of two, so dots keep their
 places through a zoom within a step; redrawn when a pan or zoom moves the view
 (the canvas's and its scroll frame's place, read each frame) and when OpenMap
 switches its map on or off (`OpenMap_StitchedChanged`). `nav.openmapDots`
-(default on) is a switch of Polestar's in OpenMap's menu; it hides the dots on
+(default on) is a switch of Northstar's in OpenMap's menu; it hides the dots on
 OpenMap's map only. Only OpenMap's table is called; the map frame is only read.
 The trail stands in only while route lines draw nothing (`nav.routeLines` off):
-`Nav/Layers.lua` clears it while `Polestar.RouteLines.Active()`.
+`Nav/Layers.lua` clears it while `Northstar.RouteLines.Active()`.
 
 ### Route lines (`Maps/RouteStrokes.lua`, `Maps/RouteLines.lua`)
 
@@ -2691,7 +2691,7 @@ The way to the target on the world map and the minimap, from
 `NAV_ROUTE_GEOMETRY` on change). The geometry and the painters are ported
 from Shortest Path Forever's `UI/Strokes.lua`, `UI/FlightLines.lua` and
 `UI/Route.lua` (v1.15.0, Cillian Berragan, GPL-3.0-or-later, with his
-permission; `addon/Polestar_Nav/CREDITS.md`).
+permission; `addon/Northstar_Nav/CREDITS.md`).
 
 - `RouteStrokes.lua` is pure: draw paths and a view in, strokes out, into a
   buffer of parallel arrays rewritten in place (no allocation per draw).
@@ -2710,7 +2710,7 @@ permission; `addon/Polestar_Nav/CREDITS.md`).
   minimap's 600), so the pools of lines, which the client cannot destroy,
   are too.
 - `RouteLines.lua` builds the draw paths once per `NAV_ROUTE_GEOMETRY` and
-  paints: one frame of Polestar's on the world map's canvas (MapCanvas, Nav),
+  paints: one frame of Northstar's on the world map's canvas (MapCanvas, Nav),
   the canvas's size, at `PIN_FRAME_LEVEL_QUEST_BLOB`, no mouse, redrawn on
   map, zoom, size, route, setting and
   theme changes, and one frame over the minimap under Pins' frames, redrawn
@@ -2757,26 +2757,26 @@ permission; `addon/Polestar_Nav/CREDITS.md`).
 ### Travel planner and zone crossings
 
 ```lua
-Polestar.Nav.PlanRoute(p) -> legs | nil, reason   -- pure; Nav/Travel.lua
-Polestar.Nav.GetRoute() -> legs, ci               -- the live route and its current leg
-Polestar.Nav.EstimateTravel(from, to, budgeted, noHearth) -> seconds | nil[, "busy"] -- same planner, cached; budgeted (the API's): no new plan past 25 ms a frame; noHearth: the way without the Hearthstone (the Engine's `hearth` goal weighs the two)
-Polestar.Nav.RegisterTravelData(d, replace)        -- TravelData.lua: flight masters, flights, transports, portals, inns
-Polestar.Nav.AddTravelPaths(chunk)                 -- learned walking paths (nodes: c, wx, wy, gateway, uiMap)
-Polestar.Nav.RegisterCrossings(d)                  -- zone crossings (merges; ids seen before are skipped)
-Polestar.Nav.travel.SkipLeg() -> bool              -- leave this hearth/teleport/flight/ride out for the target; else the next leg
-Polestar.Nav.travel.SkipReplans(leg) -> bool      -- skipping it replans (the prompts' "Skip this leg"), else "Mark this leg done"
-Polestar.Nav.travel.RestoreWalk(c, x, y) -> bool  -- the path to (c, x, y) failed or was cleared: the walk's straight estimate again
-Polestar.Nav.travel.WalkUnreachable(c, x, y) -> bool -- no walk joins the player to (c, x, y): a portal taken there is left out (#568)
-Polestar.Nav.travel.Remeasured() -> bool          -- Walk.Measure landed: plan again, take it only if it goes another way
-Polestar.Nav.travel.PricePaths() -> bool          -- a later walk's path landed (Walk.LegPath): its legs take its yards and hubs
-Polestar.Nav.travel.WalkCostHook(fn)              -- fn(walk, cost) -> cost: a planner rule scaling walk costs, never times
-Polestar.Nav.travel.HubText(leg) -> text | nil     -- "Hostile town: <names>" for a walk with leg.hubs
-Polestar.Nav.travel.TakeWarning() -> text | nil    -- the current walk's hostile towns, once per walk (the arrow says it)
-Polestar.Nav.walk.Measure(c, x, y, water, places) -- one reversed Path.FindMany from the target to the plan's places
-Polestar.Nav.walk.Measured(c, x, y, water) -> walkCost | nil -- the planner's p.walkCost for that target: walkCost(c, wx, wy, start) -> cost, yards
-Polestar.Nav.walk.LegPath(from, to) -> yards, hubs | nil -- a later walk's searched path: Find's job.yards and job.hubs
-Polestar.Nav.travel.Progress() -> seconds, yards   -- the current leg's rest (allocation-free, always finite; rides count down)
-Polestar.Nav.GetRouteGeometry() -> { legs = { { kind, pts = { { c, wx, wy }, ... }, current, choke }, ... } } | nil
+Northstar.Nav.PlanRoute(p) -> legs | nil, reason   -- pure; Nav/Travel.lua
+Northstar.Nav.GetRoute() -> legs, ci               -- the live route and its current leg
+Northstar.Nav.EstimateTravel(from, to, budgeted, noHearth) -> seconds | nil[, "busy"] -- same planner, cached; budgeted (the API's): no new plan past 25 ms a frame; noHearth: the way without the Hearthstone (the Engine's `hearth` goal weighs the two)
+Northstar.Nav.RegisterTravelData(d, replace)        -- TravelData.lua: flight masters, flights, transports, portals, inns
+Northstar.Nav.AddTravelPaths(chunk)                 -- learned walking paths (nodes: c, wx, wy, gateway, uiMap)
+Northstar.Nav.RegisterCrossings(d)                  -- zone crossings (merges; ids seen before are skipped)
+Northstar.Nav.travel.SkipLeg() -> bool              -- leave this hearth/teleport/flight/ride out for the target; else the next leg
+Northstar.Nav.travel.SkipReplans(leg) -> bool      -- skipping it replans (the prompts' "Skip this leg"), else "Mark this leg done"
+Northstar.Nav.travel.RestoreWalk(c, x, y) -> bool  -- the path to (c, x, y) failed or was cleared: the walk's straight estimate again
+Northstar.Nav.travel.WalkUnreachable(c, x, y) -> bool -- no walk joins the player to (c, x, y): a portal taken there is left out (#568)
+Northstar.Nav.travel.Remeasured() -> bool          -- Walk.Measure landed: plan again, take it only if it goes another way
+Northstar.Nav.travel.PricePaths() -> bool          -- a later walk's path landed (Walk.LegPath): its legs take its yards and hubs
+Northstar.Nav.travel.WalkCostHook(fn)              -- fn(walk, cost) -> cost: a planner rule scaling walk costs, never times
+Northstar.Nav.travel.HubText(leg) -> text | nil     -- "Hostile town: <names>" for a walk with leg.hubs
+Northstar.Nav.travel.TakeWarning() -> text | nil    -- the current walk's hostile towns, once per walk (the arrow says it)
+Northstar.Nav.walk.Measure(c, x, y, water, places) -- one reversed Path.FindMany from the target to the plan's places
+Northstar.Nav.walk.Measured(c, x, y, water) -> walkCost | nil -- the planner's p.walkCost for that target: walkCost(c, wx, wy, start) -> cost, yards
+Northstar.Nav.walk.LegPath(from, to) -> yards, hubs | nil -- a later walk's searched path: Find's job.yards and job.hubs
+Northstar.Nav.travel.Progress() -> seconds, yards   -- the current leg's rest (allocation-free, always finite; rides count down)
+Northstar.Nav.GetRouteGeometry() -> { legs = { { kind, pts = { { c, wx, wy }, ... }, current, choke }, ... } } | nil
 -- leg = { kind = "walk"|"fly"|"boat"|"zeppelin"|"tram"|"portal"|"hearth"|"teleport"|"lift", from, to, label,
 --         seconds, rest, yards, radius (arrival yards at `to`), waypoint (true: `to` is a crossing or chain node),
 --         handmade (a walk the crossing data lays out), crossing, side (a crossing walked from end a|b),
@@ -2841,7 +2841,7 @@ legs, counts down the same way. `EstimateTravel`
 evicts its oldest cached answer when 64 are held. A budgeted call (only
 `API.Estimate`'s) starts no new plan once the frame has spent 25 ms planning
 estimates (`debugprofilestop`) and answers `nil, "busy"` until the next
-frame; the plan it does start may still run to its 40 ms cap. Polestar's own
+frame; the plan it does start may still run to its 40 ms cap. Northstar's own
 callers (`ns.TravelCost`, `Nearby.Rank`, the item sources, the dungeon
 pickup order) are never refused, so a ranking compares full plans only; their
 own caps and the cache bound them. The arrow's ETA adds the 1.25 detour only to straight distances
@@ -2849,7 +2849,7 @@ own caps and the cache bound them. The arrow's ETA adds the 1.25 detour only to 
 
 **Walking paths.** `Nav/Walk.lua` lets the arrow follow real paths on the
 ground with Shortest Path Forever's walking engine ("In-game walking routes
-(Polestar_Nav)" below). The planner above stays synchronous; its walks into
+(Northstar_Nav)" below). The planner above stays synchronous; its walks into
 the target are priced by the engine's measure (below), its other walks by
 straight lines until their paths are searched. The walk the arrow is
 on is searched first: player to the current walk leg's end, or to the target,
@@ -2972,7 +2972,7 @@ ground over them. On a map whose surfaces carry their area (`Path.AreaFormat`:
 each WMO group's WMOAreaTable row, `Path.SurfacesAt`'s fifth argument), the
 surfaces the client's subzone names (the Undercity's "The Canals", its
 quarters, the hall's "Ruins of Lordaeron"; the rows' English names,
-`Path.AreaName`: an English client only until Polestar_Names carries
+`Path.AreaName`: an English client only until Northstar_Names carries
 WMOAreaTable names) are the floor at once when they lie within 10 yd; on
 several levels (the hall and its gallery; the Trade Quarter's ring, walkway
 and canal) they keep the candidate floors to those levels (`Walk.Floors`: a
@@ -3018,7 +3018,7 @@ guide goal whose last located goal before it, across steps, is a `goto`
 (the author's way in: a cave's mouth; the goto itself is walked) keep the
 straight arrow, so a target underground is never routed over the hill
 above it. `nav.navRouting` (default on, Guide > Arrow & routes) off, the
-engine missing, or Polestar_Nav not loaded: the straight arrow everywhere.
+engine missing, or Northstar_Nav not loaded: the straight arrow everywhere.
 `GetRouteGeometry` (rebuilt on `NAV_ROUTE_GEOMETRY`, which fires on every
 plan, leg change, target change and path arrival) gives the map lines the
 legs from the current one on: the current walk as the engine's points once
@@ -3168,9 +3168,9 @@ handed off (`Walk:Refresh` cancels one in flight).
 
 **Chokepoint steps.** When the path arrives, the walk the arrow is on is
 split into legs where the path passes a chokepoint. It splits at the
-lifts `Transit.Lifts()` knows when Polestar_Nav has no chokepoints, plus the crossings, approach chains and guide
-`goto`s the planner already makes legs of, and Polestar_Nav's
-`PolestarNavChokepoints[map]` table (`Nav/Chokepoints.lua`, generated by `nav
+lifts `Transit.Lifts()` knows when Northstar_Nav has no chokepoints, plus the crossings, approach chains and guide
+`goto`s the planner already makes legs of, and Northstar_Nav's
+`NorthstarNavChokepoints[map]` table (`Nav/Chokepoints.lua`, generated by `nav
 pack`: lifts, gates, bridges, tunnels, passes, cave and building mouths, each
 with a radius), read instead of the Transit lifts. A chokepoint counts within its radius of the path, snapped to the
 nearest point on the path (the step ends there, so no leg runs out and back:
@@ -3292,7 +3292,7 @@ keeps them and its `source` says so. `travel
 build --shipped none` builds without them (the test fixtures). An optional
 local crossings file, `data/local/crossings.json` (gitignored), adds to them:
 the build validates it and writes it into the local data addon
-`addon/Polestar_Travel` (gitignored; `## Dependencies: Polestar`, registers
+`addon/Northstar_Travel` (gitignored; `## Dependencies: Northstar`, registers
 with `RegisterCrossings` at load, which merges; installed when built, never
 packaged). Without the file nothing is written and TravelData.lua never holds
 it.
@@ -3350,7 +3350,7 @@ continent, in different zones, at most 1000 yd apart; open pairs distinct,
 on one continent, not repeated; chains of 2+ nodes on one continent with hops
 of at most 600 yd; captions plain text of at most 160 characters (no `|`
 escape codes). `travel route` runs the addon planner and includes
-Polestar_Travel when it is built (`--crossings-lua none` leaves it out).
+Northstar_Travel when it is built (`--crossings-lua none` leaves it out).
 
 **Chains from recordings.** `travel chain --to <map,x,y> [--name <place>]`
 drafts an approach chain from the recorded walks that pass within 30 yd of a
@@ -3407,7 +3407,7 @@ with the local crossings file (never changed). `--lua <file>` writes the
 aids as a Crossings.lua; `node tools/polestar.js travel build --offline
 --crossings data/local/nav/aids.json --travel-addon <test folder> --json
 <test folder>/travel.json --lua <test folder>/TravelData.lua` builds a test
-copy of the data addon from them without touching `addon/Polestar_Travel` or
+copy of the data addon from them without touching `addon/Northstar_Travel` or
 the committed travel files. Shipping them is the owner's call.
 **Timetables, portals and teleports (`Nav/Transit.lua`).** Ported from
 Shortest Path Forever by Cillian Berragan (GPL-3.0-or-later, used with
@@ -3415,17 +3415,17 @@ permission: his `Transport/Model.lua`, `Timetable.lua`, `Observer.lua`,
 `Sync.lua`, `Teleports.lua` and `tools/gen_routes.py`, `gen_transit.py`).
 
 ```lua
-Polestar.Transit.Now() -> server seconds with a fraction
-Polestar.Transit.NextDeparture(kind, id, now, side) -> wait, ride, timed | nil
+Northstar.Transit.Now() -> server seconds with a fraction
+Northstar.Transit.NextDeparture(kind, id, now, side) -> wait, ride, timed | nil
     -- id: TravelData transport id (or the entry), or a lift id; side "a"|"b", "top"|"bottom", nil = soonest;
     -- now: when you reach the dock. wait until it leaves with you aboard (its `board` seconds early
     -- enough), ride until you are off; untimed: the expected values, timed = false
-Polestar.Transit.NextArrival(kind, id, now, side) -> arriveIn (0 = there), departIn | nil while untimed
-Polestar.Transit.Caption(kind, id, now, side) -> "Next boat in 1:20" | "Boat docked, leaves in 0:40"
+Northstar.Transit.NextArrival(kind, id, now, side) -> arriveIn (0 = there), departIn | nil while untimed
+Northstar.Transit.Caption(kind, id, now, side) -> "Next boat in 1:20" | "Boat docked, leaves in 0:40"
     | untimed "Boat: average wait 2:55"
-Polestar.Transit.Riding(now) -> { kind, route, dock, arriveIn } | nil   -- the ride the observer identified
-Polestar.Transit.Lifts() -> { { id, name, c, wx, wy, top, bottom }, ... };  LiftNear(c, wx, wy [, yards]) -> id, name
-Polestar.Transit.Teleports(now) -> { { spell, name, cast, ready, to = point | nil, bind }, ... }
+Northstar.Transit.Riding(now) -> { kind, route, dock, arriveIn } | nil   -- the ride the observer identified
+Northstar.Transit.Lifts() -> { { id, name, c, wx, wy, top, bottom }, ... };  LiftNear(c, wx, wy [, yards]) -> id, name
+Northstar.Transit.Teleports(now) -> { { spell, name, cast, ready, to = point | nil, bind }, ... }
 -- NAV_TRANSIT fires when a sighting changes a timing or the usable teleports change.
 ```
 
@@ -3447,11 +3447,11 @@ dates the loop, once the ride clearly fits one loop (1.25x the runner-up:
 loops sharing a lane both fit). It fits every 10 samples and when 30 s pass
 without one or the player leaves the world; a new sighting prints "Timed the
 <route> from your ride" unless one of yours is under 10 minutes old.
-Sightings are kept per realm in `PolestarDB.transit[realm][route] = { epoch,
+Sightings are kept per realm in `NorthstarDB.transit[realm][route] = { epoch,
 seen, source }` and dropped after 6 hours (a restart resets the loops).
 Sharing is opt-in: with `nav.shareTransit` (off by default; Options, Arrow &
 routes, "Share boat times") a new sighting of yours goes to the guild and
-group as an addon message (`PolestarT1`: `S<route>:<seen s>:<phase ms at
+group as an addon message (`NorthstarT1`: `S<route>:<seen s>:<phase ms at
 seen>;...`; never to a raid in a battleground or arena). A guild query (`Q`,
 sent 15 s after login) is answered after a random 2-12 s, at most every 30 s
 per channel, with your own fresh sightings no other reply on that channel
@@ -3510,19 +3510,19 @@ the rows used are kept beside it in `transit.json`; the client tables are
 cached with the others. Without those sources the boats and zeppelins are
 still timetabled and the rest is skipped with a warning.
 
-### In-game walking routes (Polestar_Nav)
+### In-game walking routes (Northstar_Nav)
 
 The arrow's walks follow real paths thanks to Shortest Path Forever by
 Cillian Berragan (https://github.com/cjber/shortest-path-forever,
-GPL-3.0-or-later, used with his permission). Polestar's walking router
+GPL-3.0-or-later, used with his permission). Northstar's walking router
 started from Shortest Path Forever v1.16.0 by Cillian Berragan, with thanks;
-Polestar maintains it since 2026-10-16. `addon/Polestar_Nav` holds that
-router, running on Polestar's own walking maps of Eastern Kingdoms,
+Northstar maintains it since 2026-10-16. `addon/Northstar_Nav` holds that
+router, running on Northstar's own walking maps of Eastern Kingdoms,
 Kalimdor and Zephras Isle (packed from our navigation grid in maps format 2,
 grown from his map format, `forge nav pack`; format 3 adds each floor's WMO group
 area, the WMOAreaTable row whose name is the client's subzone there, from the
 grid's `<tile>.area.gz` sidecars and `areas.json`: `Path.SurfacesAt`'s areas,
-`Path.AreaName`, for telling a city's levels apart); Polestar's travel planner (above) keeps choosing
+`Path.AreaName`, for telling a city's levels apart); Northstar's travel planner (above) keeps choosing
 flights, rides and the Hearthstone, and the walking is the router's: the
 arrow's walk, every later walk's path, and the measure of the walks into the
 target the planner prices (`Path.Find` and one reversed `Path.FindMany` per
@@ -3596,23 +3596,23 @@ packer needs no map frame for it, so Forever's own zones (Riverglades, Mount
 Hyjal, Shen'dralas, Zephras Isle) are there too; loaded, about 0.1 MB.
 
 ```
-Polestar_Nav.toc        LoadOnDemand, Dependencies: Polestar
-  Nav\Nav.xml           the walking maps -> PolestarPathData[map], then the chokepoints
+Northstar_Nav.toc        LoadOnDemand, Dependencies: Northstar
+  Nav\Nav.xml           the walking maps -> NorthstarPathData[map], then the chokepoints
     Nav0*.lua, Nav1*.lua, Nav2991*.lua  ours: `forge nav pack` from the grid (128 cells a tile, 4.17 yd), listed in PACK.json
-    Chokepoints.lua       ours: PolestarNavChokepoints[map] for the walk's named steps
-  Routing\Costs.lua     ours: Polestar_NavCosts, the ground classes' multipliers and the faction profiles
+    Chokepoints.lua       ours: NorthstarNavChokepoints[map] for the walk's named steps
+  Routing\Costs.lua     ours: Northstar_NavCosts, the ground classes' multipliers and the faction profiles
   Routing\PathGrid.lua  ours from his: decoded clusters and ground classes, memory ceilings, frame slicing, string-pulling
   Routing\Path.lua      ours from his: HPA* between clusters, the grid inside them priced by class, FindMany's Dijkstra;
                         lifts: Chokepoints.lua's lift landings (bottom, pair = its top) as abstract vertices, the ride
                         175 (25 s at run speed) either way, joined to their cluster's entrances and to a start or goal
                         there by grid searches (a few numbers a landing kept, 64 at most)
   Routing\PathJobs.lua  ours from his: the coroutine queue sharing Path.budget (3 ms) a frame
-  API.lua               Polestar_NavEngine = the Path table, plus Available(map); the memory ceilings
+  API.lua               Northstar_NavEngine = the Path table, plus Available(map); the memory ceilings
 ```
 
 **Memory.** The packed maps (format 2, all three) are 33.9 MB of files; loaded,
 the Lua heap holds about 34 MB (0.2.4's format 1 maps 28 MB; his own three maps were about 12 MB). On Leffe's
-maps (maps format 5) Polestar_Nav holds 1.4 MB and a continent's part 17 / 21 MB (Eastern Kingdoms / Kalimdor);
+maps (maps format 5) Northstar_Nav holds 1.4 MB and a continent's part 17 / 21 MB (Eastern Kingdoms / Kalimdor);
 only the player's continent's part loads (below). A search decodes the clusters (ADT tiles) it crosses into a
 few byte strings each (`PathGrid.lua` decodeGrid: kind = walkable value and class, moves, heights, each cell's
 floors, step masks and one list of the other moves and arcs, read with `string.byte`; nothing per node in a
@@ -3637,11 +3637,11 @@ Lua error the first time a search reads a missing cluster's graph
 engine's own case: that cluster counts as empty. The bytes of the shipped
 blocks are not checked at load; `forge nav check` pins them by sha256.
 
-**The handoff.** Polestar loads the addon with `Data.Pack("Polestar_Nav")`
+**The handoff.** Northstar loads the addon with `Data.Pack("Northstar_Nav")`
 at login or later, never at its own `ADDON_LOADED` (decoding nothing, it
 still builds about 34 MB of packed strings) and never in combat; with
 `nav.navRouting` off it is not loaded. `API.lua` sets the global
-`Polestar_NavEngine` to the router's Path table; `Nav/Walk.lua` keeps it as
+`Northstar_NavEngine` to the router's Path table; `Nav/Walk.lua` keeps it as
 `Nav.Path`. The calls are Shortest Path Forever's, with the fifth argument
 widened:
 
@@ -3697,7 +3697,7 @@ The maps are base64 zlib blocks decoded per cluster with `C_EncodingUtil`.
 `forge nav check` holds the maps to `PACK.json` (grid build, cells, date, sizes,
 the sha256 of every file), and `Nav.xml` to it.
 
-**Polestar's side: the faction, cost and yards, hostile towns**
+**Northstar's side: the faction, cost and yards, hostile towns**
 (`Nav/Walk.lua`, `Nav/Travel.lua`). Every search goes with opts
 `{ waterWalking, profile, style, danger }`, `profile` the player's faction from
 `Compat.GetPlayerFaction()` (none when neutral or unread: the router then
@@ -3740,24 +3740,24 @@ what is shown and timed.
   AreaTable id), else the packed English name, as goto labels and
   `Compat.MapName` do; the "each name once" rule works on the shown name.
 
-**Our own maps, always.** The engine reads only `PolestarPathData`, never an
+**Our own maps, always.** The engine reads only `NorthstarPathData`, never an
 installed Shortest Path Forever's `ShortestPathForeverPathData`, even when it
 holds the same bake: his engine evicts and resets the decoded entries of its
 tables (`PathGrid.lua` trimming, eviction, `Idle`, `Reset`) while ours may be
 in the middle of a search that already counts a cluster as decoded, which
 would end in a Lua error (docs/NAV_QA.md H1). With both
 addons installed and not handing off, each holds its own maps in memory
-(handing off, `Polestar_Nav` is not loaded: "Hand-off to Shortest
+(handing off, `Northstar_Nav` is not loaded: "Hand-off to Shortest
 Path Forever"); `rust/crates/forge-addontest/tests/addontest/nav-maps.rs`
 trims a stand-in for his tables after every frame of one of our searches and
 checks the route is unchanged.
 
-**Updating.** The router (`Routing/`) is Polestar's code: it is edited here,
+**Updating.** The router (`Routing/`) is Northstar's code: it is edited here,
 tested by `rust/crates/forge-addontest/tests/addontest/nav-router.rs` (synthetic maps with and without the
 class field; format 1 against the router before classes, from git) and the
 real-map tests, and no tool copies it from upstream any more; its three
 files that began as his keep his copyright and the GPL notice under a header
-line saying where it started. The maps are Polestar's too (Zephras Isle's
+line saying where it started. The maps are Northstar's too (Zephras Isle's
 since 2026-10-16, no longer copied from his repository): `forge nav pack`
 writes all three from the grid, and `forge nav check` and
 `rust/crates/forge-addontest/tests/addontest/nav-maps.rs` hold them to `PACK.json`; the test also loads the
@@ -3801,19 +3801,19 @@ ones (a tunnel 0.2.4 walks too).
 
 **Licence.** The folder is GPL-3.0-or-later with his copyright (`LICENSE`,
 `CREDITS.md`). It is code and data of a GPL program, not reference data:
-Polestar's guide-pack exception does not cover it, and nothing from it goes
+Northstar's guide-pack exception does not cover it, and nothing from it goes
 into a pack.
 
 **Quality.** Every problem reported against Shortest Path Forever that
-touches what Polestar uses from it (the router, the maps, route lines,
+touches what Northstar uses from it (the router, the maps, route lines,
 timetables, map clicks, TomTom, the travel prompts) is listed in
-[docs/NAV_QA.md](NAV_QA.md) with the check Polestar holds itself to; test
+[docs/NAV_QA.md](NAV_QA.md) with the check Northstar holds itself to; test
 names cite its ids (rows 1-16, C1-C17, H1-H6, K1-K8, Z1-Z3).
 
 ## Quests — quest database, markers, tooltips, quest levels
 
-`addon/Polestar/Quests/` loads the load-on-demand data addon
-`Polestar_QuestDB` through `Data.Pack` (≈ 1.3 MB of Lua, ≈ 6.4 MB resident)
+`addon/Northstar/Quests/` loads the load-on-demand data addon
+`Northstar_QuestDB` through `Data.Pack` (≈ 1.3 MB of Lua, ≈ 6.4 MB resident)
 at login, and only while `qol.questDB` is on and at least one feature that
 needs it is (`QuestDB.IsWanted()`: map/minimap objectives, available quests,
 turn-ins, tooltips, nameplates); turning the first one on later loads it then,
@@ -3826,23 +3826,23 @@ An entity's spawn clusters (70 yd) cover every known spawn on each map (the
 reference data's `pts` and `more`), with no cap on how many.
 
 ```lua
-Polestar.QuestDB.IsLoaded() / IsEnabled() / IsRunning() / IsWanted()
-Polestar.QuestDB.GetQuest(id)  -> { id, title, level, minLevel, races, classes, faction, start = { npc, object, item },
+Northstar.QuestDB.IsLoaded() / IsEnabled() / IsRunning() / IsWanted()
+Northstar.QuestDB.GetQuest(id)  -> { id, title, level, minLevel, races, classes, faction, start = { npc, object, item },
                                     finish = { npc, object }, pre (any-of), preAll, excl, zone, skill, holiday,
                                     objectives = { { kind = "kill"|"item"|"object"|"event", id, count, map, x, y, f } } } | nil
-Polestar.QuestDB.GetNpc(id) / GetObject(id) -> { id, name, spawns = { { map, x, y, r (yd), f } } } | nil
-Polestar.QuestDB.GetItem(id)   -> { id, name, droppers = { { id, name, chance } }, objects = { ... }, vendors = { { id, name } } } | nil
-Polestar.QuestDB.GetItemDroppers(itemID) -> { { id, name, chance }, ... } | nil   -- best chance first
-Polestar.QuestDB.GetObjectiveMobs(questID, oi) -> { name, ... } | nil            -- kill target or item droppers
-Polestar.QuestDB.CheckAvailable(id, ctx, isDone, isOn, opts) -> ok, reason      -- opts: lowLevel, levelAbove, skillRank
-Polestar.QuestDB.EachAvailabilityRef(id, fn) -> needsSkill                       -- fn(q) per quest whose done/in-log state CheckAvailable reads
-Polestar.QuestDB.GetAvailableQuests() -> { questID, ... } ; IsAvailable(q) ; WhyUnavailable(q) -> reason | nil
+Northstar.QuestDB.GetNpc(id) / GetObject(id) -> { id, name, spawns = { { map, x, y, r (yd), f } } } | nil
+Northstar.QuestDB.GetItem(id)   -> { id, name, droppers = { { id, name, chance } }, objects = { ... }, vendors = { { id, name } } } | nil
+Northstar.QuestDB.GetItemDroppers(itemID) -> { { id, name, chance }, ... } | nil   -- best chance first
+Northstar.QuestDB.GetObjectiveMobs(questID, oi) -> { name, ... } | nil            -- kill target or item droppers
+Northstar.QuestDB.CheckAvailable(id, ctx, isDone, isOn, opts) -> ok, reason      -- opts: lowLevel, levelAbove, skillRank
+Northstar.QuestDB.EachAvailabilityRef(id, fn) -> needsSkill                       -- fn(q) per quest whose done/in-log state CheckAvailable reads
+Northstar.QuestDB.GetAvailableQuests() -> { questID, ... } ; IsAvailable(q) ; WhyUnavailable(q) -> reason | nil
    -- reasons: "eligibility" (faction, race incl. Skyborne high bits, class, holiday), "done", "active", "level"
    -- (minLevel), "grey", "high" (beyond qol.questLevelWindow), "prerequisite", "exclusive", "skill"
-Polestar.QuestDB.ObjectivesForNpc(id) / ObjectivesForItem(id) / ObjectivesForObject(id)
+Northstar.QuestDB.ObjectivesForNpc(id) / ObjectivesForItem(id) / ObjectivesForObject(id)
                                -> { { q, kind, id, name, cur, max, done, entry = { q, title, ready } }, ... } | nil  -- quests in the log
-Polestar.QuestDB.GetMarkers(map [, "objectives"|"turnin"|"available"]) -> { pin, ... }
-Polestar.QuestDB.IsGuideQuest(q) -> bool                                         -- in the active guide's current step
+Northstar.QuestDB.GetMarkers(map [, "objectives"|"turnin"|"available"]) -> { pin, ... }
+Northstar.QuestDB.IsGuideQuest(q) -> bool                                         -- in the active guide's current step
 ```
 
 "Done" comes from `C_QuestLog.GetAllCompletedQuestIDs` (one call per available
@@ -3857,7 +3857,7 @@ per entity spawn cluster and layer (a mob two objectives need carries both
 under the higher-ranked glyph: kill > interact > collect > vendor). Spread
 objective clusters (kill, loot, object) carry their spawns' spread as `radius`.
 Objective spots (#1085): each objective's spread pins are grouped by
-`Polestar.Regions.Of` (as the guide's spawn regions; up to 250,000 pair
+`Northstar.Regions.Of` (as the guide's spawn regions; up to 250,000 pair
 checks, which Salve via Mining's 3,136 ore spots need, about 198,000; past it
 the objective keeps its markers), and two objectives on the same spots share
 one region. A marker rebuild only marks the regions stale: they are gathered
@@ -3884,12 +3884,12 @@ done or undone); a progress count alone only fires `QUESTDB_UPDATED`, since
 tooltips and nameplates read counts live. A rebuild reuses the pin tables
 the last one kept for the same cluster, with their world position (`c`,
 `wx`, `wy`) worked out once, so `Pins.SetLayer` converts only new pins. Look is
-applied at publish: while a Polestar guide runs, pins of quests in its current
+applied at publish: while a Northstar guide runs, pins of quests in its current
 step (`Engine.GetGuide().steps[Engine.GetStepIndex()].goals[*].quest`, re-read on
 `STEP_CHANGED`/`GUIDE_CHANGED`) are 1.3× inside an accent ring and on top;
 with `qol.guideDim` every other quest pin drops to 0.6 alpha (`Q.DIM_ALPHA`).
 
-Tooltips go through `Polestar.Hooks` (owner `"quests"`: UnitLines, ItemLines,
+Tooltips go through `Northstar.Hooks` (owner `"quests"`: UnitLines, ItemLines,
 ObjectLines, registered only while running) with the suite's quest line,
 `Hooks.AddLine(tt, "<Quest>:", "<what> cur/max", quest, textDim | success)`:
 "Kill Kobold Vermin 3/10" on the target, "Large Candle 3/8" on a dropper, "3/8"
@@ -3931,32 +3931,32 @@ The four marker layers (`availableQuests`, `mapObjectives`, `turnInMarkers`,
 ### Party: where each member is on the guide, and group play — Quests/Party.lua
 
 ```lua
-Polestar.Party.EncodeHello(reply) / DecodeHello(text)  -- "1H|<version>" hello, "1Y|<version>" its bare answer -> "H"|"Y", version
-Polestar.Party.Spoke(key) -> bool                  -- the member has spoken Polestar
-Polestar.Party.EncodePos(pos) / DecodePos(text)  -- "1P|<live step>|<Polestar version>|<pack id>|<pack version>|<guide id>"
-Polestar.Party.EncodeUnit(u) / DecodeUnit(text)  -- "2U|<level>|<XP %>|<class id>|<race id>"; later fields ignored
-Polestar.Party.MyPos() -> { step, addon, pack, packVersion, guide } | nil
-Polestar.Party.MyUnit() -> { level, xp, class, race }
-Polestar.Party.Newer(a, b) -> bool                 -- dotted versions; a dev build compares as neither
-Polestar.Party.StepLine() -> text, holding | nil   -- the guide window's party row; holding: the group waits on the step
-Polestar.Party.Waiting(goal) -> { { name, cur, max }, ... } | nil  -- members the group waits for short of goal's line
-Polestar.Party.HoldsQuest(q) -> bool                -- a member the group waits for has q unfinished
-Polestar.Party.StepWait() -> names, ready | nil     -- the live step's wait
-Polestar.Party.GoOn()                              -- "Go on without them": the live step's quests stop waiting
-Polestar.Party.Lacking(q) -> { { name, unit, key, why, blocked }, ... }  -- Missing(q) gives the names
-Polestar.Party.ShareFor(goal) -> names | nil        -- who a row's Share reaches; Share(q) shares
-Polestar.Party.UnitInfo(unit, key) -> { level, xp, class, race }
-Polestar.Party.Roster() -> rows                      -- the party panel's (UI/PartyPanel.lua)
-Polestar.Party.PointAt(unit) -> bool                 -- the arrow at a member (Nav.SetTarget, followed every 3 s)
-Polestar.Party.ItemNeeds(itemID) -> { { name, unit, need }, ... }; NeedText(e)  -- UI/PartyLoot.lua
-Polestar.Party.IsLive() -> bool                     -- PARTY_LIVE (on) fires when it changes
-Polestar.Party.Debug() -> lines                      -- /polestar party debug: prefix, last send and result, messages heard, roster keys
-Polestar.Compat.UnitFullName(unit) -> full, first | nil | false  -- "Ana Smith" on Forever, "Ana"/"Ana-OtherRealm" elsewhere
-Polestar.Compat.SenderName(sender) / SenderIsUnit(sender, unit) / SenderIsMe(sender)
+Northstar.Party.EncodeHello(reply) / DecodeHello(text)  -- "1H|<version>" hello, "1Y|<version>" its bare answer -> "H"|"Y", version
+Northstar.Party.Spoke(key) -> bool                  -- the member has spoken Northstar
+Northstar.Party.EncodePos(pos) / DecodePos(text)  -- "1P|<live step>|<Northstar version>|<pack id>|<pack version>|<guide id>"
+Northstar.Party.EncodeUnit(u) / DecodeUnit(text)  -- "2U|<level>|<XP %>|<class id>|<race id>"; later fields ignored
+Northstar.Party.MyPos() -> { step, addon, pack, packVersion, guide } | nil
+Northstar.Party.MyUnit() -> { level, xp, class, race }
+Northstar.Party.Newer(a, b) -> bool                 -- dotted versions; a dev build compares as neither
+Northstar.Party.StepLine() -> text, holding | nil   -- the guide window's party row; holding: the group waits on the step
+Northstar.Party.Waiting(goal) -> { { name, cur, max }, ... } | nil  -- members the group waits for short of goal's line
+Northstar.Party.HoldsQuest(q) -> bool                -- a member the group waits for has q unfinished
+Northstar.Party.StepWait() -> names, ready | nil     -- the live step's wait
+Northstar.Party.GoOn()                              -- "Go on without them": the live step's quests stop waiting
+Northstar.Party.Lacking(q) -> { { name, unit, key, why, blocked }, ... }  -- Missing(q) gives the names
+Northstar.Party.ShareFor(goal) -> names | nil        -- who a row's Share reaches; Share(q) shares
+Northstar.Party.UnitInfo(unit, key) -> { level, xp, class, race }
+Northstar.Party.Roster() -> rows                      -- the party panel's (UI/PartyPanel.lua)
+Northstar.Party.PointAt(unit) -> bool                 -- the arrow at a member (Nav.SetTarget, followed every 3 s)
+Northstar.Party.ItemNeeds(itemID) -> { { name, unit, need }, ... }; NeedText(e)  -- UI/PartyLoot.lua
+Northstar.Party.IsLive() -> bool                     -- PARTY_LIVE (on) fires when it changes
+Northstar.Party.Debug() -> lines                      -- /polestar party debug: prefix, last send and result, messages heard, roster keys
+Northstar.Compat.UnitFullName(unit) -> full, first | nil | false  -- "Ana Smith" on Forever, "Ana"/"Ana-OtherRealm" elsewhere
+Northstar.Compat.SenderName(sender) / SenderIsUnit(sender, unit) / SenderIsMe(sender)
 ```
 
 - The handshake: group play runs only with party members who also run
-  Polestar. A roster read that finds someone who has not spoken Polestar
+  Northstar. A roster read that finds someone who has not spoken Northstar
   (joining a party, login or reload in one, a new member, the settings back
   on) sends one "1H|" hello, 3-6 s later; a refused one is tried again
   10 s later (up to 5 times) and when a member's quest log changes. A member is `spoken`
@@ -3987,8 +3987,8 @@ Polestar.Compat.SenderName(sender) / SenderIsUnit(sender, unit) / SenderIsMe(sen
   `GROUP_ROSTER_UPDATE` and `GROUP_LEFT` are registered; in a party
   (`wantLive`) the addon channel, the quest log, XP and level, connections
   and zone changes, and a 5 s look at who holds the wait (sends nothing). The
-  first message from a member who runs Polestar prints, once per account
-  (`PolestarDB.partySyncTold`), that party sync is on and where to turn it
+  first message from a member who runs Northstar prints, once per account
+  (`NorthstarDB.partySyncTold`), that party sync is on and where to turn it
   off. The options carry `search`, more words the settings search reads.
 - With `party.share`, the position goes out with every snapshot and, two
   seconds after `STEP_CHANGED`/`STEP_UPDATED`/`GUIDE_CHANGED`, only when it
@@ -4024,7 +4024,7 @@ Polestar.Compat.SenderName(sender) / SenderIsUnit(sender, unit) / SenderIsMe(sen
   (`Party.ShareFor`), through `Compat.ShareQuest` (`C_QuestLog.SetSelectedQuest`,
   `QuestLogPushQuest`, after `IsPushableQuest` when the client has it).
 - The party panel (UI/PartyPanel.lua, `Maps.CompactFrame` at
-  `party.panelPos`): a row per party member who has spoken Polestar, from
+  `party.panelPos`): a row per party member who has spoken Northstar, from
   `Party.Roster`; opens by itself with `party.panel` (on by default) while
   `Party.IsLive()` and there is such a member, hidden with the guide and in
   combat under `ui.combat` "hide". The party line's click and `/polestar
@@ -4036,18 +4036,18 @@ Polestar.Compat.SenderName(sender) / SenderIsUnit(sender, unit) / SenderIsMe(sen
   yours are not (the item's log line from the active guide's collect goals,
   else the quest database's objectives when they number as the member's
   counts), under the loot window.
-- A member on a newer Polestar, or a newer version of a guide pack you have,
+- A member on a newer Northstar, or a newer version of a guide pack you have,
   is said once a session each in chat.
 
 ### Party chat: a finished objective said in the party — Quests/PartyChat.lua
 
-The one part of group play every party member sees, Polestar or not: a plain
+The one part of group play every party member sees, Northstar or not: a plain
 chat line. Nothing of Party.lua's addon messages reaches chat; this file
 shares nothing with them but the Group section.
 
-- Lines: `"[Polestar] " .. L["Finished: %s - %s"]` with the objective as
+- Lines: `"[Northstar] " .. L["Finished: %s - %s"]` with the objective as
   "Plagued Hide 5/5" (`Compat.ObjectiveLabel` of the log's text, then the
-  counts) and the quest's link, and `"[Polestar] " .. L["Ready to turn in: %s"]`.
+  counts) and the quest's link, and `"[Northstar] " .. L["Ready to turn in: %s"]`.
   The link is the client's `GetQuestLink(questID)` (what a shift-click on the
   quest puts in chat, Mainline QuestMapFrame), else the title in brackets as
   plain text; nothing goes out when neither can be read, nor for an
@@ -4076,7 +4076,7 @@ shares nothing with them but the Group section.
   `C_ChatInfo.InChatMessagingLockdown()` (the client's chat restrictions in
   encounters) a line waits, looked at every 2 s, and one older than 120 s is
   dropped. The first line sent prints once per account
-  (`PolestarDB.partyChatTold`) where to turn it off.
+  (`NorthstarDB.partyChatTold`) where to turn it off.
 
 ## Gear — item stats, stat weights, upgrade tooltips, reward picks
 
@@ -4085,8 +4085,8 @@ Gear's part in quest reward choices: QoL, "Quest reward marks".
 ### Bag upgrade arrows — Gear/Bags.lua
 
 ```lua
-Polestar.Gear.Bags.IsUpgrade(link) -> bool   -- what an arrow shows: Gear.IsUpgrade, with gear advice and gear.bagArrows on
-Polestar.Gear.Bags.Redraw()                  -- repaint the shown bags; GEAR_UPDATED schedules it, at most every 0.2 s
+Northstar.Gear.Bags.IsUpgrade(link) -> bool   -- what an arrow shows: Gear.IsUpgrade, with gear advice and gear.bagArrows on
+Northstar.Gear.Bags.Redraw()                  -- repaint the shown bags; GEAR_UPDATED schedules it, at most every 0.2 s
 ```
 
 - **The client's bags.** Each container frame's `UpdateItems` (Mainline
@@ -4141,7 +4141,7 @@ flight timer and the instance tracker are set under Quality of Life.
   on, the rest opt-in); flight masters and inns are not among them, and an NPC
   with either role is left to the travel layers (`maps.taxiPins`,
   `maps.innPins`) so nothing is drawn twice. `maps.serviceMinimap` opts
-  into minimap icons. Both tracking menus have a Polestar service submenu;
+  into minimap icons. Both tracking menus have a Northstar service submenu;
   the same settings live under Map, Rares & travel, NPC services. Class trainers
   are restricted to the character's class. A repair vendor has one icon, using
   the first enabled category it offers, and remains a vendor when repair is off.
@@ -4168,7 +4168,7 @@ flight timer and the instance tracker are set under Quality of Life.
   produces an explanatory message and is retried when the dependency loads.
 
 - Unexplored areas (`maps.reveal`: `off` | `on` | `tint`, `Maps/Reveal.lua`):
-  textures on one frame of Polestar's on each map frame's canvas (the world
+  textures on one frame of Northstar's on each map frame's canvas (the world
   map, and the battlefield map once Blizzard loads it), watched through
   MapCanvas (Nav) once the setting is first on, faded with the map's global
   alpha (the battlefield map's opacity).
@@ -4195,7 +4195,7 @@ flight timer and the instance tracker are set under Quality of Life.
   and a resized one (`OnSizeChanged`) moves it to the new edge.
   No frame exists until the setting is first turned on. The addon
   compartment (clients with `AddonCompartmentFrame`) gets the same through
-  the .toc's `AddonCompartmentFunc*` globals (`Polestar_OnAddonCompartment*`):
+  the .toc's `AddonCompartmentFunc*` globals (`Northstar_OnAddonCompartment*`):
   click toggles the window, right-click opens the menu, hover the tooltip.
 - Zone level ranges (`maps.zoneLevels`): labels on continent maps, and the
   hovered zone's range in the info bar. The ranges come from `forge data maps build`
@@ -4207,7 +4207,7 @@ flight timer and the instance tracker are set under Quality of Life.
   isn't licence-clean and the core ships no entrances. The Codex is loaded the
   first time the world map opens with the setting on, or the layer is built
   on `CODEX_LOADED`. A click opens the dungeon's page in the hub
-  (`Polestar.Dungeons.Open(key)`); with the Dungeons module off, or on
+  (`Northstar.Dungeons.Open(key)`); with the Dungeons module off, or on
   Shift-click, it sets a Nav waypoint.
 
 ## QoL — quality-of-life helpers
@@ -4259,10 +4259,10 @@ choices for the guide's own reward pick (`Gear.RankChoices`, used by
 `Gear/Picks.lua`); it draws nothing on the reward panel.
 
 ```lua
-Polestar.QoL.Rewards.ReadChoices(fromLog) -> { { index, link, itemID, count, value, upgrade, delta } }, complete
-Polestar.QoL.Rewards.Rank(choices) -> { index, ... } (best first), "upgrade" | "value"
-Polestar.QoL.Rewards.Mark() -> true | false | nil   -- draw the marks; whether the best was marked (nil: no best)
-Polestar.QoL.Rewards.best, .reason                -- auto-pick's settled answer on QUEST_COMPLETE
+Northstar.QoL.Rewards.ReadChoices(fromLog) -> { { index, link, itemID, count, value, upgrade, delta } }, complete
+Northstar.QoL.Rewards.Rank(choices) -> { index, ... } (best first), "upgrade" | "value"
+Northstar.QoL.Rewards.Mark() -> true | false | nil   -- draw the marks; whether the best was marked (nil: no best)
+Northstar.QoL.Rewards.best, .reason                -- auto-pick's settled answer on QUEST_COMPLETE
 ```
 
 - **Best** = the largest Gear upgrade (delta > 0, Gear enabled); with none,
@@ -4280,7 +4280,7 @@ Polestar.QoL.Rewards.best, .reason                -- auto-pick's settled answer 
   from its item ID; the best waits for complete data (or auto-pick's answer).
 - **Tooltips**: the client's `SetQuestItem` / `SetQuestLogItem` run the item
   post-calls, so Gear's comparison line ("+12% upgrade · Head") shows on a
-  hovered choice through `Polestar.Hooks`. Gear's "Best pick" line
+  hovered choice through `Northstar.Hooks`. Gear's "Best pick" line
   (`gear.pickTooltip`) appears only when its pick is an upgrade, so it never
   contradicts the coin. `gear.rewards` is the guide window's pick line only.
 
@@ -4303,9 +4303,9 @@ while the active tab's current step has an open `sethome` goal, it binds the
 Hearthstone at the innkeeper that goal names, and nowhere else.
 
 ```lua
-Polestar.QoL.Bind.Wanted(npc) -> bool        -- an open sethome goal of the current step binds at npc (Engine.IsSethomeInnkeeper), and the character is not bound at that innkeeper's inn (Nav.BoundInn)
-Polestar.QoL.Bind.BinderOption(options) -> option | nil  -- the gossip's bind option: icon or overrideIconID 132052 (BinderGossipIcon)
-Polestar.QoL.Bind.OnGossip() -> bool         -- GOSSIP_SHOW (Toggles.lua: after the flight helper, before skipGossip): picked the bind option
+Northstar.QoL.Bind.Wanted(npc) -> bool        -- an open sethome goal of the current step binds at npc (Engine.IsSethomeInnkeeper), and the character is not bound at that innkeeper's inn (Nav.BoundInn)
+Northstar.QoL.Bind.BinderOption(options) -> option | nil  -- the gossip's bind option: icon or overrideIconID 132052 (BinderGossipIcon)
+Northstar.QoL.Bind.OnGossip() -> bool         -- GOSSIP_SHOW (Toggles.lua: after the flight helper, before skipGossip): picked the bind option
 ```
 
 - **Gossip.** At such an innkeeper, the bind option is picked by its icon,
@@ -4330,13 +4330,13 @@ Polestar.QoL.Bind.OnGossip() -> bool         -- GOSSIP_SHOW (Toggles.lua: after 
 ### The step key on the flight map — QoL/Flight, QoL/Buttons
 
 ```lua
-Polestar.QoL.Flight.TakeSlot() -> slot, cost | nil   -- the marked node the step key flies to: map open, the window on the live step, the node reachable (TaxiNodeGetType), cost from TaxiNodeCost
-Polestar.QoL.Flight.Take() -> bool                   -- the press: TakeTaxiNode(slot) when GetMoney covers the cost, else prints what it costs
+Northstar.QoL.Flight.TakeSlot() -> slot, cost | nil   -- the marked node the step key flies to: map open, the window on the live step, the node reachable (TaxiNodeGetType), cost from TaxiNodeCost
+Northstar.QoL.Flight.Take() -> bool                   -- the press: TakeTaxiNode(slot) when GetMoney covers the cost, else prints what it costs
 ```
 
 - The flight is still only taken by a press of the player's: while the
   flight map is open and its node is marked (`qol.flightHighlight`), the
-  step key (`PolestarStepButton`) has no secure action and its PostClick
+  step key (`NorthstarStepButton`) has no secure action and its PostClick
   takes the marked flight. Looking at another step than the live one, an
   unreachable node or no mark leaves the key to the step's own action.
 - `Flight.Highlight` fires `FLIGHT_MARK_CHANGED(slot | nil)` after every
@@ -4346,7 +4346,7 @@ Polestar.QoL.Flight.Take() -> bool                   -- the press: TakeTaxiNode(
 ### The step key's interact stage — QoL/Buttons
 
 ```lua
-Polestar.QoL.Buttons.InteractStage(view?, raw?) -> "interact" | "accept" | "continue" | "complete" | nil
+Northstar.QoL.Buttons.InteractStage(view?, raw?) -> "interact" | "accept" | "continue" | "complete" | nil
 ```
 
 Behind `qol.stepInteract` (Questing → Buttons, off by default) and the
@@ -4360,7 +4360,7 @@ target is the live step's NPC (an open accept, turn-in, talk, train, vendor,
 buy, sethome, getfp or learn goal's, by NPC id or name, not attackable, not a
 player), "interact"; on the corpse of one of the step's mobs (a name the
 target button would use), "interact" too, which loots. The keys bound to the
-step key (`GetBindingKey("CLICK PolestarStepButton:LeftButton")`) are bound
+step key (`GetBindingKey("CLICK NorthstarStepButton:LeftButton")`) are bound
 over, owned by the step button: `SetOverrideBinding(..., "INTERACTTARGET")`
 or `SetOverrideBindingClick` on `QuestFrameAcceptButton`,
 `QuestFrameCompleteButton` or `QuestFrameCompleteQuestButton`; with no stage
@@ -4397,9 +4397,9 @@ back to <dungeon>, your corpse is inside: …".
 ### Guide level on the XP bar — QoL/XPMark
 
 ```lua
-Polestar.QoL.XPMark.Label(level, target, frac?) -> text | nil   -- pure: "Guide: 11" (the next level), "Guide: 14 (4 levels)", "Guide: 40% of this level", "Guide: 12 (40%)"; nil when target < level, or target = level without frac
-Polestar.QoL.XPMark.Refresh()                            -- show, move or hide the mark now
-Polestar.QoL.XPMark.frame                                -- the mark, once made
+Northstar.QoL.XPMark.Label(level, target, frac?) -> text | nil   -- pure: "Guide: 11" (the next level), "Guide: 14 (4 levels)", "Guide: 40% of this level", "Guide: 12 (40%)"; nil when target < level, or target = level without frac
+Northstar.QoL.XPMark.Refresh()                            -- show, move or hide the mark now
+Northstar.QoL.XPMark.frame                                -- the mark, once made
 ```
 
 - **Target** (`qol.xpTargetMark`, on by default; Quality of Life >
@@ -4414,7 +4414,7 @@ Polestar.QoL.XPMark.frame                                -- the mark, once made
 - **The game's bar is only read.** The experience bar is the one of
   `StatusTrackingBarManager.barContainers` whose
   `bars[StatusTrackingBarInfo.BarsEnum.Experience]` is shown
-  (Blizzard_StatusTrackingBar). The mark is Polestar's own frame made under
+  (Blizzard_StatusTrackingBar). The mark is Northstar's own frame made under
   that bar through `CreateFrameUnder`, spanning its `StatusBar` one level
   above its `OverlayFrame` (MEDIUM strata, like the bar's own text), so it
   fades, hides and resizes with the bar and its gamepad width. It takes no
@@ -4459,9 +4459,9 @@ Polestar.QoL.XPMark.frame                                -- the mark, once made
 ### Items kept for later — QoL/Keep, asks the Engine
 
 ```lua
-Polestar.QoL.Kept(itemID) -> stepIndex | nil                 -- Engine.KeptItems()[itemID]
-Polestar.QoL.KeptLine(itemID) -> text, r, g, b | nil          -- its tooltip line
-Polestar.QoL.KeptToSell() -> { { item, link }, ... }          -- kept items in the bags a merchant buys, once each
+Northstar.QoL.Kept(itemID) -> stepIndex | nil                 -- Engine.KeptItems()[itemID]
+Northstar.QoL.KeptLine(itemID) -> text, r, g, b | nil          -- its tooltip line
+Northstar.QoL.KeptToSell() -> { { item, link }, ... }          -- kept items in the bags a merchant buys, once each
 ```
 
 - **What is kept** (`Engine.KeptItems`, rebuilt once per evaluation for the
@@ -4484,16 +4484,16 @@ Polestar.QoL.KeptToSell() -> { { item, link }, ... }          -- kept items in t
 ### Bag space, junk and keep marks — QoL/Space, QoL/Marks
 
 ```lua
-Polestar.QoL.Marks.Get(itemID) -> "junk" | "keep" | nil   -- the player's own mark (QoL.State().marks)
-Polestar.QoL.Marks.Set(itemID, mark)                      -- "junk", "keep" or nil; fires ITEM_MARKS(itemID, mark)
-Polestar.QoL.Marks.Protected(itemID) -> bool              -- marked keep, or QoL.Kept(itemID) (a later step needs it)
-Polestar.QoL.Marks.Junk(itemID) -> bool                   -- marked junk and not protected
-Polestar.QoL.Space.Count() -> free, total                 -- slots of bags whose family is 0 (no quivers, soul or profession bags)
-Polestar.QoL.Space.Cheapest() -> { bag, slot, id, count, value, link } | nil
-Polestar.QoL.Space.Low() -> bool                          -- qol.bagSpace on and free <= qol.bagsLow (2)
-Polestar.QoL.Space.Press() -> "armed" | "deleted" | "none" | "busy" | "off"
-Polestar.QoL.Space.Banner() -> { free, junk, armed } | nil -- while low and the live step has an open collect goal
-Polestar.QoL.Space.Dismiss()                              -- the banner, until the bags have room again
+Northstar.QoL.Marks.Get(itemID) -> "junk" | "keep" | nil   -- the player's own mark (QoL.State().marks)
+Northstar.QoL.Marks.Set(itemID, mark)                      -- "junk", "keep" or nil; fires ITEM_MARKS(itemID, mark)
+Northstar.QoL.Marks.Protected(itemID) -> bool              -- marked keep, or QoL.Kept(itemID) (a later step needs it)
+Northstar.QoL.Marks.Junk(itemID) -> bool                   -- marked junk and not protected
+Northstar.QoL.Space.Count() -> free, total                 -- slots of bags whose family is 0 (no quivers, soul or profession bags)
+Northstar.QoL.Space.Cheapest() -> { bag, slot, id, count, value, link } | nil
+Northstar.QoL.Space.Low() -> bool                          -- qol.bagSpace on and free <= qol.bagsLow (2)
+Northstar.QoL.Space.Press() -> "armed" | "deleted" | "none" | "busy" | "off"
+Northstar.QoL.Space.Banner() -> { free, junk, armed } | nil -- while low and the live step has an open collect goal
+Northstar.QoL.Space.Dismiss()                              -- the banner, until the bags have room again
 ```
 
 - **Marks** (`qol.itemMarks`, on): Ctrl+Alt (no Shift) on a modified item
@@ -4511,8 +4511,8 @@ Polestar.QoL.Space.Dismiss()                              -- the banner, until t
   and calls `DeleteCursorItem` (restricted: only from a press, as the
   client's own delete dialog does). Nothing on the cursor beforehand, or the
   pickup would swap it in. A changed slot or a late second press arms again.
-  The bag button (`PolestarBagButton`, slot above the Hearthstone, bindable
-  as `CLICK PolestarBagButton:LeftButton`) and the banner's "Delete it" link
+  The bag button (`NorthstarBagButton`, slot above the Hearthstone, bindable
+  as `CLICK NorthstarBagButton:LeftButton`) and the banner's "Delete it" link
   both call it; the button's action runs in its `PostClick`, with no secure
   attribute.
 - **Updates**: `BAG_UPDATE_DELAYED` and `ITEM_MARKS`, coalesced; the free
@@ -4523,11 +4523,11 @@ Polestar.QoL.Space.Dismiss()                              -- the banner, until t
 ### Gear from loot and merchants — QoL/Wear
 
 ```lua
-Polestar.QoL.Wear.Offer() -> { id, link, slot, pct } | nil   -- the oldest standing offer
-Polestar.QoL.Wear.Take()                                     -- EquipItemByName(link, slot), through QoL.Secure
-Polestar.QoL.Wear.Decline()                                  -- QoL.State().wearDeclined[id] = true
-Polestar.QoL.Wear.Dismiss()                                  -- drop this copy only
-Polestar.QoL.Equip.Placement(Gear, link) -> slot, pct | nil  -- shared with the quest rewards (QoL/Equip.lua)
+Northstar.QoL.Wear.Offer() -> { id, link, slot, pct } | nil   -- the oldest standing offer
+Northstar.QoL.Wear.Take()                                     -- EquipItemByName(link, slot), through QoL.Secure
+Northstar.QoL.Wear.Decline()                                  -- QoL.State().wearDeclined[id] = true
+Northstar.QoL.Wear.Dismiss()                                  -- drop this copy only
+Northstar.QoL.Equip.Placement(Gear, link) -> slot, pct | nil  -- shared with the quest rewards (QoL/Equip.lua)
 ```
 
 - **What counts** (`qol.wearOffer`, on; nothing with Gear advice off): a
@@ -4547,11 +4547,11 @@ Polestar.QoL.Equip.Placement(Gear, link) -> slot, pct | nil  -- shared with the 
 ### Restock — QoL/Restock
 
 ```lua
-Polestar.QoL.Restock.Get(kind) / Set(kind, n)        -- "drink", "food", "ammo"; QoL.State().restock
-Polestar.QoL.Restock.GetItem(id) / SetItem(id, n)    -- any item (reagents): restock.items[id]
-Polestar.QoL.Restock.KindOf(itemID, shoots) -> "drink" | "food" | "ammo" | nil
-Polestar.QoL.Restock.Plan() -> buy, left             -- { i, id, name, need, items, cost, price, perStack }, { name, need, cost, why }
-Polestar.QoL.Restock.Run()                           -- the button's press: Buy.Purchase each, print what is left
+Northstar.QoL.Restock.Get(kind) / Set(kind, n)        -- "drink", "food", "ammo"; QoL.State().restock
+Northstar.QoL.Restock.GetItem(id) / SetItem(id, n)    -- any item (reagents): restock.items[id]
+Northstar.QoL.Restock.KindOf(itemID, shoots) -> "drink" | "food" | "ammo" | nil
+Northstar.QoL.Restock.Plan() -> buy, left             -- { i, id, name, need, items, cost, price, perStack }, { name, need, cost, why }
+Northstar.QoL.Restock.Run()                           -- the button's press: Buy.Purchase each, print what is left
 ```
 
 - **Kinds.** A consumable is a drink or food when its use spell's name
@@ -4577,27 +4577,27 @@ Polestar.QoL.Restock.Run()                           -- the button's press: Buy.
 
 ## Lookup — Codex, sources, generated guides, mount spotting
 
-`addon/Polestar/Lookup/` (`Lookup.xml`: Codex, Sources, Guide, Spotter,
+`addon/Northstar/Lookup/` (`Lookup.xml`: Codex, Sources, Guide, Spotter,
 Options). Everything is off with `lookup.enabled`; `lookup.tooltip`,
 `lookup.altClick` and `lookup.mounts` switch the parts (Discovery → Lookup).
 
 ```lua
-Polestar.Codex.Load() / IsLoaded() / Meta()       -- the local Polestar_Codex pack through Data.Pack; CODEX_LOADED(meta)
-Polestar.Codex.Item(id) / Npc(id) / Object(id) / Quest(id) / Instance(key) / Zone(id) / Faction(id) / Spell(spellId)
-Polestar.Codex.Name(kind, id) ; Codex.WithRole(role) ; Codex.Loot(kind, id) ; Codex.Each(kind, fn(id, name, quality, status))
+Northstar.Codex.Load() / IsLoaded() / Meta()       -- the local Northstar_Codex pack through Data.Pack; CODEX_LOADED(meta)
+Northstar.Codex.Item(id) / Npc(id) / Object(id) / Quest(id) / Instance(key) / Zone(id) / Faction(id) / Spell(spellId)
+Northstar.Codex.Name(kind, id) ; Codex.WithRole(role) ; Codex.Loot(kind, id) ; Codex.Each(kind, fn(id, name, quality, status))
 
-Polestar.Lookup.Sources(kind, id, direct) -> rows, entity  -- ranked for this character; direct: straight-line travel, no route plan (tooltips)
+Northstar.Lookup.Sources(kind, id, direct) -> rows, entity  -- ranked for this character; direct: straight-line travel, no route plan (tooltips)
    -- row = { type, src, label, detail, zone, map, x, y, f, travel, effort, cost, available, why, whyText,
    --         chance, price, standing, guideable }
-Polestar.Lookup.CuratedGuide(kind, id) -> guideId | nil
-Polestar.Lookup.BuildGuide(kind, id, ranked) -> def | nil, reason
-Polestar.Lookup.Guide(kind, id, index) -> guideId | nil, reason   -- reason "mount": a mount without a curated guide
-Polestar.Lookup.IsMount(record) -> bool              -- a Codex item or spell record of the Codex's "mount" kind
-Polestar.Lookup.UnitMount(unit) -> { spell, item, name, icon, class } | nil
-Polestar.Lookup.Show(query, kind, id)                 -- SHOW_LOOKUP(query, kind, id) for UI/Lookup.lua
-Polestar.Lookup.RegisterPlanner(kind, build)          -- build(id) -> { title, steps, ... } | nil, reason: another module's guide kind
-Polestar.Lookup.QuestChain(questId, player) -> { quest, ... }  -- every open prerequisite first, the quest last
-Polestar.Lookup.QuestStep(quest, from) -> step         -- accept, objectives, turn-in
+Northstar.Lookup.CuratedGuide(kind, id) -> guideId | nil
+Northstar.Lookup.BuildGuide(kind, id, ranked) -> def | nil, reason
+Northstar.Lookup.Guide(kind, id, index) -> guideId | nil, reason   -- reason "mount": a mount without a curated guide
+Northstar.Lookup.IsMount(record) -> bool              -- a Codex item or spell record of the Codex's "mount" kind
+Northstar.Lookup.UnitMount(unit) -> { spell, item, name, icon, class } | nil
+Northstar.Lookup.Show(query, kind, id)                 -- SHOW_LOOKUP(query, kind, id) for UI/Lookup.lua
+Northstar.Lookup.RegisterPlanner(kind, build)          -- build(id) -> { title, steps, ... } | nil, reason: another module's guide kind
+Northstar.Lookup.QuestChain(questId, player) -> { quest, ... }  -- every open prerequisite first, the quest last
+Northstar.Lookup.QuestStep(quest, from) -> step         -- accept, objectives, turn-in
 ```
 
 - **Codex records** use the field names of `data/forever/codex/*.json` (see
@@ -4691,7 +4691,7 @@ facts (`objectives`: kind, NPC, item or object id, count and the English
 name; the escorts' and events' text), composed at run time into our own
 objective line in the client's language (`Dungeons.ObjectiveText`:
 `L["Kill %d %s"]`, `L["Collect %d %s"]`, `L["Use %s"]` with the names from
-`Polestar.Names`; an event's line is the quest's own objective summary from
+`Northstar.Names`; an event's line is the quest's own objective summary from
 the names pack, kind `objective`), chain (every prerequisite and breadcrumb of the quest's side,
 all of `pre` and `preAny`, oldest first, at most 20), rewards (items with
 quality, count and choice from recordings, else
@@ -4709,12 +4709,12 @@ read through `L[note]` (`forge i18n keys` lists them from
 `data/codex/attunements.json`). `codex attune` writes the local comparison with
 the Attune addon (`tools/lib/codex/questaudit.js`,
 `tools/lib/consume/attune.js`; `data/local/dungeon-quests-audit.md` and
-`.json`, then the attunements report). Runtime: `addon/Polestar/Dungeons/Dungeons.lua`
-(`Polestar.Dungeons`: List, Get, Entrance, Quests, Quest, ObjectiveText, Bosses, Open,
+`.json`, then the attunements report). Runtime: `addon/Northstar/Dungeons/Dungeons.lua`
+(`Northstar.Dungeons`: List, Get, Entrance, Quests, Quest, ObjectiveText, Bosses, Open,
 GuideTo, GuideToPoint, ShowOnMap; `SHOW_DUNGEON`). `dungeons build` writes no
 guides.
 
-The pick-up guide is built in game (`addon/Polestar/Dungeons/Pickup.lua`):
+The pick-up guide is built in game (`addon/Northstar/Dungeons/Pickup.lua`):
 `Dungeons.PickupPlan(key)` takes the page's quests that apply to the character
 (faction, race and class masks through `Lookup.QuestBlock`, the page's class
 list), not done, not in the log (those are `carried`), not closed for good (a
@@ -4763,7 +4763,7 @@ hand-in guide). It is a Lookup planner kind
 ADDON_LOADED like Lookup's own; it is gated by `dungeons.enabled`, not
 `lookup.enabled`.
 
-The hand-in guide is the run's other half (`addon/Polestar/Dungeons/Handin.lua`,
+The hand-in guide is the run's other half (`addon/Northstar/Dungeons/Handin.lua`,
 planner kind `handin`, `lookup/handin/<key>`, `Dungeons.HandIn(key)`).
 `Dungeons.HandinPlan(key)` sorts the page's quests in the log: `hand`
 (objectives done, by `Compat.IsQuestReadyForTurnIn`, or a delivery with no
@@ -4788,7 +4788,7 @@ at its last step (its job ends at the entrance), else in a new tab. A
 finished pick-up guide's "Guide complete" panel (UI/GuideFrame.lua) offers
 "Hand in the quests" while the dungeon has quests in the log.
 
-Attunements and keys (`addon/Polestar/Dungeons/Attune.lua`, planner kind
+Attunements and keys (`addon/Northstar/Dungeons/Attune.lua`, planner kind
 `attune`, `lookup/attune/<key>:<id>`). A page's `attunement` list (Codex,
 "Dungeons and raids": `tools/lib/codex/attunements.js`) is read by
 `Dungeons.Attunements(key, faction)` (faction "A" | "H" | nil: the entries
@@ -4828,7 +4828,7 @@ the entrance. Nothing left: nil, "done"; the other side's attunement: nil,
 Any module adds settings to the options window without touching UI files:
 
 ```lua
-Polestar.RegisterOptions({
+Northstar.RegisterOptions({
   page = "Quests", icon = "icon-accept", order = 30,      -- sidebar page (created on first use), its title as shown
   key = "quests",                                           -- optional: the page's stable key (default: made from page)
   tab = "Map", section = "Markers",                         -- tab row entry and section header
@@ -4844,12 +4844,12 @@ Polestar.RegisterOptions({
       -- shown: the colour in effect while the key holds none; source: where it comes from;
       -- linked: paths a cancelled pick restores too. Right-click resets (sliders too).
     { kind = "button",   label = "Reset lockouts", help = "One line.", onClick = function() end },
-    { kind = "binding",  action = "POLESTAR_NEXT", label = "Next step", help = "One line." }, -- a key binding row (UI/GamepadGuide.lua)
+    { kind = "binding",  action = "NORTHSTAR_NEXT", label = "Next step", help = "One line." }, -- a key binding row (UI/GamepadGuide.lua)
   },
 })
 ```
 
-Controls read and write `Polestar.Get/Set`; `disabled = function() return bool end` is optional;
+Controls read and write `Northstar.Get/Set`; `disabled = function() return bool end` is optional;
 registered labels and help are searchable (below, "Settings search"). A `label` may be a function, asked
 when the control is drawn or searched (a name in the client's language that
 is not loaded at registration, `Names.Instance`). A toggle with `get()` and
@@ -5094,7 +5094,7 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   with the step's tick box, `ClassCard.Fold`); GuideFrame lists no row for it.
   A hand tick shows ticked and the card reads the accept's notice ("<quest>
   isn't in your quest log": a tick never stands for the quest).
-- **Class quest heads-up** (`UI/ClassToast.lua`, `PolestarClassToast`): a
+- **Class quest heads-up** (`UI/ClassToast.lua`, `NorthstarClassToast`): a
   card that lives on the guide window: as wide as it, in its panel, border,
   fonts and buttons, the class colour only on the stripe, the icon ring and
   the small header. It slides up from behind the window's top edge (a fade
@@ -5187,7 +5187,7 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   then each foot section, from the bottom up).
 - **Import** (`UI/Import.lua`, a foot section, order 90; `/polestar import`
   and `SHOW_IMPORT` open it). The two ways to bring someone else's guides
-  into Polestar side by side (an import string for one small guide, a
+  into Northstar side by side (an import string for one small guide, a
   community addon for a route or a set), then a single-line box: what is
   pasted is read at once (`Import.Preview`) and shown before anything is
   saved ("Title · by Author · N steps · levels a–b · faction · licence"),
@@ -5261,7 +5261,7 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   (`Search.Status`) it says what is missing and still searches guides.
   Up/Down walk the results, Enter acts, Escape closes the hub.
 - **Dungeons** (`UI/Dungeons.lua`, the hub section "Dungeons", order 30;
-  `SHOW_DUNGEON(key)` from `Polestar.Dungeons.Open(key)` opens the hub at a
+  `SHOW_DUNGEON(key)` from `Northstar.Dungeons.Open(key)` opens the hub at a
   page, nil at Home). A dungeon quest journal: dungeons grouped by level, a
   page per dungeon (`docs/DESIGN.md`, "Intent"). Sidebar (`nav`): For your
   level, All dungeons, 10–20 … 50–60, Raids, with counts; the faction filter
@@ -5355,15 +5355,15 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   pack (`pack:<id>`, "<title> · <author>"), its guides grouped as ours are.
   Pack guides carry their pack's title in rows and results; the details pane
   has a credits line for every guide ("By <author> · <pack title> <version> ·
-  <licence>", plus the pack's `source`; ours "By Polestar"). The empty states
-  name both Polestar Guides and community addons.
+  <licence>", plus the pack's `source`; ours "By Northstar"). The empty states
+  name both Northstar Guides and community addons.
 - **Community guides page** (`UI/Packs.lua`, Options order 70, `/polestar
   packs`): one row per `Guides.Packs()` record: title, credits, guide count,
   website as a `W.Link` (the address without its scheme; the click opens
   `UI.ShowCopy("<title> website", <address>)`), source, and a `W.Switch` (`Guides.SetPackShown`) or
   the status text ("turned off in the AddOns list" with **Enable and reload**,
-  "not loaded[: <reason>]", "needs Polestar <v> or newer" (or "needs a newer
-  Polestar"), "broken: registered
+  "not loaded[: <reason>]", "needs Northstar <v> or newer" (or "needs a newer
+  Northstar"), "broken: registered
   no guides", "refused: <reason>"); with problems a warning chip, **Show**
   (the list) and **Copy report** (`P.Report`: pack, versions, client build,
   every problem). Then **Suggest guides from** (`behavior.suggestFrom`,
@@ -5371,13 +5371,13 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   `W.Link` to docs/GUIDE_PACKS.md opening `UI.ShowCopy("Community guides,
   explained", <address>)` (`ns.DocsURL()` with `GUIDE_PACKS.md` for
   `PACKS.md`: the TOC's `X-Website` + `/blob/HEAD/docs/GUIDE_PACKS.md`, else
-  "docs/GUIDE_PACKS.md in Polestar's source"). While `Guides.ProblemCount() > 0` the page's sidebar row carries
+  "docs/GUIDE_PACKS.md in Northstar's source"). While `Guides.ProblemCount() > 0` the page's sidebar row carries
   the warning dot (a page spec's `dot`). Nothing goes to chat.
 - **Welcome** (`UI/Welcome.lua`, `SHOW_WELCOME`): centred, 600 wide, four
   pages each under its own night hero, the gold rim (`W.Rim`) on top, with
   Skip (Back on the last page), the step dots (not buttons), Back and Next
   in the footer: Hello, <name> (the suggested guide's zone painting engraved
-  faintly into the night; what Polestar does, then three cards with
+  faintly into the night; what Northstar does, then three cards with
   miniatures built from frames: a goal row of the suggested guide, the gold
   dart going to its first walk's place, the library's Leveling, Professions
   and Reputation counts); Set up (quest automation, the guide at login, the
@@ -5395,24 +5395,24 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   Discord invite as a link to the copy window; community guides with a
   Browse guides link to the guide menu; then Start guide, or Choose a guide
   without one). The window takes its tallest page's height. Once
-  per new character (`PolestarCharDB.welcomeSeen`: 0 for a character with no
-  saved `PolestarCharDB` as Polestar loaded, `ns.IsNewCharacter()`; set seen
+  per new character (`NorthstarCharDB.welcomeSeen`: 0 for a character with no
+  saved `NorthstarCharDB` as Northstar loaded, `ns.IsNewCharacter()`; set seen
   silently for one with saved data and no flag), 2 s after login, never in
   combat, during a cinematic or over the route choice; a due welcome that never opened stays due
   for the next login, and one that opened is marked on the character as it
   opens (a /reload or logout with it up does not repeat it); one the intro
   cinematic closes comes back on its page when the cinematic ends. Set up and Route style are in it only while the account has not had its
-  welcome (`PolestarDB.welcomeSeen`); the page set is fixed when a showing
+  welcome (`NorthstarDB.welcomeSeen`); the page set is fixed when a showing
   starts. Any close marks the account (and the character). About's "Show the
   welcome again" and `/polestar welcome` open it with every page.
-- **Copy window** (`UI/Copy.lua`, frame `PolestarCopy`, `UI.ShowCopy(title,
+- **Copy window** (`UI/Copy.lua`, frame `NorthstarCopy`, `UI.ShowCopy(title,
   text)` or `SHOW_COPY`): a small window with the band, a title, a read-only
   `W.CopyBox` holding the text, selected and focused, and how to copy it; ✕
   and Escape close it. `/polestar where` uses it. `opts` (`UI.ShowCopy(title,
   text, opts)`): `icon` and `iconColor` put a mark before the title, `hint`
   replaces the line above the box; the Polestar Discord's invite
   (`UI.ShowDiscord`) comes with Discord's mark.
-- **Reporting a problem** (`UI/Report.lua`, frame `PolestarReport`,
+- **Reporting a problem** (`UI/Report.lua`, frame `NorthstarReport`,
   `UI.ShowReport()` or `SHOW_REPORT`): the guide window's bug (in the
   navigator while a guide is open), its menu's "Report a problem" and
   `/polestar report` open it on the step on screen. The player types what
@@ -5422,7 +5422,7 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   the other addons that are loaded, names only, quest, map and guide addons
   first, then A to Z ("**Addons:**", left out when there are none), then
   `UI.Report.Details()` in a code block, one fact a line, taken when the
-  window opens: Polestar's version and stage, the client build and locale;
+  window opens: Northstar's version and stage, the client build and locale;
   race, class, level (XP %) and faction (never the name or realm); the guide
   (title, id, pack and version); "Step n of N: title", with "the guide is at
   step m" while another step is looked at, or "skipped"; each goal (the first
@@ -5438,9 +5438,9 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   to Shortest Path Forever`), after Where so the bug bot still finds Arrow and
   Where by position and reads this line by its style word; other packs that
   are on; and the errors
-  (`Polestar.Errors()`, plus with !BugGrabber its errors this session in
-  Polestar's files, `BugGrabber:GetDB()`) by their path from the AddOns
-  folder, and the calls the game blocked (`Polestar.Blocked()`) as "blocked
+  (`Northstar.Errors()`, plus with !BugGrabber its errors this session in
+  Northstar's files, `BugGrabber:GetDB()`) by their path from the AddOns
+  folder, and the calls the game blocked (`Northstar.Blocked()`) as "blocked
   in <addon>: <function> (<time>)": the newest three of both together, by
   `seq` (!BugGrabber's count as the newest), each counted. Above the code
   block, under the player's words, bold lines for the right spot when one
@@ -5451,16 +5451,16 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   Discord bot (`tools/discord-bot`) takes the code block for the details
   and everything above it, the bold lines included, as the description it
   quotes in the issue.
-  "Mark the right spot" hides the window behind a bar (`PolestarMark`) while
+  "Mark the right spot" hides the window behind a bar (`NorthstarMark`) while
   the player walks to where the step should have sent them; "Mark here"
   keeps `ns.WhereLines()` as the right spot, and "Clear mark" takes it out.
   Under it, the way to send the report: Discord's mark, "Report it on
   Discord", three numbered lines (press Copy report then Ctrl+C, open #bugs
   and press New Post, paste and post: the bot files it), "Copy report",
   which shows the report box under it selected, and "Get the invite", which
-  opens the invite (`Polestar.DiscordURL`) in the copy window. Last, for a
+  opens the invite (`Northstar.DiscordURL`) in the copy window. Last, for a
   player with a GitHub account, "Open on GitHub" opens in the copy window a
-  link to a new issue on Polestar's GitHub,
+  link to a new issue on Northstar's GitHub,
   `UI.Report.IssueURL(description, details, spot)`, whose query fills the
   issue form's fields by their ids: a "Wrong step" issue (`wrong-step.yml`:
   title, guide, step, character, the right spot, the report) when the
@@ -5527,18 +5527,18 @@ render: `docs/preview/journey.svg`.
 ### Gamepad (`UI/Gamepad.lua`, `UI/GamepadGuide.lua`)
 
 Ported from Ding! by Yendi (@moust4ki), GPL-3.0, and rebuilt on the Theme.
-No Polestar window takes a button from the game while it is merely shown:
+No Northstar window takes a button from the game while it is merely shown:
 a window holds the gamepad only while it is the newest one open, out of
 combat, with a gamepad active (the game's gamepad interface, or
 `gamepad.withMouse` on with the keyboard and mouse) and `gamepad.navigate` on (focus mode needs
 only a gamepad), through a frame that reads the buttons first
-(`PolestarPadInput`, `OnGamePadButtonDown`), so neither the game's gamepad
+(`NorthstarPadInput`, `OnGamePadButtonDown`), so neither the game's gamepad
 interface nor another addon's overrides (Easy Controller, ConsolePort) go
 before it; any other button goes on to the game. With the keyboard and
 mouse interface, temporary override bindings (`SetOverrideBindingClick` on
-the hidden buttons `PolestarPad<KEY>`) sit under the frame for a client where
+the hidden buttons `NorthstarPad<KEY>`) sit under the frame for a client where
 the frame gets nothing. With Forever's gamepad interface on
-(`Polestar.GamepadUI()`, see [Gamepad interface](#gamepad-interface)) none
+(`Northstar.GamepadUI()`, see [Gamepad interface](#gamepad-interface)) none
 is set: the game's own bindings on those buttons stay as its binding stack
 left them, and the frame alone reads the window's buttons. Both are cleared
 when the window closes. At `PLAYER_REGEN_DISABLED` (before the lockdown:
@@ -5548,19 +5548,19 @@ cannot leave the frame shown or a binding set for the fight; until
 `PLAYER_REGEN_ENABLED` no window takes the gamepad, then the newest open one
 takes it again. A button already down when a window takes the gamepad stays
 the game's until released (`G.heldKeys`); a press that opened the window
-stays Polestar's.
+stays Northstar's.
 
 A window that shows by itself waits to be asked: the welcome at login (or
 back after a fight or the route choice) and the route choice the engine
-offers (`spec.unasked()`) take no button, unless a Polestar window held the
-gamepad as they came. The focus binding (`POLESTAR_FOCUS`) gives the newest
+offers (`spec.unasked()`) take no button, unless a Northstar window held the
+gamepad as they came. The focus binding (`NORTHSTAR_FOCUS`) gives the newest
 waiting window the gamepad (`G.TakeWaiting`) before it starts focus mode,
 and the waiting window's hint bar shows that binding's button when it has
 one. Opened by the player (a binding, a chord, a click, A in another
 window), every window takes the gamepad at once.
 
 ```lua
-Polestar.Gamepad.Register(frame, spec)  -- navigation while `frame` is shown (the contract every window uses)
+Northstar.Gamepad.Register(frame, spec)  -- navigation while `frame` is shown (the contract every window uses)
 -- spec = { unasked = fn -> bool (this showing came by itself: wait for the focus binding),
 --          rows = fn -> { widget, ... } (default G.Collect(frame): every shown, enabled, clickable
 --          widget, the outermost one), initial = fn(rows) -> index, back = fn (B, Start; default Hide),
@@ -5569,16 +5569,16 @@ Polestar.Gamepad.Register(frame, spec)  -- navigation while `frame` is shown (th
 --          key = fn(key, w, isRepeat) -> handled, onFocus = fn(w),
 --          close = button | false (where B's chip sits; default frame.Close),
 --          actionLabel / xLabel / resetLabel = fn(w) -> text, backLabel, tabsLabel = text }
-Polestar.Gamepad.IsActive() -> bool        -- Polestar.GamepadUI(); with the keyboard and mouse only with gamepad.withMouse on (off by default) and C_GamePad / GamePadEnable with a device plugged in
-Polestar.Gamepad.Style() -> "xbox" | "playstation"  -- gamepad.glyphs, "auto" reads C_GamePad's labelStyle ("Shapes")
-Polestar.Gamepad.ButtonName(button), KeyName(key) -> text   -- "A" / "Cross", "LT + A", "LB + D-pad up", "Ctrl + N"
-Polestar.Gamepad.Glyph(parent[, name]) -> frame             -- frame:SetKeys(key or { button, ... }) -> width
-Polestar.Gamepad.BindingKeys(action), ShownKeys(action[, pad]), KeyText(action), Bind(action, key), Unbind(action[, pad])
-Polestar.Gamepad.WhoUses(action, key) -> { kind = "binding"|"addon"|"gamepad", name, action } | nil
-Polestar.Gamepad.Capture(opts)                              -- a key, a button or a chord for a binding row
-Polestar.Gamepad.StartFocus(), StopFocus(), ToggleFocus(), IsFocusing()   -- the guide window's focus mode
-Polestar.Gamepad.TakeWaiting() -> bool                      -- the newest window waiting to be asked takes the gamepad
-Polestar.Gamepad.HasWindow() -> bool                        -- a Polestar window holds the gamepad (for other gamepad addons)
+Northstar.Gamepad.IsActive() -> bool        -- Northstar.GamepadUI(); with the keyboard and mouse only with gamepad.withMouse on (off by default) and C_GamePad / GamePadEnable with a device plugged in
+Northstar.Gamepad.Style() -> "xbox" | "playstation"  -- gamepad.glyphs, "auto" reads C_GamePad's labelStyle ("Shapes")
+Northstar.Gamepad.ButtonName(button), KeyName(key) -> text   -- "A" / "Cross", "LT + A", "LB + D-pad up", "Ctrl + N"
+Northstar.Gamepad.Glyph(parent[, name]) -> frame             -- frame:SetKeys(key or { button, ... }) -> width
+Northstar.Gamepad.BindingKeys(action), ShownKeys(action[, pad]), KeyText(action), Bind(action, key), Unbind(action[, pad])
+Northstar.Gamepad.WhoUses(action, key) -> { kind = "binding"|"addon"|"gamepad", name, action } | nil
+Northstar.Gamepad.Capture(opts)                              -- a key, a button or a chord for a binding row
+Northstar.Gamepad.StartFocus(), StopFocus(), ToggleFocus(), IsFocusing()   -- the guide window's focus mode
+Northstar.Gamepad.TakeWaiting() -> bool                      -- the newest window waiting to be asked takes the gamepad
+Northstar.Gamepad.HasWindow() -> bool                        -- a Northstar window holds the gamepad (for other gamepad addons)
 ```
 
 - **Navigation.** Where widgets have places (a client; the test and preview
@@ -5591,14 +5591,14 @@ Polestar.Gamepad.HasWindow() -> bool                        -- a Polestar window
   shows); LB / RB start the new page on it again. Registered: the options
   (LB / RB: `Options.StepTab`, every page's tabs in order), the hub (LB / RB:
   `Picker.StepSection`, the rail's sections; X loads the focused guide), the
-  shared menu (`PolestarMenu`, B closes it and the window under it has the
+  shared menu (`NorthstarMenu`, B closes it and the window under it has the
   gamepad back where it was), the welcome (LB / RB its pages), the route
   choice, the report and copy windows.
-- **The look** (docs/DESIGN.md, "Gamepad"): one focus ring (`PolestarPadRing`,
+- **The look** (docs/DESIGN.md, "Gamepad"): one focus ring (`NorthstarPadRing`,
   the focused widget's child: the hover wash under a 2px accent ring at 90%),
-  one hint bar under the window holding the gamepad (`PolestarPadHints`, the
+  one hint bar under the window holding the gamepad (`NorthstarPadHints`, the
   panel skin, clamped to the screen, wrapping to the window's width, 300 at
-  least) and one B chip left of its close button (`PolestarPadBadge`; the
+  least) and one B chip left of its close button (`NorthstarPadBadge`; the
   bar then leaves B out: each action shown once). The bar lists the D-pad,
   what A, X and Y do on the focused widget, LB / RB and B. `gamepad.hints`
   turns the bar and the chip off. Without a gamepad none of it exists.
@@ -5607,36 +5607,36 @@ Polestar.Gamepad.HasWindow() -> bool                        -- a Polestar window
   `pad-triangle` in `Media/UI`) and D-pad direction (the chevrons), a capsule
   for the rest ("LB", "Ctrl"), "+" between the buttons of a combination; the
   chip wash, the name in text.
-- **Focus mode** (`POLESTAR_FOCUS`, `TOGGLE_FOCUS`; a window waiting to be
+- **Focus mode** (`NORTHSTAR_FOCUS`, `TOGGLE_FOCUS`; a window waiting to be
   asked takes the gamepad first): `G.Open` of the guide
   window with its own spec: rows are its widgets (tabs, navigator, banner,
   person, goal lines, tip, up next), the first open goal first; A on a goal
   line aims the arrow (`rowClick`), or on the quest item's line (the item
   button `QoL.Buttons.item` shows the goal's `item`, or a `use` goal) is
-  redirected to the secure binding `CLICK PolestarQuestItemButton`
+  redirected to the secure binding `CLICK NorthstarQuestItemButton`
   (`G.Redirect`, an override binding: not with the gamepad interface, where
   A clicks that line like any other); X runs the line's `OnEnter` (its
   tooltip) and again its `OnLeave`; LB / RB `Engine.Prev/Next`; Y sets
   `ui.compact` and ends the mode; B ends it; hiding the window or
   `GAMEPAD_COMBAT` ends it.
-- **Bindings and chords.** Bindings.xml: `POLESTAR_TOGGLE`, `_NEXT`,
+- **Bindings and chords.** Bindings.xml: `NORTHSTAR_TOGGLE`, `_NEXT`,
   `_PREV`, `_NEXT_WAYPOINT` and `_PREV_WAYPOINT` (`Engine.CycleWaypoint(1 |
   -1)`: a goal with spawn spots moves to its next or previous spot through
   `CycleSpot`, else the arrow moves to the step's next or previous open
   goal that has a place, round the step), `_FOCUS`, `_MENU`
   (`TOGGLE_PICKER`), `_OPTIONS` (`TOGGLE_OPTIONS`), `_REPORT`, and the quest
-  buttons' `CLICK` bindings; `Polestar.Bindings` runs them, and every one but
+  buttons' `CLICK` bindings; `Northstar.Bindings` runs them, and every one but
   the `CLICK` bindings takes a chord. Nothing is bound unasked. A chord
-  (`"PADLSHOULDER+PADDUP"`) is Polestar's own, in
-  `PolestarDB.gamepad.chords[action]` (account-wide, outside the settings,
+  (`"PADLSHOULDER+PADDUP"`) is Northstar's own, in
+  `NorthstarDB.gamepad.chords[action]` (account-wide, outside the settings,
   so "Reset all settings" keeps it), never bound: while chords exist and a
   gamepad is active, the driver reads their first buttons (`IsKeyDown`,
   the chords parsed once per `GAMEPAD_BINDINGS_CHANGED`) every 0.05 s, and
-  every frame while one is held; then, out of combat, `PolestarPadChords`
+  every frame while one is held; then, out of combat, `NorthstarPadChords`
   reads the gamepad first and keeps the second button from the game; any
   other button goes on. A chord does nothing in a fight (`chordsFree`, and
   `runChord` itself: its window could not take the gamepad, and the button
-  reached the game as well), while a Polestar window holds the gamepad, a
+  reached the game as well), while a Northstar window holds the gamepad, a
   binding row waits, the chat has the keyboard or a game window the
   gamepad's focus (`GamepadMode.FrameControlsManager.focusedFrame`, the
   field read, never a call), nor with another shoulder or trigger held
@@ -5646,7 +5646,7 @@ Polestar.Gamepad.HasWindow() -> bool                        -- a Polestar window
   or the chat): `G.WhoUses` names any chord on them as the game's. The
   quest buttons' secure clicks take no chord: a combination is the game's,
   with a button it makes a modifier (`GamePadEmulateShift` / `Ctrl` /
-  `Alt`). Polestar never changes the game's gamepad settings.
+  `Alt`). Northstar never changes the game's gamepad settings.
 - **Binding rows**: the registry's `binding` control (`G.BindingRow`). A (a
   click) captures (`G.Capture`): a gamepad button on its release, two
   buttons as a chord, a keyboard key with its modifiers; B tapped cancels, B
@@ -5662,7 +5662,7 @@ Polestar.Gamepad.HasWindow() -> bool                        -- a Polestar window
 
 ## Rares — rare NPCs and treasures
 
-`addon/Polestar/Rares/` (`Rares\Rares.xml`, loaded after `UI\UI.xml`):
+`addon/Northstar/Rares/` (`Rares\Rares.xml`, loaded after `UI\UI.xml`):
 `Rares.lua` (settings `rares.*`, history, the decision), `Detect.lua` (client
 events), `Pins.lua` (map layers), `Toast.lua` (the alert), `Options.lua`
 (Discovery → Rares: When a rare shows up, How rares are noticed, History; Map
@@ -5671,12 +5671,12 @@ Everything is off with `rares.enabled`; a detection path that is off has no
 event registered.
 
 ```lua
-Polestar.Rares.Decide(s, ctx) -> action, reason   -- pure; "alert" | "hold" | "record" | "skip"
-Polestar.Rares.Sighting(s, where) -> action, reason -- decide, record, alert (RARE_SPOTTED)
-Polestar.Rares.History() -> { [key] = { kind, id, name, level, t, first, n, map, x, y, src, alerted, dead } }
-Polestar.Rares.Info(kind, id) -> { kind, id, name, level, levelMax, elite, instance, spawns, loot } | nil
-Polestar.Rares.BuildPins(o) -> pins                 -- pure pin selection
-Polestar.Rares.Show(kind, id)                       -- SHOW_RARES: the hub section at it
+Northstar.Rares.Decide(s, ctx) -> action, reason   -- pure; "alert" | "hold" | "record" | "skip"
+Northstar.Rares.Sighting(s, where) -> action, reason -- decide, record, alert (RARE_SPOTTED)
+Northstar.Rares.History() -> { [key] = { kind, id, name, level, t, first, n, map, x, y, src, alerted, dead } }
+Northstar.Rares.Info(kind, id) -> { kind, id, name, level, levelMax, elite, instance, spawns, loot } | nil
+Northstar.Rares.BuildPins(o) -> pins                 -- pure pin selection
+Northstar.Rares.Show(kind, id)                       -- SHOW_RARES: the hub section at it
 ```
 
 - **Detection** (APIs verified against `.ref/wow-ui-source-forever`, 1.60.1):
@@ -5700,11 +5700,11 @@ Polestar.Rares.Show(kind, id)                       -- SHOW_RARES: the hub secti
   against current settings, instance and cooldown state before marking it
   alerted. An observed death cancels a held sighting only when both have the
   same known creature GUID; historical deaths and NPC ids alone never cancel it.
-- **History**: account-wide per realm, `PolestarDB.rares.history[realm][key]`
+- **History**: account-wide per realm, `NorthstarDB.rares.history[realm][key]`
   (`"rare:<npc>"`, `"treasure:<object>"`, `"name:<name>"` without an id), at
   most 400 entries; the cooldown reads `alerted` (epoch seconds), so it
   survives a reload. Losing it only resets cooldowns and the Seen list.
-- **Toast** (`PolestarRareToast`): name, "Level n Rare · 85 yd · Zone"
+- **Toast** (`NorthstarRareToast`): name, "Level n Rare · 85 yd · Zone"
   (vignettes: the distance; units: "in sight"; a vignette without a position:
   "known spawn 120 yd"), "Set waypoint" (the vignette's position, asked again
   on the click and on parent maps when the player's map lacks it; a unit:
@@ -5712,7 +5712,7 @@ Polestar.Rares.Show(kind, id)                       -- SHOW_RARES: the hub secti
   or no waypoint) and "Show rare" (the section),
   `rares.toastSeconds` with a drain line, held under the cursor, draggable
   (`rares.toastPoint`).
-- **Pins**: layers `rares.rare` and `rares.treasure` through `Polestar.Pins`,
+- **Pins**: layers `rares.rare` and `rares.treasure` through `Northstar.Pins`,
   world map and minimap per kind (`rares.worldRares`, `worldTreasures`,
   `minimapRares`, `minimapTreasures`; all off by default, Map → Rares & travel →
   Rares and treasures); one pin per distinct spawn (spawns of
@@ -5734,20 +5734,20 @@ Polestar.Rares.Show(kind, id)                       -- SHOW_RARES: the hub secti
 
 ## Talents — talent plans
 
-`addon/Polestar/Talents/` (`Talents\Talents.xml`, loaded after `Rares\Rares.xml`):
+`addon/Northstar/Talents/` (`Talents\Talents.xml`, loaded after `Rares\Rares.xml`):
 `Talents.lua` (settings `talents.*`, the plan per character in
-`PolestarCharDB.talents.build`, progress, validation, the unspent-point reminder),
+`NorthstarCharDB.talents.build`, progress, validation, the unspent-point reminder),
 `Builds.lua` (generated by `forge data talents build`), `Overlay.lua` (the talent frame),
 `Options.lua` (Questing → Talents → Talent plan), `View.lua` (the hub section,
 order 40).
 
 ```
-Polestar.Talents.Current() -> { data, build, live, valid, level, granted, state, staged } | nil, reason
-Polestar.Talents.State(build, ranks, level, granted) -> { status, done, total, next, nodeNext, offPlan, spent, points, unspent, source }  -- pure
-Polestar.Talents.Replay(data, build) -> errors              -- pure; the snapshot's rules
-Polestar.Talents.Validate(data, live) -> { map, back, moved, missing, ok }
-Polestar.Talents.Choose(key | "auto")                       -- per character; "auto" follows Gear's spec, else the column with most points
-Polestar.Talents.Show()                                     -- SHOW_TALENTS; /pole talents
+Northstar.Talents.Current() -> { data, build, live, valid, level, granted, state, staged } | nil, reason
+Northstar.Talents.State(build, ranks, level, granted) -> { status, done, total, next, nodeNext, offPlan, spent, points, unspent, source }  -- pure
+Northstar.Talents.Replay(data, build) -> errors              -- pure; the snapshot's rules
+Northstar.Talents.Validate(data, live) -> { map, back, moved, missing, ok }
+Northstar.Talents.Choose(key | "auto")                       -- per character; "auto" follows Gear's spec, else the column with most points
+Northstar.Talents.Show()                                     -- SHOW_TALENTS; /pole talents
 ```
 
 - **Client.** Forever's talents are one C_Traits tree per class (Paladin:
@@ -5798,22 +5798,22 @@ Polestar.Talents.Show()                                     -- SHOW_TALENTS; /po
 
 ## Alts — the Characters page
 
-`addon/Polestar/Alts/` (`Alts\Alts.xml`, loaded after `Talents\Talents.xml`):
-`Snapshot.lua` (`Polestar.Alts`: the saved snapshots, the events that write
+`addon/Northstar/Alts/` (`Alts\Alts.xml`, loaded after `Talents\Talents.xml`):
+`Snapshot.lua` (`Northstar.Alts`: the saved snapshots, the events that write
 them, the `alts` command), `Options.lua` (Discovery → Characters),
 `View.lua` (the hub section, order 60).
 
 ```
-Polestar.Alts.Key() -> "Name-Realm"                         -- as Maps/Instances.lua files its entries
-Polestar.Alts.List(sortBy) -> entries                       -- the playing character first, then "seen" (default) | "rested" | "level"
-Polestar.Alts.Forget(key) -> boolean                        -- never the playing character
-Polestar.Alts.Write(silent, touch) -> boolean               -- the playing character's entry (touch: only `seen`); false with alts.enabled off
-Polestar.Alts.ProjectRested(entry, now) -> xp | nil         -- no saved state; nil at the level cap (now defaults to the server time)
-Polestar.Alts.Rested(entry, now) -> xp | nil                -- live for the playing character, else projected
-Polestar.Alts.IsCurrent(entry), Polestar.Alts.MaxLevel(), Polestar.Alts.Enabled()
+Northstar.Alts.Key() -> "Name-Realm"                         -- as Maps/Instances.lua files its entries
+Northstar.Alts.List(sortBy) -> entries                       -- the playing character first, then "seen" (default) | "rested" | "level"
+Northstar.Alts.Forget(key) -> boolean                        -- never the playing character
+Northstar.Alts.Write(silent, touch) -> boolean               -- the playing character's entry (touch: only `seen`); false with alts.enabled off
+Northstar.Alts.ProjectRested(entry, now) -> xp | nil         -- no saved state; nil at the level cap (now defaults to the server time)
+Northstar.Alts.Rested(entry, now) -> xp | nil                -- live for the playing character, else projected
+Northstar.Alts.IsCurrent(entry), Northstar.Alts.MaxLevel(), Northstar.Alts.Enabled()
 ```
 
-- **Store.** `PolestarDB.alts.chars["Name-Realm"]`, one small entry per
+- **Store.** `NorthstarDB.alts.chars["Name-Realm"]`, one small entry per
   character: name, realm, class, race, faction, level, xp, xpMax, rested,
   resting, zone, bind, money, profs (skill line to rank), tabs (up to six
   `{ id, title, step, count, complete }` from `Engine.GetTabs`) with `active`, `seen`
@@ -5880,10 +5880,10 @@ What `compile` writes into a pack's folder: Core, "Guide data (compiled Lua)".
 |---|---|
 | `new [dir]` | writes a pack from `tools/templates/pack/` (the CI workflow and devcontainer only when the clone has an `origin`) |
 | `lint`, `compile` | checks with our guides as context; writes `<pack>/dist/<folder>/`; `--format text\|json\|github` |
-| `export <file.guide>` | lints the file's pack (the nearest `pack.json` above it) and prints its one guide as an import string (`tools/lib/pack/importstring.js`; PACK_FORMAT.md, "Import strings"); refuses a file with errors, of several guides, of Polestar's own, over 60 steps or 50,000 characters. `play` and `dev --play` give the same string (`POST /api/import`, the page's Copy import string) |
+| `export <file.guide>` | lints the file's pack (the nearest `pack.json` above it) and prints its one guide as an import string (`tools/lib/pack/importstring.js`; PACK_FORMAT.md, "Import strings"); refuses a file with errors, of several guides, of Northstar's own, over 60 steps or 50,000 characters. `play` and `dev --play` give the same string (`POST /api/import`, the page's Copy import string) |
 | `doctor` | Node, Lua, reference data, AddOns folder, `pack.json` |
 | `find` | quests, NPCs, objects, items, inns, flight points and our guides as guide lines (`--json`); `--kind inn\|flight` without a text lists every inn or flight point (from `travel.json`) |
-| `playtest` | every guide to the end per class (`tools/lib/playtest.js`, also behind `tests/guides.test.js`); a guide starts with the prerequisites of its accepts that the guides chaining into it turn in already done, and those they leave for it only to hand in in the log, as for a player arriving on the route. Plays run on a pool of long-lived lua5.1 processes (`tools/lib/luapool.js`, `tests/lua/pool.lua`; `POLESTAR_PLAY_WORKERS`, default 8): each play in a fresh environment, the addon's and the pack's files parsed once per process. `--honest` (`tools/lib/playtest-honest.js`, no Lua) plays each `next` chain (the main route; a catch-up alone) from the compiled lines and the data only, carrying the log, bags, flight paths and hearth, with nothing free: R1 travel (continent and zone changes, flight paths, hearth), R2 accept (giver at the place, item starts), R3 items (a source near the goal, quest-only drops), R4 NPCs (giver or ender, step titles, several givers), R5 turn-in (objectives credited, the required steps of `data/local/kb/forever-kb.sqlite` when present); `--format json` for agents; exit 1 on any fail |
+| `playtest` | every guide to the end per class (`tools/lib/playtest.js`, also behind `tests/guides.test.js`); a guide starts with the prerequisites of its accepts that the guides chaining into it turn in already done, and those they leave for it only to hand in in the log, as for a player arriving on the route. Plays run on a pool of long-lived lua5.1 processes (`tools/lib/luapool.js`, `tests/lua/pool.lua`; `NORTHSTAR_PLAY_WORKERS`, default 8): each play in a fresh environment, the addon's and the pack's files parsed once per process. `--honest` (`tools/lib/playtest-honest.js`, no Lua) plays each `next` chain (the main route; a catch-up alone) from the compiled lines and the data only, carrying the log, bags, flight paths and hearth, with nothing free: R1 travel (continent and zone changes, flight paths, hearth), R2 accept (giver at the place, item starts), R3 items (a source near the goal, quest-only drops), R4 NPCs (giver or ender, step titles, several givers), R5 turn-in (objectives credited, the required steps of `data/local/kb/forever-kb.sqlite` when present); `--format json` for agents; exit 1 on any fail |
 | `forge guide check <dir>` (was `guidecheck`) | every chain of `.guide` files under `<dir>` (one folder, in file-name order; catch-ups left out) read as the player does, line by line, against the reference data (`rust/crates/forge-guide/src/guidecheck.rs`). It reads the parsed and resolved lines and the data they touch into facts, derives the failures from them by the rules once written as answer set programming (they are stratified, so plain Rust), and gives each failure the cheapest of the repairs it may take (equally cheap ones: a fixed choice). Rules: `itemStart` (an item-started accept before anything gives its item), `useBefore`, `unsourced` (no source in the data or the guide), `bagBefore` (a quest-only drop bagged before its quest is held), `giver`/`ender` (an NPC who does not give or take the quest, or none named when several do), `objective` (a turn-in with a part never worked since the accept), `noAccept`, `travel` (a new zone with no line that moves the player; a capital and its zone are one place), `continent` (no boat, zeppelin, portal or hearth). `--fix` runs the repairs (`guidecheck_repair.rs`; `travel` and `continent` are left to the writer's travel pass in `forge build`): names the NPC, adds the item's source (its best dropper's or object's spawn nearest the route's point, or a vendor), gates a rare start on `when has`, adds a missing goal or accept, copies a later collect before a use, and an order pass (a stable topological sort: every line after the nearest line that gives what it needs, moving no more than 150 lines; a step caught in a cycle is split per goal; a step whose sticky `zone` changed says it again). `--json` |
 | `play`, `dev` | the playground with the pack built into a temp folder; `dev` watches and builds into AddOns |
 | `install`, `pack` | builds and installs the pack; writes `<pack>/dist/<folder>-<version>.zip` |
@@ -5905,7 +5905,7 @@ are warnings in other packs.
 ### Zone art overlays (`maps overlays`)
 
 `forge data maps overlays [--build <ver>] [--offline]` writes
-`addon/Polestar/UI/ZoneArtOverlays.lua` (`tools/lib/maps/overlays.js`) from
+`addon/Northstar/UI/ZoneArtOverlays.lua` (`tools/lib/maps/overlays.js`) from
 the client's DB2 tables, as wago.tools CSV cached under
 `data/sources/wago/<build>/`: `UiMapXMapArt` (every art a map shows, any
 phase), `UiMapArt` → `UiMapArtStyleLayer` (layer 0's tile size), then each
@@ -5931,10 +5931,10 @@ corrections, web quest list and web XP facts), the Forever client's tables
 `--forever-build` (`pickBuild` in `tools/lib/data/wago.js`); `--build`
 names one; offline or with wago.tools unreachable, the newest cached build
 holding every table the Codex reads; `meta.json` records it), the item
-sources players' recordings show (`data/codex/recorded.json`) and Polestar's
+sources players' recordings show (`data/codex/recorded.json`) and Northstar's
 own guides into
 `data/forever/codex/*.json`, then emits the load-on-demand pack
-`addon/Polestar_Codex/` (`tools/lib/codex/pack.js`) with its
+`addon/Northstar_Codex/` (`tools/lib/codex/pack.js`) with its
 `LICENSE-DATA.txt`, which lists every source with its version and licence.
 Both are build products (gitignored); the pack is part of the release:
 `pack` puts it in the zip and fails without it, `install` copies it when
@@ -5965,7 +5965,7 @@ was already built without it.
   Horse) have no vendor in the quest data.
 - Release-safe by default. `--local-extras` also merges three inputs that
   may not be redistributed: AtlasLoot (GPL-2.0, incompatible with
-  Polestar's GPL-3.0-only), RareScanner (All Rights Reserved) and
+  Northstar's GPL-3.0-only), RareScanner (All Rights Reserved) and
   `data/forever/dungeons.json` (DungeonJournal, no licence). That build's
   `meta.json` and `Meta.lua` carry `localExtras = true`, its
   `LICENSE-DATA.txt` says not to share it, and `pack` refuses it, as it
@@ -6366,7 +6366,7 @@ means unrestricted. pfQuest masks are **Era** masks: Skyborne has no bit there,
 so never read an Era-only mask as excluding Skyborne. QuestieDB masks add
 Forever's Skyborne bits 2^32 (High Order, Alliance) and 2^33 (Windshapers,
 Horde), past 32-bit `bit.band`: split them arithmetically (`races % 2^32`,
-`floor(races / 2^32)`). `Polestar_QuestDB` keeps the low 32 bits. Spawn `f` is the frame of
+`floor(races / 2^32)`). `Northstar_QuestDB` keeps the low 32 bits. Spawn `f` is the frame of
 those points (`"e"` Era, `"l"` live Forever). A frame's `c` is the instance map id (0 Eastern
 instances.json { "<instance map id>": { id, name, type: "party"|"raid", entrances: [ { map, x, y, n } ],
                  encounters: { "<DungeonEncounter id>": { name, npcs: [ids], kills } }, source: ["recorder"] } }   (recorded only; {} without)
@@ -6478,7 +6478,7 @@ blesses them). Run in a copy without `data/sources`, it names `sources.areas` 13
    Its Forever database also lists datamined quests that are not live (`<NYI>`
    placeholders, Season of Discovery leftovers), so presence there is not
    evidence that a quest is in the game.
-4. **Polestar corrections** (`forever-db/corrections/<section>.json`, committed):
+4. **Northstar corrections** (`forever-db/corrections/<section>.json`, committed):
    facts QuestieDB or pfQuest get wrong or lack, each with the independent
    evidence for it in `source` (`{ kind, ref }` or a list; kind `recording`,
    `in-game-check`, `client`, `eg`, `cmangos`, `tdb`, `questie`, `pfquest` or
@@ -6527,7 +6527,7 @@ Precedence, lowest tier wins, one order for every fact kind:
 
 | Tier | Source |
 |---|---|
-| 0 | Polestar recordings and corrections (`corrections.json`, hand-verified) |
+| 0 | Northstar recordings and corrections (`corrections.json`, hand-verified) |
 | 1 | Forever TrinityCore world DB, sniffed rows (VerifiedBuild >= 70000: advocaite/TrinityCore `forever` plus the Sakhwoow/WoWForever 2026-10-20 sniffs; `rust/crates/forge-data/src/tdb.rs` reads `data/local/forever-tdb/world.sqlite`) |
 | 1 | `client`: the installed Forever client's tables with the server's hotfix rows (DBCache.bin) applied, for what the game draws from them only: quest map areas (`start_place`, `end_place`, `objective_place:<n>`), area triggers of event objectives (`objective_trigger:<i>`), QuestV2 (`in_client`: the quest exists; never a removal), item names, durations, start quests and the quest-item class, placed game objects (`placement`) |
 | 1.4 | EG Link output: observed turn-in XP |
@@ -6667,7 +6667,7 @@ its own folder and its own sessions. A session is the consecutive chunks of one
 (contributor, install, character id) with gaps under 30 minutes; a session file
 the new normalisation no longer has (a late chunk joined two sessions) is
 removed. Imported text has the account's character names replaced with `$N`.
-A `Polestar_Recorder.lua` outside this PC's own game folders (a file a player
+A `Northstar_Recorder.lua` outside this PC's own game folders (a file a player
 sent in) needs `--vouch <name>` (contributor `sent-<name>`, the name the
 maintainer's choice) or `--anonymize` (contributor `anon-<16 hex digits of the
 install id's SHA-256>`). Pull reads export pages until one comes back empty
@@ -6799,8 +6799,8 @@ the character's name and realm; its JSON (`{ schema: 1, build, session, char:
 { name, realm, race, class, faction }, started, ended, events, maps }`) is still
 read by the data build and `record report|draft`; nothing writes it any more.
 
-The Recorder window (`Panel.lua`; `/psrec ui`, Polestar's Options > Recorder
-and its guide menu; drawn with Polestar's Theme and Widgets when Polestar is
+The Recorder window (`Panel.lua`; `/psrec ui`, Northstar's Options > Recorder
+and its guide menu; drawn with Northstar's Theme and Widgets when Northstar is
 loaded, else the game's templates) turns recording on and off, starts and
 stops a trail (also the key binding "Recorder: start or stop the position
 trail", `/psrec trail toggle`), marks a point, lists this session's trails
@@ -6808,16 +6808,16 @@ and has Save now (a /reload). Its spot list is `Spots.lua`, generated once
 from the maintainers' trail list (spots up to level 30, in each faction's tour
 order); the label box offers the first spot not done that the player's level
 allows, and a trail whose label is a spot's label, or starts with `#<id>`,
-ticks it in `PolestarRecorderDB.spots` (`{ [id] = epochSeconds }`) when it
-stops with at least one point. The window's place is `PolestarRecorderDB.panel`.
+ticks it in `NorthstarRecorderDB.spots` (`{ [id] = epochSeconds }`) when it
+stops with at least one point. The window's place is `NorthstarRecorderDB.panel`.
 
 #### Measuring routes
 
-Recording is off until turned on (`PolestarRecorderDB.enabled == true`, set
+Recording is off until turned on (`NorthstarRecorderDB.enabled == true`, set
 by `/psrec on`, Options > Recorder, or Polestar Client's share flag, which is
 on by default in the client unless the player stops sharing or typed
 `/psrec off`, docs/RECORDING.md "Ack file"); while it is off the Recorder writes nothing, not even a
-session. Testers turn it on, play with Polestar, run `forge record import`
+session. Testers turn it on, play with Northstar, run `forge record import`
 (or `forge record pull` for the server's), then `record report [--guide <text>]
 [--json] [--top n]`. The report rebuilds step passes from every session and
 character:
@@ -7033,9 +7033,9 @@ fileDataID from wago.tools into `data/sources/casc` (local, never shipped):
   the per-tile graph otherwise, then smooths the path; `los` tests a
   straight walkable line. `nav path` prints one route.
 - **Packing for the in-game engine** (`forge nav pack`, `rust/crates/forge-nav/src/pack` (first `tools/lib/nav/pack.js`),
-  rules in its header): the grid as Polestar's walking maps (format 2,
+  rules in its header): the grid as Northstar's walking maps (format 2,
   grown from Shortest Path Forever's walking-map format: his baker's HPA*
-  and encodings, ported), which the router in `Polestar_Nav` (started from
+  and encodings, ported), which the router in `Northstar_Nav` (started from
   his engine) routes on. Each SPF cell (128 per tile by default, 4.17
   yd) holds the connected pieces of our surfaces in its columns (base plus
   floors; a wall inside a cell keeps its sides apart); a step between cells
@@ -7079,7 +7079,7 @@ fileDataID from wago.tools into `data/sources/casc` (local, never shipped):
   touches); `Routing/Costs.lua` (mirrored in `tools/lib/nav/costs.js`)
   prices a step by it, per faction, and every graph edge carries its cost
   for Alliance, Horde and no profile and its yards. `chokepoints.js` adds `Chokepoints.lua`
-  (`PolestarNavChokepoints[map]`: lift landings, bridges, gates at passages,
+  (`NorthstarNavChokepoints[map]`: lift landings, bridges, gates at passages,
   tunnels, cave and building mouths, passes, each named by its AreaTable
   area) for the journey's named walk steps.
 - **Leffe's navigation maps in game** (`forge nav pack --leffe <dir>`, `pack/leffe.rs`, maps format 5): the
@@ -7097,13 +7097,13 @@ fileDataID from wago.tools into `data/sources/casc` (local, never shipped):
   decodeArcs). `--leffe-maps` picks the maps taken from his; the rest stay the grid's, byte for byte.
   About a fifth of his floors no walk can use (no step or link out, none in, no jump or entrance at them, not on a
   cluster border): they are dropped and the nodes after them renumbered (floor, class, area, arc and graph
-  fields alike). Each continent of his ships its map parts in a load-on-demand addon beside Polestar_Nav
-  (`Polestar_Nav_EK`, `Polestar_Nav_Kalimdor`; its metadata, with `part = "<addon>"`, stays in Polestar_Nav), which
+  fields alike). Each continent of his ships its map parts in a load-on-demand addon beside Northstar_Nav
+  (`Northstar_Nav_EK`, `Northstar_Nav_Kalimdor`; its metadata, with `part = "<addon>"`, stays in Northstar_Nav), which
   `PathGrid.lua` loads the first time a search needs that map, never in combat (`EnsurePart`; a part that fails
   to load drops its map: the straight arrow there). Its blocks are the zlib bytes themselves in the string
   literals (`blocks = "zlib"`; only `\0 \n \r ^Z " \` escaped), a quarter less than base64 on disk and in memory;
-  `--literals base64` keeps base64. A session on one continent holds Polestar_Nav and that continent's part:
-  Polestar searches and measures walks only on the player's continent and on continents already in memory
+  `--literals base64` keeps base64. A session on one continent holds Northstar_Nav and that continent's part:
+  Northstar searches and measures walks only on the player's continent and on continents already in memory
   (`Nav/Walk.lua` canSearch, `Path.Resident`), so a journey to the other continent keeps the planner's straight
   estimate for the walks there (their danger unweighed, `Nav/Danger.lua`) until the player arrives and that part loads
   with the first search there.

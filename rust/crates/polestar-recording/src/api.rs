@@ -78,7 +78,7 @@ pub fn pow_solve(challenge: &str, difficulty: u32) -> u64 {
 pub struct UploadRequest {
 	/// The uploader's version.
 	pub uploader: String,
-	/// The addon install id (`PolestarRecorderDB.install`).
+	/// The addon install id (`NorthstarRecorderDB.install`).
 	pub install: String,
 	pub chunks: Vec<UploadChunk>,
 }

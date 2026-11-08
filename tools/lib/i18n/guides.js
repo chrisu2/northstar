@@ -107,8 +107,8 @@ function packLocales(packDir) {
 const TOKEN_ONLY = new RegExp(TOKEN_RE.source, 'g');
 const NAMES_ROOT = path.join(__dirname, '..', '..', '..', 'addon');
 
-// The object ids Polestar's names of `locale` (Names.lua in the language
-// folder addon/Polestar_<locale>, `forge data names`) name, or null
+// The object ids Northstar's names of `locale` (Names.lua in the language
+// folder addon/Northstar_<locale>, `forge data names`) name, or null
 // when it has none, cached.
 const NAMED_OBJECTS = new Map();
 function namedObjects(locale) {

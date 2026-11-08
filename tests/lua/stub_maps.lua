@@ -4,7 +4,7 @@
 --
 --   local m = stub.maps
 --   m.useWorld()                          map 9000 "Testshire" (c 0) and 9001 "Far Isle" (c 1) in stub.world
---   m.travel                              fixture for Polestar.Nav.RegisterTravelData(m.travel, true)
+--   m.travel                              fixture for Northstar.Nav.RegisterTravelData(m.travel, true)
 --   m.place(wx, wy)                       put the player at a world position on map 9000
 --   m.openTaxi(currentID, { reachableID, ... })   open the flight map (names from m.travel)
 --   TakeTaxiNode(slot)                    the client call (slot = index into the open map)

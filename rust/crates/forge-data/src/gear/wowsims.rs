@@ -382,13 +382,13 @@ pub fn read_wowsims(cache_dir: &Path) -> Result<Wowsims, String> {
 	meta.set("fetched", src.fetched.clone());
 	let skipped = SKIPPED_SIMS.iter().map(|(k, v)| format!("{k} ({v})")).collect::<Vec<_>>().join(", ");
 	let notes = [
-		"Weights: wowsims default EP (ui/<sim>/sim.ts epWeights), mapped to Polestar keys, zero weights dropped, scaled so the spec main stat (normalizedTo) is 1.".to_string(),
+		"Weights: wowsims default EP (ui/<sim>/sim.ts epWeights), mapped to Northstar keys, zero weights dropped, scaled so the spec main stat (normalizedTo) is 1.".to_string(),
 		"Hit/crit/dodge/parry/block weights are per 1% (Classic sims count these stats in percent); defense per point.".to_string(),
 		"season sod / origin sod-carryover: tuned with SoD runes and set bonuses. origin era: re-derived in the Era fork after 2024-11-21.".to_string(),
 		"Sets still holding the WotLK per-rating defaults are listed in rejected, not converted.".to_string(),
 		"sameAs: identical raw weights to an earlier band (not retuned for this level).".to_string(),
 		format!("Not read (SoD-only roles): {skipped}."),
-		"Gear sets: Classic Era level 60 raid-phase presets (phase 0 = pre-raid), item ids by Polestar slot; one-sim classes share sets across specs.".to_string(),
+		"Gear sets: Classic Era level 60 raid-phase presets (phase 0 = pre-raid), item ids by Northstar slot; one-sim classes share sets across specs.".to_string(),
 	];
 	meta.set("notes", V::Arr(Arr::from_vec(notes.iter().map(|n| V::str(n)).collect())));
 	Ok(Wowsims { meta, weights, rejected })

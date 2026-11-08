@@ -1,6 +1,6 @@
-//! Walking paths (addon/Polestar/Nav/Walk.lua): the arrow follows the walking router started from Shortest Path
-//! Forever's (addon/Polestar_Nav) instead of a straight line. A fake engine with deterministic callbacks stands
-//! in for Polestar_NavEngine: the arrow follows the path's points, straying asks again, a new target cancels
+//! Walking paths (addon/Northstar/Nav/Walk.lua): the arrow follows the walking router started from Shortest Path
+//! Forever's (addon/Northstar_Nav) instead of a straight line. A fake engine with deterministic callbacks stands
+//! in for Northstar_NavEngine: the arrow follows the path's points, straying asks again, a new target cancels
 //! the stale search, nothing is searched in combat, hand-made crossings and guide `goto`s win, and every
 //! failure (no engine, no data, unreachable, an error, the option off) is today's straight arrow. Runs the
 //! real Core/Init.lua + Nav/Nav.xml against tests/lua/stub_nav.lua.
@@ -9,7 +9,7 @@ use forge_addontest::run::addons_dir;
 use forge_addontest::{emitted, is_match, truthy, Addon, RunAddon};
 use serde_json::{json, Value};
 
-// The fake engine, installed before the addon loads (Polestar_Nav's API.lua sets the same global).
+// The fake engine, installed before the addon loads (Northstar_Nav's API.lua sets the same global).
 // The fifth argument is the waterWalking flag or opts { waterWalking, profile, style }
 // (Routing/Path.lua); a job keeps both. Answers carry job.yards (the drawn
 // line's length) and job.hubs (fake.hubs: the hostile towns it enters).
@@ -23,7 +23,7 @@ local function opts(job, o)
 		job.waterWalking = o
 	end
 end
-Polestar_NavEngine = {
+Northstar_NavEngine = {
 	Find = function(map, from, to, callback, o)
 		if fake.throw then error("boom") end
 		local job = { map = map, from = from, to = to, callback = callback }
@@ -87,7 +87,7 @@ end
 "#;
 
 const PRELUDE: &str = r#"
-local N = Polestar.Nav
+local N = Northstar.Nav
 local nav = stub.nav
 local floor = math.floor
 local function target(wx, wy, label)
@@ -109,7 +109,7 @@ local function calls() return #fake.calls end
 // and the yards along that walk (job.yards[i]; the cost when fn gives none,
 // as on a format 1 map).
 const MANY: &str = r#"
-Polestar_NavEngine.FindMany = function(map, from, targets, callback, o, reverse)
+Northstar_NavEngine.FindMany = function(map, from, targets, callback, o, reverse)
 	local job = { many = true, map = map, from = from, targets = targets, callback = callback, reverse = reverse }
 	fake.opts(job, o)
 	fake.calls[#fake.calls + 1] = job
@@ -141,7 +141,7 @@ fn run_with(script: &str, engine: bool, many: bool) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
 		before,
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])],
 		login: true,
 		script: format!("{PRELUDE}\n{script}"),
 		..Default::default()
@@ -438,7 +438,7 @@ fn on_a_walk_of_more_than_2000_yards_a_stray_asks_again_at_most_every_10_seconds
 	let out = run(r#"
 		local r = {}
 		-- The arrow's own searches only (the planner, whose later walks are searched too, is off).
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		nav.place(0, 0)
 		target(0, -3000)
 		N.Sample()
@@ -533,7 +533,7 @@ fn hand_made_crossings_win_the_engine_walks_to_the_gate_the_crossing_itself_is_t
 		r.crossingAfter = aim()
 		local legs = N.GetRouteGeometry().legs
 		r.drawn = #legs[1].pts
-		local leg = Polestar.Nav.travel.CurrentLeg()
+		local leg = Northstar.Nav.travel.CurrentLeg()
 		r.handmade = leg.handmade == true
 		emit(r)"#);
 	assert_eq!(out["toGate"], json!([1, 600, 20]), "searched only up to the gate");
@@ -560,8 +560,8 @@ fn a_guide_goal_after_a_reached_guide_goto_keeps_the_straight_arrow_from_the_mou
 			{ goals = { { t = "talk", map = m, x = ox, y = oy }, { t = "kill", map = m, x = ix, y = iy } } },
 		} }
 		local reached = false
-		Polestar.Engine.GetGuide = function() return guide end
-		Polestar.Engine.GoalDone = function(s, g) return reached and s == 1 and g == 1 end
+		Northstar.Engine.GetGuide = function() return guide end
+		Northstar.Engine.GoalDone = function(s, g) return reached and s == 1 and g == 1 end
 		nav.place(0, 0)
 		nav.setWaypoint({ map = m, x = mx, y = my, label = "Mouth", stepIndex = 1, goalIndex = 1, kind = "goto", r = 5 })
 		aim()
@@ -591,7 +591,7 @@ fn fallbacks_no_engine_no_data_for_the_continent_unreachable_an_error_the_straig
 		r#"
 		nav.place(0, 0)
 		target(0, -600)
-		emit({ aim(), Polestar.Nav.Path == nil })"#,
+		emit({ aim(), Northstar.Nav.Path == nil })"#,
 		false,
 		false,
 	);
@@ -630,12 +630,12 @@ fn fallbacks_no_engine_no_data_for_the_continent_unreachable_an_error_the_straig
 fn nav_navrouting_off_the_straight_arrow_the_search_in_flight_cancelled() {
 	let out = run(r#"
 		local r = {}
-		r.default = Polestar.Get("nav.navRouting")
+		r.default = Northstar.Get("nav.navRouting")
 		nav.place(0, 0)
 		target(0, -600)
 		N.Sample()
 		local job = fake.last()
-		Polestar.Set("nav.navRouting", false)
+		Northstar.Set("nav.navRouting", false)
 		r.aim = aim()
 		r.cancelled = job.cancelled == true
 		target(0, -500)
@@ -663,7 +663,7 @@ fn a_ghost_s_walk_is_searched_with_water_walking() {
 fn route_geometry_the_walk_carries_the_engine_s_path_once_in_the_straight_line_before_changes_are_announced() {
 	let out = run(r#"
 		local r, fired = {}, 0
-		Polestar.On("NAV_ROUTE_GEOMETRY", function() fired = fired + 1 end)
+		Northstar.On("NAV_ROUTE_GEOMETRY", function() fired = fired + 1 end)
 		r.none = N.GetRouteGeometry() == nil
 		nav.place(0, 0)
 		target(0, -600)
@@ -693,7 +693,7 @@ fn route_geometry_the_walk_carries_the_engine_s_path_once_in_the_straight_line_b
 // a nameless cave mouth, a lift (bottom then top landing) along it, and
 // chokepoints the split must leave out.
 const CHOKES: &str = r#"
-PolestarNavChokepoints = { [0] = {
+NorthstarNavChokepoints = { [0] = {
 	{ wx = 8, wy = -150, r = 10, kind = "bridge", name = "Bridge Hollow", zone = "Testshire",
 		sides = { { wx = 0, wy = -100, area = "Westbrook" }, { wx = 0, wy = -200, area = "Lakeshire" } } },
 	{ wx = 0, wy = -400, r = 10, kind = "cave", name = "", zone = "Testshire" },
@@ -747,7 +747,7 @@ fn k1_k5_a_walk_is_split_at_the_chokepoints_on_its_path_each_step_named_snapped_
 fn a_chokepoint_more_than_30_yd_above_or_below_the_path_is_no_stop_one_on_the_paths_floor_is() {
 	let out = run(r#"
 		nav.useTravelWorld()
-		PolestarNavChokepoints = { [0] = {
+		NorthstarNavChokepoints = { [0] = {
 			{ wx = 0, wy = -200, z = -52, r = 10, kind = "cave", name = "Canal Below", zone = "Testshire" },
 			{ wx = 0, wy = -400, z = 58, r = 10, kind = "cave", name = "Ruins Door", zone = "Testshire" },
 		} }
@@ -770,8 +770,8 @@ fn a_chokepoint_more_than_30_yd_above_or_below_the_path_is_no_stop_one_on_the_pa
 fn a_building_mouth_beside_an_inn_s_innkeeper_is_the_inn_s_entrance() {
 	let out = run(r#"
 		nav.useTravelWorld()
-		Polestar.Nav.RegisterTravelData({ inns = { { names = { "Gallows' End Tavern", "Testshire" }, npc = 901, c = 0, wx = 20, wy = -310, map = 9000, x = 50, y = 50, f = "e" } } })
-		PolestarNavChokepoints = { [0] = {
+		Northstar.Nav.RegisterTravelData({ inns = { { names = { "Gallows' End Tavern", "Testshire" }, npc = 901, c = 0, wx = 20, wy = -310, map = 9000, x = 50, y = 50, f = "e" } } })
+		NorthstarNavChokepoints = { [0] = {
 			{ wx = 0, wy = -300, r = 10, kind = "building", name = "Testshire", zone = "Testshire" },
 			{ wx = 0, wy = -450, r = 10, kind = "building", name = "Westbrook Keep", zone = "Testshire" },
 		} }
@@ -807,7 +807,7 @@ fn k2_the_steps_stay_the_same_over_10_position_updates_along_a_leg_and_advance_a
 		end
 		nav.place(0, -148)
 		N.Sample()
-		emit({ same = same, calls = calls(), next = Polestar.Nav.travel.CurrentLabel() })"#
+		emit({ same = same, calls = calls(), next = Northstar.Nav.travel.CurrentLabel() })"#
 	));
 	assert_eq!(out["same"], true);
 	assert_eq!(out["calls"], 1, "no new search on the way");
@@ -821,7 +821,7 @@ fn k3_k6_walk_steps_carry_no_wait_and_their_times_sum_exactly_to_the_walk_a_lift
 		CHOKES,
 		r#"
 		local asked
-		Polestar.Transit = {
+		Northstar.Transit = {
 			Now = function() return 100 end,
 			LiftNear = function() return 7, "The Great Lift" end,
 			NextDeparture = function(kind, id, now, side) asked = { kind, id, side } return 40, 20 end,
@@ -842,7 +842,7 @@ fn k3_k6_walk_steps_carry_no_wait_and_their_times_sum_exactly_to_the_walk_a_lift
 			N.Sample()
 		end
 		emit({ walkSecs = walkSecs, walkYards = walkYards, lift = { lift.seconds, lift.lift }, asked = asked,
-			total = legs[1].seconds + legs[1].rest, caption = Polestar.Nav.travel.CurrentLabel() })"#,
+			total = legs[1].seconds + legs[1].rest, caption = Northstar.Nav.travel.CurrentLabel() })"#,
 	]
 	.concat());
 	assert_eq!(out["walkSecs"], round(600.0 / 7.0), "the pieces add up to the path at run speed");
@@ -878,7 +878,7 @@ fn a_lift_ride_says_which_way_up_from_the_bottom_down_from_the_top_within_30_yd_
 		"\n\t\tnav.useTravelWorld()\n\t\t",
 		CHOKES,
 		r#"
-		local T = Polestar.Nav.travel
+		local T = Northstar.Nav.travel
 		local function ride()
 			for _, l in ipairs(N.GetRoute()) do if l.kind == "lift" then return l.label end end
 		end
@@ -921,7 +921,7 @@ fn k7_legs_under_a_few_yards_are_dropped_and_every_eta_stays_finite() {
 		"{}{}",
 		split(),
 		r#"
-		local T = Polestar.Nav.travel
+		local T = Northstar.Nav.travel
 		local finite = true
 		local legs = N.GetRoute()
 		for i = 1, #legs do
@@ -942,14 +942,14 @@ fn k7_legs_under_a_few_yards_are_dropped_and_every_eta_stays_finite() {
 fn second_review_a_walk_leg_takes_the_engine_path_s_length_once_it_arrives() {
 	let out = run(r#"
 		nav.useTravelWorld()
-		local T = Polestar.Nav.travel
+		local T = Northstar.Nav.travel
 		local function walk()
 			local legs, ci = N.GetRoute()
 			local l = legs[ci]
 			return { l.kind, l.yards, l.seconds, l.seconds + l.rest, #legs }
 		end
 		local r, changes = {}, 0
-		Polestar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
+		Northstar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
 		nav.place(0, 0)
 		target(0, -600)
 		N.Sample()
@@ -973,7 +973,7 @@ fn second_review_a_walk_leg_takes_the_engine_path_s_length_once_it_arrives() {
 		N.Sample()
 		fake.resolve(0, -40, 300, -300, 0, -650)
 		r.again = walk()
-		Polestar.Set("nav.navRouting", false)
+		Northstar.Set("nav.navRouting", false)
 		r.cleared = walk()
 		emit(r)"#);
 	assert_eq!(out["straight"], json!(["walk", 750, 107, 107, 1]), "straight x1.25 at 7 yd/s before the path");
@@ -991,7 +991,7 @@ fn second_review_a_walk_leg_takes_the_engine_path_s_length_once_it_arrives() {
 fn k8_a_hand_made_crossing_chain_node_or_guide_goto_at_the_same_spot_keeps_its_own_caption() {
 	let out = run(r#"
 		nav.useTravelWorld()
-		PolestarNavChokepoints = { [0] = {
+		NorthstarNavChokepoints = { [0] = {
 			{ wx = 0, wy = -575, r = 10, kind = "cave", name = "Goto Cave", zone = "Testshire" },
 			{ wx = 0, wy = -300, r = 10, kind = "gate", name = "Chain Gate", zone = "Testshire" },
 			{ wx = 0, wy = -150, r = 10, kind = "bridge", name = "Kept Bridge", zone = "Testshire" },
@@ -1014,7 +1014,7 @@ fn k8_a_hand_made_crossing_chain_node_or_guide_goto_at_the_same_spot_keeps_its_o
 fn k4_a_packed_lift_s_landings_a_few_yards_apart_the_side_boarded_comes_from_the_path_s_height_the_ride_goes_to_the_other_landing() {
 	let out = run(r#"
 		nav.useTravelWorld()
-		PolestarNavChokepoints = { [0] = {
+		NorthstarNavChokepoints = { [0] = {
 			{ wx = 0, wy = -300, z = 0, r = 6, kind = "lift", name = "Ruins", zone = "Testshire", lift = "Undervator", liftEnd = "bottom", pair = 2 },
 			{ wx = 0, wy = -308, z = 90, r = 6, kind = "lift", name = "Ruins", zone = "Testshire", lift = "Undervator", liftEnd = "top", pair = 1 },
 		} }
@@ -1179,7 +1179,7 @@ N.RegisterTravelData({ build = "test",
 	},
 	flights = { 1, 2, 1700, 2, 1, 1700, 1, 3, 1700, 3, 1, 1700 },
 }, true)
-Polestar.CharState().flags.taxi = { [1] = true, [2] = true, [3] = true }
+Northstar.CharState().flags.taxi = { [1] = true, [2] = true, [3] = true }
 local function at(x, y, ax, ay) return math.abs(x - ax) < 0.01 and math.abs(y - ay) < 0.01 end
 -- The engine's walks into (0, 0): the ridge from Ridge Roost.
 local function terrain(x, y)
@@ -1199,7 +1199,7 @@ local function route()
 	return { lands = fly and fly.to.name, yards = walk and walk.yards, seconds = walk and walk.seconds, engine = walk and walk.engine or false }
 end
 local changes = 0
-Polestar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
+Northstar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
 "#;
 
 #[test]
@@ -1422,7 +1422,7 @@ N.RegisterCrossings({ complete = true,
 	},
 	crossings = { { id = "gate", a = { map = 9002, c = 0, wx = 600, wy = 20, r = 15 }, b = { map = 9003, c = 0, wx = 600, wy = -20, r = 15 },
 		ab = "Through the gate to East Vale" } } })
-Polestar.CharState().flags.taxi = { [1] = true, [2] = true }
+Northstar.CharState().flags.taxi = { [1] = true, [2] = true }
 local function legsNow()
 	local legs, ci = N.GetRoute()
 	local out = {}
@@ -1679,8 +1679,8 @@ fn review_3_the_last_walk_to_a_target_after_a_guide_goto_is_never_searched_drawn
 			{ goals = { { t = "goto", map = m, x = mx, y = my } } },
 			{ goals = { { t = "collect", map = m, x = ix, y = iy } } },
 		} }
-		Polestar.Engine.GetGuide = function() return guide end
-		Polestar.Engine.GoalDone = function(s, g) return s == 1 and g == 1 end -- the mouth reached (checked off)
+		Northstar.Engine.GetGuide = function() return guide end
+		Northstar.Engine.GoalDone = function(s, g) return s == 1 and g == 1 end -- the mouth reached (checked off)
 		nav.place(900, 800)
 		nav.setWaypoint({ map = m, x = ix, y = iy, label = "Inside", stepIndex = 2, goalIndex = 1, kind = "collect", r = 5 })
 		N.Sample()
@@ -1711,8 +1711,8 @@ fn a_reached_goto_is_a_way_in_only_on_the_target_s_continent_and_near_it_1128_th
 				{ goals = { goto } },
 				{ goals = { { t = "goto", map = m, x = tx, y = ty } } },
 			} }
-			Polestar.Engine.GetGuide = function() return guide end
-			Polestar.Engine.GoalDone = function(s, g) return s == 1 and g == 1 end -- the earlier goto reached
+			Northstar.Engine.GetGuide = function() return guide end
+			Northstar.Engine.GoalDone = function(s, g) return s == 1 and g == 1 end -- the earlier goto reached
 			return N.walk.FollowsGoto({ map = m, x = tx, y = ty, stepIndex = 2, goalIndex = 1, kind = "goto" })
 		end
 		local _, nx, ny = nav.mapPoint(0, 280)         -- a cave's mouth, 280 yd off
@@ -1741,7 +1741,7 @@ N.RegisterTravelData({ build = "test",
 			a = { "Testshire Docks", 0, -900, 0, 9000, 50, 95 }, b = { "Farland Pier", 1, 400, 0, 9001, 50, 10 } },
 	},
 }, true)
-Polestar.CharState().flags.taxi = { [1] = true, [2] = true }
+Northstar.CharState().flags.taxi = { [1] = true, [2] = true }
 local function kinds()
 	local legs, ci = N.GetRoute()
 	local out = {}
@@ -1797,7 +1797,7 @@ fn a_walk_to_a_boat_whose_end_has_a_board_point_is_searched_to_the_deck_with_the
 					b = { "Farland Pier", 1, 400, 0, 9001, 50, 10, "e", nil, { wx = 410, wy = 5, z = 4.5 } } },
 			},
 		}, true)
-		Polestar.CharState().flags.taxi = { [1] = true, [2] = true }
+		Northstar.CharState().flags.taxi = { [1] = true, [2] = true }
 		local r = {}
 		nav.place(-600, 0)
 		N.SetTarget(9001, 80, 90, "Target")
@@ -1840,7 +1840,7 @@ fn the_walk_off_a_boat_whose_end_has_a_board_point_is_searched_and_measured_from
 					b = { "Farland Pier", 1, 400, 0, 9001, 50, 10, "e", nil, { wx = 410, wy = 5, z = 4.5 } } },
 			},
 		}, true)
-		Polestar.CharState().flags.taxi = { [1] = true, [2] = true }
+		Northstar.CharState().flags.taxi = { [1] = true, [2] = true }
 		local r = {}
 		nav.place(-600, 0)
 		N.SetTarget(9001, 80, 90, "Target")
@@ -1957,10 +1957,10 @@ fn review_10_a_later_walk_priced_by_its_path_times_the_boat_after_it_again_by_th
 					a = { "Testshire Docks", 0, -900, 0, 9000, 50, 95 }, b = { "Farland Pier", 1, 400, 0, 9001, 50, 10 } },
 			},
 		}, true)
-		Polestar.CharState().flags.taxi = { [1] = true, [2] = true }
+		Northstar.CharState().flags.taxi = { [1] = true, [2] = true }
 		-- The boat leaves at 1000 s and sails 60 s.
-		Polestar.Transit.Now = function() return 0 end
-		Polestar.Transit.NextDeparture = function(kind, id, at) if kind == "boat" then return 1000 - at, 60 end end
+		Northstar.Transit.Now = function() return 0 end
+		Northstar.Transit.NextDeparture = function(kind, id, at) if kind == "boat" then return 1000 - at, 60 end end
 		local function legsNow()
 			local legs, ci = N.GetRoute()
 			local out = {}
@@ -2277,7 +2277,7 @@ fn hostile_towns_a_fresh_search_of_the_same_walk_with_the_same_towns_changes_not
 		fake.hubs = { { id = 12, name = "Southshore" } }
 		fake.answer(fake.of(false)[1], 900, 800, 900, 900)
 		local changes = 0
-		Polestar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
+		Northstar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
 		-- Stray, so the arrow searches again; back on the spot when the answer comes.
 		nav.place(950, 850)
 		N.Sample()
@@ -2365,7 +2365,7 @@ fn hostile_towns_two_towns_of_the_same_name_are_named_once() {
 fn hostile_towns_each_is_named_in_the_client_s_language_by_its_area_compat_getareaname_else_by_the_packed_name_a_shown_name_once() {
 	let out = run(r#"
 		local de = { [271] = "S\195\188derstade", [272] = "Tarrens M\195\188hle" }
-		Polestar.Compat.GetAreaName = function(id) return de[id] end
+		Northstar.Compat.GetAreaName = function(id) return de[id] end
 		local hubs = {
 			{ id = "a", name = "Southshore", areaId = 271 },
 			{ id = "b", name = "Hammerfall", areaId = 999 },
@@ -2378,11 +2378,11 @@ fn hostile_towns_each_is_named_in_the_client_s_language_by_its_area_compat_getar
 }
 
 // Route styles (nav.routeStyle): the saved style goes to every search as
-// opts.style; Routing/Costs.lua (Polestar_Nav, loaded here beside the fake
+// opts.style; Routing/Costs.lua (Northstar_Nav, loaded here beside the fake
 // engine) reads anything but the three as Balanced.
 const COSTS_TAIL: &str = r#"
-chunk("Polestar_Nav", {})
-local Costs = Polestar_NavCosts
+chunk("Northstar_Nav", {})
+local Costs = Northstar_NavCosts
 local function styles(jobs)
 	local out = {}
 	for i, job in ipairs(jobs) do out[i] = { job.opts.style or false, Costs.Style(job.opts.style) } end
@@ -2391,7 +2391,7 @@ end
 "#;
 
 fn costs() -> String {
-	let file = serde_json::to_string(&addons_dir().join("Polestar_Nav").join("Routing").join("Costs.lua")).unwrap();
+	let file = serde_json::to_string(&addons_dir().join("Northstar_Nav").join("Routing").join("Costs.lua")).unwrap();
 	format!("\nlocal chunk = assert(loadfile({file})){COSTS_TAIL}")
 }
 
@@ -2402,7 +2402,7 @@ fn a_saved_route_style_that_is_none_of_the_three_walks_as_balanced_without_an_er
 		costs(),
 		r#"
 		local r = {}
-		Polestar.Set("nav.routeStyle", "Sideways")
+		Northstar.Set("nav.routeStyle", "Sideways")
 		nav.place(900, 800)
 		target(600, -300)
 		N.Sample()
@@ -2431,7 +2431,7 @@ fn changing_the_route_style_mid_walk_drops_the_old_lines_re_plans_at_once_and_me
 		r#"
 		local r = {}
 		local changes = 0
-		Polestar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
+		Northstar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
 		nav.place(900, 800)
 		target(600, -300)
 		N.Sample()
@@ -2442,7 +2442,7 @@ fn changing_the_route_style_mid_walk_drops_the_old_lines_re_plans_at_once_and_me
 		r.before = { lines = lines(), calls = #fake.calls }
 		local seen, version = changes, T.version
 		local calls = #fake.calls
-		Polestar.Set("nav.routeStyle", "roads")
+		Northstar.Set("nav.routeStyle", "roads")
 		r.replanned = { changed = changes > seen, version = T.version > version }
 		r.lines = lines()
 		N.Sample()
@@ -2457,7 +2457,7 @@ fn changing_the_route_style_mid_walk_drops_the_old_lines_re_plans_at_once_and_me
 		if leg then fake.answer(leg, 400, 300, 450, 250, 600, 20) end
 		r.after = lines()
 		local before = #fake.calls
-		Polestar.Set("nav.routeStyle", "roads")
+		Northstar.Set("nav.routeStyle", "roads")
 		r.same = #fake.calls - before
 		emit(r)"#
 	));
@@ -2481,11 +2481,11 @@ fn changing_the_route_style_mid_walk_drops_the_old_lines_re_plans_at_once_and_me
 const DANGER: &str = r#"
 local D = N.danger
 nav.level = 20
-Polestar.Compat.GetPlayerInfo = function() return { name = "Testchar", level = nav.level, faction = nav.faction } end
+Northstar.Compat.GetPlayerInfo = function() return { name = "Testchar", level = nav.level, faction = nav.faction } end
 local zoneLevels = { [1422] = { 51, 57 }, [1421] = { 10, 19 }, [1424] = { 20, 33 }, [1416] = { 30, 39 } }
-Polestar.Maps = Polestar.Maps or {}
-Polestar.Maps.GetZoneLevels = function(id) local v = id and zoneLevels[id] if v then return v[1], v[2] end end
-Polestar.Maps.EachZoneLevels = function()
+Northstar.Maps = Northstar.Maps or {}
+Northstar.Maps.GetZoneLevels = function(id) local v = id and zoneLevels[id] if v then return v[1], v[2] end end
+Northstar.Maps.EachZoneLevels = function()
 	local id
 	return function()
 		local v
@@ -2494,7 +2494,7 @@ Polestar.Maps.EachZoneLevels = function()
 	end
 end
 fake.zones = { home = 1421, target = 1424, between = 1497 }
-Polestar_NavEngine.ZoneAt = function(map, x, y)
+Northstar_NavEngine.ZoneAt = function(map, x, y)
 	if y >= 500 then return fake.zones.home elseif y < 0 then return fake.zones.target end
 	return fake.zones.between
 end
@@ -2588,7 +2588,7 @@ fn zone_danger_a_level_up_drops_the_walks_re_plans_at_once_and_measures_and_sear
 			r#"
 		local r = {}
 		local changes = 0
-		Polestar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
+		Northstar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
 		nav.place(900, 800)
 		target(600, -300)
 		N.Sample()
@@ -2643,7 +2643,7 @@ fn zone_danger_danger_along_samples_a_straight_line_every_100_yd_its_ends_zones_
 		-- for one Path.ZoneAt (the maps' zones never change).
 		local asked = 0
 		local function layout(zb)
-			Polestar_NavEngine.ZoneAt = function(map, x, y)
+			Northstar_NavEngine.ZoneAt = function(map, x, y)
 				asked = asked + 1
 				if x < 100 then return 1421 elseif x < 700 then return zb end
 				return 1424
@@ -2665,7 +2665,7 @@ fn zone_danger_danger_along_samples_a_straight_line_every_100_yd_its_ends_zones_
 		r.level = D.Level()
 		stub.fire("PLAYER_LEVEL_UP", 23)
 		r.levelUp = D.Level()
-		Polestar_NavEngine.ZoneAt = nil
+		Northstar_NavEngine.ZoneAt = nil
 		r.noZoneAt = D.Along(far, 0, 0, 0, 1200, 0)
 		emit(r)"#,
 		]
@@ -2691,12 +2691,12 @@ fn zone_danger_the_planner_s_straight_walk_1200_yd_through_a_zone_far_above_cost
 			DANGER,
 			r#"
 		local r = {}
-		Polestar.CharState().flags.taxi = {}
+		Northstar.CharState().flags.taxi = {}
 		-- Along the walk from (0, 1200) to (0, 0): the start's zone from y = 1100,
 		-- another to y = 500 (half the walk's 12 samples), the target's below.
 		-- A new Path.ZoneAt per layout (Danger keeps the zones per chunk for one).
 		local function layout(home, between, there)
-			Polestar_NavEngine.ZoneAt = function(map, x, y)
+			Northstar_NavEngine.ZoneAt = function(map, x, y)
 				if y >= 1100 then return home elseif y > 500 then return between end
 				return there
 			end
@@ -2725,11 +2725,11 @@ fn zone_danger_the_planner_s_straight_walk_1200_yd_through_a_zone_far_above_cost
 		r.ends = ratio()
 		-- Routing turned off after the engine loaded (Nav.Path stays): today's estimate at once.
 		layout(1421, 1422, 1424)
-		Polestar.Set("nav.navRouting", false)
+		Northstar.Set("nav.navRouting", false)
 		r.routingOff = ratio()
-		Polestar.Set("nav.navRouting", true)
+		Northstar.Set("nav.navRouting", true)
 		r.routingOn = ratio()
-		Polestar_NavEngine.ZoneAt = nil
+		Northstar_NavEngine.ZoneAt = nil
 		r.noZoneAt = ratio()
 		emit(r)"#,
 		]
@@ -2755,7 +2755,7 @@ fn zone_danger_on_a_continent_with_crossing_data_the_straight_walk_from_a_flight
 		local at = function(x, y, ax, ay) return math.abs(x - ax) < 0.01 and math.abs(y - ay) < 0.01 end
 		-- A far-above band 450 < x < 550 north of y = 0: Gate Roost (400, 300) to
 		-- the gate (600, 20) is 344 yd, its 4 samples at x 425, 475, 525, 575.
-		Polestar_NavEngine.ZoneAt = function(map, x, y)
+		Northstar_NavEngine.ZoneAt = function(map, x, y)
 			if x > 450 and x < 550 and y > 0 then return 1422 end
 			return 1497
 		end
@@ -2784,7 +2784,7 @@ fn zone_danger_on_a_continent_with_crossing_data_the_straight_walk_from_a_flight
 // lay a rock top at 72 over x -10..10, y -40..-15.
 const FLOORS: &str = r#"
 -- The arrow searches player to target (the planner, which re-plans on its own time, is off).
-if not KEEP_PLAN then Polestar.Set("nav.travel", false) end
+if not KEEP_PLAN then Northstar.Set("nav.travel", false) end
 -- Walk from the player's spot to (x1, y1) in 2 yd steps 0.3 s apart, the arrow sampling each.
 local function walk(x1, y1)
 	local p = nav.player
@@ -2975,8 +2975,8 @@ fn t_234_floor_a_lift_resets_it_off_the_lift_indoors_it_seeds_on_the_one_indoor_
 		-- A lift at (0, 0): the shaft holds the top (62, indoor) and the bottom (-41, indoor); the city
 		-- (-62, indoor) runs under Tirisfal's outdoor ground (64) for y < -20, and the city past y -40
 		-- under a second indoor level (6) as well.
-		local lift = Polestar.Transit.LiftNear
-		Polestar.Transit.LiftNear = function(c, x, y, yards)
+		local lift = Northstar.Transit.LiftNear
+		Northstar.Transit.LiftNear = function(c, x, y, yards)
 			if x * x + y * y <= (yards or 8) ^ 2 then return "lift-test", "Test lift" end
 		end
 		fake.surfaces = function(map, x, y)
@@ -3007,7 +3007,7 @@ fn t_234_floor_a_lift_resets_it_off_the_lift_indoors_it_seeds_on_the_one_indoor_
 		nav.place(0, -60)
 		stub.advance(3)
 		r.two = startZ()
-		Polestar.Transit.LiftNear = lift
+		Northstar.Transit.LiftNear = lift
 		emit(r)"#,
 	]
 	.concat());
@@ -3105,7 +3105,7 @@ fn t_234_floor_on_a_map_with_areas_the_floor_is_the_surface_the_client_s_subzone
 		r#"
 		nav.indoors = true
 		SUB = ""
-		Polestar.Compat.GetZoneText = function() return "Undercity", SUB ~= "" and SUB or nil end -- the names come from the pack (Path.AreaName)
+		Northstar.Compat.GetZoneText = function() return "Undercity", SUB ~= "" and SUB or nil end -- the names come from the pack (Path.AreaName)
 		local stack = function() return { 62, -45, -62, [-1] = 2, [-2] = 2, [-3] = 2, area = { 153, 1600, 1601 } } end -- WMOAreaTable rows
 		fake.surfaces = stack
 		local r = {}
@@ -3120,7 +3120,7 @@ fn t_234_floor_on_a_map_with_areas_the_floor_is_the_surface_the_client_s_subzone
 			return startZ()
 		end
 		r.noAreas = fresh("Ruins of Lordaeron")
-		Polestar.Compat.GetAreaName = function() return "An AreaTable name" end -- never asked: the ids are WMOAreaTable rows
+		Northstar.Compat.GetAreaName = function() return "An AreaTable name" end -- never asked: the ids are WMOAreaTable rows
 		fake.areaNames = { [153] = "Ruins of Lordaeron", [1600] = "The Trade Quarter", [1601] = "Canals" }
 		r.hall = fresh("Ruins of Lordaeron")
 		r.ring = fresh("The Trade Quarter")
@@ -3165,10 +3165,10 @@ fn t_234_floor_the_router_may_drop_the_floor_s_cluster_when_the_target_is_cleare
 		-- In an instance the arrow samples nothing (no Walk.Aim); the 1 s ticker refreshes.
 		nav.instance = true
 		stub.advance(1.5)
-		Polestar.Nav.Refresh()
+		Northstar.Nav.Refresh()
 		r.fresh = fake.releases
 		stub.advance(1.6)
-		Polestar.Nav.Refresh()
+		Northstar.Nav.Refresh()
 		r.stale = fake.releases
 		nav.instance = false
 		N.Sample()
@@ -3191,7 +3191,7 @@ fn t_234_floor_a_style_change_or_a_level_up_clears_the_walk_but_keeps_the_floor_
 		nav.place(0, 50)
 		startZ()
 		fake.releases = 0
-		Polestar.Set("nav.routeStyle", "roads")
+		Northstar.Set("nav.routeStyle", "roads")
 		N.Sample()
 		stub.fire("PLAYER_LEVEL_UP", 11)
 		N.Sample()

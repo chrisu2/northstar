@@ -1,4 +1,4 @@
-//! Polestar's addons: what GitHub releases of fitzforge/polestar offer, what
+//! Northstar's addons: what GitHub releases of fitzforge/polestar offer, what
 //! is installed in the game's `Interface/AddOns`, and installing, repairing
 //! and removing them safely.
 //!
@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 pub const REPO: &str = "fitzforge/polestar";
-/// The largest zip this client will take (Polestar with its walking maps is tens of MB).
+/// The largest zip this client will take (Northstar with its walking maps is tens of MB).
 const MAX_ZIP: u64 = 512 * 1024 * 1024;
 pub(crate) const STAGING: &str = ".polestar-client-staging";
 pub(crate) const BACKUP: &str = ".polestar-client-backup";
@@ -55,9 +55,9 @@ pub(crate) fn safe_component(name: &str) -> bool {
 pub enum Folders {
 	/// One folder of this name.
 	One(&'static str),
-	/// `Polestar` and the `Polestar_*` folders whose .toc says `## Author: Polestar`,
+	/// `Northstar` and the `Northstar_*` folders whose .toc says `## Author: Northstar`,
 	/// except the Recorder (its own product): the main addon, guides, maps and languages.
-	Polestar,
+	Northstar,
 }
 
 pub struct Product {
@@ -82,20 +82,20 @@ fn lib_tag(tag: &str) -> bool {
 pub const PRODUCTS: [Product; 3] = [
 	Product {
 		id: "polestar",
-		name: "Polestar",
+		name: "Northstar",
 		blurb: "Leveling guides, the arrow, Lookup, Dungeons and Rares",
-		main: "Polestar",
-		folders: Folders::Polestar,
-		asset_prefix: "Polestar-",
+		main: "Northstar",
+		folders: Folders::Northstar,
+		asset_prefix: "Northstar-",
 		tag: polestar_tag,
 	},
 	Product {
 		id: "recorder",
-		name: "Polestar Recorder",
+		name: "Northstar Recorder",
 		blurb: "Records your play for the recording program (off until you turn it on)",
-		main: "Polestar_Recorder",
-		folders: Folders::One("Polestar_Recorder"),
-		asset_prefix: "Polestar_Recorder-",
+		main: "Northstar_Recorder",
+		folders: Folders::One("Northstar_Recorder"),
+		asset_prefix: "Northstar_Recorder-",
 		tag: polestar_tag,
 	},
 	Product {
@@ -236,10 +236,10 @@ pub(crate) fn toc_file(folder: &Path) -> Option<PathBuf> {
 	tocs.into_iter().next()
 }
 
-/// Is `name` one of Polestar's own addon folders (by name and its .toc's author)?
+/// Is `name` one of Northstar's own addon folders (by name and its .toc's author)?
 fn polestar_folder(addons: &Path, name: &str) -> bool {
-	(name == "Polestar" || (name.starts_with("Polestar_") && name != "Polestar_Recorder"))
-		&& toc_field(&addons.join(name), "Author").is_some_and(|a| a == "Polestar" || a.starts_with("Polestar;"))
+	(name == "Northstar" || (name.starts_with("Northstar_") && name != "Northstar_Recorder"))
+		&& toc_field(&addons.join(name), "Author").is_some_and(|a| a == "Northstar" || a.starts_with("Northstar;"))
 }
 
 /// The product's folders now in `addons`.
@@ -252,7 +252,7 @@ pub fn installed_folders(addons: &Path, product: &Product) -> Vec<String> {
 				Vec::new()
 			}
 		}
-		Folders::Polestar => {
+		Folders::Northstar => {
 			let Ok(entries) = fs::read_dir(addons) else { return Vec::new() };
 			let mut names: Vec<String> = entries.filter_map(|e| e.ok()).filter(|e| e.path().is_dir()).filter_map(|e| e.file_name().into_string().ok()).filter(|n| polestar_folder(addons, n)).collect();
 			names.sort();
@@ -288,7 +288,7 @@ impl Progress {
 /// Downloads an asset, telling `progress` the bytes so far and the total when known.
 async fn download(http: &reqwest::Client, asset: &Asset, progress: &(dyn Fn(u64, Option<u64>) + Sync)) -> Result<Vec<u8>, String> {
 	if asset.size > MAX_ZIP {
-		return Err(format!("{} is {} MB, far bigger than any Polestar addon; not installing it.", asset.name, asset.size / 1_000_000));
+		return Err(format!("{} is {} MB, far bigger than any Northstar addon; not installing it.", asset.name, asset.size / 1_000_000));
 	}
 	let failed = |e: reqwest::Error| format!("Downloading {} failed: {e}", asset.name);
 	let mut response = http.get(&asset.url).send().await.map_err(failed)?;
@@ -300,7 +300,7 @@ async fn download(http: &reqwest::Client, asset: &Asset, progress: &(dyn Fn(u64,
 	while let Some(chunk) = response.chunk().await.map_err(failed)? {
 		bytes.extend_from_slice(&chunk);
 		if bytes.len() as u64 > MAX_ZIP {
-			return Err(format!("{} is far bigger than any Polestar addon; not installing it.", asset.name));
+			return Err(format!("{} is far bigger than any Northstar addon; not installing it.", asset.name));
 		}
 		progress(bytes.len() as u64, total);
 	}
@@ -352,7 +352,7 @@ pub async fn install(http: &reqwest::Client, product: &'static Product, release:
 		let staging = fresh_dir(&addons, STAGING).map_err(|e| format!("Could not prepare the install: {e}"))?;
 		let result = unpack(&bytes, &staging).and_then(|folders| {
 			check(&staging, product, &folders)?;
-			// Polestar's update also clears its folders the new release no longer has.
+			// Northstar's update also clears its folders the new release no longer has.
 			let obsolete: Vec<String> = installed_folders(&addons, product).into_iter().filter(|f| !folders.contains(f)).collect();
 			swap(&addons, &staging, &folders, &obsolete)?;
 			Ok(folders)
@@ -453,7 +453,7 @@ fn check(staging: &Path, product: &Product, folders: &[String]) -> Result<(), St
 	for folder in folders {
 		let ours = match product.folders {
 			Folders::One(name) => folder == name,
-			Folders::Polestar => folder == "Polestar" || (folder.starts_with("Polestar_") && folder != "Polestar_Recorder"),
+			Folders::Northstar => folder == "Northstar" || (folder.starts_with("Northstar_") && folder != "Northstar_Recorder"),
 		};
 		if !ours {
 			return fail(format!("holds a folder that is not part of it ({folder})"));
@@ -586,36 +586,36 @@ mod tests {
 		let staging = temp("link");
 		let mut out = io::Cursor::new(Vec::new());
 		let mut w = zip::ZipWriter::new(&mut out);
-		w.start_file("Polestar/Polestar.toc", zip::write::SimpleFileOptions::default()).unwrap();
-		w.write_all(b"## Author: Polestar\n").unwrap();
-		w.add_symlink("Polestar/escape", "../../../../.bashrc", zip::write::SimpleFileOptions::default()).unwrap();
+		w.start_file("Northstar/Northstar.toc", zip::write::SimpleFileOptions::default()).unwrap();
+		w.write_all(b"## Author: Northstar\n").unwrap();
+		w.add_symlink("Northstar/escape", "../../../../.bashrc", zip::write::SimpleFileOptions::default()).unwrap();
 		w.finish().unwrap();
 		let err = unpack(&out.into_inner(), &staging).unwrap_err();
 		assert!(err.contains("link"), "{err}");
-		assert!(!staging.join("Polestar/escape").exists());
+		assert!(!staging.join("Northstar/escape").exists());
 		let _ = fs::remove_dir_all(&staging);
 	}
 
 	#[test]
 	fn polestar_update_replaces_its_folders_and_leaves_others() {
 		let addons = temp("swap");
-		for (dir, author) in [("Polestar", "Polestar"), ("Polestar_Guides_deDE", "Polestar"), ("Polestar_MyPack", "Someone"), ("Polestar_Recorder", "Polestar"), ("Questie", "Aero")] {
+		for (dir, author) in [("Northstar", "Northstar"), ("Northstar_Guides_deDE", "Northstar"), ("Northstar_MyPack", "Someone"), ("Northstar_Recorder", "Northstar"), ("Questie", "Aero")] {
 			fs::create_dir_all(addons.join(dir)).unwrap();
 			fs::write(addons.join(dir).join(format!("{dir}.toc")), format!("## Version: 0.1.0\n## Author: {author}\n")).unwrap();
 		}
 		let staging = fresh_dir(&addons, STAGING).unwrap();
-		let zip = zip_of(&[("Polestar/Polestar.toc", "## Version: 0.2.0\n## Author: Polestar\n"), ("Polestar_Nav/Polestar_Nav.toc", "## Author: Polestar\n"), ("README.txt", "hi")]);
+		let zip = zip_of(&[("Northstar/Northstar.toc", "## Version: 0.2.0\n## Author: Northstar\n"), ("Northstar_Nav/Northstar_Nav.toc", "## Author: Northstar\n"), ("README.txt", "hi")]);
 		let folders = unpack(&zip, &staging).unwrap();
-		assert_eq!(folders, ["Polestar", "Polestar_Nav"]);
+		assert_eq!(folders, ["Northstar", "Northstar_Nav"]);
 		let product = product("polestar").unwrap();
 		check(&staging, product, &folders).unwrap();
 		let obsolete: Vec<String> = installed_folders(&addons, product).into_iter().filter(|f| !folders.contains(f)).collect();
-		assert_eq!(obsolete, ["Polestar_Guides_deDE"]);
+		assert_eq!(obsolete, ["Northstar_Guides_deDE"]);
 		swap(&addons, &staging, &folders, &obsolete).unwrap();
 		assert_eq!(installed_version(&addons, product).as_deref(), Some("0.2.0"));
-		assert!(addons.join("Polestar_Nav").is_dir());
-		assert!(!addons.join("Polestar_Guides_deDE").exists());
-		for keep in ["Polestar_MyPack", "Polestar_Recorder", "Questie"] {
+		assert!(addons.join("Northstar_Nav").is_dir());
+		assert!(!addons.join("Northstar_Guides_deDE").exists());
+		for keep in ["Northstar_MyPack", "Northstar_Recorder", "Questie"] {
 			assert!(addons.join(keep).is_dir(), "{keep} must stay");
 		}
 		assert!(!addons.join(BACKUP).exists());
@@ -628,7 +628,7 @@ mod tests {
 		let staging = fresh_dir(&dir, STAGING).unwrap();
 		assert!(unpack(&zip_of(&[("../evil/x.lua", "x")]), &staging).is_err());
 		let staging = fresh_dir(&dir, STAGING).unwrap();
-		let folders = unpack(&zip_of(&[("Polestar_Recorder/Polestar_Recorder.toc", "x"), ("Questie/Questie.toc", "x")]), &staging).unwrap();
+		let folders = unpack(&zip_of(&[("Northstar_Recorder/Northstar_Recorder.toc", "x"), ("Questie/Questie.toc", "x")]), &staging).unwrap();
 		assert!(check(&staging, product("recorder").unwrap(), &folders).is_err());
 		let _ = fs::remove_dir_all(&dir);
 	}
@@ -638,25 +638,25 @@ mod tests {
 		for name in ["COM1.lua", "nul.lua", "Lpt¹.txt", "CON", "conin$.lua", "CONOUT$.x.y", "a.lua:hidden.lua", "x.lua.", "x.lua ", "a\nb.lua", "AUX.tar.gz", "com².lua", "lpt³"] {
 			assert!(!safe_component(name), "{name:?} must be refused");
 		}
-		for name in ["Polestar.lua", "COM10.lua", "CONSOLE.lua", "comet.lua", "LPT.lua", "Nullable.lua", "COM0.lua", "lpt0", "x.nul.lua"] {
+		for name in ["Northstar.lua", "COM10.lua", "CONSOLE.lua", "comet.lua", "LPT.lua", "Nullable.lua", "COM0.lua", "lpt0", "x.nul.lua"] {
 			assert!(safe_component(name), "{name:?} is fine");
 		}
 		let dir = temp("winnames");
 		let staging = fresh_dir(&dir, STAGING).unwrap();
-		assert!(unpack(&zip_of(&[("Polestar/Polestar.toc", "x"), ("Polestar/COM1.lua", "x")]), &staging).is_err());
+		assert!(unpack(&zip_of(&[("Northstar/Northstar.toc", "x"), ("Northstar/COM1.lua", "x")]), &staging).is_err());
 		let _ = fs::remove_dir_all(&dir);
 	}
 
 	#[test]
 	fn a_backup_left_by_a_failed_restore_is_kept() {
 		let addons = temp("keep");
-		fs::create_dir_all(addons.join(BACKUP).join("Polestar")).unwrap();
-		fs::write(addons.join(BACKUP).join("Polestar").join("Polestar.toc"), "x").unwrap();
+		fs::create_dir_all(addons.join(BACKUP).join("Northstar")).unwrap();
+		fs::write(addons.join(BACKUP).join("Northstar").join("Northstar.toc"), "x").unwrap();
 		let staging = fresh_dir(&addons, STAGING).unwrap();
 		swap(&addons, &staging, &[], &[]).unwrap();
 		let kept: Vec<_> = fs::read_dir(&addons).unwrap().filter_map(|e| e.ok()).map(|e| e.file_name().into_string().unwrap()).filter(|n| n.starts_with(&format!("{BACKUP}-"))).collect();
 		assert_eq!(kept.len(), 1, "the old backup moved aside: {kept:?}");
-		assert!(addons.join(&kept[0]).join("Polestar").join("Polestar.toc").is_file());
+		assert!(addons.join(&kept[0]).join("Northstar").join("Northstar.toc").is_file());
 		let _ = fs::remove_dir_all(&addons);
 	}
 
@@ -676,7 +676,7 @@ mod tests {
 	fn live_github_install_and_uninstall() {
 		let _ = rustls::crypto::ring::default_provider().install_default();
 		let addons = temp("live").join("AddOns");
-		let http = reqwest::Client::builder().user_agent("PolestarClient-test").build().unwrap();
+		let http = reqwest::Client::builder().user_agent("NorthstarClient-test").build().unwrap();
 		tauri::async_runtime::block_on(async {
 			let releases = releases(&http, false).await.unwrap();
 			for product in &PRODUCTS {

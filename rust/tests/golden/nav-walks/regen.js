@@ -8,7 +8,7 @@
 //   node regen.js <js root> <golden dir (rust/tests/golden)>
 //
 // <js root>: the scratch repository copy nav-grid/regen.js built its grid in (data/local/nav4, its
-// data/ and layers); this writes its addon/Polestar_Nav/PACK.json, data/sim and cas/ too.
+// data/ and layers); this writes its addon/Northstar_Nav/PACK.json, data/sim and cas/ too.
 const fs = require('node:fs');
 const path = require('node:path');
 const zlib = require('node:zlib');
@@ -17,8 +17,8 @@ const [jsRoot, goldenArg] = process.argv.slice(2);
 if (!jsRoot || !goldenArg) throw new Error('usage: node regen.js <js root> <golden dir>');
 const ROOT = path.resolve(jsRoot);
 const GOLDEN = path.resolve(goldenArg);
-process.env.POLESTAR_GRID = path.join(ROOT, 'data', 'local', 'nav4');
-process.env.POLESTAR_CAS = path.join(ROOT, 'cas');
+process.env.NORTHSTAR_GRID = path.join(ROOT, 'data', 'local', 'nav4');
+process.env.NORTHSTAR_CAS = path.join(ROOT, 'cas');
 const walks = require(path.join(ROOT, 'tools/lib/sim/walks'));
 const { routerWalks, bandKey } = require(path.join(ROOT, 'tools/lib/sim/walktables'));
 const router = require(path.join(ROOT, 'tools/lib/nav/router'));
@@ -280,11 +280,11 @@ function lookupSample(doc, n, seed0) {
 	return buf;
 }
 
-for (const d of [...Object.values(OUT), SIM, process.env.POLESTAR_CAS, path.join(ROOT, 'walks-out')]) {
+for (const d of [...Object.values(OUT), SIM, process.env.NORTHSTAR_CAS, path.join(ROOT, 'walks-out')]) {
 	if (d !== OUT.walks && d !== OUT.legs && d !== OUT.store) fs.rmSync(d, { recursive: true, force: true });
 	else for (const f of fs.existsSync(d) ? fs.readdirSync(d) : []) if (!['regen.js', 'README.md', '.gitattributes'].includes(f)) fs.rmSync(path.join(d, f), { recursive: true, force: true });
 }
-write(path.join(ROOT, 'addon', 'Polestar_Nav', 'PACK.json'), `${JSON.stringify({ synthetic: true, maps: { 0: {} } })}\n`);
+write(path.join(ROOT, 'addon', 'Northstar_Nav', 'PACK.json'), `${JSON.stringify({ synthetic: true, maps: { 0: {} } })}\n`);
 for (const faction of ['Horde', 'Alliance']) {
 	const lower = faction.toLowerCase();
 	const w = world(faction);
@@ -308,7 +308,7 @@ for (const faction of ['Horde', 'Alliance']) {
 		if (!t || t.key !== a.tkey) throw new Error(`band ${band}: asks key ${a.tkey}, routerWalks' table ${t && t.key}`);
 		write(path.join(OUT.walks, 'horde', `asks-${band}.bin`), a.bin);
 		write(path.join(OUT.walks, 'horde', `asks-${band}.json`), JSON.stringify({ band, n: a.n, key: a.tkey, dangers: a.dangers }));
-		write(path.join(OUT.walks, 'walktable', `${a.tkey}.bin`), fs.readFileSync(path.join(process.env.POLESTAR_CAS, 'walktable', `${a.tkey}.bin`)));
+		write(path.join(OUT.walks, 'walktable', `${a.tkey}.bin`), fs.readFileSync(path.join(process.env.NORTHSTAR_CAS, 'walktable', `${a.tkey}.bin`)));
 		ends = a.ends;
 		if (band === 10) band10 = a;
 	}

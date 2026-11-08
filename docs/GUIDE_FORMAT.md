@@ -1,9 +1,9 @@
-# Polestar guide format (v1)
+# Northstar guide format (v1)
 
 Every line of the format on one page, with an example each:
 [GUIDE_CHEATSHEET.md](GUIDE_CHEATSHEET.md). This page has the full rules.
 
-Guides are written as `.guide` text files in a pack (Polestar's own:
+Guides are written as `.guide` text files in a pack (Northstar's own:
 `guides/`; a community pack: any folder holding a `pack.json`, see
 [PACKS.md](PACKS.md)) and compiled to Lua by `forge guide compile`.
 The compiler fills in names, titles and coordinates from the reference data in
@@ -58,7 +58,7 @@ Every line before the first `step`.
 
 | Key | Required | Value |
 |---|---|---|
-| `guide` | yes, first line | id: `[a-z0-9_-]+` parts joined by single `/` (none leading or trailing), unique across all guides; it starts with the pack's id and `/` (`joe-routes/elwynn`; Polestar's own guides: `forever/`) |
+| `guide` | yes, first line | id: `[a-z0-9_-]+` parts joined by single `/` (none leading or trailing), unique across all guides; it starts with the pack's id and `/` (`joe-routes/elwynn`; Northstar's own guides: `forever/`) |
 | `title` | yes | rest of line |
 | `levels` | yes | `<min>-<max>` |
 | `zone` | yes | default zone: map name from `data/forever/zones.json`, or `map <uiMapID>` |
@@ -139,8 +139,8 @@ A step must contain at least one goal.
 | `interact` | `<objectId>` | Click a game object. |
 | `use` | `<itemId> ["Item name"]` | |
 | `destroy` | `<itemId> ["Item name"]` | Delete an item from the bags (a start-zone Hearthstone to free a slot, a quest item that is no use any more). Done once the bags hold none of it, and it stays done for the rest of its step; a character that never held it has it done at once. The guide window reads "Destroy Hearthstone". Pack format 5. |
-| `sethome` | `"Location"` or `nearest` | Inn location as the game names it (the bind location it reports), e.g. `"Goldshire"`. Without `npc` the compiler names the inn's innkeeper, so the arrow leads to them ("What the compiler fills in"); `npc <id>` picks one yourself. `sethome nearest` binds at the nearest own-faction inn when the step comes up. Lint warns about a location no inn has (`polestar find --kind inn`). Completes on every client language: binding at the inn's innkeeper, or a bind location the client names as the inn's area (see "Places by ID"). A player with "Set your home at the guide's inn" on (Quality of Life, Travel; off by default) has Polestar bind and confirm when they talk to that innkeeper (for `nearest`, any innkeeper the compiler listed for it), never at another inn. |
-| `hearth` | `"Location"` | Done when the zone or subzone where you land has that name: an inn's location or the zone it is in, in the client's language when the compiler finds its area ("Places by ID"). Lint warns about any other name. A step with nothing but `hearth` is not shown: hearthing is no step of its own, the guide moves on to the next step, and the arrow's route there takes the Hearthstone when it saves a long haul (the trip without it at least 3 minutes, at least 2 saved), wherever the Hearthstone is bound. Beside other goals, while the Hearthstone is on cooldown (or not in the bags), the goal says how long until it is ready and the arrow leads to that inn on foot, so a "Hearthstone on cooldown?" note is not needed. Where Polestar knows the trip there (walks, flights and boats as the arrow plans them), it says whether to set off now (the trip takes no longer than the wait) or wait for the Hearthstone, and with the Hearthstone ready but the trip under 8 minutes or saving under 5, it suggests travelling there and keeping the Hearthstone, the arrow leading the way. Bound at another inn (as `sethome` tells, from the inns Polestar knows), the goal says where it is bound first, and the arrow leads to the step's inn the same way. None of this holds the step: arriving checks the goal off either way. |
+| `sethome` | `"Location"` or `nearest` | Inn location as the game names it (the bind location it reports), e.g. `"Goldshire"`. Without `npc` the compiler names the inn's innkeeper, so the arrow leads to them ("What the compiler fills in"); `npc <id>` picks one yourself. `sethome nearest` binds at the nearest own-faction inn when the step comes up. Lint warns about a location no inn has (`polestar find --kind inn`). Completes on every client language: binding at the inn's innkeeper, or a bind location the client names as the inn's area (see "Places by ID"). A player with "Set your home at the guide's inn" on (Quality of Life, Travel; off by default) has Northstar bind and confirm when they talk to that innkeeper (for `nearest`, any innkeeper the compiler listed for it), never at another inn. |
+| `hearth` | `"Location"` | Done when the zone or subzone where you land has that name: an inn's location or the zone it is in, in the client's language when the compiler finds its area ("Places by ID"). Lint warns about any other name. A step with nothing but `hearth` is not shown: hearthing is no step of its own, the guide moves on to the next step, and the arrow's route there takes the Hearthstone when it saves a long haul (the trip without it at least 3 minutes, at least 2 saved), wherever the Hearthstone is bound. Beside other goals, while the Hearthstone is on cooldown (or not in the bags), the goal says how long until it is ready and the arrow leads to that inn on foot, so a "Hearthstone on cooldown?" note is not needed. Where Northstar knows the trip there (walks, flights and boats as the arrow plans them), it says whether to set off now (the trip takes no longer than the wait) or wait for the Hearthstone, and with the Hearthstone ready but the trip under 8 minutes or saving under 5, it suggests travelling there and keeping the Hearthstone, the arrow leading the way. Bound at another inn (as `sethome` tells, from the inns Northstar knows), the goal says where it is bound first, and the arrow leads to the step's inn the same way. None of this holds the step: arriving checks the goal off either way. |
 | `die` | `"Graveyard"` | A deathskip: die on purpose, release and take the Spirit Healer's resurrection at that graveyard (the name is what the guide window shows). Needs `@x,y` at the graveyard's Spirit Healer, which lint checks against the healers' spawns; the arrow leads there. Done once the player is back alive within 40 yards of it, never as a ghost standing there. Only for players who turned on "Use deathskips" (Options, Automation, Guides; off by default, and always off on a Hardcore character): for everyone else the goal does not apply, its step passes and the next step's travel takes them there, so the guide must read right without it. A guide that uses it is written in pack format 5. |
 | `getfp` | `"Location"` | Discover a flight path: the flight point's name (`"Stormwind, Elwynn"`) or its part before the comma (`"Stormwind"`). The compiler adds its taxi node, so it completes on every client language ("Places by ID"), and without `npc` that node's flight master, so the arrow leads to them ("What the compiler fills in"); `npc <id>` picks one yourself. Lint warns about a name no flight point has (`polestar find --kind flight`). |
 | `fly` | `"Location"` | Take a flight: the flight point's town (`"Stormwind"`), as the flight map picks the node by it. Done when the zone or subzone where you land has that name (in the client's language when the compiler finds its area, "Places by ID"); where the landing area is named differently (`"Stormwind City"`), the goal checks off only through a later goal of its step. Lint warns about a name that is no flight point's town, inn location or zone they are in. |
@@ -151,7 +151,7 @@ A step must contain at least one goal.
 | `level` | `<N>`, `<N>.<fraction>` or `<N>+<XP>` | Reach level N (grind if needed). `level 12.5` reaches halfway through level 12 and `level 12+2500` 2500 XP into it (converted to a share of the level with the 1.12 XP table): done at level 12 with that share of the level's XP, or at any later level, and the guide window reads "Reach level 12 (50%)" with the XP still to earn under it ("1,240 XP to go"; any `level` goal shows this). The XP bar's guide mark puts its tick at that share of the bar while the character is in that level. The share is kept to whole percent; one that rounds to 0% or 100% is an error (write `level 12` or `level 13`), as is XP past the level's total; `level 12.0` is plain level 12. A guide that uses either form is written in pack format 4 (see "Conditions checked during play"). |
 | `money` | `<amount>` | Hold that much money: copper (`money 350`) or `1g50s` / `7s` / `25c`. Done once the bags hold it, and it stays done for the rest of its step if the money is spent before the step's other goals are done; the guide window reads "Have at least 1s 50c". For "loot until you can afford it"; pack format 5. |
 | `wait` | `<seconds>` | A countdown in the step: `wait 30 "the boat docks"`. It starts once every goal before it in the step is done and is done when the time is up (1 to 3600 seconds); the guide window shows the time left as a draining line. For a boat, an event or a speech to sit through. |
-| `task` | `"<text>"` | Something to do that Polestar cannot see (a logout skip, a tame, an emote): it holds the step until the player ticks it in the guide window; with `optional` it never holds it. Quotes optional when nothing follows the text. A task has a place with `@x,y` for the arrow. In an `along` step it never checks off (see "Along the way"). Pack format 5. |
+| `task` | `"<text>"` | Something to do that Northstar cannot see (a logout skip, a tame, an emote): it holds the step until the player ticks it in the guide window; with `optional` it never holds it. Quotes optional when nothing follows the text. A task has a place with `@x,y` for the arrow. In an `along` step it never checks off (see "Along the way"). Pack format 5. |
 | `note` | `<text...>` | Informational line; never blocks. Quotes optional. |
 | `skill` | `<Profession> <N>` | Reach skill rank N (`Alchemy`, `Blacksmithing`, `Enchanting`, `Engineering`, `Herbalism`, `Leatherworking`, `Mining`, `Skinning`, `Tailoring`, `Cooking`, `Fishing`, `First Aid`, quoted when multi-word). |
 | `learn` | `<spellId> ["Name"]` | Learn a recipe or spell (trainer or recipe item); name from `professions.json`. A trainer-taught spell points at every trainer of its rank (a smart target; `npc <id>` fixes one); `learn <spellId> nearest` for a recipe sold by vendors sends the player to the closest own-faction vendor of the recipe item. |
@@ -165,7 +165,7 @@ A step must contain at least one goal.
 the `accept` and `turnin` goals of the step the guide is at (the live step:
 never a step ahead, nor one the player is only looking at). When the
 game then opens a window of its own at the same NPC (the next quest of the
-chain, or the NPC's other quests) and none of those is a goal there, Polestar
+chain, or the NPC's other quests) and none of those is a goal there, Northstar
 closes it (Options, Guide, Automation, "Close offers the guide skips", on by
 default). To keep such a follow-up in front of the player, give it an
 `accept` in the same step as the turn-in (or in the next step, when that
@@ -210,7 +210,7 @@ Modifiers, in any order after the positional arguments:
 | `xp <N>` | `turnin` only: the XP it pays. Shown with the rewards, and used for the route-level check when the quest has no `xp` in the data. |
 | `money <amount>` | `turnin` only: copper (`money 350`) or `1g50s` / `7s` / `25c` forms. |
 | `direct` | `turnin` only: the quest is handed in straight from the giver's window, with no `accept` (Distracting Jarven 308, the repeat cloth donations). It needs no earlier accept, and its availability, prerequisites and exclusive quests are checked as an `accept`'s are. The quest never enters the log, so it carries no objectives: get what it asks for with a plain `buy` or `collect` (without `quest`). The goal checks off on the hand-in itself and stays checked after a `/reload`, so a repeatable does not come back as undone. |
-| `gossip <id>` | `talk`, `vendor` and `train`: at that NPC, on the step the guide is at, Polestar picks the gossip option with that id (the client's `gossipOptionID`) for the player (Shift suppresses; the option "Pick what the step asks for"). Without it, a `buy`, `vendor` or `train` goal still opens the NPC's goods or training by the option's icon. |
+| `gossip <id>` | `talk`, `vendor` and `train`: at that NPC, on the step the guide is at, Northstar picks the gossip option with that id (the client's `gossipOptionID`) for the player (Shift suppresses; the option "Pick what the step asks for"). Without it, a `buy`, `vendor` or `train` goal still opens the NPC's goods or training by the option's icon. |
 
 ## Conditions
 
@@ -253,14 +253,14 @@ step Back to Gornek
 | `turnedin <quest>` | the quest is handed in |
 | `available <quest>` | the quest can be taken now: not in the log or done, the level reached, its prerequisites done and none of the quests that close it taken or done (the compiler copies these from the data, as for an `accept`) |
 | `has <item> [xN]` | the bags hold N (default 1) or more |
-| `upgrade <item>` | Polestar's gear advice rates the item an upgrade for the character (see "Gear upgrades" below) |
+| `upgrade <item>` | Northstar's gear advice rates the item an upgrade for the character (see "Gear upgrades" below) |
 | `zone "<Name>"` | the zone text reads so (the zone as the game names it) |
 | `subzone "<Name>"` | the subzone text reads so |
 | `bound "<Location>"` | the hearthstone is bound there (a bind location, as for `sethome`) |
 | `dungeon "<Name>"` | the character chose to run that dungeon (see "Dungeon steps" below) |
 | `done <label>` | the step carrying `label <label>` in this guide was completed: it applies, its goals are done, and it was not skipped by the player, a failed `when` or a `skipto` jump (see "Jumps"); not on a `next` line |
 | `skill <Profession> <N>` | the character's rank in that profession is N (1 or more) or higher, the profession named as for the `skill` goal (`when skill Cooking 50`, `when skill "First Aid" 1`); one not learned counts as rank 0, so `!skill Herbalism 1` holds while the character has no Herbalism. A weapon skill works the same, by its skill name or its trainer spell's (`when !skill "Two-Handed Axes" 1` while the character has not learned it; `Swords` or `"One-Handed Swords"`) |
-| `cooldown item <item>`, `cooldown spell <spell>` | the item or spell is on cooldown, the global cooldown aside: `when !cooldown item 6948` while the Hearthstone is ready. Polestar looks again when the cooldown runs out |
+| `cooldown item <item>`, `cooldown spell <spell>` | the item or spell is on cooldown, the global cooldown aside: `when !cooldown item 6948` while the Hearthstone is ready. Northstar looks again when the cooldown runs out |
 | `knows <spell>` | the character knows the spell: in the spellbook, or a profession recipe learned. `when !knows 100` is for the step that trains Charge, so a character who has it passes on |
 | `group <quest>` | the player chose to do that group quest; `!group` holds when they chose to skip it. Until they answer, the route waits at the step and asks (see "Group quests" below); not on a `next` line or a `skipto` |
 
@@ -268,7 +268,7 @@ step Back to Gornek
 holds while the quest is not in the log, `!has 159 x5` while the bags hold
 fewer than five. Names can be quoted or bare.
 
-**Once the route moves past a step, its outcome stays.** Polestar stores
+**Once the route moves past a step, its outcome stays.** Northstar stores
 whether the step's `when` held at that moment (once the quest log can be
 read after login), and reads that from then on: a "buy water" step passed
 because the bags were full is stored as skipped and does not come back when
@@ -288,7 +288,7 @@ who passed those steps never see it, so give it the same `when` or a
 
 Zone, subzone and bind location names work on every client language: the
 compiler gives each its area ID where the data names one (see "Places by
-ID"), and Polestar compares the game's own name for it, then the name you
+ID"), and Northstar compares the game's own name for it, then the name you
 wrote.
 
 **Dungeon steps.** `when dungeon "<Name>"` is for the steps of a dungeon
@@ -318,7 +318,7 @@ not checked.
 
 **Gear upgrades.** `when upgrade <item>` is for a step that is worth doing
 only when the item beats what the character wears: buying a better weapon,
-picking up a piece of armour. It holds when Polestar's gear advice (the
+picking up a piece of armour. It holds when Northstar's gear advice (the
 upgrade arrows and tooltips, Options, Gear) rates the item an upgrade now:
 the character can wear it at their level, and it scores at least the
 "minimum upgrade" better than what they wear in that slot, for their spec
@@ -331,7 +331,7 @@ step A better sword
   buy 2488 nearest
 ```
 
-When the gear advice cannot judge the item (it is turned off, or Polestar
+When the gear advice cannot judge the item (it is turned off, or Northstar
 knows neither the item's stats nor weights for the spec) the item counts as
 an upgrade, so the step is shown and the player decides. Like any `when`,
 the outcome is stored once the route has passed the step: a sword step
@@ -414,19 +414,19 @@ next joe-routes/barrens-early when level<12
 next forever/horde/02-the-barrens
 ```
 
-Polestar checks the condition on the character as they are when it lists the
+Northstar checks the condition on the character as they are when it lists the
 options: at the end of the guide, that decides where it goes. An option whose
 `when` does not hold is left out of the "Choose your path" window, the guide
 menu's "Next" line, `/polestar path` and a route change. With one option left
-Polestar goes on to it without asking; with none the guide ends there, like a
+Northstar goes on to it without asking; with none the guide ends there, like a
 guide without `next`. Nothing is stored: the condition is checked again each
 time. A subzone is looked up in the zone where the guide ends.
 
 A pack with a `when` anywhere (on a step or a `next` option), or a `level`
 goal inside a level (`level 12.5`), is written in pack format 4, which
-Polestar 0.2.6 and later read. A `when money`, `when dungeon`, `when
+Northstar 0.2.6 and later read. A `when money`, `when dungeon`, `when
 upgrade`, `when done`, `when skill`, `when cooldown`, `when group` or `when knows`
-predicate (above) writes format 5 (Polestar 0.3.0 and later), because 0.2.6 knows `when` but
+predicate (above) writes format 5 (Northstar 0.3.0 and later), because 0.2.6 knows `when` but
 not those predicates; `money`, `task`, `enter`, `cast`, `abandon`, `destroy` and `die` goals also need format 5
 (docs/PACK_FORMAT.md).
 
@@ -470,7 +470,7 @@ turn-in waits for the kills.
 Along suits goals the game counts wherever the player is: quest objectives
 (`kill`, `collect`, `interact`, `use`, `talk` with `quest`), quests taken or
 handed in, bag counts (`collect`, `buy`), `level`, `skill`, `explore`. A goal
-Polestar checks off only on the step the route is on (`goto`, `hearth`,
+Northstar checks off only on the step the route is on (`goto`, `hearth`,
 `getfp`, `fly`, `vendor`, `train` but a profession's, and `kill`, `talk`,
 `interact` or `use` without `quest`) never checks off in an along step and
 warns.
@@ -533,7 +533,7 @@ kills a minute, not merely where the spawns are densest. For the generated
 guides, a `background` record in `data/guide-fixes.json` writes all of this
 (docs/FORGE.md, "Fixing a generated guide").
 
-`background` changes nothing in the compiled guide: Polestar reads the step
+`background` changes nothing in the compiled guide: Northstar reads the step
 as the along step it is, so a pack with it is written in pack format 4, like
 `along`.
 
@@ -586,7 +586,7 @@ step Bonus for those who met Willem
 ```
 
 A pack with `skipto` or a `done` predicate is written in pack format 5
-(Polestar 0.3.0 and later): Polestar 0.2.6 would refuse `done` and never
+(Northstar 0.3.0 and later): Northstar 0.2.6 would refuse `done` and never
 take a jump.
 
 ## What the compiler fills in
@@ -787,7 +787,7 @@ no route or one ending more than 30 yards above or below it.
 **Places by ID.** The game names places in the player's language
 ("Sombre-Comté" on a French client for "Darkshire") and guides name them in
 English, so the compiler gives a goal that names a place that place's ID, and
-Polestar compares IDs, or names the game gives in the same language:
+Northstar compares IDs, or names the game gives in the same language:
 
 - `area`: on `sethome`, `hearth`, `fly` and `getfp` the area their location
   names, on `goto` the one its label names, from the client's AreaTable (the
@@ -925,7 +925,7 @@ Warnings:
   area; a step whose `when level` leaves none of the guide's levels, or that
   asks for one predicate both ways (`onquest 7` and `!onquest 7`): no
   character sees it
-- a goal in an `along` step that Polestar checks off only on the step the
+- a goal in an `along` step that Northstar checks off only on the step the
   route is on (see "Along the way"): it never checks off there
 - an `accept` whose prerequisites (`pre`, any one suffices) are none of them turned in earlier in the chain
 - an `accept` above the level the route plausibly reaches (when XP data exists)
@@ -998,8 +998,8 @@ Warnings:
 - a `|` in text the player sees (`title`, `folder`, `pitch`, `pro`, `con`,
   `author`, step titles and tips, goal texts and notes, quoted names): it
   prints literally in game
-- another pack's Era frame for a map Polestar's guides also use, with other
-  bounds: in game Polestar's wins, so coordinates on that map may be off
+- another pack's Era frame for a map Northstar's guides also use, with other
+  bounds: in game Northstar's wins, so coordinates on that map may be off
 - an `image` whose file the pack folder lacks (the step then shows no
   picture), a file whose size the compiler cannot read (not a TGA or BLP)
   when the line gives none, and a picture whose sides are not powers of two
@@ -1016,7 +1016,7 @@ saying how to fix them.
 
 ## Output
 
-`compile` writes the pack's addon folder (Polestar's: `addon/Polestar_Guides/`;
+`compile` writes the pack's addon folder (Northstar's: `addon/Northstar_Guides/`;
 another pack's: `dist/<folder>/`): the generated TOC, `Pack.lua`,
 `MapFrames.lua` (Era bounds for referenced maps), `Guides.lua` (one
 `RegisterGuide` per guide, each in its own function) and `LICENSE-DATA.txt`,
@@ -1172,7 +1172,7 @@ player's faction instead.
 ```
 
 `nearest` and `train class` pick the trainer or vendor at runtime, by the
-player's faction and where they stand. A `task` is for what Polestar cannot
+player's faction and where they stand. A `task` is for what Northstar cannot
 see: the player ticks it; `abandon` and `destroy` check themselves against the quest log and the bags; a `note` never holds the step at all.
 
 ### Professions: `train`, `learn`, `craft`, `skill`
@@ -1249,7 +1249,7 @@ the way. An elite in a Leveling guide belongs here, with the tip
 
 ### Handing over to our guides
 
-A pack's guide may end by handing over to any of Polestar's guides. Pick one
+A pack's guide may end by handing over to any of Northstar's guides. Pick one
 its characters can follow: `polestar find --kind guide <zone>` prints each
 guide's level range and who it is for, and `--race`/`--class` keep only the
 ones such a character can follow:
@@ -1270,7 +1270,7 @@ guide near the level yours ends at, and put its id in `next`:
 next forever/alliance/02-westfall
 ```
 
-Lint and playtest load Polestar's guides beside yours, so the handover is
+Lint and playtest load Northstar's guides beside yours, so the handover is
 checked and played: a hand-over that does not land on our guide with
 something to do, or lands on one that does not apply to the character
 (`no Human can follow it`), is reported as stuck at the hand-over. An option
@@ -1344,7 +1344,7 @@ step Ready for Westfall
   level 12
 ```
 
-**A bare `kill <npc>`** (no `quest`) is a check-off: Polestar does not count
+**A bare `kill <npc>`** (no `quest`) is a check-off: Northstar does not count
 the kills, so the player ticks the goal in the guide window, and until they
 do it holds the step, unless it is `optional`. Tie a kill that serves a quest
 to the objective with `quest Q.O` so the quest log counts it.

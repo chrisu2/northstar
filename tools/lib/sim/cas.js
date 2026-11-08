@@ -4,8 +4,8 @@
 // every worktree, so a new worktree, a rebase or a gate snapshot with the same inputs reuses them
 // instead of building again (the 1.2 h cold rebuild after the rebase).
 //
-//   dir: $POLESTAR_CAS, else ~/.cache/polestar/cas ($POLESTAR_CAS=off: no store); one directory
-//     per kind (world, floors, walks), a file per key. $POLESTAR_CAS_SKIP=kind,...: those kinds
+//   dir: $NORTHSTAR_CAS, else ~/.cache/polestar/cas ($NORTHSTAR_CAS=off: no store); one directory
+//     per kind (world, floors, walks), a file per key. $NORTHSTAR_CAS_SKIP=kind,...: those kinds
 //     are neither read nor written (the rest shared)
 //   enabled(simDir): only for a worktree's own data/sim (a test's or a scratch sim dir keeps its
 //     artifacts to itself)
@@ -28,7 +28,7 @@ const path = require('node:path');
 const EXT = { world: 'json', floors: 'json', walks: 'bin' };
 
 function dir() {
-	const env = process.env.POLESTAR_CAS;
+	const env = process.env.NORTHSTAR_CAS;
 	if (env === 'off') return null;
 	return env || path.join(os.homedir(), '.cache', 'polestar', 'cas');
 }
@@ -41,7 +41,7 @@ function enabled(simDir) {
 
 const safe = (key) => String(key).replace(/[^A-Za-z0-9._-]/g, '_');
 
-const skipped = (kind) => String(process.env.POLESTAR_CAS_SKIP || '').split(',').includes(kind);
+const skipped = (kind) => String(process.env.NORTHSTAR_CAS_SKIP || '').split(',').includes(kind);
 
 // A skipped kind's files are looked for where none are (a directory never made).
 function file(kind, key, ext = EXT[kind] || 'bin') {

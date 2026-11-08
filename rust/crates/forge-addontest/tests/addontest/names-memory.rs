@@ -1,6 +1,6 @@
-//! The names packs' memory budget (issue #693): what the committed Names.lua of a language folder Polestar_<locale> costs once loaded,
+//! The names packs' memory budget (issue #693): what the committed Names.lua of a language folder Northstar_<locale> costs once loaded,
 //! under Lua 5.1 as the client counts it (collectgarbage("count")), on a client of that language with
-//! Polestar.Names reading it (addon/Polestar/Core/Names.lua: the names stay LuaChunks text, cut out when
+//! Northstar.Names reading it (addon/Northstar/Core/Names.lua: the names stay LuaChunks text, cut out when
 //! asked). deDE and ruRU (the largest pack). Each figure fails the test when it grows past its budget:
 //! lower a budget when a change lowers the figure, never raise one to make a change pass.
 //!
@@ -28,14 +28,14 @@ end"#;
 fn the_names_packs_stay_within_their_memory_budget_693() {
 	let mut over = vec![];
 	for (locale, resident_budget, peak_budget) in BUDGET {
-		let file = root().join(format!("addon/Polestar_{locale}/Names.lua"));
+		let file = root().join(format!("addon/Northstar_{locale}/Names.lua"));
 		let script = format!(
 			r#"
-local N = Polestar.Names
+local N = Northstar.Names
 local function full() collectgarbage("collect"); collectgarbage("collect"); return collectgarbage("count") end
 local base = full()
 collectgarbage("stop")
-assert(loadfile({file}))("Polestar_{locale}", {{}})
+assert(loadfile({file}))("Northstar_{locale}", {{}})
 local peak = collectgarbage("count") - base
 collectgarbage("restart")
 local resident = full() - base
@@ -46,7 +46,7 @@ emit({{ resident = resident, peak = peak, npc = N.Cached("npc", 6) or false }})"
 			// The client's language without its interface file: the pack is what is measured.
 			before: format!("function GetLocale() return {} end\n{NO_INTERFACE_FILE}", lua_string(locale)),
 			stubs: vec!["stub_world.lua"],
-			addons: vec![Addon::name("Polestar")],
+			addons: vec![Addon::name("Northstar")],
 			script,
 			..Default::default()
 		});

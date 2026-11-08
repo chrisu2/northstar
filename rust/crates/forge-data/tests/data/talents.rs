@@ -129,7 +129,7 @@ fn the_lua_names_its_rule_snapshot_and_plans_and_the_addon_reads_the_locale() {
 			r#"local captured
 			local ns = {{ L = setmetatable({{ ["Example's leveling plans"] = "本地化来源" }}, {{ __index = function(_, k) return k end }}),
 				Talents = {{ Register = function(data) captured = data end }} }}
-			assert(loadstring({}))("Polestar", ns)
+			assert(loadstring({}))("Northstar", ns)
 			return captured.source, captured.url"#,
 			forge_data::travel::lua_str(&r.lua)
 		))
@@ -166,7 +166,7 @@ fn plan_files() -> Vec<String> {
 
 #[test]
 fn builds_lua_names_every_plan_file_and_the_pinned_build() {
-	let head = std::fs::read_to_string(repo().join("addon/Polestar/Talents/Builds.lua")).unwrap().lines().next().unwrap().to_string();
+	let head = std::fs::read_to_string(repo().join("addon/Northstar/Talents/Builds.lua")).unwrap().lines().next().unwrap().to_string();
 	assert!(head.contains(&format!("the Forever {BUILD} trait tables")), "{head}");
 	let names: Vec<String> = plan_files().iter().map(|f| f.trim_end_matches(".json").to_string()).collect();
 	assert!(head.contains(&format!("talents/forever/{{{}}}.json", names.join(","))), "{head}");

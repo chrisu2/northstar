@@ -19,7 +19,7 @@ w.race, w.raceName, w.faction, w.class, w.className, w.level = "Human", "Human",
 // Bridge 89 -> Alther's Mill 98386, Redridge), The Defias Brotherhood part 1 (65) and part 6 (155), and
 // Blackrock Bounty (128, which opens nothing).
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({ id = "test/wf", pack = "test", title = "Westfall", faction = "Alliance", minLevel = 10, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/wf", pack = "test", title = "Westfall", faction = "Alliance", minLevel = 10, maxLevel = 20, steps = {
 	{ title = "Gryan", goals = {
 		{ t = "accept", quest = 12, title = "The People's Militia", npc = 234, npcName = "Gryan Stoutmantle", map = 1436, x = 56.3, y = 47.5 },
 		{ t = "accept", quest = 65, title = "The Defias Brotherhood", npc = 234, npcName = "Gryan Stoutmantle", map = 1436, x = 56.3, y = 47.5 },
@@ -69,13 +69,13 @@ AddRecords("quests", {
 })
 AddRecords("npcs", { [234] = { "Gryan Stoutmantle" }, [266] = { "Wiley the Black" }, [332] = { "Master Mathias Shaw" },
 	[467] = { "The Defias Traitor" }, [820] = { "Scout Riell" }, [903] = { "Guard Howe" } })
-Polestar.QuestDB.SetMeta({})
+Northstar.QuestDB.SetMeta({})
 "#;
 
 const HELPERS: &str = r#"
-E, GF = Polestar.Engine, Polestar.UI.GuideFrame
-Polestar.Set("ui.wholeStep", true) -- every goal of the step is a row
-Polestar.Set("behavior.autoAccept", false)
+E, GF = Northstar.Engine, Northstar.UI.GuideFrame
+Northstar.Set("ui.wholeStep", true) -- every goal of the step is a row
+Northstar.Set("behavior.autoAccept", false)
 stub.login()
 E.SetGuide("test/wf")
 stub.advance(0.5)
@@ -116,7 +116,7 @@ fn run(records: bool, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::name("Polestar")],
+		addons: vec![Addon::name("Northstar")],
 		script: [TEST_PACK, TEST_SOURCE, GUIDE, HELPERS, &records, script].join("\n"),
 		..Default::default()
 	})
@@ -154,7 +154,7 @@ fn a_quest_with_no_follow_up_shows_nothing_extra_and_its_skip_names_nothing() {
 		local lines = tip(128)
 		stub.RunScript(row(128), "OnClick", "RightButton")
 		local skipTip
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Skip this quest" then skipTip = r.psItem.tip end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Skip this quest" then skipTip = r.psItem.tip end end
 		emit({ unlocks = unlockLines(lines), skipTip = skipTip, loses = E.SkipLoses(128) or false })"#,
 	);
 	assert_eq!(
@@ -207,9 +207,9 @@ fn skip_and_skip_this_quest_name_the_later_quests_that_go_with_them_and_change_n
 		for i, l in ipairs(GameTooltip.lines) do skipLines[i] = l end
 		stub.RunScript(row(125), "OnClick", "RightButton")
 		local quest
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Skip this quest" then quest = r.psItem.tip end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Skip this quest" then quest = r.psItem.tip end end
 		emit({ skip = skipLines, quest = quest, same = table.concat(statuses(), "/") == table.concat(before, "/"),
-			at = E.GetStepIndex(), saved = PolestarCharDB.skippedQuests or false, steps = PolestarCharDB.skipped and PolestarCharDB.skipped["test/wf"] or false })"#,
+			at = E.GetStepIndex(), saved = NorthstarCharDB.skippedQuests or false, steps = NorthstarCharDB.skipped and NorthstarCharDB.skipped["test/wf"] or false })"#,
 	);
 	assert_eq!(
 		out["skip"],

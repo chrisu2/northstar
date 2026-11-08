@@ -1,12 +1,12 @@
-//! tools/lib/codex/pack.js `emitPack`: the Codex -> the load-on-demand addon Polestar_Codex
-//! (record strings in long Lua string literals, decoded by addon/Polestar/Lookup/Codex.lua).
+//! tools/lib/codex/pack.js `emitPack`: the Codex -> the load-on-demand addon Northstar_Codex
+//! (record strings in long Lua string literals, decoded by addon/Northstar/Lookup/Codex.lua).
 
 use forge_guide::js::{num_str, str_to_num, V};
 
 use super::util::{kstr, math_round};
 
 pub const SCHEMA: f64 = 1.0;
-pub const ADDON: &str = "Polestar_Codex";
+pub const ADDON: &str = "Northstar_Codex";
 const CHUNK: usize = 4000;
 const ITEM_KINDS: [&str; 5] = ["item", "mount", "pet", "recipe", "tabard"];
 const SEARCH_KINDS: [&str; 11] = ["mount", "pet", "item", "recipe", "tabard", "quest", "npc", "rare", "instance", "zone", "treasure"];
@@ -508,9 +508,9 @@ fn header() -> Vec<String> {
 	vec![
 		forge_guide::emit::header("lua", "forge data codex", "the sources listed in Meta.lua"),
 		"-- Facts (ids, names, levels, coordinates, rates, relations), merged. Decoded by".into(),
-		"-- Polestar/Lookup/Codex.lua.".into(),
+		"-- Northstar/Lookup/Codex.lua.".into(),
 		String::new(),
-		"local C = Polestar and Polestar.Codex".into(),
+		"local C = Northstar and Northstar.Codex".into(),
 		"if not (C and C.Register) then return end".into(),
 		String::new(),
 	]
@@ -586,8 +586,8 @@ pub fn emit_pack(codex: &PackCodex, version: &str, build: &V, extra_files: &[(St
 	let frame_ids = sorted_ids(codex.frames);
 	if !frame_ids.is_empty() {
 		meta_lines.push("-- Era bounds of every map the Codex places points on (f = \"e\").".into());
-		meta_lines.push("if Polestar.RegisterMapFrames then".into());
-		meta_lines.push("\tPolestar.RegisterMapFrames({ era = {".into());
+		meta_lines.push("if Northstar.RegisterMapFrames then".into());
+		meta_lines.push("\tNorthstar.RegisterMapFrames({ era = {".into());
 		for id in &frame_ids {
 			let f = codex.frames.get(id);
 			meta_lines.push(format!(
@@ -747,16 +747,16 @@ pub fn emit_pack(codex: &PackCodex, version: &str, build: &V, extra_files: &[(St
 fn emit_toc(version: &str, files: &[String]) -> String {
 	let mut lines: Vec<String> = vec![
 		"## Interface: 16001".into(),
-		"## Title: Polestar Codex".into(),
-		"## Notes: Part of Polestar: items, mounts, pets, NPCs, quests and where to get them, dungeons and rares, for Lookup, Dungeons and Rares. Loaded on demand.".into(),
+		"## Title: Northstar Codex".into(),
+		"## Notes: Part of Northstar: items, mounts, pets, NPCs, quests and where to get them, dungeons and rares, for Lookup, Dungeons and Rares. Loaded on demand.".into(),
 	];
 	lines.extend(forge_guide::toc::toc_lines(ADDON));
-	lines.push("## Author: Polestar".into());
+	lines.push("## Author: Northstar".into());
 	lines.push(format!("## Version: {version}"));
-	lines.push("## Category: Polestar".into());
-	lines.push("## Group: Polestar".into());
+	lines.push("## Category: Northstar".into());
+	lines.push("## Group: Northstar".into());
 	lines.push("## LoadOnDemand: 1".into());
-	lines.push("## Dependencies: Polestar".into());
+	lines.push("## Dependencies: Northstar".into());
 	lines.push(String::new());
 	lines.extend(files.iter().cloned());
 	lines.push(String::new());
@@ -765,10 +765,10 @@ fn emit_toc(version: &str, files: &[String]) -> String {
 
 fn license_text(meta: &V) -> String {
 	let mut out: Vec<String> = [
-		"Polestar Codex: third-party notices",
+		"Northstar Codex: third-party notices",
 		"===================================",
 		"",
-		"The data in this folder was generated for Polestar by `codex build` from the",
+		"The data in this folder was generated for Northstar by `codex build` from the",
 		"sources below: item, NPC, object, quest, zone and instance facts (ids, names,",
 		"levels, coordinates, drop chances, requirements). No text, images or code",
 		"were copied from them; the Dungeons journal is written in our own words.",

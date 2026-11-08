@@ -149,7 +149,7 @@ for (const t of ['UiMap', 'UiMapAssignment', 'Faction', 'ChrRaces', 'ChrClasses'
 csv(FOREVER, 'AreaTable', areaKeep);
 csv(FOREVER, 'ItemSparse', (r) => I.has(Number(firstField(r))));
 
-// forever-db/corrections is NOT cut from Polestar's file (its notes cite web sources): the
+// forever-db/corrections is NOT cut from Northstar's file (its notes cite web sources): the
 // golden holds synthetic entries in the same schema, kept as committed (read by the build; applied
 // only with QuestieDB, so this golden only proves it parses).
 

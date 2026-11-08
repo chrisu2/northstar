@@ -1,8 +1,8 @@
 {
 	"class": "WARLOCK",
-	"source": "ForeverDB through level 30, Polestar after",
+	"source": "ForeverDB through level 30, Northstar after",
 	"sourceUrl": "https://foreverdb.net/class/Warlock/talents",
-	"credit": "Plans follow ForeverDB's Warlock leveling builds (https://foreverdb.net/class/Warlock/talents) through level 30 and were extended to 60 for Polestar. Notes rewritten for Polestar.",
+	"credit": "Plans follow ForeverDB's Warlock leveling builds (https://foreverdb.net/class/Warlock/talents) through level 30 and were extended to 60 for Northstar. Notes rewritten for Northstar.",
 	"checkedOn": "WoW: Forever beta 1.60.1.70450",
 	"summary": "Level as Affliction (instant Corruption, Siphon Life, drains) or Demonology (a tougher Voidwalker, Soul Link) for the fewest deaths. Destruction hits hardest with Conflagrate and Incinerate but needs more rest.",
 	"order": [

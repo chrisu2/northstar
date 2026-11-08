@@ -1,7 +1,7 @@
 //! The world and its walks, built in Rust (forge-world + forge-nav's walk store):
 //!   forge walks world <root> <grid> <simDir> <faction>  world-<faction>.json from root's data
 //!   forge walks hybrid <grid walks.bin> <Leffe walks.bin> <out.bin> [slack]
-//!   forge walks walks <root> <grid> <simDir> <faction> <store> <navFp> [bands]   (default: the hybrid when POLESTAR_LEFFE_NAV=<Leffe's Nav folder>, else our grid; POLESTAR_NAV=grid|leffe|hybrid)
+//!   forge walks walks <root> <grid> <simDir> <faction> <store> <navFp> [bands]   (default: the hybrid when NORTHSTAR_LEFFE_NAV=<Leffe's Nav folder>, else our grid; NORTHSTAR_NAV=grid|leffe|hybrid)
 //! Developer checks (not in the help): floors-parity <grid> <floors.json>, import-tables.
 use forge_nav::floors::GridFloors;
 use forge_nav::grid::Grid;
@@ -172,7 +172,7 @@ fn walks(a: &[String]) {
 		Some(b) => b.split(',').map(|x| x.trim().parse().unwrap_or_else(|_| usage(&format!("bands {b}: comma-separated levels, e.g. 0,10")))).collect(),
 		None => forge_nav::walkdoc::BANDS.to_vec(),
 	};
-	let pack_json = root.join("addon/Polestar_Nav/PACK.json");
+	let pack_json = root.join("addon/Northstar_Nav/PACK.json");
 	let pack: serde_json::Value = serde_json::from_slice(&read(&pack_json)).unwrap_or_else(|e| die(&format!("{}: {e}", pack_json.display())));
 	let maps: Vec<i64> = pack["maps"].as_object().map(|m| m.keys().filter_map(|k| k.parse().ok()).collect()).unwrap_or_else(|| die(&format!("{}: no maps", pack_json.display())));
 	let world_json = read(&sim.join(format!("world-{faction}.json")));
@@ -188,23 +188,23 @@ fn walks(a: &[String]) {
 		nav_fp: &nav_fp,
 		bands: &bands,
 		threads: 8,
-		// Default: the hybrid when Leffe's navigation maps are given (POLESTAR_LEFFE_NAV), else the hybrid on his
-		// saved walks (<store>-leffe.<ext>) when present, else our grid (stage::Nav::auto); POLESTAR_NAV forces one.
-		nav: match std::env::var("POLESTAR_NAV").as_deref() {
+		// Default: the hybrid when Leffe's navigation maps are given (NORTHSTAR_LEFFE_NAV), else the hybrid on his
+		// saved walks (<store>-leffe.<ext>) when present, else our grid (stage::Nav::auto); NORTHSTAR_NAV forces one.
+		nav: match std::env::var("NORTHSTAR_NAV").as_deref() {
 			Ok("grid") => forge_nav::stage::Nav::Grid,
-			Ok("hybrid") => match forge_nav::stage::Nav::auto(std::env::var("POLESTAR_LEFFE_NAV").ok().as_deref().map(std::path::Path::new), &file) {
-				forge_nav::stage::Nav::Grid => usage("POLESTAR_NAV=hybrid needs POLESTAR_LEFFE_NAV=<Leffe's Nav folder> or his saved walks beside the store (<store>-leffe.<ext>)"),
+			Ok("hybrid") => match forge_nav::stage::Nav::auto(std::env::var("NORTHSTAR_LEFFE_NAV").ok().as_deref().map(std::path::Path::new), &file) {
+				forge_nav::stage::Nav::Grid => usage("NORTHSTAR_NAV=hybrid needs NORTHSTAR_LEFFE_NAV=<Leffe's Nav folder> or his saved walks beside the store (<store>-leffe.<ext>)"),
 				n => n,
 			},
 			Ok("leffe") => forge_nav::stage::Nav::Leffe {
-				pack: std::env::var("POLESTAR_LEFFE_NAV").map(PathBuf::from).unwrap_or_else(|_| usage("POLESTAR_NAV=leffe needs POLESTAR_LEFFE_NAV=<Leffe's Nav folder>")),
-				cache_mb: match std::env::var("POLESTAR_LEFFE_NAV_CACHE_MB") {
-					Ok(v) => v.parse().unwrap_or_else(|_| usage(&format!("POLESTAR_LEFFE_NAV_CACHE_MB={v}: a number of megabytes"))),
+				pack: std::env::var("NORTHSTAR_LEFFE_NAV").map(PathBuf::from).unwrap_or_else(|_| usage("NORTHSTAR_NAV=leffe needs NORTHSTAR_LEFFE_NAV=<Leffe's Nav folder>")),
+				cache_mb: match std::env::var("NORTHSTAR_LEFFE_NAV_CACHE_MB") {
+					Ok(v) => v.parse().unwrap_or_else(|_| usage(&format!("NORTHSTAR_LEFFE_NAV_CACHE_MB={v}: a number of megabytes"))),
 					Err(_) => 1024,
 				},
 			},
-			Ok(x) if !x.is_empty() => usage(&format!("POLESTAR_NAV={x}: grid, leffe or hybrid")),
-			_ => forge_nav::stage::Nav::auto(std::env::var("POLESTAR_LEFFE_NAV").ok().as_deref().map(std::path::Path::new), &file),
+			Ok(x) if !x.is_empty() => usage(&format!("NORTHSTAR_NAV={x}: grid, leffe or hybrid")),
+			_ => forge_nav::stage::Nav::auto(std::env::var("NORTHSTAR_LEFFE_NAV").ok().as_deref().map(std::path::Path::new), &file),
 		},
 		log: &log,
 		extra: &[],

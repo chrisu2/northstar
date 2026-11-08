@@ -104,7 +104,7 @@ done
 
 # The records both writers apply are this checkout's: a previous writer's trees are kept per records.
 # (The judge's planner parts read the route fixes from the environment, as the build sets them.)
-export POLESTAR_ROUTE_FIXES=$CHECKOUT/data/route-fixes.json
+export NORTHSTAR_ROUTE_FIXES=$CHECKOUT/data/route-fixes.json
 REC=$(cat "$CHECKOUT"/data/{places,guide-fixes,route-fixes}.json | sha256sum | cut -c1-12)
 STARTS_ARG=() JUDGE_STARTS=()
 if [ -n "$STARTS" ]; then
@@ -136,7 +136,7 @@ judge() {
 	local th
 	for th in 16 6; do
 		slot wslot.sh "$JUDGE" judge check "$dir/guides" --root "$P/root" --sim "$O/.forge/sim" --routes "$O/routes" \
-			--route-fixes "$POLESTAR_ROUTE_FIXES" --out "$dir" --threads $th "${JUDGE_STARTS[@]}" > "$dir/check.txt" 2>&1 || true
+			--route-fixes "$NORTHSTAR_ROUTE_FIXES" --out "$dir" --threads $th "${JUDGE_STARTS[@]}" > "$dir/check.txt" 2>&1 || true
 		[ -f "$dir/check.json" ] && break
 	done
 	[ -f "$dir/check.json" ] || die "the judge failed on $dir (check.txt)"

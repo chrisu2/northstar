@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use crate::sv;
 
 /// The Recorder's addon folder name.
-pub const ADDON: &str = "Polestar_Recorder";
+pub const ADDON: &str = "Northstar_Recorder";
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Install {
@@ -23,7 +23,7 @@ pub struct Install {
 	/// The client version from `.build.info`, when present.
 	pub version: Option<String>,
 	pub accounts: Vec<Account>,
-	/// `Interface/AddOns/Polestar_Recorder`, when the Recorder is installed.
+	/// `Interface/AddOns/Northstar_Recorder`, when the Recorder is installed.
 	pub addon_dir: Option<PathBuf>,
 	/// The installed Recorder's `## Version`.
 	pub addon_version: Option<String>,
@@ -40,7 +40,7 @@ impl Install {
 pub struct Account {
 	/// The account folder's name under WTF/Account. Local only: never uploaded.
 	pub folder_name: String,
-	/// `WTF/Account/<account>/SavedVariables/Polestar_Recorder.lua` (it may not exist yet).
+	/// `WTF/Account/<account>/SavedVariables/Northstar_Recorder.lua` (it may not exist yet).
 	pub sv_path: PathBuf,
 	/// The account's character names (from `WTF/Account/<account>/<Realm>/<Character>`), for
 	/// scrubbing text. Local only.
@@ -417,9 +417,9 @@ mod tests {
 		std::fs::create_dir_all(f.join("WTF/Account/12345#1/Doomhowl/Thrall")).unwrap();
 		std::fs::create_dir_all(f.join("WTF/Account/12345#1/Doomhowl/Jaina/SavedVariables")).unwrap();
 		std::fs::create_dir_all(f.join("WTF/Account/SavedVariables")).unwrap();
-		let addon = f.join("Interface/AddOns/Polestar_Recorder");
+		let addon = f.join("Interface/AddOns/Northstar_Recorder");
 		std::fs::create_dir_all(&addon).unwrap();
-		std::fs::write(addon.join("Polestar_Recorder.toc"), "## Interface: 11508\n## Version: 2.0.0\n").unwrap();
+		std::fs::write(addon.join("Northstar_Recorder.toc"), "## Interface: 11508\n## Version: 2.0.0\n").unwrap();
 		for pick in [root.clone(), f.clone(), f.join("WTF/Account"), root.parent().unwrap().to_path_buf()] {
 			let i = check_folder(&pick).unwrap_or_else(|e| panic!("{}: {e}", pick.display()));
 			assert_eq!(i.flavor, "wowf");
@@ -427,7 +427,7 @@ mod tests {
 			assert_eq!(i.accounts.len(), 1);
 			assert_eq!(i.accounts[0].folder_name, "12345#1");
 			assert_eq!(i.accounts[0].char_names, vec!["Jaina".to_string(), "Thrall".to_string()]);
-			assert!(i.accounts[0].sv_path.ends_with("WTF/Account/12345#1/SavedVariables/Polestar_Recorder.lua"));
+			assert!(i.accounts[0].sv_path.ends_with("WTF/Account/12345#1/SavedVariables/Northstar_Recorder.lua"));
 			assert_eq!(i.addon_version.as_deref(), Some("2.0.0"));
 		}
 		std::fs::remove_dir_all(root.parent().unwrap()).unwrap();

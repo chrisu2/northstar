@@ -1,12 +1,12 @@
 'use strict';
 // The README's identity art, drawn in code like the addon's own textures
-// (tools/media/ui.js) and from the same geometry: the Polestar emblem, the
+// (tools/media/ui.js) and from the same geometry: the Northstar emblem, the
 // night-sky band with its stars and constellation, the Cinzel wordmark and
 // the lines under it in Marcellus, as outlines. Writes docs/assets/:
 //   banner-dark.svg   the band dissolving into a dark page (GitHub dark)
 //   banner-light.svg  the band as a night tile with square edges (light pages;
 //                     the band has no daylight form, docs/DESIGN.md)
-//   emblem.svg        the emblem in Polestar gold, transparent
+//   emblem.svg        the emblem in Northstar gold, transparent
 //   logo.svg          the addon icon: the gold emblem on a night tile
 //   download.svg      the README's download button
 //   curseforge.svg    the README's CurseForge button, beside it
@@ -71,8 +71,8 @@ function emblemPath(k = 1, ox = 0, oy = 0, { ring = 2.6, waist = 7.5 } = {}) {
 }
 
 function emblemSvg() {
-	return `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Polestar emblem">
-<title>Polestar</title>
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Northstar emblem">
+<title>Northstar</title>
 <path fill="${C.accent}" d="${emblemPath()}"/>
 </svg>
 `;
@@ -83,8 +83,8 @@ function emblemSvg() {
 function logoSvg() {
 	const k = 0.5;
 	const inner = [[32, 23], [33.4, 30.6], [37, 32], [33.4, 33.4], [32, 41], [30.6, 33.4], [27, 32], [30.6, 30.6]];
-	return `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 64 64" role="img" aria-label="Polestar logo">
-<title>Polestar</title>
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 64 64" role="img" aria-label="Northstar logo">
+<title>Northstar</title>
 <defs>
 <radialGradient id="glow" cx="32" cy="32" r="30" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${C.accent}" stop-opacity="0.35"/><stop offset="1" stop-color="${C.accent}" stop-opacity="0"/></radialGradient>
 </defs>
@@ -119,8 +119,8 @@ function avatarSvg() {
 		stars.push(`<circle cx="${f2(x)}" cy="${f2(y)}" r="${f2(r)}" fill-opacity="${f2(a)}"/>`);
 		if (b > 0.9) stars.push(`<circle cx="${f2(x)}" cy="${f2(y)}" r="11" fill="url(#halo)" opacity="${f2(a)}"/>`);
 	}
-	return `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 ${S} ${S}" role="img" aria-label="Polestar">
-<title>Polestar</title>
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 ${S} ${S}" role="img" aria-label="Northstar">
+<title>Northstar</title>
 <defs>
 <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C.sky}"/><stop offset="0.55" stop-color="${C.bg}"/><stop offset="1" stop-color="${C.sidebar}"/></linearGradient>
 <radialGradient id="glow" cx="${c}" cy="${c}" r="${f2(c * 0.92)}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${C.accent}" stop-opacity="0.24"/><stop offset="0.45" stop-color="${C.accent}" stop-opacity="0.1"/><stop offset="1" stop-color="${C.accent}" stop-opacity="0"/></radialGradient>
@@ -137,11 +137,11 @@ function avatarSvg() {
 }
 
 // The README's download button: the gold of the addon's primary buttons, the
-// emblem's star, and "Download Polestar" in Marcellus, as outlines.
+// emblem's star, and "Download Northstar" in Marcellus, as outlines.
 function downloadSvg() {
 	const o = new Outliner('d');
 	const H = 56, pad = 26, star = 22, gap = 12, size = 23;
-	const label = 'Download Polestar';
+	const label = 'Download Northstar';
 	const tw = o.width(label, { font: 'marcellus', size });
 	const W = Math.ceil(pad + star + gap + tw + pad);
 	const text = o.text(label, { font: 'marcellus', size, x: pad + star + gap, y: H / 2 + size * 0.34, fill: C.navy, stroke: 0.35 });
@@ -161,7 +161,7 @@ ${text}
 // CurseForge's mark, the anvil, on a 24 grid (x 0 to 24, y 4.4 to 19.6): the
 // path of simple-icons' "curseforge" icon (github.com/simple-icons/
 // simple-icons, icons/curseforge.svg), CC0 1.0. CurseForge is a trademark of
-// Overwolf; the mark only links to Polestar's CurseForge page.
+// Overwolf; the mark only links to Northstar's CurseForge page.
 const CURSEFORGE_MARK = 'M18.326 9.2145S23.2261 8.4418 24 6.1882h-7.5066V4.4H0l2.0318 2.3576V9.173s5.1267-.2665 7.1098 1.2372c2.7146 2.516-3.053 5.917-3.053 5.917L5.0995 19.6c1.5465-1.4726 4.494-3.3775 9.8983-3.2857-2.0565.65-4.1245 1.6651-5.7344 3.2857h10.9248l-1.0288-3.2726s-7.918-4.6688-.8336-7.1127z';
 const CURSEFORGE = '#f16436';
 
@@ -191,7 +191,7 @@ ${text}
 }
 
 // The README's Polestar Client button, cut like the CurseForge one (night
-// face, gold rim) with the emblem in Polestar gold: the desktop app on
+// face, gold rim) with the emblem in Northstar gold: the desktop app on
 // polestar.guide/client.
 function clientSvg() {
 	const o = new Outliner('c');
@@ -236,7 +236,7 @@ function banner(variant) {
 	// stacked and centred on the emblem; the pitch line under it.
 	const E = 104;
 	const capH = 50, tracking = 0.15;
-	const wordW = o.width('POLESTAR', { font: 'cinzel', size: (capH / 700) * 1000, tracking });
+	const wordW = o.width('NORTHSTAR', { font: 'cinzel', size: (capH / 700) * 1000, tracking });
 	const gap = 28;
 	const lockW = E + gap + wordW;
 	const lx = (W - lockW) / 2;
@@ -270,7 +270,7 @@ function banner(variant) {
 	// The emblem in its glow (About: 12% of the accent).
 	body.push(`<circle cx="${f2(lx + E / 2)}" cy="${cy}" r="${E * 0.95}" fill="url(#glow)"/>`);
 	body.push(`<path fill="${C.accent}" d="${emblemPath(E / 128, lx, cy - E / 2)}"/>`);
-	body.push(o.text('POLESTAR', { font: 'cinzel', capHeight: capH, tracking, x: wx, y: cy + 6, fill: C.text, stroke: 0.9 }));
+	body.push(o.text('NORTHSTAR', { font: 'cinzel', capHeight: capH, tracking, x: wx, y: cy + 6, fill: C.text, stroke: 0.9 }));
 	body.push(o.text('A community project', { font: 'marcellus', size: 21, x: wx + 2, y: cy + 40, fill: C.textDim, stroke: 0.25 }));
 	body.push(o.text('Leveling guides for World of Warcraft: Forever', { font: 'marcellus', size: 25, x: W / 2, y: 256, anchor: 'middle', fill: C.textDim, stroke: 0.25 }));
 
@@ -291,8 +291,8 @@ function banner(variant) {
 		);
 		content = `<g mask="url(#mx)"><g mask="url(#my)">\n${content}\n</g></g>`;
 	}
-	return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Polestar: leveling guides for World of Warcraft: Forever">
-<title>Polestar: leveling guides for World of Warcraft: Forever</title>
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Northstar: leveling guides for World of Warcraft: Forever">
+<title>Northstar: leveling guides for World of Warcraft: Forever</title>
 <defs>
 ${defs.join('\n')}
 ${o.defs()}

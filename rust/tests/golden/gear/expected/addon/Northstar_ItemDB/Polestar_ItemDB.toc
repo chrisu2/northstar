@@ -1,0 +1,31 @@
+## Interface: 16001
+## Title: Northstar Item Data
+## Notes: Item stats for Northstar's gear advice. Loaded on demand.
+## Title-deDE: Northstar Gegenstandsdaten
+## Notes-deDE: Gegenstandswerte für Northstars Ausrüstungsratschläge. Wird bei Bedarf geladen.
+## Title-esES: Northstar: datos de objetos
+## Notes-esES: Estadísticas de objetos para los consejos de equipo de Northstar. Se carga bajo demanda.
+## Title-esMX: Northstar: datos de objetos
+## Notes-esMX: Estadísticas de objetos para los consejos de equipo de Northstar. Se carga bajo demanda.
+## Title-frFR: Northstar : données d'objets
+## Notes-frFR: Caractéristiques des objets pour les conseils d'équipement de Northstar. Chargé à la demande.
+## Title-koKR: Northstar 아이템 데이터
+## Notes-koKR: Northstar 장비 조언에 쓰는 아이템 능력치. 필요할 때 불러옵니다.
+## Title-ptBR: Northstar: dados de itens
+## Notes-ptBR: Atributos de itens para as dicas de equipamento do Northstar. Carregado sob demanda.
+## Title-ruRU: Northstar: данные предметов
+## Notes-ruRU: Характеристики предметов для советов Northstar по снаряжению. Загружается по требованию.
+## Title-zhCN: Northstar 物品数据
+## Notes-zhCN: Northstar 装备建议所用的物品属性。按需加载。
+## Title-zhTW: Northstar 物品資料
+## Notes-zhTW: Northstar 裝備建議所用的物品屬性。按需載入。
+## Author: Northstar
+## X-License: GPL-3.0-only
+## Version: 0.2.6
+## Category: Northstar
+## Group: Northstar
+## LoadOnDemand: 1
+## Dependencies: Northstar
+
+Items.lua
+Forever.lua

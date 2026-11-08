@@ -14,7 +14,7 @@ w.race, w.faction, w.class, w.className, w.level = "Orc", "Horde", "WARRIOR", "W
 // The Crossroads: Thork (3429) twice, Gazrog (3464), Zargh (3489), then a field step, then accept/kill/turn-in
 // at one NPC.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, zone = 1413, steps = {
+Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, zone = 1413, steps = {
 	{ title = "The Crossroads", goals = {
 		{ t = "turnin", quest = 840, title = "Conscript of the Horde", npc = 3429, npcName = "Thork", map = 1413, x = 51.5, y = 30.3 },
 		{ t = "accept", quest = 842, title = "Crossroads Conscription", npc = 3429, npcName = "Thork", map = 1413, x = 51.5, y = 30.3 },
@@ -37,7 +37,7 @@ Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", fa
 "#;
 
 const HELPERS: &str = r#"
-			E = Polestar.Engine
+			E = Northstar.Engine
 			function flush() stub.advance(0.25) end
 			function groups(i)
 				local v = E.GetStepView(i)
@@ -49,15 +49,15 @@ const HELPERS: &str = r#"
 			end
 			stub.login()
 			E.SetGuide("test/xr")
-			Polestar.Set("behavior.autoAccept", false)
-			Polestar.Set("behavior.autoTurnin", false)
+			Northstar.Set("behavior.autoAccept", false)
+			Northstar.Set("behavior.autoTurnin", false)
 			"#;
 
 fn run(before: &str, guides: &str, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: format!("{TEST_PACK}\n{TEST_SOURCE}\n\t\t\t{guides}{HELPERS}{script}"),
 		..Default::default()
 	})
@@ -123,7 +123,7 @@ fn a_field_step_stays_one_group_accept_kill_and_turn_in_at_one_npc_make_three_gr
 #[test]
 fn a_quest_interact_stays_in_the_field_group_a_plain_interact_is_its_own_group() {
 	const FIELD: &str = r#"
-Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Woods", faction = "Horde", minLevel = 10, maxLevel = 20, zone = 1413, steps = {
+Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Woods", faction = "Horde", minLevel = 10, maxLevel = 20, zone = 1413, steps = {
 	{ title = "Woods", goals = {
 		{ t = "kill", target = "Gnarlpine Ursa", count = 4, quest = 456, oi = 1, map = 1413, x = 55, y = 44 },
 		{ t = "collect", item = 3297, itemName = "Fel Moss", count = 8, quest = 459, oi = 1, map = 1413, x = 55, y = 45 },
@@ -176,8 +176,8 @@ fn the_focus_move_fires_step_updated_and_waypoint_changed() {
 		GUIDE,
 		r#"
 			local log = {}
-			Polestar.On("STEP_UPDATED", function(i) log[#log + 1] = "U" .. i end)
-			Polestar.On("WAYPOINT_CHANGED", function(wp) log[#log + 1] = "W" .. (wp and wp.goalIndex or "nil") end)
+			Northstar.On("STEP_UPDATED", function(i) log[#log + 1] = "U" .. i end)
+			Northstar.On("WAYPOINT_CHANGED", function(wp) log[#log + 1] = "W" .. (wp and wp.goalIndex or "nil") end)
 			stub.world.accept(842, {}); flush()
 			emit(log)
 		"#,
@@ -213,7 +213,7 @@ fn skipped_and_unavailable_goals_do_not_hold_the_focus() {
 // Camp Taurajo after the Bristleback camps (04-the-barrens step 31): Mangletooth's chain, then optional item
 // quests, then a note.
 const TAURAJO: &str = r#"
-	Polestar.RegisterGuide({ id = "test/tj", pack = "test", title = "Taurajo", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
+	Northstar.RegisterGuide({ id = "test/tj", pack = "test", title = "Taurajo", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
 		{ title = "Camp Taurajo", goals = {
 			{ t = "turnin", quest = 878, title = "Tribes at War", npc = 3430, npcName = "Mangletooth", map = 1413, x = 44.8, y = 59.1 },
 			{ t = "accept", quest = 879, title = "Betrayal from Within", npc = 3430, npcName = "Mangletooth", map = 1413, x = 44.8, y = 59.1 },
@@ -264,7 +264,7 @@ fn the_waypoint_never_leaves_the_focus_group_an_unlocated_focus_points_nowhere()
 	let split = run(
 		"stub.world.onQuest(840, {})",
 		r#"
-			Polestar.RegisterGuide({ id = "test/sp", pack = "test", title = "Split", faction = "Horde", minLevel = 1, maxLevel = 60, steps = { { goals = {
+			Northstar.RegisterGuide({ id = "test/sp", pack = "test", title = "Split", faction = "Horde", minLevel = 1, maxLevel = 60, steps = { { goals = {
 				{ t = "turnin", quest = 840, title = "Conscript of the Horde", npc = 3429, npcName = "Thork" },
 				{ t = "accept", quest = 869, title = "Raptor Thieves", npc = 3464, npcName = "Gazrog", map = 1413, x = 51.9, y = 30.8 },
 			} } } })
@@ -281,7 +281,7 @@ fn the_waypoint_never_leaves_the_focus_group_an_unlocated_focus_points_nowhere()
 #[test]
 fn a_bare_complete_leads_to_its_group_s_place_else_to_its_giver_before_it_never_to_the_turn_in() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/cp", pack = "test", title = "Complete", faction = "Horde", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/cp", pack = "test", title = "Complete", faction = "Horde", minLevel = 1, maxLevel = 60, steps = {
 			{ title = "Shenthul", goals = {
 				{ t = "accept", quest = 2460, title = "The Shattered Salute", npc = 3401, npcName = "Shenthul", map = 1413, x = 43.0, y = 53.0 },
 				{ t = "complete", quest = 2460, title = "The Shattered Salute" },
@@ -331,7 +331,7 @@ fn a_bare_complete_leads_to_its_group_s_place_else_to_its_giver_before_it_never_
 #[test]
 fn smart_candidates_group_by_the_chosen_npc() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/sm", pack = "test", title = "Smart", faction = "Horde", minLevel = 1, maxLevel = 60, steps = { { goals = {
+		Northstar.RegisterGuide({ id = "test/sm", pack = "test", title = "Smart", faction = "Horde", minLevel = 1, maxLevel = 60, steps = { { goals = {
 			{ t = "train", skill = "First Aid", skillLine = 129, rank = 1, candidates = {
 				{ npc = 3373, npcName = "Arnok", map = 1413, x = 52, y = 31, faction = "H" },
 				{ npc = 5943, npcName = "Rawrk", map = 1413, x = 20, y = 80, faction = "H" },
@@ -378,8 +378,8 @@ fn guidefocus_gives_the_live_frame_position_of_the_first_goal_on_the_guide_zone(
 		GUIDE,
 		r#"
 			stub.world.addMap(1441, { name = "Thousand Needles", c = 1, left = 1000, right = -1000, top = 1000, bottom = -3000 })
-			Polestar.RegisterMapFrames({ era = { [1441] = { c = 1, left = 1100, right = -900, top = 1100, bottom = -2900 } } }, "test")
-			Polestar.RegisterGuide({ id = "test/era", pack = "test", title = "Era", faction = "Horde", minLevel = 1, maxLevel = 60, zone = 1441, steps = {
+			Northstar.RegisterMapFrames({ era = { [1441] = { c = 1, left = 1100, right = -900, top = 1100, bottom = -2900 } } }, "test")
+			Northstar.RegisterGuide({ id = "test/era", pack = "test", title = "Era", faction = "Horde", minLevel = 1, maxLevel = 60, zone = 1441, steps = {
 				{ goals = { { t = "goto", map = 1411, x = 10, y = 10 }, { t = "goto", map = 1441, x = 50, y = 50, f = "e" } } } } })
 		"#,
 	]
@@ -401,7 +401,7 @@ fn guidefocus_follows_the_current_step_of_a_guide_open_in_a_tab_and_its_start_ot
 	let guides = [
 		GUIDE,
 		r#"
-			Polestar.RegisterGuide({ id = "test/away", pack = "test", title = "Away", faction = "Horde", minLevel = 10, maxLevel = 20, zone = 1413, steps = {
+			Northstar.RegisterGuide({ id = "test/away", pack = "test", title = "Away", faction = "Horde", minLevel = 10, maxLevel = 20, zone = 1413, steps = {
 				{ goals = { { t = "goto", map = 1413, x = 40, y = 60 } } },
 				{ goals = { { t = "goto", map = 1411, x = 10, y = 10 } } },
 			} })

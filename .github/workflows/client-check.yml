@@ -1,7 +1,7 @@
 name: Client
 
 # Polestar Client (apps/client) on every pull request and push that touches it or the library it
-# builds on: a Linux release build, launched once (apps/client/release/smoke.sh: POLESTAR_SMOKE
+# builds on: a Linux release build, launched once (apps/client/release/smoke.sh: NORTHSTAR_SMOKE
 # on a virtual display, src-tauri/src/smoke.rs). The job fails when the window shows its fault
 # page or never loads, so a client that cannot open never reaches a release (0.1.1 opened on
 # an error on some Linux desktops). push and pull_request only, no secrets, read-only token.

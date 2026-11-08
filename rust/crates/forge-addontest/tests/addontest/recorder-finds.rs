@@ -1,4 +1,4 @@
-//! The recorder's fights and loot (addon/Polestar_Recorder/Finds.lua): the unit census, rare and treasure
+//! The recorder's fights and loot (addon/Northstar_Recorder/Finds.lua): the unit census, rare and treasure
 //! sightings, kills with their XP line, loot windows per source with the open item objectives, instance
 //! entrances and encounters, against tests/lua/stub_recorder.lua.
 

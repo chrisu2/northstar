@@ -1,10 +1,10 @@
-// JS reference world: node jsworld.js <faction>  (the JS reference checkout, scratch sim dir $POLESTAR_JSREF/simdir, CAS off)
-process.env.POLESTAR_CAS = 'off';
-process.env.POLESTAR_CAS_SKIP = 'walks';
-const ROOT = process.env.POLESTAR_JS;
-const REF = process.env.POLESTAR_JSREF;
+// JS reference world: node jsworld.js <faction>  (the JS reference checkout, scratch sim dir $NORTHSTAR_JSREF/simdir, CAS off)
+process.env.NORTHSTAR_CAS = 'off';
+process.env.NORTHSTAR_CAS_SKIP = 'walks';
+const ROOT = process.env.NORTHSTAR_JS;
+const REF = process.env.NORTHSTAR_JSREF;
 if (!ROOT || !REF || !process.argv[2]) {
-	console.error('usage: POLESTAR_JS=<checkout whose tools/ and data/ are the JS reference> POLESTAR_JSREF=<scratch dir> node jsworld.js <faction>');
+	console.error('usage: NORTHSTAR_JS=<checkout whose tools/ and data/ are the JS reference> NORTHSTAR_JSREF=<scratch dir> node jsworld.js <faction>');
 	process.exit(2);
 }
 process.chdir(ROOT);

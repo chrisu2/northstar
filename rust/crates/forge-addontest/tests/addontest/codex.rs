@@ -16,7 +16,7 @@ use regex::Regex;
 use serde_json::{json, Value};
 
 fn files() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua", "Core/Compat.lua", "Core/Data.lua", "Core/LuaChunks.lua", "Core/Names.lua", "Core/GuideTexts.lua", "Core/Guides.lua", "Lookup/Codex.lua"])
+	Addon::files("Northstar", &["Core/Init.lua", "Core/Compat.lua", "Core/Data.lua", "Core/LuaChunks.lua", "Core/Names.lua", "Core/GuideTexts.lua", "Core/Guides.lua", "Lookup/Codex.lua"])
 }
 
 fn run(script: &str, before: &str, pack: Option<&CodexPack>) -> Vec<Value> {
@@ -94,9 +94,9 @@ fn emitpack_round_trips_every_record_through_codex_lua() {
 	let ids = Regex::new(r#""(\w+)":"#).unwrap().replace_all(&ids, "$1=").into_owned();
 	let script = String::from(
 		r#"
-local ok, reason = Polestar.Codex.Load()
-emit({ ok = ok, reason = reason, schema = Polestar.Codex.Meta().schema, frame = Polestar.MapFrames.era[1429] ~= nil })
-local C = Polestar.Codex
+local ok, reason = Northstar.Codex.Load()
+emit({ ok = ok, reason = reason, schema = Northstar.Codex.Meta().schema, frame = Northstar.MapFrames.era[1429] ~= nil })
+local C = Northstar.Codex
 local out = { items = {}, npcs = {}, objects = {}, quests = {}, instances = {}, zones = {}, factions = {}, spells = {} }
 local ids = "#,
 	) + &ids
@@ -144,7 +144,7 @@ fn codex_each_walks_one_kind_with_names_and_item_quality_and_stops_on_false() {
 	let pack = write_codex_pack(&sample_codex(), &CodexOpts::default());
 	let out = run(
 		r#"
-local C = Polestar.Codex
+local C = Northstar.Codex
 local out = {}
 for _, kind in ipairs({ "item", "mount", "pet", "recipe", "tabard", "npc", "rare", "quest", "zone", "instance", "treasure", "object" }) do
 	local list = {}
@@ -201,11 +201,11 @@ fn emitpack_is_deterministic_and_splits_large_groups_across_files() {
 	let big = json!({ "meta": {}, "items": items });
 	let files = emit_codex(&big);
 	let file = |n: &str| files.iter().find(|(f, _)| f == n).map(|(_, t)| t.as_str()).unwrap_or_else(|| panic!("no {n}"));
-	let toc = file("Polestar_Codex.toc");
+	let toc = file("Northstar_Codex.toc");
 	assert!(is_match(toc, r"(?m)^## Interface: 16001$"));
 	assert!(is_match(toc, r"(?m)^## LoadOnDemand: 1$"));
-	assert!(is_match(toc, r"(?m)^## Dependencies: Polestar$"));
-	assert!(is_match(toc, r"(?m)^## Title: Polestar Codex$"));
+	assert!(is_match(toc, r"(?m)^## Dependencies: Northstar$"));
+	assert!(is_match(toc, r"(?m)^## Title: Northstar Codex$"));
 	assert_eq!(toc.split('\n').filter(|l| l.ends_with(".lua")).collect::<Vec<_>>(), vec!["Meta.lua", "Items1.lua", "Items2.lua", "Items3.lua", "Index.lua"]);
 	// Long strings, not table constructors: one Register call per chunk with the id range.
 	assert!(is_match(file("Items2.lua"), r#"(?m)^C\.Register\("item", "\\n4001\\t1\\tItem 4001\\n4002\\t"#));
@@ -213,7 +213,7 @@ fn emitpack_is_deterministic_and_splits_large_groups_across_files() {
 	let pack = write_codex_pack(&big, &CodexOpts::default());
 	let out = run(
 		r#"
-local C = Polestar.Codex
+local C = Northstar.Codex
 local out = {}
 for _, id in ipairs({ 1, 4000, 4001, 8000, 8001, 9000 }) do
 	local r = C.Item(id)
@@ -238,7 +238,7 @@ fn codex_index_serves_one_search_blob_per_kind_and_never_loads_the_pack() {
 	let pack = write_codex_pack(&codex, &CodexOpts::default());
 	let out = run(
 		r#"
-local C = Polestar.Codex
+local C = Northstar.Codex
 emit({ C.Index("mount") == nil, C.IsLoaded() })
 C.Load()
 local out = {}
@@ -305,12 +305,12 @@ fn foldname_folds_names_exactly_like_search_fold_without_its_leading_space() {
 		+ &list
 		+ r#" }
 local out = {}
-for i, n in ipairs(names) do out[i] = (Polestar.Search.Fold(n):gsub("^ ", "")) end
+for i, n in ipairs(names) do out[i] = (Northstar.Search.Fold(n):gsub("^ ", "")) end
 emit(out)
 "#;
 	let out = emitted(&RunAddon {
 		addons: vec![Addon::files(
-			"Polestar",
+			"Northstar",
 			&["Core/Init.lua", "Core/Compat.lua", "Core/Data.lua", "Core/LuaChunks.lua", "Core/Names.lua", "Core/GuideTexts.lua", "Core/Guides.lua", "Core/Search.lua"],
 		)],
 		script,
@@ -333,10 +333,10 @@ fn data_pack_reports_a_missing_pack_once_and_never_retries_it() {
 local n = 0
 local load = C_AddOns.LoadAddOn
 C_AddOns.LoadAddOn = function(name) n = n + 1; return load(name) end
-emit({ Polestar.Data.Pack("Polestar_Codex") })
-emit({ Polestar.Data.Pack("Polestar_Codex") })
+emit({ Northstar.Data.Pack("Northstar_Codex") })
+emit({ Northstar.Data.Pack("Northstar_Codex") })
 emit(n)
-emit(Polestar.Data.Info("Polestar_Codex"))
+emit(Northstar.Data.Info("Northstar_Codex"))
 "#,
 		"",
 		None,
@@ -356,18 +356,18 @@ local n = 0
 local load = C_AddOns.LoadAddOn
 C_AddOns.LoadAddOn = function(name) n = n + 1; return load(name) end
 function UpdateAddOnMemoryUsage() end
-function GetAddOnMemoryUsage(name) return name == "Polestar_Codex" and 1234.5 or 0 end
+function GetAddOnMemoryUsage(name) return name == "Northstar_Codex" and 1234.5 or 0 end
 local fired = 0
-Polestar.On("CODEX_LOADED", function(meta) fired = fired + (meta and 1 or 0) end)
+Northstar.On("CODEX_LOADED", function(meta) fired = fired + (meta and 1 or 0) end)
 stub.inCombat = true
-emit({ Polestar.Data.Pack("Polestar_Codex") })
-emit({ Polestar.Codex.Load() })
+emit({ Northstar.Data.Pack("Northstar_Codex") })
+emit({ Northstar.Codex.Load() })
 stub.inCombat = false
-emit({ Polestar.Data.Pack("Polestar_Codex") })
-emit({ Polestar.Codex.Load() })
-Polestar.Codex.Load()
+emit({ Northstar.Data.Pack("Northstar_Codex") })
+emit({ Northstar.Codex.Load() })
+Northstar.Codex.Load()
 emit(n)
-emit(Polestar.Data.Info("Polestar_Codex"))
+emit(Northstar.Data.Info("Northstar_Codex"))
 emit(fired)
 "#,
 		"",
@@ -390,8 +390,8 @@ C_AddOns.LoadAddOn = function(name)
 	if name == "Broken" then error("boom") end
 	return false, "DISABLED"
 end
-emit({ Polestar.Data.Pack("Polestar_Codex") })
-emit({ Polestar.Data.Pack("Broken") })
+emit({ Northstar.Data.Pack("Northstar_Codex") })
+emit({ Northstar.Data.Pack("Broken") })
 "#,
 		"",
 		None,
@@ -401,7 +401,7 @@ emit({ Polestar.Data.Pack("Broken") })
 }
 
 // A player who copies only some of the release zip's folders, or an old one over a new one, is told at login.
-// The stub's default TOC version is "0.1.0-test" for every addon, Polestar included.
+// The stub's default TOC version is "0.1.0-test" for every addon, Northstar included.
 fn login_with(addons: &[(&str, Option<&str>)]) -> Value {
 	let list = addons.iter().map(|(n, _)| format!("{{ name = \"{n}\" }}")).collect::<Vec<_>>().join(", ");
 	let meta = addons.iter().filter_map(|(n, v)| v.map(|v| format!("stub.addonMeta[\"{n}\"] = {{ Version = \"{v}\" }}"))).collect::<Vec<_>>().join("\n");
@@ -410,7 +410,7 @@ fn login_with(addons: &[(&str, Option<&str>)]) -> Value {
 		addons: vec![files()],
 		login: true,
 		script: r#"
-local missing, stale = Polestar.Data.CheckInstall()
+local missing, stale = Northstar.Data.CheckInstall()
 local said = {}
 for _, m in ipairs(stub.messages) do if m:find("Your install is mixed or incomplete", 1, true) then said[#said + 1] = m end end
 emit({ missing = table.concat(missing, ","), stale = table.concat(stale, ","), said = said })"#
@@ -422,7 +422,7 @@ emit({ missing = table.concat(missing, ","), stale = table.concat(stale, ","), s
 
 #[test]
 fn a_complete_install_of_one_version_says_nothing_at_login_the_optional_data_packs_may_be_absent() {
-	let out = login_with(&[("Polestar", None), ("Polestar_Guides", None), ("Polestar_Codex", None)]);
+	let out = login_with(&[("Northstar", None), ("Northstar_Guides", None), ("Northstar_Codex", None)]);
 	assert_eq!(out["missing"], "");
 	assert_eq!(out["stale"], "");
 	assert_eq!(len(&out["said"]), 0);
@@ -430,13 +430,13 @@ fn a_complete_install_of_one_version_says_nothing_at_login_the_optional_data_pac
 
 #[test]
 fn a_missing_codex_and_a_guides_folder_from_an_old_zip_are_named_once_in_chat_with_how_to_reinstall() {
-	let out = login_with(&[("Polestar", None), ("Polestar_Guides", Some("0.2.1")), ("Polestar_QuestDB", None)]);
-	assert_eq!(out["missing"], "Polestar_Codex");
-	assert_eq!(out["stale"], "Polestar_Guides 0.2.1");
+	let out = login_with(&[("Northstar", None), ("Northstar_Guides", Some("0.2.1")), ("Northstar_QuestDB", None)]);
+	assert_eq!(out["missing"], "Northstar_Codex");
+	assert_eq!(out["stale"], "Northstar_Guides 0.2.1");
 	assert_eq!(out["said"].as_array().unwrap().len(), 1);
 	let said = out["said"][0].as_str().unwrap();
-	assert!(is_match(said, r"\(Polestar 0\.1\.0-test, Polestar_Guides 0\.2\.1, Polestar_Codex not installed\)"));
-	assert!(is_match(said, r#"delete every Polestar folder.*not "Source code""#));
+	assert!(is_match(said, r"\(Northstar 0\.1\.0-test, Northstar_Guides 0\.2\.1, Northstar_Codex not installed\)"));
+	assert!(is_match(said, r#"delete every Northstar folder.*not "Source code""#));
 }
 
 // Our guides' part for the player's faction (format 8) ships in every release: without it the player has no
@@ -445,15 +445,15 @@ fn a_missing_codex_and_a_guides_folder_from_an_old_zip_are_named_once_in_chat_wi
 fn a_missing_faction_part_of_our_guides_is_named_at_login_the_other_faction_s_is_not() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
-		before: "stub.addons = { { name = \"Polestar\" }, { name = \"Polestar_Guides\" }, { name = \"Polestar_Codex\" }, { name = \"Polestar_Guides_Alliance\" } }\nstub.world.faction = \"Horde\""
+		before: "stub.addons = { { name = \"Northstar\" }, { name = \"Northstar_Guides\" }, { name = \"Northstar_Codex\" }, { name = \"Northstar_Guides_Alliance\" } }\nstub.world.faction = \"Horde\""
 			.into(),
 		addons: vec![files()],
 		login: true,
-		script: "local missing = Polestar.Data.CheckInstall()\nemit({ missing = table.concat(missing, \",\") })".into(),
+		script: "local missing = Northstar.Data.CheckInstall()\nemit({ missing = table.concat(missing, \",\") })".into(),
 		..Default::default()
 	})
 	.remove(0);
-	assert_eq!(out["missing"], "Polestar_Guides_Horde");
+	assert_eq!(out["missing"], "Northstar_Guides_Horde");
 }
 
 // ---------------------------------------------------------------------------
@@ -892,7 +892,7 @@ fn item_status_round_trips_through_the_pack_and_reaches_codex_each() {
 	codex["items"][ids[1].as_str()]["status"] = json!("nosource");
 	let pack = write_codex_pack(&codex, &CodexOpts::default());
 	let script = r#"
-local C = Polestar.Codex
+local C = Northstar.Codex
 emit({ C.Item(ID0).status, C.Item(ID1).status, C.Item(ID0).quality })
 local out = {}
 C.Each("mount", function(id, name, quality, status) out[tostring(id)] = (status or "-") .. "/" .. tostring(quality) end)
@@ -1047,7 +1047,7 @@ fn buildcodex_writes_deterministic_json_and_a_pack_whose_memory_it_measures() {
 	assert!(kb > 0.0 && decoded > kb, "{}", meta["pack"]);
 	assert!(meta["sources"].as_array().unwrap().iter().any(|s| s["name"] == "AtlasLootClassic" && s["licence"] == "GPL-2.0"), "{}", meta["sources"]);
 	assert_eq!(meta["localExtras"], true, "AtlasLoot, RareScanner and dungeons.json make a local build");
-	let toc = &a.pack.iter().find(|(f, _)| f == "Polestar_Codex.toc").unwrap().1;
+	let toc = &a.pack.iter().find(|(f, _)| f == "Northstar_Codex.toc").unwrap().1;
 	assert!(is_match(toc, r"(?m)^Meta\.lua$"));
 	let licence = &a.pack.iter().find(|(f, _)| f == "LICENSE-DATA.txt").unwrap().1;
 	assert!(licence.contains("LOCAL BUILD (--local-extras)"), "{licence}");
@@ -1088,7 +1088,7 @@ fn spawn_heights_round_trip_through_codex_lua_on_the_point_they_belong_to_1024()
 	let pack = write_codex_pack(&codex, &CodexOpts::default());
 	let out = run(
 		r#"
-local C = Polestar.Codex
+local C = Northstar.Codex
 C.Load()
 local function pts(r)
 	local o = {}
@@ -1191,7 +1191,7 @@ fn codex_services_retain_exact_spawns_trainer_titles_and_mailbox_factions_throug
 	assert!(codex["npcs"]["77777"]["subName"].is_null(), "titles ride only on service NPCs");
 	assert_eq!(codex["objects"]["99999"]["spawns"].as_array().unwrap().len(), 3, "unreferenced mailboxes retain every physical point");
 	let pack = write_codex_pack(&codex, &CodexOpts::default());
-	let out = run("local C=Polestar.Codex; C.Load(); emit({npc=C.Npc(198),box=C.Object(99999),points=#C.Npc(4730).spawns})", "", Some(&pack));
+	let out = run("local C=Northstar.Codex; C.Load(); emit({npc=C.Npc(198),box=C.Object(99999),points=#C.Npc(4730).spawns})", "", Some(&pack));
 	let out = &out[0];
 	assert_eq!(out["npc"]["subName"], "Mage Trainer");
 	assert_eq!(out["points"], 28);
@@ -1206,7 +1206,7 @@ fn codex_optional_service_tails_escape_punctuation_and_work_without_any_spawns()
 	codex["npcs"]["88888"] = json!({ "id": 88888, "name": "Trainer", "subName": "Mage, Trainer; 100%~", "faction": "A", "roles": ["trainer"], "spawns": [], "loot": [] });
 	codex["objects"]["88888"] = json!({ "id": 88888, "name": "Mailbox", "mailbox": true, "faction": null, "spawns": [], "loot": [] });
 	let pack = write_codex_pack(&codex, &CodexOpts::default());
-	let out = run("local C=Polestar.Codex; C.Load(); emit({npc=C.Npc(88888),box=C.Object(88888)})", "", Some(&pack));
+	let out = run("local C=Northstar.Codex; C.Load(); emit({npc=C.Npc(88888),box=C.Object(88888)})", "", Some(&pack));
 	let out = &out[0];
 	assert_eq!(out["npc"]["subName"], "Mage, Trainer; 100%~");
 	assert_eq!(len(&out["npc"]["spawns"]), 0);

@@ -15,7 +15,7 @@ w.titles[871] = "Disrupt the Attacks"; w.titles[872] = "Supplies for the Crossro
 // Quest 872 needs 871 done (pre), 880 needs level 14, 870 is simply not offered (another chain), all from Thork
 // (3429) at the Crossroads.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 	{ title = "Thork", goals = {
 		{ t = "accept", quest = 872, title = "Supplies for the Crossroads", npc = 3429, npcName = "Thork", pre = { 871 }, map = 1413, x = 51, y = 30 },
 		{ t = "accept", quest = 880, title = "Altered Beings", npc = 3429, npcName = "Thork", minLevel = 14 },
@@ -34,7 +34,7 @@ Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", fa
 } })
 "#;
 
-const HELPERS: &str = r#"			E = Polestar.Engine
+const HELPERS: &str = r#"			E = Northstar.Engine
 			function flush() stub.advance(0.25) end
 			function brief(i)
 				local out = {}
@@ -43,14 +43,14 @@ const HELPERS: &str = r#"			E = Polestar.Engine
 			end
 			stub.login()
 			E.SetGuide("test/xr")
-			Polestar.Set("behavior.autoAccept", false) -- the tests take quests themselves
+			Northstar.Set("behavior.autoAccept", false) -- the tests take quests themselves
 			"#;
 
 fn run(before: &str, guides: &str, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: format!("{TEST_PACK}\n{TEST_SOURCE}\n{guides}\n{HELPERS}{script}"),
 		..Default::default()
 	})
@@ -212,7 +212,7 @@ fn t_161_a_level_up_or_a_turn_in_clears_the_marks_of_the_step_at_hand_so_its_giv
 fn t_161_741_a_quest_the_giver_refused_although_the_data_allows_it_holds_the_guide_at_that_giver_until_offered() {
 	// Dalar (1938) at the Sepulcher: 98299's data says level 9, the server wants more.
 	let guides = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Silverpine", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Silverpine", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 		{ title = "The Sepulcher", goals = {
 			{ t = "accept", quest = 98299, title = "Stop the Spread", npc = 1938, npcName = "Dalar Dawnweaver", minLevel = 9 },
 		} },
@@ -274,7 +274,7 @@ fn t_127_a_quest_the_giver_s_window_lists_as_active_is_taken_not_refused_before_
 fn prerequisites_every_preall_must_be_done_one_pre_suffices_the_text_names_the_missing_one() {
 	// 890 needs 871 and 873 (preAll); 891 needs 871 or 873 (pre). Only 871 is done.
 	let guide = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 		{ title = "Thork", goals = {
 			{ t = "accept", quest = 890, title = "Both First", npc = 3429, npcName = "Thork", preAll = { 871, 873 }, preTitles = { [873] = "The Other Errand" } },
 			{ t = "accept", quest = 891, title = "Either First", npc = 3429, npcName = "Thork", pre = { 871, 873 } },
@@ -297,7 +297,7 @@ fn prerequisites_every_preall_must_be_done_one_pre_suffices_the_text_names_the_m
 // Issue #70 (The Barrens 19-24, step 9): Sergra Darkthorn's Jorn Skyseer (3261) needs The Angry Scytheclaws
 // (905), the end of her chain in the earlier Barrens guide. Jorn's Ishamuhale (882) follows Jorn Skyseer.
 const CROSSROADS: &str = r#"
-Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 19, maxLevel = 24, steps = {
+Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 19, maxLevel = 24, steps = {
 	{ title = "The Crossroads", goals = {
 		{ t = "accept", quest = 899, title = "Consumed by Hatred", npc = 3432, npcName = "Mankrik", map = 1413, x = 51.95, y = 31.58 },
 		{ t = "accept", quest = 3261, title = "Jorn Skyseer", npc = 3338, npcName = "Sergra Darkthorn", pre = { 905 }, preTitles = { [905] = "The Angry Scytheclaws" }, map = 1413, x = 52.23, y = 31.01 },
@@ -360,7 +360,7 @@ fn a_missing_prerequisite_the_guide_still_turns_in_before_the_accept_or_after_it
 	// Thork's 872 needs 871 (pre). Taken before 871 is handed in (against lint's order: a data error or a
 	// guide's), then 5041 after it, by the rule.
 	let guide = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 		{ title = "Thork", goals = {
 			{ t = "accept", quest = 871, title = "Disrupt the Attacks", npc = 3429, npcName = "Thork", map = 1413, x = 51, y = 30 },
 			{ t = "accept", quest = 872, title = "Supplies for the Crossroads", npc = 3429, npcName = "Thork", pre = { 871 }, map = 1413, x = 51, y = 30 },
@@ -398,7 +398,7 @@ fn a_prerequisite_the_guide_has_only_for_other_characters_is_another_version_of_
 	// the Dwarf's (7670) is missing from the data. Here the character is an Orc, and 7670 stands for their own
 	// version.
 	let guide = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Charger", minLevel = 10, maxLevel = 60, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Charger", minLevel = 10, maxLevel = 60, steps = {
 		{ title = "Grayson", goals = {
 			{ t = "accept", quest = 7638, title = "Lord Grayson Shadowbreaker", npc = 1, npcName = "Duthorian Rall", only = { races = { "Human" } }, map = 1413, x = 51, y = 30 },
 			{ t = "turnin", quest = 7638, title = "Lord Grayson Shadowbreaker", npc = 2, npcName = "Lord Grayson", only = { races = { "Human" } }, map = 1413, x = 51, y = 30 },
@@ -415,7 +415,7 @@ fn a_prerequisite_the_guide_has_only_for_other_characters_is_another_version_of_
 fn an_accept_closed_for_good_its_breadcrumb_target_or_an_exclusive_quest_taken_or_done_is_skipped_before_any_visit_with_the_quest_s_later_goals() {
 	// 1483 leads to 1093 (a breadcrumb); 1507 is exclusive with 1472 (the Undercity version of the chain).
 	let guide = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Ratchet", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Ratchet", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
 		{ title = "Givers", goals = {
 			{ t = "accept", quest = 1483, title = "Ziz Fizziks", npc = 3442, npcName = "Sputtervalve", closedBy = { 1093 }, preTitles = { [1093] = "Super Reaper 6000" }, map = 1413, x = 62, y = 37 },
 			{ t = "accept", quest = 1507, title = "Devourer of Souls", npc = 5875, npcName = "Gan'rul Bloodeye", closedBy = { 1472 }, preTitles = { [1472] = "Devourer of Souls" } },
@@ -442,7 +442,7 @@ fn an_accept_closed_for_good_its_breadcrumb_target_or_an_exclusive_quest_taken_o
 #[test]
 fn when_a_mark_moves_the_guide_on_the_guide_window_says_which_quest_was_skipped_and_why_a_normal_completion_says_nothing() {
 	let guide = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
 		{ title = "Thork", goals = { { t = "accept", quest = 870, title = "The Forgotten Pools", npc = 3429, npcName = "Thork", closedBy = { 871 }, preTitles = { [871] = "Disrupt the Attacks" }, map = 1413, x = 51.5, y = 30.3 } } },
 		{ title = "Gazrog", goals = { { t = "accept", quest = 869, title = "Raptor Thieves", npc = 3464, npcName = "Gazrog", map = 1413, x = 51.9, y = 30.8 } } },
 		{ goals = { { t = "level", level = 30 } } },
@@ -450,18 +450,18 @@ fn when_a_mark_moves_the_guide_on_the_guide_window_says_which_quest_was_skipped_
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::name("Polestar")],
+		addons: vec![Addon::name("Northstar")],
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,
 			guide,
-			r#"			local E, w = Polestar.Engine, stub.world
-			local B = Polestar.UI.GuideFrame.parts.banner
+			r#"			local E, w = Northstar.Engine, stub.world
+			local B = Northstar.UI.GuideFrame.parts.banner
 			local function banner() return B:IsShown() and B.Text:GetText() or false end
 			stub.login()
 			E.SetGuide("test/xr")
 			stub.fire("QUEST_LOG_UPDATE") -- the client fills the quest log after login
-			Polestar.Set("behavior.autoAccept", false)
+			Northstar.Set("behavior.autoAccept", false)
 			stub.advance(0.5)
 			local r = { before = banner() }
 			w.accept(871, {}); stub.advance(0.5) -- taken elsewhere: Thork never offers 870 again
@@ -485,13 +485,13 @@ fn when_a_mark_moves_the_guide_on_the_guide_window_says_which_quest_was_skipped_
 
 // Farm spots for `collect 2589 x20 nearest` (Linen Cloth).
 const FARM: &str = r#"
-	Polestar.RegisterGuide({ id = "test/farm", pack = "test", title = "Linen", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
+	Northstar.RegisterGuide({ id = "test/farm", pack = "test", title = "Linen", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
 		{ goals = { { t = "collect", item = 2589, itemName = "Linen Cloth", count = 20, candidates = { SPOTS } } } },
 		{ goals = { { t = "level", level = 60 } } },
 	} })
 "#;
 
-const FARM_SCRIPT: &str = r#"			E = Polestar.Engine
+const FARM_SCRIPT: &str = r#"			E = Northstar.Engine
 			stub.login()
 			E.SetGuide("test/farm")
 			local v = E.GetStepView(1).goals[1]
@@ -502,7 +502,7 @@ fn farm_pick(spots: &str, before: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: [TEST_PACK, TEST_SOURCE, &farm, FARM_SCRIPT].join("\n"),
 		..Default::default()
 	})

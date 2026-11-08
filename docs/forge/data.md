@@ -10,7 +10,7 @@ in [model.md](model.md), the walking maps in [nav.md](nav.md), and the routes an
 in [routes.md](routes.md).
 
 In the examples, `forge` is the binary built by `cargo build --release -p forge` in `rust/`
-(`rust/target/release/forge`). Run the commands from inside a Polestar checkout: most of them find
+(`rust/target/release/forge`). Run the commands from inside a Northstar checkout: most of them find
 the checkout by looking for `forever-db/corrections/quests.json` (or `data/sources`) in the folders
 above the current one. Pass `--root DIR` when you are somewhere else.
 
@@ -55,7 +55,7 @@ The code is in `rust/crates/forge-gamedata/src/`: `casc.rs`, `blte.rs`, `db2.rs`
 
 **Table definitions are read at runtime.** A DB2 file does not name its columns. Forge reads the
 column names and types from an open set of table definitions, kept as a local checkout in
-`data/sources/wowdbdefs` (or `--defs DIR`). Nothing from that set is copied into Polestar; it is
+`data/sources/wowdbdefs` (or `--defs DIR`). Nothing from that set is copied into Northstar; it is
 credited in [rust/NOTICE.md](../../rust/NOTICE.md). When the checkout is missing, `forge gamedata`
 stops and prints the exact `git clone` command to get it. When a new game build changes a table's
 layout, update that checkout.
@@ -78,11 +78,11 @@ not an error.
 Forge uses the first of these that exists:
 
 1. `--wow DIR` on the command line.
-2. The `POLESTAR_WOW_DIR` environment variable.
+2. The `NORTHSTAR_WOW_DIR` environment variable.
 3. The folder Forge remembered: any command given `--wow` saves it as a `wow = "<folder>"` line in
    Forge's config file `polestar-forge/config.toml` in your config
    folder (`$XDG_CONFIG_HOME` or `~/.config` on Linux, `~/Library/Application Support` on macOS,
-   `%APPDATA%` on Windows), or the file named by `POLESTAR_FORGE_CONFIG`. `forge doctor --forget`
+   `%APPDATA%` on Windows), or the file named by `NORTHSTAR_FORGE_CONFIG`. `forge doctor --forget`
    clears it.
 4. A search of the usual Wine, Lutris, Bottles and Steam prefixes in your home folder, then the
    native install folders.
@@ -228,7 +228,7 @@ Without `--kb`, `data/forever/` gets:
 | `meta.json` | the sources, their versions and licences, counts, and the build time |
 
 `--built-at ISO` (or `SOURCE_DATE_EPOCH`) fixes the timestamp in `meta.json`, so two builds of the same
-inputs give the same bytes. `POLESTAR_DATA_TIMES=1` prints how long each phase took.
+inputs give the same bytes. `NORTHSTAR_DATA_TIMES=1` prints how long each phase took.
 
 ### `--kb`: the knowledge base build
 
@@ -282,20 +282,20 @@ first.
 
 | Command | Writes | Reads |
 |---|---|---|
-| `forge data trainers` | `data/forever/trainers.json`, `addon/Polestar/Core/ClassTrainers.lua` | a curated list of class trainers, every `train <npc> only <Class>` step in `guides/`, and recorded trainer visits |
-| `forge data travel` | `data/forever/travel.json`, `addon/Polestar/Nav/TravelData.lua`, `addon/Polestar/Maps/FlightPaths.lua`; the local `Polestar_Travel` addon when `data/local/crossings.json` exists | flight paths, boats and zeppelins with their timetables, inns, zone crossings (`data/crossings.json`), recorded paths, and the walking grid (`--grid DIR`, or `--grid none`) |
+| `forge data trainers` | `data/forever/trainers.json`, `addon/Northstar/Core/ClassTrainers.lua` | a curated list of class trainers, every `train <npc> only <Class>` step in `guides/`, and recorded trainer visits |
+| `forge data travel` | `data/forever/travel.json`, `addon/Northstar/Nav/TravelData.lua`, `addon/Northstar/Maps/FlightPaths.lua`; the local `Northstar_Travel` addon when `data/local/crossings.json` exists | flight paths, boats and zeppelins with their timetables, inns, zone crossings (`data/crossings.json`), recorded paths, and the walking grid (`--grid DIR`, or `--grid none`) |
 | `forge data professions` | `data/forever/professions.json` (or `--out FILE`) | the game's profession tables, items, NPCs and vendor stock |
 | `forge data dungeons` | `data/forever/dungeons.json` (or `--out FILE`) | a dungeon journal addon installed in your client (`--source DIR`); only facts (ids, names, levels, places, rewards, chains), none of its text |
-| `forge data codex` | `data/forever/codex/*.json` and `addon/Polestar_Codex` | `data/forever`, the game's tables, Polestar's guides and curated tables, the recorded item sources `data/codex/recorded.json` (`--recordings DIR` rewrites it first from a recordings folder) |
-| `forge data gear` | `addon/Polestar_ItemDB/…`, `addon/Polestar/Gear/SpecData.lua`, `data/forever/gear/report.json` | an installed gear addon (`--addons DIR`), Polestar's item database and weights |
+| `forge data codex` | `data/forever/codex/*.json` and `addon/Northstar_Codex` | `data/forever`, the game's tables, Northstar's guides and curated tables, the recorded item sources `data/codex/recorded.json` (`--recordings DIR` rewrites it first from a recordings folder) |
+| `forge data gear` | `addon/Northstar_ItemDB/…`, `addon/Northstar/Gear/SpecData.lua`, `data/forever/gear/report.json` | an installed gear addon (`--addons DIR`), Northstar's item database and weights |
 | `forge data sim-inputs --out DIR` | the game-table and server-fact files the simulator's world reads beside `data/forever`, in the `data/sources` layout | the installed client (or the cached tables) and the cached server facts |
 | `forge data extracts --out DIR` | the server-fact extracts, rebuilt from the pinned database dump in `data/sources` | for checking the cached extracts |
-| `forge data itemdb` | `addon/Polestar_ItemDB/Items.lua` and its TOC (size budget 1 MiB) | the Classic Era item tables (ItemSparse, Item, ItemEffect, SpellEffect) |
-| `forge data names [<locale>...]` | `Names.lua`, `LICENSE-DATA.txt`, `CREDITS.md` and the TOC in the language folders `addon/Polestar_<locale>` (committed; our guides' `Texts.lua` there is left alone): the data's names in each client language; `--offline`, `--no-questie`, `--no-tables`, `--build`, `--sources`, `--ding`, `--pfquest`, `--guides`, `--questdb`, `--codex`, `--travel`, `--chokepoints`, `--out`, `--json` (`polestar i18n names` retired) | the client's tables (wago.tools, cached), the cached web quest database names, DingDB (pinned), pfQuest; the ids of the compiled guides, `addon/Polestar_QuestDB`, `data/forever/codex`, the travel data and the chokepoints |
-| `forge data questdb` | `addon/Polestar_QuestDB` (local; in the release zip when built): each kind's records as LuaChunks strings, decoded when read; `--radius YD`, `--droppers N`, `--json` | `data/forever` (quests, npcs, objects, items, map-frames) |
-| `forge data talents build` | `addon/Polestar/Talents/Builds.lua`; `check` fails when it is out of date or a plan breaks a rule | the plans in `talents/forever/*.json` and the Forever client's trait tables at a pinned build |
-| `forge data maps build` | `addon/Polestar/Maps/ZoneLevels.lua` | `data/forever` (npcs, zones, map frames) |
-| `forge data maps overlays` | `addon/Polestar/UI/ZoneArtOverlays.lua` | the Forever client's map-art tables at a pinned build |
+| `forge data itemdb` | `addon/Northstar_ItemDB/Items.lua` and its TOC (size budget 1 MiB) | the Classic Era item tables (ItemSparse, Item, ItemEffect, SpellEffect) |
+| `forge data names [<locale>...]` | `Names.lua`, `LICENSE-DATA.txt`, `CREDITS.md` and the TOC in the language folders `addon/Northstar_<locale>` (committed; our guides' `Texts.lua` there is left alone): the data's names in each client language; `--offline`, `--no-questie`, `--no-tables`, `--build`, `--sources`, `--ding`, `--pfquest`, `--guides`, `--questdb`, `--codex`, `--travel`, `--chokepoints`, `--out`, `--json` (`polestar i18n names` retired) | the client's tables (wago.tools, cached), the cached web quest database names, DingDB (pinned), pfQuest; the ids of the compiled guides, `addon/Northstar_QuestDB`, `data/forever/codex`, the travel data and the chokepoints |
+| `forge data questdb` | `addon/Northstar_QuestDB` (local; in the release zip when built): each kind's records as LuaChunks strings, decoded when read; `--radius YD`, `--droppers N`, `--json` | `data/forever` (quests, npcs, objects, items, map-frames) |
+| `forge data talents build` | `addon/Northstar/Talents/Builds.lua`; `check` fails when it is out of date or a plan breaks a rule | the plans in `talents/forever/*.json` and the Forever client's trait tables at a pinned build |
+| `forge data maps build` | `addon/Northstar/Maps/ZoneLevels.lua` | `data/forever` (npcs, zones, map frames) |
+| `forge data maps overlays` | `addon/Northstar/UI/ZoneArtOverlays.lua` | the Forever client's map-art tables at a pinned build |
 
 `itemdb`, `talents` and `maps overlays` fetch a missing table into `data/sources` unless `--offline`;
 `codex`, `professions` and `travel` read the cache only: `forge data sources --only builders` fills it.
@@ -312,7 +312,7 @@ the build. ARCHITECTURE, "Codex", has the rules.
 `forge data codex --local-extras` builds a Codex for your machine only. On top of the release
 inputs it merges the installed AtlasLoot (GPL-2.0) and RareScanner (no redistribution) and
 `data/forever/dungeons.json`, and it skips the cached web facts. It writes to
-`data/local/codex-extras` and `data/local/codex-extras/Polestar_Codex` unless you pass `--out` and
+`data/local/codex-extras` and `data/local/codex-extras/Northstar_Codex` unless you pass `--out` and
 `--pack`. Its meta says `localExtras`, its `LICENSE-DATA.txt` says not to share it, and `forge pack`
 refuses it. A release build compares itself with this build when it exists (`meta.parity`).
 
@@ -324,7 +324,7 @@ stage is skipped when none of its inputs changed: the client's `.build.info`, Fo
 
 ## Corrections
 
-`forever-db/corrections/` is Polestar's own list of fixes to the merged data: one file per section
+`forever-db/corrections/` is Northstar's own list of fixes to the merged data: one file per section
 (`quests.json`, `npcs.json`, `objects.json`, `items.json`, `mechanics.json`), each keyed by id. It is
 committed, reviewed like code, and ranks above every other source except our recordings. It lives in
 the public database's folder ([below](#the-public-database-forever-db)), whose README documents
@@ -356,7 +356,7 @@ checks, never a website. An entry in `npcs.json`:
 
 Rules:
 
-- One entry per fact, with its source. A fix whose only support is a source Polestar does not
+- One entry per fact, with its source. A fix whose only support is a source Northstar does not
   publish goes in the maintainer's private overlay (`data/local/corrections-private.json`, same
   shape; its mechanics may also sit under `mechanics.quests`), which `data build` merges over the
   public files when present.
@@ -386,7 +386,7 @@ from a website.
 | A hand-checked fix of how a quest is done, over every layer | `forever-db/corrections/mechanics.json` | `forge data build --kb` |
 | A quest step's or note's wording, place or confidence in the public database | `forever-db/corrections/notes.json` | `forge data publish` |
 | How a quest is done beyond its objectives: an item summons the target, an object must be clicked, the giver offers the next quest after a short scene | `data/mechanics-public.json` | `forge data build --kb` (`mechanics.json`), then `forge build` and `forge data pack` |
-| Whether the route takes a quest: always (`include`), never (`skip`), or undo one of the cut's edits (`revert`); an order players asked for (`deliberate`) | `data/route-fixes.json` | the routes stage, from the checkout being built (or the file `POLESTAR_ROUTE_FIXES` names) |
+| Whether the route takes a quest: always (`include`), never (`skip`), or undo one of the cut's edits (`revert`); an order players asked for (`deliberate`) | `data/route-fixes.json` | the routes stage, from the checkout being built (or the file `NORTHSTAR_ROUTE_FIXES` names) |
 
 A data mistake belongs in the data files, not in the overrides: every tool then sees the fix.
 
@@ -546,8 +546,8 @@ To list them across every start (a "help us with these quests" list):
 forge sim skips --reason missing-info --dir out/routes
 ```
 
-`out/routes` is the `routes/` folder of a `forge build --out out` run (or set `POLESTAR_ROUTES`). The
-simulator reads the KB from `data/local/kb/forever-kb.sqlite`, or the file named by `POLESTAR_KB`, fresh
+`out/routes` is the `routes/` folder of a `forge build --out out` run (or set `NORTHSTAR_ROUTES`). The
+simulator reads the KB from `data/local/kb/forever-kb.sqlite`, or the file named by `NORTHSTAR_KB`, fresh
 on every run: a correction shows up in the next route. See [routes.md](routes.md) for the skip
 list and its other reasons.
 
@@ -558,7 +558,7 @@ the public part, so `forge build` works without them. The code is `rust/crates/f
 `fetch.rs`. The list of what goes in is `rust/crates/forge/src/pack-spec.json`.
 
 **No public data pack has been published yet.** Once it is, `forge data fetch` downloads it from
-the `data-pack` release of the Polestar repository. Until then, `forge data fetch` says so; build
+the `data-pack` release of the Northstar repository. Until then, `forge data fetch` says so; build
 from your own game client instead (`forge build --wow <path>`).
 
 ### What is in it
@@ -567,7 +567,7 @@ from your own game client instead (`forge build --wow <path>`).
   (CC BY-SA 4.0, with their licence file and credit);
 - an open quest database and extracts from an open Classic server database, used as facts;
 - EG Link's quest answers (CC BY 4.0);
-- Polestar's own files: the corrections (`forever-db/corrections`), the availability rules, the simulator's calibration,
+- Northstar's own files: the corrections (`forever-db/corrections`), the availability rules, the simulator's calibration,
   the nav map list, the shipped zone crossings;
 - the KB's public part (below), including Factoruide's facts (its databases are GPL-2.0-or-later, taken
   under GPL-3.0);
@@ -602,7 +602,7 @@ So a pack user's routes leave out the same uncertain quests, and their skip list
 **Not in the pack**, and listed under `requires` in the manifest:
 
 - **The navigation grid.** It is built from your own client's map tiles: `forge build` makes it from
-  the game (the grid stage), or takes `--grid DIR` (or `POLESTAR_GRID`). The walks on your grid are
+  the game (the grid stage), or takes `--grid DIR` (or `NORTHSTAR_GRID`). The walks on your grid are
   routed on your machine; the pack's Leffe walks answer every walk they hold.
 - **Forever's quest data** (Questie and QuestieDB, https://github.com/Questie: no data licence stated; used with credit, with the Questie maintainers' agreement. Questie's code is moving to GPL-3.0). Neither its files nor facts from it are
   packed. Forge reads it from your installed addon. Without it the data has fewer quest facts and the
@@ -617,7 +617,7 @@ forge data fetch --url ./dist/polestar-data-pack.json   # a local or test pack
 ```
 
 1. It reads the index, `polestar-data-pack.json`: by default from the `data-pack` release, or
-   `$POLESTAR_DATA_PACK_URL`, or `--url` (a URL, a local path, or `file://`).
+   `$NORTHSTAR_DATA_PACK_URL`, or `--url` (a URL, a local path, or `file://`).
 2. It downloads the archive next to the index, `polestar-data-pack.tar.gz`, and each separate asset
    the index lists (none today).
 3. It checks each archive's size and **BLAKE3** checksum against the index, and refuses an archive that
@@ -628,7 +628,7 @@ forge data fetch --url ./dist/polestar-data-pack.json   # a local or test pack
 6. Only then does it replace the previous pack. A failed fetch leaves the old pack as it was.
 7. It prints what the pack needs but does not hold (the grid, Forever's quest data).
 
-The destination is `--dest DIR`, else `$POLESTAR_DATA_PACK`, else `polestar/data-pack` in your data
+The destination is `--dest DIR`, else `$NORTHSTAR_DATA_PACK`, else `polestar/data-pack` in your data
 folder (`$XDG_DATA_HOME` or `~/.local/share` on Linux, `~/Library/Application Support` on macOS,
 `%LOCALAPPDATA%` on Windows). Unpacked, most of the pack is walk stores.
 
@@ -660,7 +660,7 @@ forge data pack --out dist --walks-from out
 - `--walks-from DIR`: a `forge build` output whose `walks/store-*.psbn` go in. Without it, no walk
   stores.
 - `--grid DIR`: the grid those stores were built on (default `data/local/nav4`). Its content hash is
-  recorded in the manifest. Set `POLESTAR_NAV_FP` to the walk model fingerprint of that build.
+  recorded in the manifest. Set `NORTHSTAR_NAV_FP` to the walk model fingerprint of that build.
 
 Build the `--walks-from` output with Leffe's maps (`--leffe`), so its `store-leffe-*.psbn` hold his
 walks and each place's zone on his maps. Never pass his maps to the pack: they are private.
@@ -685,7 +685,7 @@ URL. A file that is not under a source with a licence does not go in.
 
 ## The public database (forever-db)
 
-`forever-db/` at the repository's root is Polestar's open quest database for World of Warcraft:
+`forever-db/` at the repository's root is Northstar's open quest database for World of Warcraft:
 Forever: the values an independent source holds, in a clean schema of our own, without per-value
 source names. It is self-contained (nothing in it names a path outside it), so it can move to a
 repository of its own later. Its README is the contributor guide; this section is the
@@ -752,7 +752,7 @@ map frames), `Quest(id)`, `Steps(questId)`, `Notes(questId)`, `.version`, `.clie
 
 Records are text in long-string chunks of 500, decoded on first read into a weak cache; no table is
 built per record at load, and spawn points take 11 characters each. The encoder and its Lua reader
-are shared with Polestar's own data packs: `forge-core`'s `luachunks.rs` and `luachunks.lua`.
+are shared with Northstar's own data packs: `forge-core`'s `luachunks.rs` and `luachunks.lua`.
 Measured on the 2026.10.1 release (Lua 5.1, the AddonSizeOptimisation method: two full collects
 around the load): 3.6 MiB on disk, 3.6 MiB resident after loading, 5.5 MiB with 1,000 random
 records held, 0.01 s to load. `tests/lua/libforeverdata_test.lua` checks a library against its
@@ -766,7 +766,7 @@ release's tables; `cargo test -p forge-data --test publish` runs it.
 - `lib-v<api>.<version>` (`.github/workflows/lib-release.yml`), for example `lib-v1.2026.10.1`: the
   library is generated from the committed folder, its Lua test runs, and
   `LibForeverData-<version>.zip` is attached.
-- Polestar's own `v*` releases are unchanged and stay the repository's latest.
+- Northstar's own `v*` releases are unchanged and stay the repository's latest.
 - A pull request that touches `forever-db/` runs `data-corrections.yml`: the edit's check, a public
   release from the base branch's corrections and from the pull request's, the guard on both, and the
   value diff as the job summary.
@@ -801,8 +801,8 @@ the forge for a maintainer's round with `--features forge-data/local-sources`.
 | the data build says it is building without Forever's quest data, or the report says the data was built without it | no Forever client with the quest data addon was found | install it, or pass `--questie <AddOns folder>`. Without it, quest facts are fewer; corrections still apply. |
 | `warning: correction not applied: quests <id>: no such record, and the correction lacks …` | the build has no such record and the correction cannot stand alone | add the fields it names (`title`, `start`, `end`; or `name` and `addSpawns`), or check the id |
 | `forge data check-corrections` reports errors | an edit to corrections, the public mechanics or the overrides is malformed or names a missing id | fix the entry at the JSON path it prints |
-| stderr says the Forever tables come from the cached copies | no client found, or no table definitions in `data/sources/wowdbdefs` | set `POLESTAR_WOW_DIR` or pass `--wow`; get the definitions (`forge gamedata list` prints the clone command) |
-| `no World of Warcraft folder found; pass --wow or set POLESTAR_WOW_DIR` | the search found no `.build.info` | pass `--wow` with the folder that holds `.build.info` |
+| stderr says the Forever tables come from the cached copies | no client found, or no table definitions in `data/sources/wowdbdefs` | set `NORTHSTAR_WOW_DIR` or pass `--wow`; get the definitions (`forge gamedata list` prints the clone command) |
+| `no World of Warcraft folder found; pass --wow or set NORTHSTAR_WOW_DIR` | the search found no `.build.info` | pass `--wow` with the folder that holds `.build.info` |
 | `--build …: the installed … is …` | you asked for a build that is not installed | use `--build auto`; the local storage holds only the installed build |
 | `… not in the local storage (is the deDE text locale installed?)` | that text language is not installed | use `--locale enUS`, or install the language in the launcher |
 | `section N: encrypted with TACT key …; K records skipped` | encrypted rows were skipped | nothing; this is expected |
@@ -812,7 +812,7 @@ the forge for a maintainer's round with `--features forge-data/local-sources`.
 | `warning: <dungeon>: quest … has no … position` (`forge data dungeons`) | the journal has no place for that quest | usually harmless; the quest is not in solo routes |
 | `run forge data fetch (or pass --root <checkout>)` | no `data/sources` and no pack | fetch the pack, or point at a checkout with sources |
 | `the data pack has no navigation grid (it is built from your own client) and no client … was found` | a pack build found no game client to build the grid from | pass `--wow <client>`, or `--grid <dir>` with a grid you built ([nav.md](nav.md)) |
-| `…: not the published pack` | the download is incomplete or changed | fetch again; check `--url` and `POLESTAR_DATA_PACK_URL` |
+| `…: not the published pack` | the download is incomplete or changed | fetch again; check `--url` and `NORTHSTAR_DATA_PACK_URL` |
 | `…: in the pack but not in its manifest`, or a file's BLAKE3 differs | the unpacked pack does not match its manifest | fetch again; the old pack is untouched |
 | `the pack holds private data; nothing written` | the guard found something private | remove it from the pack's sources; never exempt it |
 | a quest you expect is not in a route | it may be skipped for `missing-info` | `forge sim skips --reason missing-info --dir out/routes`, then fix the data the row names |

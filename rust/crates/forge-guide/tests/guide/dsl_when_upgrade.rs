@@ -1,5 +1,5 @@
 //! `when upgrade <item>` on a step (docs/GUIDE_FORMAT.md, "Gear upgrades"): the step is for characters
-//! Polestar's gear advice says the item would help. The parser's predicate and errors, the resolver's item
+//! Northstar's gear advice says the item would help. The parser's predicate and errors, the resolver's item
 //! check and contradiction warning, the emitted table and the pack format. Fixture data:
 //! tests/fixtures/dsl/data.
 

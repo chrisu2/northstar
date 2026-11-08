@@ -1,5 +1,5 @@
-//! Game names in the client's language (addon/Polestar/Core/Names.lua and its
-//! consumers) on a fake French client with a small Polestar_frFR
+//! Game names in the client's language (addon/Northstar/Core/Names.lua and its
+//! consumers) on a fake French client with a small Northstar_frFR
 //! (forge_addontest::names): the client's own quest and item names first,
 //! then the pack's, else English; one server request per name, one redraw
 //! when they arrive; an English client loads nothing and reads the guides'
@@ -38,7 +38,7 @@ w.moveTo(1429, 48, 42)
 
 // Every name kind on one step; NPC 999 and item 9999 have no French name.
 const GUIDE_LUA: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/names", pack = "test", title = "Names", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Goldshire", goals = {
@@ -100,10 +100,10 @@ fn run(o: Opts) -> Vec<Value> {
 	};
 	emitted(&RunAddon {
 		stubs: o.stubs,
-		saved: o.saved.map(|s| vec![("Polestar".into(), s.into())]).unwrap_or_default(),
+		saved: o.saved.map(|s| vec![("Northstar".into(), s.into())]).unwrap_or_default(),
 		before: format!("{}\n{NO_INTERFACE_FILE}\n{}\n{CLIENT}\n{}", locale_lua(o.locale), pack.stub_lua, o.before),
-		addons: vec![Addon::name("Polestar")],
-		script: format!("{}\nstub.login()\nstub.fire(\"QUEST_LOG_UPDATE\"); stub.advance(0.6)\nN = Polestar.Names\n{}", o.guide, o.script),
+		addons: vec![Addon::name("Northstar")],
+		script: format!("{}\nstub.login()\nstub.fire(\"QUEST_LOG_UPDATE\"); stub.advance(0.6)\nN = Northstar.Names\n{}", o.guide, o.script),
 		..Default::default()
 	})
 }
@@ -113,7 +113,7 @@ fn s(v: &Value) -> &str {
 }
 
 // ---------------------------------------------------------------------------
-// Polestar.Names
+// Northstar.Names
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -143,7 +143,7 @@ fn the_asked_names_arriving_redraw_the_guide_window_once_step_updated_a_name_nev
 		guide: guide(),
 		script: r#"
 local fired = 0
-Polestar.On("STEP_UPDATED", function() fired = fired + 1 end)
+Northstar.On("STEP_UPDATED", function() fired = fired + 1 end)
 N.Quest(176); N.Item(1528)
 stub.fire("QUEST_DATA_LOAD_RESULT", 4242, true)
 stub.advance(1)
@@ -206,7 +206,7 @@ R.unit("mouseover", { npc = 2, name = "Mon familier", controlled = true }); stub
 R.unit("npc", { object = 68, name = "Avis (client)" }); stub.fire("QUEST_DETAIL")
 R.unit("target", { npc = 6, name = "Vermine kobold" }); stub.fire("PLAYER_TARGET_CHANGED")
 emit({ N.Npc(448), N.Npc(1), N.Npc(2) or false, N.Object(68), N.Cached("npc", 448), N.Get("npc", 1) })
-local db = PolestarDB.names.frFR
+local db = NorthstarDB.names.frFR
 emit({ npc = db.npc, object = db.object })
 for i = 1, 2001 do R.unit("target", { npc = 10000 + i, name = "N" .. i }); N.Learn("target") end
 local n = 0
@@ -223,7 +223,7 @@ emit({ n, N.Npc(10001) or false, N.Npc(12001) })"#
 	assert_eq!(json!([capped[1], capped[2]]), json!([false, "N2001"]), "the oldest dropped first");
 	let next = run(Opts {
 		stubs: stubs.clone(),
-		saved: Some(r#"PolestarDB = { schema = 1, settings = {}, names = { frFR = { npc = { [448] = "Lardeur (client)" } }, deDE = { npc = { [6] = "Kobold (deDE)" } } } }"#),
+		saved: Some(r#"NorthstarDB = { schema = 1, settings = {}, names = { frFR = { npc = { [448] = "Lardeur (client)" } }, deDE = { npc = { [6] = "Kobold (deDE)" } } } }"#),
 		script: "emit({ N.Npc(448), N.Npc(6) })".into(),
 		..Default::default()
 	});
@@ -231,7 +231,7 @@ emit({ n, N.Npc(10001) or false, N.Npc(12001) })"#
 	let english = run(Opts {
 		locale: None,
 		stubs,
-		script: r#"stub.rares.unit("target", { npc = 448, name = "Hogger" }); stub.fire("PLAYER_TARGET_CHANGED"); emit({ N.Npc(448) or false, PolestarDB.names == nil })"#.into(),
+		script: r#"stub.rares.unit("target", { npc = 448, name = "Hogger" }); stub.fire("PLAYER_TARGET_CHANGED"); emit({ N.Npc(448) or false, NorthstarDB.names == nil })"#.into(),
 		..Default::default()
 	});
 	assert_eq!(english[0], json!([false, true]), "an English client keeps nothing");
@@ -280,36 +280,36 @@ emit({ N.Spell(458), N.Faction(72), N.Faction(529), N.Area(12), N.Instance(36), 
 
 #[test]
 fn the_language_folder_is_optional_never_reported_missing_named_when_it_is_from_another_version() {
-	let script = "local missing, stale = Polestar.Data.CheckInstall(); emit({ table.concat(missing, \",\"), table.concat(stale, \",\") })";
+	let script = "local missing, stale = Northstar.Data.CheckInstall(); emit({ table.concat(missing, \",\"), table.concat(stale, \",\") })";
 	// A complete install for the stub's Alliance character: our guides' Alliance part too (format 8).
 	let check = |addons: &str| {
 		run(Opts {
-			before: format!(r#"stub.addons = {{ {{ name = "Polestar" }}, {{ name = "Polestar_Guides" }}, {{ name = "Polestar_Guides_Alliance" }}, {{ name = "Polestar_Codex" }}{addons} }}"#),
+			before: format!(r#"stub.addons = {{ {{ name = "Northstar" }}, {{ name = "Northstar_Guides" }}, {{ name = "Northstar_Guides_Alliance" }}, {{ name = "Northstar_Codex" }}{addons} }}"#),
 			script: script.into(),
 			..Default::default()
 		})
 		.remove(0)
 	};
 	assert_eq!(check(""), json!(["", ""]));
-	assert_eq!(check(r#", { name = "Polestar_frFR" }"#), json!(["", ""]));
+	assert_eq!(check(r#", { name = "Northstar_frFR" }"#), json!(["", ""]));
 	let stale = run(Opts {
-		before: "stub.addons = { { name = \"Polestar\" }, { name = \"Polestar_Guides\" }, { name = \"Polestar_Guides_Alliance\" }, { name = \"Polestar_Codex\" }, { name = \"Polestar_frFR\" } }\nstub.addonMeta[\"Polestar_frFR\"] = { Version = \"0.0.1\" }".into(),
+		before: "stub.addons = { { name = \"Northstar\" }, { name = \"Northstar_Guides\" }, { name = \"Northstar_Guides_Alliance\" }, { name = \"Northstar_Codex\" }, { name = \"Northstar_frFR\" } }\nstub.addonMeta[\"Northstar_frFR\"] = { Version = \"0.0.1\" }".into(),
 		script: script.into(),
 		..Default::default()
 	});
-	assert_eq!(stale[0], json!(["", "Polestar_frFR 0.0.1"]), "named once: the guide texts share the folder");
+	assert_eq!(stale[0], json!(["", "Northstar_frFR 0.0.1"]), "named once: the guide texts share the folder");
 }
 
 #[test]
 fn the_old_language_folders_left_from_an_older_zip_are_named_by_language_and_never_loaded() {
 	let out = run(Opts {
-		before: "stub.addons = { { name = \"Polestar\" }, { name = \"Polestar_Guides\" }, { name = \"Polestar_Guides_Alliance\" }, { name = \"Polestar_Guides_Horde\" }, { name = \"Polestar_Codex\" }, { name = \"Polestar_frFR\" }, { name = \"Polestar_Names_frFR\" }, { name = \"Polestar_Guides_deDE\" }, { name = \"Polestar_Names_deDE\" } }".into(),
+		before: "stub.addons = { { name = \"Northstar\" }, { name = \"Northstar_Guides\" }, { name = \"Northstar_Guides_Alliance\" }, { name = \"Northstar_Guides_Horde\" }, { name = \"Northstar_Codex\" }, { name = \"Northstar_frFR\" }, { name = \"Northstar_Names_frFR\" }, { name = \"Northstar_Guides_deDE\" }, { name = \"Northstar_Names_deDE\" } }".into(),
 		script: r#"
-local _, _, retired = Polestar.Data.CheckInstall()
+local _, _, retired = Northstar.Data.CheckInstall()
 local said, asked = {}, {}
 for _, m in ipairs(stub.messages) do if m:find("no longer uses", 1, true) then said[#said + 1] = m end end
 N.Npc(448)
-for name in pairs(stub.addonsLoaded) do if name:find("^Polestar_Names_") or name:find("^Polestar_Guides_%l%l%u%u$") then asked[#asked + 1] = name end end
+for name in pairs(stub.addonsLoaded) do if name:find("^Northstar_Names_") or name:find("^Northstar_Guides_%l%l%u%u$") then asked[#asked + 1] = name end end
 emit({ retired = table.concat(retired, ","), said = said, loaded = table.concat(asked, ",") })"#
 			.into(),
 		..Default::default()
@@ -318,7 +318,7 @@ emit({ retired = table.concat(retired, ","), said = said, loaded = table.concat(
 	assert_eq!(out["retired"], "deDE,frFR");
 	assert_eq!(out["said"].as_array().unwrap().len(), 1, "one line at login");
 	let said = out["said"][0].as_str().unwrap();
-	assert!(said.contains("Polestar_Guides_<language> and Polestar_Names_<language> (deDE, frFR)") && said.contains("delete them"), "{said}");
+	assert!(said.contains("Northstar_Guides_<language> and Northstar_Names_<language> (deDE, frFR)") && said.contains("delete them"), "{said}");
 	assert_eq!(out["loaded"], "", "the old folders are never loaded");
 }
 
@@ -327,7 +327,7 @@ emit({ retired = table.concat(retired, ","), said = said, loaded = table.concat(
 // ---------------------------------------------------------------------------
 
 const VIEW: &str = r#"
-local v = Polestar.Engine.GetStepView(1)
+local v = Northstar.Engine.GetStepView(1)
 local out = {}
 for i, g in ipairs(v.goals) do out[i] = { g.subject, g.detail or false, g.npcName or false } end
 emit(out)"#;
@@ -364,7 +364,7 @@ fn an_english_client_keeps_the_guide_s_english_its_quest_title_before_the_client
 fn a_collect_s_compiled_sources_are_named_in_the_client_s_language_by_their_ids_english_where_the_pack_has_no_name_or_the_goal_no_id() {
 	let guide = format!(
 		"\n{TEST_PACK}\n{TEST_SOURCE}\n{}",
-		r#"Polestar.RegisterGuide({
+		r#"Northstar.RegisterGuide({
 	id = "test/sources", pack = "test", title = "Sources", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Goldshire", goals = {
@@ -377,7 +377,7 @@ fn a_collect_s_compiled_sources_are_named_in_the_client_s_language_by_their_ids_
 })"#
 	);
 	let script = r#"
-local v = Polestar.Engine.GetStepView(1)
+local v = Northstar.Engine.GetStepView(1)
 local out = {}
 for i, g in ipairs(v.goals) do out[i] = g.text end
 emit(out)"#;
@@ -397,7 +397,7 @@ emit(out)"#;
 
 #[test]
 fn the_target_button_s_macro_targets_the_french_name_an_english_client_s_the_english_one() {
-	let script = "local B = Polestar.QoL.Buttons; emit(B.TargetMacro(B.TargetNames(), 1))";
+	let script = "local B = Northstar.QoL.Buttons; emit(B.TargetMacro(B.TargetNames(), 1))";
 	let before = r#"stub.world.accept(7, { { text = "Kobold Vermin slain: 0/10", required = 10 }, { text = "Handful of Oats: 0/8", required = 8 } })"#;
 	assert_eq!(run(Opts { guide: guide(), before: before.into(), script: script.into(), ..Default::default() }), [json!("/cleartarget [nocombat]\n/targetexact Vermine kobold\n/cleartarget [dead]")]);
 	assert_eq!(
@@ -458,12 +458,12 @@ w.moveTo(1429, 48, 40)
 			pack.stub_lua,
 			db.lua_files()
 		),
-		addons: vec![Addon::name("Polestar")],
-		saved: vec![("Polestar".into(), "PolestarDB = { schema = 1, settings = { qol = { mapObjectives = true } } }".into())],
+		addons: vec![Addon::name("Northstar")],
+		saved: vec![("Northstar".into(), "NorthstarDB = { schema = 1, settings = { qol = { mapObjectives = true } } }".into())],
 		script: format!(
 			"{}{script}",
 			r#"
-local w, sq, Q = stub.world, stub.quests, Polestar.QuestDB
+local w, sq, Q = stub.world, stub.quests, Northstar.QuestDB
 sq.installPins()
 stub.login()
 stub.advance(0.3)
@@ -523,11 +523,11 @@ fn objective_lines_match_their_objectives_by_the_french_names_before_their_order
 const SEARCH: &str = r#"
 local function q(text)
 	local out = {}
-	for _, r in ipairs(Polestar.Search.Query(text)) do out[#out + 1] = r.kind .. ":" .. tostring(r.id) .. ":" .. r.title end
+	for _, r in ipairs(Northstar.Search.Query(text)) do out[#out + 1] = r.kind .. ":" .. tostring(r.id) .. ":" .. r.title end
 	return table.concat(out, "|")
 end
 emit(q("lardeur")); emit(q("hogger")); emit(q("foret d'elwynn")); emit(q("elwynn")); emit(q("viande de loup"))
-local _, counts = Polestar.Search.Query("hogger")
+local _, counts = Northstar.Search.Query("hogger")
 emit(counts)
 emit(__namesLoads)"#;
 
@@ -582,10 +582,10 @@ fn a_russian_client_s_lookup_finds_a_capitalised_name_from_a_lower_case_query_ё
 		script: r#"
 local function q(text)
 	local out = {}
-	for _, r in ipairs(Polestar.Search.Query(text, { kinds = { npc = true, item = true } })) do out[#out + 1] = r.kind .. ":" .. tostring(r.id) .. ":" .. r.title end
+	for _, r in ipairs(Northstar.Search.Query(text, { kinds = { npc = true, item = true } })) do out[#out + 1] = r.kind .. ":" .. tostring(r.id) .. ":" .. r.title end
 	return table.concat(out, "|")
 end
-emit(q("хоггер")); emit(q("жесткое")); emit(Polestar.Search.Fold("Œuvre cœur"))"#
+emit(q("хоггер")); emit(q("жесткое")); emit(Northstar.Search.Fold("Œuvre cœur"))"#
 			.into(),
 		..Default::default()
 	});
@@ -599,7 +599,7 @@ emit(q("хоггер")); emit(q("жесткое")); emit(Polestar.Search.Fold("�
 		before: codex.stub_lua.clone(),
 		script: r#"
 local out = {}
-for _, r in ipairs(Polestar.Search.Query("霍格", { kinds = { npc = true } })) do out[#out + 1] = r.kind .. ":" .. tostring(r.id) end
+for _, r in ipairs(Northstar.Search.Query("霍格", { kinds = { npc = true } })) do out[#out + 1] = r.kind .. ":" .. tostring(r.id) end
 emit(table.concat(out, "|"))"#
 			.into(),
 		..Default::default()
@@ -614,8 +614,8 @@ fn a_names_pack_refused_in_combat_loads_when_combat_ends_without_another_ask_and
 		before: "stub.inCombat = true".into(),
 		script: r#"
 local fired, names = 0, 0
-Polestar.On("STEP_UPDATED", function() fired = fired + 1 end)
-Polestar.On("NAMES_LOADED", function() names = names + 1 end)
+Northstar.On("STEP_UPDATED", function() fired = fired + 1 end)
+Northstar.On("NAMES_LOADED", function() names = names + 1 end)
 local during = N.Npc(448) or false
 stub.inCombat = false
 stub.fire("PLAYER_REGEN_ENABLED")

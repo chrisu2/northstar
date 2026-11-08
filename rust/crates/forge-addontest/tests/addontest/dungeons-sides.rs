@@ -1,11 +1,11 @@
-//! Every dungeon's and raid's "Pick up the quests" and "Hand in the quests" guides (addon/Polestar/Dungeons/
+//! Every dungeon's and raid's "Pick up the quests" and "Hand in the quests" guides (addon/Northstar/Dungeons/
 //! Pickup.lua, Handin.lua) built on a real Codex for characters of both factions: no step may send a character
 //! to a quest or an NPC of the other faction (#1026: Blackfathom Deeps sent Horde characters to Darnassus for
 //! the Alliance's In Search of Thaelrid). The page's Horde / Alliance / All switch only changes the view; the
 //! character's own faction decides.
 //!
-//! The Codex: $POLESTAR_CODEX_DIR (a Polestar_Codex folder), else addon/Polestar_Codex (local: `forge data
-//! codex`); the quest database: $POLESTAR_QUESTDB_DIR, else addon/Polestar_QuestDB when built. The release
+//! The Codex: $NORTHSTAR_CODEX_DIR (a Northstar_Codex folder), else addon/Northstar_Codex (local: `forge data
+//! codex`); the quest database: $NORTHSTAR_QUESTDB_DIR, else addon/Northstar_QuestDB when built. The release
 //! case is the Codex and quest database it ships (0.3.4: the 0.3.2 Codex and a quest database built from
 //! data/forever with forever-db's corrections). A quest's side is the corrections' race mask (the facts we
 //! settled), else the Codex's, else the quest database's; an NPC's is the Codex's. Skips when the Codex or
@@ -17,11 +17,11 @@ use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 
 fn codex_dir() -> PathBuf {
-	std::env::var_os("POLESTAR_CODEX_DIR").map_or_else(|| addons_dir().join("Polestar_Codex"), PathBuf::from)
+	std::env::var_os("NORTHSTAR_CODEX_DIR").map_or_else(|| addons_dir().join("Northstar_Codex"), PathBuf::from)
 }
 
 fn questdb_dir() -> PathBuf {
-	std::env::var_os("POLESTAR_QUESTDB_DIR").map_or_else(|| addons_dir().join("Polestar_QuestDB"), PathBuf::from)
+	std::env::var_os("NORTHSTAR_QUESTDB_DIR").map_or_else(|| addons_dir().join("Northstar_QuestDB"), PathBuf::from)
 }
 
 fn frames() -> PathBuf {
@@ -41,7 +41,7 @@ fn packs_lua() -> String {
 		"do
   local __files, __load = {}, C_AddOns.LoadAddOn
   function C_AddOns.LoadAddOn(name)
-    if name ~= \"Polestar_Codex\" then return __load(name) end
+    if name ~= \"Northstar_Codex\" then return __load(name) end
     if not stub.addonsLoaded[name] then
       for _, f in ipairs(__files) do dofile(f) end
       stub.addonsLoaded[name] = true
@@ -50,8 +50,8 @@ fn packs_lua() -> String {
   end
 end
 stub.quests.dbFiles = {}",
-		toc_list(&codex_dir(), "Polestar_Codex.toc"),
-		toc_list(&questdb_dir(), "Polestar_QuestDB.toc"),
+		toc_list(&codex_dir(), "Northstar_Codex.toc"),
+		toc_list(&questdb_dir(), "Northstar_QuestDB.toc"),
 	)
 }
 
@@ -92,7 +92,7 @@ fn corrected_sides() -> Value {
 
 const SWEEP: &str = r#"
 stub.login()
-local D, C, Q = Polestar.Dungeons, Polestar.Codex, Polestar.QuestDB
+local D, C, Q = Northstar.Dungeons, Northstar.Codex, Northstar.QuestDB
 if Q and Q.Load then Q.Load() end
 local mine = @MINE@
 local corrected = {}
@@ -158,9 +158,9 @@ const ALLIANCE: [Character; 4] =
 	[("Human", "PALADIN", "Alliance", 1453, 60, 70), ("Dwarf", "HUNTER", "Alliance", 1455, 30, 60), ("NightElf", "DRUID", "Alliance", 1457, 40, 50), ("Gnome", "MAGE", "Alliance", 1453, 60, 70)];
 
 fn skip() -> bool {
-	let s = !codex_dir().join("Polestar_Codex.toc").exists() || !frames().exists();
+	let s = !codex_dir().join("Northstar_Codex.toc").exists() || !frames().exists();
 	if s {
-		eprintln!("skipped: no Codex pack at {} (forge data codex, or POLESTAR_CODEX_DIR) or no data/forever/map-frames.json", codex_dir().display());
+		eprintln!("skipped: no Codex pack at {} (forge data codex, or NORTHSTAR_CODEX_DIR) or no data/forever/map-frames.json", codex_dir().display());
 	}
 	s
 }
@@ -180,7 +180,7 @@ fn sweep(chars: &[Character]) {
 		let out = emitted(&RunAddon {
 			stubs: vec!["stub_world.lua", "stub_quests.lua"],
 			before,
-			addons: vec![Addon::name("Polestar")],
+			addons: vec![Addon::name("Northstar")],
 			login: false,
 			script: SWEEP.replace("@MINE@", &lua_value(&json!(if *faction == "Alliance" { "A" } else { "H" }))).replace("@CORRECTED@", &lua_value(&corrected)),
 			..Default::default()

@@ -29,7 +29,7 @@ const MODULES: [&str; 5] = ["DungeonsAndRaids", "Collections", "Crafting", "Fact
 const PRELUDE: &str = include_str!("atlasloot.lua");
 const EXTRA_CRAFTING: &str = include_str!("atlasloot_crafting.lua");
 const EXTRA_PVP: &str = include_str!("atlasloot_pvp.lua");
-const FOREVER_STORE: &str = "POLESTAR_forever";
+const FOREVER_STORE: &str = "NORTHSTAR_forever";
 
 fn core_files(module: &str) -> &'static [&'static str] {
 	match module {
@@ -627,7 +627,7 @@ fn read_module(dir: &Path, core_dir: &Path, module: &str) -> Result<(V, Vec<Path
 		_ => "",
 	};
 	let expr = format!(
-		"return {{\n  stores = {{ [{0}] = POLESTAR_dumpStore({0}), [{1}] = POLESTAR_dumpStore({1}) }},\n  droprates = POLESTAR_dumpDroprates(),\n  extra = POLESTAR_extra and POLESTAR_extra() or nil,\n}}",
+		"return {{\n  stores = {{ [{0}] = NORTHSTAR_dumpStore({0}), [{1}] = NORTHSTAR_dumpStore({1}) }},\n  droprates = NORTHSTAR_dumpDroprates(),\n  extra = NORTHSTAR_extra and NORTHSTAR_extra() or nil,\n}}",
 		lua_quote(&folder),
 		lua_quote(FOREVER_STORE)
 	);
@@ -639,7 +639,7 @@ fn read_module(dir: &Path, core_dir: &Path, module: &str) -> Result<(V, Vec<Path
 		all.extend(extra.iter().cloned());
 		let prelude = format!("{PRELUDE}{extra_lua}");
 		let v = read_addon_lua_with(&all, &folder, &prelude, &expr, &|src, file| {
-			let mut out = b"local _G = POLESTAR_G; ".to_vec();
+			let mut out = b"local _G = NORTHSTAR_G; ".to_vec();
 			out.extend_from_slice(&src);
 			if extra.iter().any(|e| e == file) {
 				let replaced = add_re.replace_all(&out, format!("ItemDB:Add(\"{FOREVER_STORE}\"").as_bytes()).into_owned();
@@ -647,7 +647,7 @@ fn read_module(dir: &Path, core_dir: &Path, module: &str) -> Result<(V, Vec<Path
 				out.extend_from_slice(&replaced);
 			}
 			if file.file_name().is_some_and(|n| n == "Requirements.lua") {
-				out = band_re.replace_all(&out, &b"POLESTAR_band"[..]).into_owned();
+				out = band_re.replace_all(&out, &b"NORTHSTAR_band"[..]).into_owned();
 			}
 			out
 		})?;

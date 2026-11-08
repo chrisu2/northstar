@@ -23,7 +23,7 @@ change is intended. The first build with no last good one is taken.
 options:
   --offline              read the source cache only (fetch nothing)
   --accept               take the build even when its statistics shifted
-  --root DIR             the Polestar checkout (default: the one above the current folder)
+  --root DIR             the Northstar checkout (default: the one above the current folder)
   --out DIR              output folder (default: <root>/data/forever)
   --sources DIR          source cache folder (default: <root>/data/sources)
   --recordings DIR       recordings folder (default: <root>/data/recordings)
@@ -35,7 +35,7 @@ options:
   --forever-tables S     client (default when a client is found: the installed client via
                          forge-gamedata), wago (the cached wago.tools CSVs) or saved (the client
                          tables forge build saved under <sources>/client-tables)
-  --wow DIR              World of Warcraft folder (default: $POLESTAR_WOW_DIR or detected)
+  --wow DIR              World of Warcraft folder (default: $NORTHSTAR_WOW_DIR or detected)
   --product P            client product (default wow_classic_beta)
   --defs DIR             WoWDBDefs checkout (default: <sources>/wowdbdefs)
   --no-forever           skip the Forever client tables
@@ -60,7 +60,7 @@ options:
   --client-cache DIR     the client caches for --kb: a Cache folder (WDB/enUS, ADB/enUS) or a folder
                          of the .wdb files and DBCache.bin (default: the --product's Cache folder)
   --client-tables DIR    the client tables for --kb as <Table>.csv files instead of the install's
-POLESTAR_DATA_TIMES=1 prints each phase's elapsed time.";
+NORTHSTAR_DATA_TIMES=1 prints each phase's elapsed time.";
 
 pub fn main() {
 	super::exit("data", run());
@@ -192,7 +192,7 @@ fn other(cmd: &str, args: Vec<String>) -> Result<(), Fail> {
 			// A --local-extras build never lands where `pack` and `install` look.
 			let extras = root.join("data").join("local").join("codex-extras");
 			let json_dir = get("--out").map(abs).unwrap_or_else(|| if local_extras { extras.clone() } else { o.data_dir.join("codex") });
-			let pack_dir = get("--pack").map(abs).unwrap_or_else(|| if local_extras { extras.join("Polestar_Codex") } else { root.join("addon").join("Polestar_Codex") });
+			let pack_dir = get("--pack").map(abs).unwrap_or_else(|| if local_extras { extras.join("Northstar_Codex") } else { root.join("addon").join("Northstar_Codex") });
 			forge_data::codex::write(&out, &json_dir, &pack_dir)?;
 			for w in &out.warnings {
 				eprintln!("warning: {w}");
@@ -337,7 +337,7 @@ fn run() -> Result<(), Fail> {
 			eprintln!("warning: curated {c} trainer \"{n}\" not found on map {m} in npcs.json; skipped");
 		}
 		eprintln!("wrote {}: curated {}, from guides {} goals, from recordings {} npcs", out.display(), rep.curated, rep.guide, rep.record);
-		if let Some(l) = lua.or_else(|| root.map(|r| r.join("addon/Polestar/Core/ClassTrainers.lua"))) {
+		if let Some(l) = lua.or_else(|| root.map(|r| r.join("addon/Northstar/Core/ClassTrainers.lua"))) {
 			std::fs::write(&l, text).map_err(|e| e.to_string())?;
 			eprintln!("wrote {}", l.display());
 		}
@@ -542,7 +542,7 @@ fn run() -> Result<(), Fail> {
 }
 
 /// The deDE names the statistics' names.matched reads (the deDE language folder's Names.lua).
-const NAMES: &str = "addon/Polestar_deDE/Names.lua";
+const NAMES: &str = "addon/Northstar_deDE/Names.lua";
 
 fn rel(p: &Path) -> String {
 	let s = forge_data::jsv::relative(&std::env::current_dir().unwrap_or_default(), p);
@@ -604,13 +604,13 @@ cached file is never fetched again (cached builds and pinned commits do not chan
 
 options:
   --only LIST          these parts only, comma-separated (default: all)
-  --root DIR           the Polestar checkout (default: the one above the current folder)
+  --root DIR           the Northstar checkout (default: the one above the current folder)
   --sources DIR        source cache (default: <root>/data/sources)
   --build V            Classic Era build (default: the newest wago.tools lists)
   --forever-build V    Forever build (default: the newest listed)
   --forever-tables S   client (default when a client is found) or wago: whether the data build's
                        Forever tables come from wago.tools
-  --wow DIR            World of Warcraft folder (default: $POLESTAR_WOW_DIR or detected)
+  --wow DIR            World of Warcraft folder (default: $NORTHSTAR_WOW_DIR or detected)
   --defs DIR           WoWDBDefs checkout (default: <sources>/wowdbdefs)
   --data DIR           the data build whose quests without XP webxp looks up (default: <root>/data/forever)";
 
@@ -702,16 +702,16 @@ fn check(args: Vec<String>) -> Result<(), Fail> {
 
 pub(super) const ITEMDB_USAGE: &str = "usage: forge data itemdb [options]
 
-Writes the load-on-demand data addon addon/Polestar_ItemDB (Items.lua + TOC): stats of every
+Writes the load-on-demand data addon addon/Northstar_ItemDB (Items.lua + TOC): stats of every
 equippable Classic Era item (item level, required level, inventory type, armor, weapon damage and
-speed, primary stats and the equip bonuses Polestar.Gear scores), from the Classic Era client
+speed, primary stats and the equip bonuses Northstar.Gear scores), from the Classic Era client
 tables (ItemSparse, Item, ItemEffect, SpellEffect). Size budget: 1024 KiB.
 
   --offline            use cached tables only
   --build V            Classic Era build (default: the newest wago.tools lists)
-  --root DIR           the Polestar checkout (default: the one above the current folder)
+  --root DIR           the Northstar checkout (default: the one above the current folder)
   --sources DIR        source cache (default <root>/data/sources)
-  --out DIR            default <root>/addon/Polestar_ItemDB";
+  --out DIR            default <root>/addon/Northstar_ItemDB";
 
 fn itemdb(args: Vec<String>) -> Result<(), Fail> {
 	let (kv, fl, pos) = opts(args, &["--root", "--sources", "--build", "--out"], &["--offline"])?;
@@ -746,14 +746,14 @@ fn itemdb(args: Vec<String>) -> Result<(), Fail> {
 
 pub(super) const QUESTDB_USAGE: &str = "usage: forge data questdb [options]
 
-Builds the load-on-demand quest database addon (addon/Polestar_QuestDB) from data/forever: quests
+Builds the load-on-demand quest database addon (addon/Northstar_QuestDB) from data/forever: quests
 (levels, race/class masks, faction, givers, enders, prerequisites, objectives), NPCs and objects
 (spawn clusters per map, covering every known spawn; Era frames) and items (drop sources, objects,
 vendors). Prints the Lua size and an estimate of the in-game memory it costs once loaded.
 
-  --root DIR           the Polestar checkout (default: the one above the current folder)
+  --root DIR           the Northstar checkout (default: the one above the current folder)
   --data DIR           data/forever (quests, npcs, objects, items, map-frames)
-  --out DIR            output addon folder (default: <root>/addon/Polestar_QuestDB)
+  --out DIR            output addon folder (default: <root>/addon/Northstar_QuestDB)
   --radius YD          spawn cluster radius (default 70)
   --droppers N         NPC drop sources kept per item (default 8)
   --json               print the stats as JSON";
@@ -816,7 +816,7 @@ fn questdb(args: Vec<String>) -> Result<(), Fail> {
 
 pub(super) const NAMES_USAGE: &str = "usage: forge data names [<locale>...] [options]
 
-Builds the names in the language folders addon/Polestar_<locale> (every language, or those named; Names.lua
+Builds the names in the language folders addon/Northstar_<locale> (every language, or those named; Names.lua
 beside our guides' Texts.lua, the TOC shared with `forge guide compile`): the names of
 quests, NPCs, objects, items, instances, encounters, factions and flight points (and the objectives of
 dungeon event quests) in each language. Per id, the first source with a name that is no English name
@@ -824,10 +824,10 @@ wins: the Forever client's tables (wago.tools, &locale=), the web quest database
 language (only what is cached in data/sources/web/names), DingDB (pinned commit and sha256s, cloned into
 data/sources/ding), then pfQuest's db/<locale>. Only the ids the compiled guides, the quest database, the
 Codex's data, the travel data and the chokepoints' lifts name. A language left without names loses its
-Names.lua (and its folder when no texts are left there); the old Polestar_Names_<locale> folders are
+Names.lua (and its folder when no texts are left there); the old Northstar_Names_<locale> folders are
 removed. A build into the checkout's addon folder also writes data/local/names-same-as-english.json.
 
-  --root DIR           the Polestar checkout (default: the one above the current folder)
+  --root DIR           the Northstar checkout (default: the one above the current folder)
   --offline            no downloads: the cached clones and tables only
   --no-questie         leave DingDB out (its base data is QuestieDB's)
   --no-tables          leave the client tables out (otherwise missing tables stop the build)
@@ -835,12 +835,12 @@ removed. A build into the checkout's addon folder also writes data/local/names-s
   --sources DIR        the client-table and web cache (default data/sources)
   --ding DIR           this DingDB checkout, used as it is (default data/sources/ding)
   --pfquest DIR        this pfQuest checkout (default data/sources/pfQuest)
-  --guides FILE        the compiled guides (default addon/Polestar_Guides/Guides.lua)
-  --questdb DIR        the built quest database (default addon/Polestar_QuestDB)
+  --guides FILE        the compiled guides (default addon/Northstar_Guides/Guides.lua)
+  --questdb DIR        the built quest database (default addon/Northstar_QuestDB)
   --codex DIR          the Codex's data (default data/forever/codex)
-  --travel FILE        the travel data (default addon/Polestar/Nav/TravelData.lua)
+  --travel FILE        the travel data (default addon/Northstar/Nav/TravelData.lua)
   --chokepoints FILE   the walking map's chokepoints, for the lifts' objects
-                       (default addon/Polestar_Nav/Nav/Chokepoints.lua)
+                       (default addon/Northstar_Nav/Nav/Chokepoints.lua)
   --out DIR            where the addon folders go (default addon/)
   --json               one JSON document on stdout";
 
@@ -897,13 +897,13 @@ Resolves the talent plans in talents/forever/*.json (one file per class, one pic
 talent name) against the Forever client's trait tables (wago.tools, a pinned build, cached under
 data/sources/wago/), replays every pick under the client's rules (one point a level from 10, tier
 gates, arrows; arrows need their source at full rank), and writes every class into
-addon/Polestar/Talents/Builds.lua. check rebuilds in memory and fails if the file differs or a plan
+addon/Northstar/Talents/Builds.lua. check rebuilds in memory and fails if the file differs or a plan
 breaks a rule.
 
 options:
-  --root DIR       the Polestar checkout (default: the one above the current folder)
+  --root DIR       the Northstar checkout (default: the one above the current folder)
   --plans DIR      plan sources (default <root>/talents/forever/)
-  --out DIR        output folder (default <root>/addon/Polestar/Talents/)
+  --out DIR        output folder (default <root>/addon/Northstar/Talents/)
   --sources DIR    source cache (default <root>/data/sources/)
   --build V        client build (default the pinned one)
   --offline        use cached tables only";
@@ -964,17 +964,17 @@ fn talents(args: Vec<String>) -> Result<(), Fail> {
 pub(super) const MAPS_USAGE: &str = "usage: forge data maps build|overlays [options]
 
 build: zone level ranges for the world map (hostile creature levels per zone, spawn-weighted
-P10..P90) -> addon/Polestar/Maps/ZoneLevels.lua.
+P10..P90) -> addon/Northstar/Maps/ZoneLevels.lua.
   --data DIR      data/forever (npcs.json, zones.json, map-frames.json)
-  --lua FILE      output (default: <root>/addon/Polestar/Maps/ZoneLevels.lua)
+  --lua FILE      output (default: <root>/addon/Northstar/Maps/ZoneLevels.lua)
 
 overlays: every world map overlay of every zone map (the explored-area paintings), from the
 client's tables via wago.tools, so the zone art shows a map without fog of war
--> addon/Polestar/UI/ZoneArtOverlays.lua.
+-> addon/Northstar/UI/ZoneArtOverlays.lua.
   --build V       client build (default: the pinned Forever build)
   --sources DIR   source cache folder (default: <root>/data/sources)
   --offline       use cached tables only
-  --lua FILE      output (default: <root>/addon/Polestar/UI/ZoneArtOverlays.lua)
+  --lua FILE      output (default: <root>/addon/Northstar/UI/ZoneArtOverlays.lua)
 
 Both take --root DIR (default: the checkout above the current folder).";
 
@@ -988,7 +988,7 @@ fn maps(args: Vec<String>) -> Result<(), Fail> {
 				return Err(usage(format!("{k} is an overlays option")));
 			}
 			let data = get("--data").map(abs).unwrap_or_else(|| root.join("data").join("forever"));
-			let out = get("--lua").map(abs).unwrap_or_else(|| root.join("addon/Polestar/Maps/ZoneLevels.lua"));
+			let out = get("--lua").map(abs).unwrap_or_else(|| root.join("addon/Northstar/Maps/ZoneLevels.lua"));
 			let (n, lua) = forge_data::worldmap::zone_levels(&data)?;
 			std::fs::write(&out, lua).map_err(|e| format!("{}: {e}", out.display()))?;
 			println!("maps: {n} zone level ranges");
@@ -1000,7 +1000,7 @@ fn maps(args: Vec<String>) -> Result<(), Fail> {
 			}
 			let build = get("--build").unwrap_or_else(|| forge_data::worldmap::OVERLAYS_BUILD.to_string());
 			let src = get("--sources").map(abs).unwrap_or_else(|| root.join("data").join("sources"));
-			let out = get("--lua").map(abs).unwrap_or_else(|| root.join("addon/Polestar/UI/ZoneArtOverlays.lua"));
+			let out = get("--lua").map(abs).unwrap_or_else(|| root.join("addon/Northstar/UI/ZoneArtOverlays.lua"));
 			let t = forge_data::worldmap::overlay_tables(&src, &build, !fl.is_empty(), &|m| println!("{m}"))?;
 			let o = forge_data::worldmap::build_overlays(&t);
 			for w in &o.warnings {

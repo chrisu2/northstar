@@ -1,5 +1,5 @@
 // node honest-sum.js <honest.json> <chain-guide-ids file|faction:race>: honest findings on a start's default chain, by rule (fail only)
-process.env.POLESTAR_CAS='off';
+process.env.NORTHSTAR_CAS='off';
 const [jf, faction, race, tree] = process.argv.slice(2);
 const JR=process.env.JUDGE_ROOT;
 (async () => {

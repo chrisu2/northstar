@@ -334,7 +334,7 @@ pub async fn install_update(app: AppHandle, engine: Engine_<'_>) -> Result<(), S
 }
 
 /// What the frame-rate overlay shows: how the window is drawn (render.rs), and whether
-/// `POLESTAR_FRAME_METER=1` asked for the overlay from the start.
+/// `NORTHSTAR_FRAME_METER=1` asked for the overlay from the start.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Diagnostics {
@@ -344,7 +344,7 @@ pub struct Diagnostics {
 
 #[tauri::command]
 pub fn diagnostics() -> Diagnostics {
-	Diagnostics { renderer: crate::render::describe(), frame_meter: std::env::var_os("POLESTAR_FRAME_METER").is_some_and(|v| v != "0") }
+	Diagnostics { renderer: crate::render::describe(), frame_meter: std::env::var_os("NORTHSTAR_FRAME_METER").is_some_and(|v| v != "0") }
 }
 
 /// The page has its first frame (the intro): show the window now. False when this launch
@@ -361,7 +361,7 @@ pub fn client_log(line: String) {
 	eprintln!("Polestar Client: {}", line.chars().take(300).collect::<String>());
 }
 
-/// The window showed its fault page. Ends the launch test (`POLESTAR_SMOKE`) as failed; does
+/// The window showed its fault page. Ends the launch test (`NORTHSTAR_SMOKE`) as failed; does
 /// nothing in any other start.
 #[tauri::command]
 pub fn smoke_fault(app: AppHandle, title: String, details: String) {

@@ -38,10 +38,10 @@ cat > "$T/drive-env.js" <<'EOF'
 process.chdir(__dirname);
 Object.assign(require('./tools/lib/sim/index').DEFAULTS, { simDir: `${__dirname}/sim`, offline: true });
 EOF
-export POLESTAR_CAS=off POLESTAR_GRID=$T/data/local/nav4
+export NORTHSTAR_CAS=off NORTHSTAR_GRID=$T/data/local/nav4
 unset NAV4_PACK
 (cd "$T" && for s in "Horde Orc" "Alliance Human"; do set -- $s; node tools/polestar.js sim route --faction "$1" --race "$2" --class Warrior --no-walks --offline --sim "$T/sim" | head -2; done)
-POLESTAR_JSREF=$T POLESTAR_JS=$T POLESTAR_CHECKOUT=$T node "$JS/rust/crates/forge-judge/tests/js/cases-dump.js" "$T/out"
+NORTHSTAR_JSREF=$T NORTHSTAR_JS=$T NORTHSTAR_CHECKOUT=$T node "$JS/rust/crates/forge-judge/tests/js/cases-dump.js" "$T/out"
 for f in horde alliance; do
 	gunzip -c "$G/world/expected/world-$f.json.gz" | cmp -s - "$T/sim/world-$f.json" || { echo "the JS rebuilt the $f world" >&2; exit 1; }
 done

@@ -33,5 +33,5 @@
 
 	const api = { hitTest, toScreen, inside };
 	if (typeof module !== 'undefined' && module.exports) module.exports = api;
-	else root.PolestarHit = api;
+	else root.NorthstarHit = api;
 })(typeof window !== 'undefined' ? window : globalThis);

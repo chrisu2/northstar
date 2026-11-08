@@ -351,7 +351,7 @@ pub fn validate_pack_frames(guides: &[V], data: &Data, ours: &[V], our_data: &Da
 		diag.warn(
 			&ast_file(g),
 			line(goal),
-			format!("map {}: this pack's Era frame differs from the one Polestar's guides register; in game Polestar's wins, so coordinates on this map may be off", ts(map)),
+			format!("map {}: this pack's Era frame differs from the one Northstar's guides register; in game Northstar's wins, so coordinates on this map may be off", ts(map)),
 			None,
 		);
 	});

@@ -1,12 +1,12 @@
 'use strict';
-// Polestar route extractor (docs/legacy/SIMULATION-js.md §5) on a synthetic sample in
+// Northstar route extractor (docs/legacy/SIMULATION-js.md §5) on a synthetic sample in
 // tests/fixtures/sim/polestar: invented guide names and ids.
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 
-const { loadPolestarRoutes } = require('../tools/lib/sim/baselines/polestar');
+const { loadNorthstarRoutes } = require('../tools/lib/sim/baselines/polestar');
 
 const FIX = path.join(__dirname, 'fixtures', 'sim');
 const GUIDES = path.join(FIX, 'polestar', 'guides');
@@ -14,7 +14,7 @@ const DATA = path.join(FIX, 'polestar', 'data');
 
 const ids = (seq, t) => seq.events.filter((e) => e.t === t).map((e) => e.q);
 
-const routes = (opts) => loadPolestarRoutes({ guidesDir: GUIDES, dataDir: DATA, race: 'Orc', ...opts });
+const routes = (opts) => loadNorthstarRoutes({ guidesDir: GUIDES, dataDir: DATA, race: 'Orc', ...opts });
 
 test('polestar: default route, conditions and missing quests', () => {
 	const r = routes();

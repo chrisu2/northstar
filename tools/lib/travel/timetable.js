@@ -1,12 +1,12 @@
 'use strict';
 // Timetables for boats, zeppelins, the Deeprun Tram and lifts, the walk-in
-// portals and the class teleports: the data addon/Polestar/Nav/Transit.lua
+// portals and the class teleports: the data addon/Northstar/Nav/Transit.lua
 // reads (`ns.Transit.Register`) and the planner's ride costs.
 //
 // Ported from Shortest Path Forever (GPL-3.0-or-later, by Cillian Berragan,
 // used with permission): tools/gen_routes.py (the boat model) and
 // tools/gen_transit.py (lifts, tram, portals, teleports).
-// Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15.
+// Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.
 // Portions Copyright (C) the CMaNGOS project (see its AUTHORS file), GPL-2.0-or-later, used under GPL-3.0.
 //
 // Boats and zeppelins run the server's own transport model: CMaNGOS

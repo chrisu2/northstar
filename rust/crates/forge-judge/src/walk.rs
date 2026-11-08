@@ -2,8 +2,8 @@
 //! [`LevelModel`]: forge-sim's evaluator replay ([`crate::levels::SimLevels`]), or [`DumpLevels`],
 //! which replays the levels a JS walk recorded.
 //!
-//! The chain: the default path of the guides' Polestar routes (baselines/polestar.js
-//! loadPolestarRoutes: the race's first leveling guide, then `next`), else the faction's lowest
+//! The chain: the default path of the guides' Northstar routes (baselines/polestar.js
+//! loadNorthstarRoutes: the race's first leveling guide, then `next`), else the faction's lowest
 //! leveling guide for the race followed by `next` (walk.js nextChain).
 
 use forge_core::{Frame, Projector, CLASSES, RACES};
@@ -213,7 +213,7 @@ pub fn next_chain(guides: &[V], ctx: &Ctx) -> Vec<String> {
 	chain
 }
 
-/// The default route of loadPolestarRoutes (no other pack): the race's first leveling guide (lowest
+/// The default route of loadNorthstarRoutes (no other pack): the race's first leveling guide (lowest
 /// minLevel, a missing one counting 99, then id), then `next` until it ends or would revisit a guide.
 /// None when no leveling guide names the race.
 pub fn default_route(guides: &[V], ctx: &Ctx) -> Option<Vec<String>> {
@@ -246,7 +246,7 @@ pub fn default_route(guides: &[V], ctx: &Ctx) -> Option<Vec<String>> {
 pub enum Chain {
 	/// These guide ids.
 	Ids(Vec<String>),
-	/// The pack's default Polestar route, else `next` from the lowest guide (a pack folder).
+	/// The pack's default Northstar route, else `next` from the lowest guide (a pack folder).
 	Routes,
 	/// `next` from the lowest guide (a single .guide file).
 	Next,
@@ -553,7 +553,7 @@ mod native {
 	/// judgeWalk's options. `root`: the repository checkout the simulator's world is built from
 	/// (data/forever, data/sources, data/rules.json); `data_dir`: the data the guides compile
 	/// against and the judge reads quests, NPCs and objects from (default root/data/forever); `grid`:
-	/// the walking grid whose tile heads name subzones (default $POLESTAR_GRID, else
+	/// the walking grid whose tile heads name subzones (default $NORTHSTAR_GRID, else
 	/// root/data/local/nav4). The world is built without heights: the judge reads only its quest set,
 	/// prerequisites and solo set, which heights do not change.
 	pub struct JudgeOpts {
@@ -582,7 +582,7 @@ mod native {
 				to: 61.0,
 				root: root.to_path_buf(),
 				data_dir: root.join("data/forever"),
-				grid: std::env::var_os("POLESTAR_GRID").map_or_else(|| root.join("data/local/nav4"), PathBuf::from),
+				grid: std::env::var_os("NORTHSTAR_GRID").map_or_else(|| root.join("data/local/nav4"), PathBuf::from),
 				chain: None,
 				radius: 500.0,
 				examples: EXAMPLES,

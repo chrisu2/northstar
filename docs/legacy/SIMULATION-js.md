@@ -2,14 +2,14 @@
 
 > [!NOTE]
 > This describes the JavaScript simulator (`node tools/polestar.js sim`) that made the routes of
-> releases up to 0.2.x. Routes are now made by Polestar Forge: see [FORGE.md](../FORGE.md).
+> releases up to 0.2.x. Routes are now made by Northstar Forge: see [FORGE.md](../FORGE.md).
 > Of the commands below only `sim compare` is still in the repository; the rest, the v2 code,
 > `sim serve` and the native CCH addon were removed (commit 734380d2a still has them).
 
 Goal: find, for each faction and each race's start, the 1-60 leveling route
 that reaches 60 in the least /played time under one explicit model of the
 game, by simulating very large numbers of complete routes; measure how robust
-the winners are to the model's uncertainty, and score Polestar's own routes
+the winners are to the model's uncertainty, and score Northstar's own routes
 under the same model.
 
 "Proven" here means: best found under the model, after a search large enough
@@ -223,7 +223,7 @@ Outputs: `data/sim/` and `data/bench/` (both gitignored).
     walking grid (data/local/nav4, format 2): path.js's `routeMany` (the start's tile searched
     whole, the abstract graph, then each goal's tile), the decoded tiles and graphs held once in
     SharedArrayBuffers for every worker (`router.share`). `lua` is the arrow's own router
-    (addon/Polestar_Nav, `Path.FindMany`) run by `nav eval`'s harness in LuaJIT workers, about
+    (addon/Northstar_Nav, `Path.FindMany`) run by `nav eval`'s harness in LuaJIT workers, about
     1.4 GB each. The node router's cost model is tools/lib/nav/edgecost.js, one static weight per
     directed step (the one place it is written down, for the Rust port too): time, faces (pack.js's
     face rule, approximated: a land link onto a steep column or up a 50-60° slope costs 40 times, a
@@ -247,7 +247,7 @@ Outputs: `data/sim/` and `data/bench/` (both gitignored).
     keys with the coordinates sent), then assembled into the same walks document. A changed world
     with the same places, grid and weights reads every table back; a base walk keeps its zone
     cells, so a new danger grid re-routes nothing. Needs `nav prepare` on the grid
-    ($POLESTAR_GRID names another grid than data/local/nav4).
+    ($NORTHSTAR_GRID names another grid than data/local/nav4).
   - **Zones**: each base walk also carries its yards per zone (`zones`: the zones of
     world.danger's 200 yd cells). The node router returns the cells its path crosses with
     every walk, so the zone shares are recounted from those cells whenever the danger grid
@@ -947,7 +947,7 @@ Only the fitted parameter values are kept (data/sim/params.json).
 
 ## 5. Baselines (scored under the same model)
 
-- Polestar: the compiled guides (default route and every route choice),
+- Northstar: the compiled guides (default route and every route choice),
   against the best route found (solo and with dungeons).
 - **Guides are scored on what they require.** A guide's `optional` goals are
   left out: an optional quest (its accept is optional) whole, any other
@@ -990,7 +990,7 @@ sim run     --faction F [--race R] [--class C] [--paths N] [--workers W] [--seed
             [--jobs J] [--anneal A] [--max-paths M] [--objective time|smooth] [--param K=V ...] [--tag T]
 sim robust  --faction F [--race R] [--class C] [--draws K] [--top N] [--objective O]   robustness of the top routes
 sim compare --faction F [--race R] [--class C] [--guides DIR] [--pack DIR | DIR] [--to 10,20,30] [--with-optional]
-            [--objective O]   Polestar's routes vs the best found, same model
+            [--objective O]   Northstar's routes vs the best found, same model
 sim bench   --faction F [--race R] [--class C]      bracket table: zones, levels, quests per 10 levels
 sim export  --result <file> --out <dir>             zone-by-zone skeleton guides + visits.json for authors
 sim consensus --faction F [--dungeons] [--evals N] [--objective O]   one 12-60 route shared by the faction's starts (+ exports)
@@ -1033,7 +1033,7 @@ so an edit to export, search, cases or the command keeps it.
 
 **The shared store.** Built worlds, the world build's floors and the walks files
 are also kept in one store shared by every worktree (`tools/lib/sim/cas.js`:
-`$POLESTAR_CAS`, else `~/.cache/polestar/cas`; `off`: none), by the hash of what
+`$NORTHSTAR_CAS`, else `~/.cache/polestar/cas`; `off`: none), by the hash of what
 they were made from: a world by its `dataHash`, faction, band width, open cap and
 the world builder's code; walks by the world's `dataHash`, the faction, the router
 and its walking maps (what `walksUsable` checks). A worktree's `data/sim` that
@@ -1044,7 +1044,7 @@ the store, against 18 s and no walks at all (straight line × detour, until a
 1.2 h `sim walks`) without it. A scratch sim dir (not a worktree's `data/sim`)
 keeps its artifacts to itself. `sim cas` shows the store; `sim cas gc` drops what
 wasn't used for 30 days, then the least recently used until it is under 20 GB.
-`POLESTAR_CAS_SKIP=walks` (a comma list of kinds) keeps those kinds out of the store,
+`NORTHSTAR_CAS_SKIP=walks` (a comma list of kinds) keeps those kinds out of the store,
 neither read nor written, while the others stay shared.
 
 **Rebuilding everything.** `node tools/rebuild.js [--tree DIR] [--run DIR] [--jobs N]`
@@ -1066,7 +1066,7 @@ crash does.
 - **guides:** `writer-sweep --dump`.
 - **sweep:** `writer-sweep --repair all --check all`.
 - **playtest:** the stub client.
-- **client:** every start's guides compiled into `RUN/client/Polestar_Guides`, to copy
+- **client:** every start's guides compiled into `RUN/client/Northstar_Guides`, to copy
   into the client.
 - **gate:** the judge's scorecard.
 - **report:** `RUN/REPORT.md` (per start pass/fail, findings by rule, scorecard,

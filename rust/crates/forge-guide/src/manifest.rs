@@ -24,9 +24,9 @@ fn max_length(key: &str) -> Option<usize> {
 /// Shown to players: a `|` there starts an escape sequence in the game's text.
 const DISPLAYED: [&str; 6] = ["title", "author", "license", "website", "source", "notes"];
 const ID_HINT: &str = "pick an id like `<author>-<name>`, e.g. \"joe-routes\"";
-/// Polestar shows author text as written (every `|` escaped), so escape codes
+/// Northstar shows author text as written (every `|` escaped), so escape codes
 /// do not work; guide lint (validate.rs) gives the same hint.
-pub const PIPE_HINT: &str = "drop the `|`: Polestar shows it as written, so colour and link codes like `|cff` do not work";
+pub const PIPE_HINT: &str = "drop the `|`: Northstar shows it as written, so colour and link codes like `|cff` do not work";
 
 /// A value for each key, for the hints.
 fn example_value(key: &str) -> &'static str {
@@ -39,7 +39,7 @@ fn example_value(key: &str) -> &'static str {
 		"website" => "https://github.com/joe/joe-routes",
 		"source" => "https://github.com/joe/joe-routes",
 		"notes" => "Leveling routes for Elwynn Forest and Westfall",
-		"folder" => "PolestarPack_JoesRoutes",
+		"folder" => "NorthstarPack_JoesRoutes",
 		_ => unreachable!(),
 	}
 }
@@ -128,7 +128,7 @@ pub fn validate_manifest(obj: &V, file: &str, official: bool, text: Option<&str>
 				if !is_pack_id(v) {
 					add("error", Some(key), format!("pack id \"{v}\" is malformed: 2 to 32 lowercase letters, digits and dashes, starting with a letter or digit"), ID_HINT.into());
 				} else if RESERVED_IDS.contains(&v) && !(official && v == "guides") {
-					add("error", Some(key), format!("pack id \"{v}\" is reserved for Polestar ({} are)", RESERVED_IDS.map(|r| format!("\"{r}\"")).join(", ")), ID_HINT.into());
+					add("error", Some(key), format!("pack id \"{v}\" is reserved for Northstar ({} are)", RESERVED_IDS.map(|r| format!("\"{r}\"")).join(", ")), ID_HINT.into());
 				}
 			}
 			"version" => {
@@ -152,14 +152,14 @@ pub fn validate_manifest(obj: &V, file: &str, official: bool, text: Option<&str>
 						"error",
 						Some(key),
 						format!("folder \"{v}\" is malformed: 1 to 64 letters, digits, \"_\" and \"-\""),
-						"pick a folder like \"PolestarPack_JoesRoutes\", or leave `folder` out for the default".into(),
+						"pick a folder like \"NorthstarPack_JoesRoutes\", or leave `folder` out for the default".into(),
 					);
-				} else if is_our_folder(v) && !(official && v == "Polestar_Guides") {
+				} else if is_our_folder(v) && !(official && v == "Northstar_Guides") {
 					add(
 						"error",
 						Some(key),
-						format!("folder \"{v}\" looks like one of Polestar's own addons"),
-						"pick a folder that does not start with \"Polestar_\", like \"PolestarPack_JoesRoutes\"".into(),
+						format!("folder \"{v}\" looks like one of Northstar's own addons"),
+						"pick a folder that does not start with \"Northstar_\", like \"NorthstarPack_JoesRoutes\"".into(),
 					);
 				}
 			}
@@ -208,11 +208,11 @@ pub fn read_pack_file(dir: &std::path::Path, name: &str) -> Result<Option<String
 	let file = dir.join(name);
 	let Ok(meta) = std::fs::symlink_metadata(&file) else { return Ok(None) };
 	if !meta.file_type().is_file() {
-		return Err(format!("{name} is a link or not a plain file; Polestar reads only a plain file in the pack folder"));
+		return Err(format!("{name} is a link or not a plain file; Northstar reads only a plain file in the pack folder"));
 	}
 	let (Ok(root), Ok(real)) = (std::fs::canonicalize(dir), std::fs::canonicalize(&file)) else { return Ok(None) };
 	if real.strip_prefix(&root).ok() != Some(std::path::Path::new(name)) {
-		return Err(format!("{name} lies outside the pack folder; Polestar reads only a plain file in the pack folder"));
+		return Err(format!("{name} lies outside the pack folder; Northstar reads only a plain file in the pack folder"));
 	}
 	Ok(std::fs::read_to_string(&file).ok())
 }

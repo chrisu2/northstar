@@ -140,7 +140,7 @@ test(`${MULGORE}: Sharing the Land leads to each gnoll objective and resumes par
 				race: 'Tauren', faction: 'Horde', cls,
 				before: 'w.level=12;w.onQuest(745,{{required=10},{required=8},{required=5}})',
 				script: `
-local E=Polestar.Engine;E.Goto(${si})
+local E=Northstar.Engine;E.Goto(${si})
 local function snap()
  local p=E.GetWaypoint();local v=p and E.GetGuide().steps[p.stepIndex].goals[p.goalIndex]
  return p and {map=p.map,x=p.x,y=p.y,quest=v.quest,npc=v.npc,oi=v.oi}or false
@@ -861,19 +861,19 @@ function greyInDarkshore(level) {
 	const { guides } = compileSources(files.map((file) => ({ file, text: fs.readFileSync(file, 'utf8') })), data);
 	const { dir, scripts } = writeTestPack(guides, data);
 	try {
-		const loads = scripts.map((f) => `assert(loadfile(${JSON.stringify(f)}))("Polestar_Guides", ns)`).join('\n');
+		const loads = scripts.map((f) => `assert(loadfile(${JSON.stringify(f)}))("Northstar_Guides", ns)`).join('\n');
 		const { emitted } = runAddon({
 			stubs: ['stub_world.lua'],
 			before: `local w = stub.world
 				w.race, w.raceName, w.faction, w.class, w.className = "Human", "Human", "Alliance", "WARRIOR", "Warrior"
 				w.level = ${level}`,
-			addons: [{ name: 'Polestar', files: ['Core/Core.xml'] }],
-			saved: { Polestar: 'PolestarDB = { schema = 1, settings = { behavior = { skipGrey = true, autoSelectGuide = false } } }' },
+			addons: [{ name: 'Northstar', files: ['Core/Core.xml'] }],
+			saved: { Northstar: 'NorthstarDB = { schema = 1, settings = { behavior = { skipGrey = true, autoSelectGuide = false } } }' },
 			script: `do local ns = {}
 				${loads}
 				end
 				stub.login(); stub.advance(0.5)
-				local E = Polestar.Engine
+				local E = Northstar.Engine
 				E.SetGuide("forever/alliance/03-darkshore")
 				local skipped, kept = {}, {}
 				for i = 1, #E.GetGuide().steps do
@@ -981,20 +981,20 @@ function engineRun(guide, who, { before = '', after = '', script }) {
 	const { guides } = compileSources([{ file, text: fs.readFileSync(file, 'utf8') }], data);
 	const { dir, scripts } = writeTestPack(guides, data);
 	try {
-		const loads = scripts.map((f) => `assert(loadfile(${JSON.stringify(f)}))("Polestar_Guides", ns)`).join('\n');
+		const loads = scripts.map((f) => `assert(loadfile(${JSON.stringify(f)}))("Northstar_Guides", ns)`).join('\n');
 		const { emitted } = runAddon({
 			stubs: ['stub_world.lua'],
 			before: `local w = stub.world
 				w.race, w.raceName, w.faction, w.class, w.className = "${who.race}", "${who.raceName}", "${who.faction}", "${who.cls}", "${who.className}"
 				w.level = ${who.level}
 				${before}`,
-			addons: [{ name: 'Polestar', files: ['Core/Core.xml'] }],
-			saved: { Polestar: 'PolestarDB = { schema = 1, settings = { behavior = { autoSelectGuide = false } } }' },
+			addons: [{ name: 'Northstar', files: ['Core/Core.xml'] }],
+			saved: { Northstar: 'NorthstarDB = { schema = 1, settings = { behavior = { autoSelectGuide = false } } }' },
 			script: `do local ns = {}
 				${loads}
 				end
 				stub.login(); stub.advance(0.5)
-				local E = Polestar.Engine
+				local E = Northstar.Engine
 				E.SetGuide("${guide.replace(/\.guide$/, '')}")
 				${after}
 				stub.advance(0.5)
@@ -2497,7 +2497,7 @@ test(`${ELWYNN}: Syfin's report (#221): Croaky's Head is an optional extra; Ridg
 		// Croaky's Head (the step it is handed in from, and where the arrow
 		// leads). The game takes no turn-in for a quest the player does not hold.
 		const watch = (head) => `
-			local E, w = Polestar.Engine, stub.world
+			local E, w = Northstar.Engine, stub.world
 			local murlocs, ridge = false, false
 			local progress, turnIn = w.progress, w.turnIn
 			w.progress = function(q, ...)
@@ -2679,7 +2679,7 @@ test('Zerkness\'s, Ioney\'s and soockee\'s reports (#383, #396, #1117): only War
 			// he does not offer; a player he offers them to takes each one the
 			// guide shows (the simulated player leaves optional goals alone).
 			const watch = (offered) => `
-				local w, E = stub.world, Polestar.Engine
+				local w, E = stub.world, Northstar.Engine
 				local chain = { [78132] = true, [78133] = true, [78134] = true }
 				local accept, view, turnIn = w.accept, E.GetStepView, w.turnIn
 				local held, taking, reached = false, false, false
@@ -2852,7 +2852,7 @@ test(`${WESTFALL}: Smuve's report (#298): the Molsen Farm step does not wait for
 		// right-clicked there. Recorded: the farm step's goals for the Assembly
 		// and its quest, and where Harvesting the Harvesters is handed in.
 		const watch = (assembly) => `
-			local E, w = Polestar.Engine, stub.world
+			local E, w = Northstar.Engine, stub.world
 			local farm, turnedIn = false, false
 			local addItem, progress, turnIn = w.addItem, w.progress, w.turnIn
 			w.addItem = function(item, ...)
@@ -3532,10 +3532,10 @@ test("forever/miscellaneous/cozy-sleeping-bag.guide: dgc1980's report (#563): Al
 	const horde = before.filter(({ goal }) => !goal.only || (goal.only.factions || []).includes('Horde'));
 	const [hubs] = runAddon({
 		stubs: ['stub_encoding.lua'],
-		addons: ['Polestar_Nav'],
+		addons: ['Northstar_Nav'],
 		script: `
 local out = {}
-for _, h in ipairs(PolestarPathData[1].hubs) do
+for _, h in ipairs(NorthstarPathData[1].hubs) do
 	if h.id == "horde-honors-stand" then
 		for i, d in ipairs(h.disks) do out[i] = { d[1], d[2], d[3] } end
 	end
@@ -3725,7 +3725,7 @@ test(`${REDRIDGE}: the Henze Faulk step tracks 1786.1 with an objective goal, no
 
 // --- Cozy Sleeping Bag (Hotline, #698): every quest of the chain needs level
 // 14, and a level 13 Horde Paladin was sent to the Barrens for a note it could
-// not take yet. Polestar holds back only Class guides at their gate by itself,
+// not take yet. Northstar holds back only Class guides at their gate by itself,
 // so the guide waits for the level before each faction sets out.
 test(`Hotline's report (#698): the Cozy Sleeping Bag chain waits for level 14 before either faction sets out`, { skip }, () => {
 	const list = goals('forever/miscellaneous/cozy-sleeping-bag.guide');
@@ -4509,7 +4509,7 @@ test("Erá's report (#1160): The Eye of Bhossca waits for level 30", { skip }, (
 	assert.equal(gate && gate.goal.level, 30, 'a level 30 gate before the Dead Drop');
 	const corrections = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'forever-db', 'corrections', 'quests.json'), 'utf8'));
 	assert.equal(corrections[78676].set.minLevel, 30, 'the correction a data build applies');
-	assert.match(fs.readFileSync(path.join(__dirname, '..', 'addon', 'Polestar', 'UI', 'ClassRewards.lua'), 'utf8'), /\[78676\] = \{ 30, /, 'the heads-up starts at 30');
+	assert.match(fs.readFileSync(path.join(__dirname, '..', 'addon', 'Northstar', 'UI', 'ClassRewards.lua'), 'utf8'), /\[78676\] = \{ 30, /, 'the heads-up starts at 30');
 });
 
 // --- Flow re-order (2026-11-07, Alliance starts 1-20): the walks below crossed back over ground for one

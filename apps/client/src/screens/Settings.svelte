@@ -118,7 +118,7 @@
 					<span class="label">Check for updates automatically</span>
 					<button class="toggle" role="switch" aria-checked={snapshot.addons.autoCheck} aria-label="Check for updates automatically" onclick={() => run('autoCheck', () => api.setAddonPrefs({ autoCheck: !snapshot.addons.autoCheck }))}></button>
 				</div>
-				<div class="row" title="Installs updates to Polestar's own addons as soon as they are found, while the game is closed. Community Guides have their own setting below.">
+				<div class="row" title="Installs updates to Northstar's own addons as soon as they are found, while the game is closed. Community Guides have their own setting below.">
 					<span class="label">Install addon updates automatically</span>
 					<button class="toggle" role="switch" aria-checked={snapshot.addons.autoInstall} aria-label="Install addon updates automatically" onclick={() => run('autoInstall', () => api.setAddonPrefs({ autoInstall: !snapshot.addons.autoInstall }))}></button>
 				</div>
@@ -231,7 +231,7 @@
 				<div class="row links">
 					<button class="link" onclick={() => api.openLink(CONTRACT_URL)}>What is collected, and why</button>
 					<button class="link" onclick={() => api.openLink(CLIENT_URL)}>The client's source</button>
-					<button class="link" onclick={() => api.openLink(SOURCE_URL)}>Polestar on GitHub</button>
+					<button class="link" onclick={() => api.openLink(SOURCE_URL)}>Northstar on GitHub</button>
 				</div>
 			</div>
 		</section>

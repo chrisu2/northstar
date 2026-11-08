@@ -4,8 +4,8 @@
 // usage: node honest-ref.js <pack dir> <filter|-> <out.json> --data <dir> --kb <file>
 const fs = require('node:fs');
 const path = require('node:path');
-// POLESTAR_HONEST_JS: another JS tree to take the reference from (default: this checkout's).
-const ROOT = process.env.POLESTAR_HONEST_JS ? path.resolve(process.env.POLESTAR_HONEST_JS) : path.resolve(__dirname, '../../../../..');
+// NORTHSTAR_HONEST_JS: another JS tree to take the reference from (default: this checkout's).
+const ROOT = process.env.NORTHSTAR_HONEST_JS ? path.resolve(process.env.NORTHSTAR_HONEST_JS) : path.resolve(__dirname, '../../../../..');
 const { playtest } = require(path.join(ROOT, 'tools/lib/playtest'));
 
 const [dir, filter, out] = process.argv.slice(2);

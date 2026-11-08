@@ -72,7 +72,7 @@ fn run() -> Result<(), String> {
 	written.push(gz(&out, "instances.json", stringify(&forge_guide::solo::load_instances(&sources), None).as_bytes())?);
 	written.push(gz(&out, "areas.json", stringify(&forge_guide::areas::load_areas(&sources), None).as_bytes())?);
 
-	let toc = "addon/Polestar/Polestar.toc";
+	let toc = "addon/Northstar/Northstar.toc";
 	let mut repo = serde_json::Map::new();
 	for rel in ["package.json", toc] {
 		let t = std::fs::read_to_string(root.join(rel)).map_err(|e| format!("{}: {e}", root.join(rel).display()))?;

@@ -1,6 +1,6 @@
 'use strict';
 // `nav eval`'s runner: the route corpus and the per-zone goal sweep on one
-// Polestar_Nav folder's maps, through the walking router run standalone by
+// Northstar_Nav folder's maps, through the walking router run standalone by
 // harness.lua (LuaJIT, else Lua 5.1).
 //
 //   runQueries({ navDir, queries, lua?, zoneLevels? }) -> { init, results }   raw harness lines (harness.lua's header)
@@ -19,8 +19,8 @@
 //   evaluate({ navDir, corpus, sweep, geo, taxi, guides, grid, layers, lua, zoneLevels, log }) -> the eval report
 //     { navDir, lua, init, routes: [{ ...route, result, metrics, expect }], sweep: [...], summary }
 //
-// A folder without its own Polestar_Nav.toc, Routing or API.lua (a `nav pack --out` folder holds only Nav/ and
-// PACK.json) takes them from the repository's addon/Polestar_Nav; its Nav/Nav.xml is always its own.
+// A folder without its own Northstar_Nav.toc, Routing or API.lua (a `nav pack --out` folder holds only Nav/ and
+// PACK.json) takes them from the repository's addon/Northstar_Nav; its Nav/Nav.xml is always its own.
 
 const fs = require('node:fs');
 const os = require('node:os');
@@ -32,7 +32,7 @@ const { evaluateExpectations, summarize } = require('./compare');
 
 const HARNESS = path.join(__dirname, 'harness.lua');
 const ENCODING = path.join(ROOT, 'tests', 'lua', 'stub_encoding.lua');
-const REPO_NAV = path.join(ROOT, 'addon', 'Polestar_Nav');
+const REPO_NAV = path.join(ROOT, 'addon', 'Northstar_Nav');
 const CORPUS = path.join(__dirname, 'routes.json');
 const PROFILES = ['Alliance', 'Horde'];
 // TaxiNodes' faction (travel.json): 1 Alliance, 2 Horde, 3 both.
@@ -50,24 +50,24 @@ function findInterpreter() {
 
 // The folder's files in the client's load order: its .toc (else the repository's), the Script files of its
 // Nav/Nav.xml, its own Routing/API files where it has them, then the map parts of its part addons beside it
-// (Polestar_Nav_EK, Polestar_Nav_Kalimdor: maps format 5; the client loads them on demand, here up front).
+// (Northstar_Nav_EK, Northstar_Nav_Kalimdor: maps format 5; the client loads them on demand, here up front).
 function navFiles(navDir) {
-	const own = path.join(navDir, 'Polestar_Nav.toc');
-	const toc = fs.readFileSync(fs.existsSync(own) ? own : path.join(REPO_NAV, 'Polestar_Nav.toc'), 'utf8');
+	const own = path.join(navDir, 'Northstar_Nav.toc');
+	const toc = fs.readFileSync(fs.existsSync(own) ? own : path.join(REPO_NAV, 'Northstar_Nav.toc'), 'utf8');
 	const files = [];
 	for (const raw of toc.split(/\r?\n/)) {
 		const entry = raw.trim().replace(/\\/g, '/');
 		if (!entry || entry.startsWith('#')) continue;
 		if (entry.endsWith('.xml')) {
 			const xml = path.join(navDir, entry);
-			if (!fs.existsSync(xml)) throw Object.assign(new Error(`${xml} not found: not a Polestar_Nav folder`), { exit: 1 });
+			if (!fs.existsSync(xml)) throw Object.assign(new Error(`${xml} not found: not a Northstar_Nav folder`), { exit: 1 });
 			for (const m of fs.readFileSync(xml, 'utf8').matchAll(/<Script file="([^"]+)"/g)) files.push(path.join(path.dirname(xml), m[1].replace(/\\/g, '/')));
 		} else {
 			const mine = path.join(navDir, entry);
 			files.push(fs.existsSync(mine) ? mine : path.join(REPO_NAV, entry));
 		}
 	}
-	for (const part of ['Polestar_Nav_EK', 'Polestar_Nav_Kalimdor']) {
+	for (const part of ['Northstar_Nav_EK', 'Northstar_Nav_Kalimdor']) {
 		const dir = path.join(path.dirname(path.resolve(navDir)), part);
 		const partToc = path.join(dir, `${part}.toc`);
 		if (!fs.existsSync(partToc)) continue;

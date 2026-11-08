@@ -1,4 +1,4 @@
-//! Rules from how Polestar plays a step (Engine.lua, GUIDE_FORMAT.md): the arrow leads to the step's
+//! Rules from how Northstar plays a step (Engine.lua, GUIDE_FORMAT.md): the arrow leads to the step's
 //! first open blocking goal in written order; `loop` makes the step's gotos one search circuit for all
 //! its field goals; `along until` lists quest-counted goals to do while travelling. They read the walk
 //! as written: `along` goals at their own steps (not moved to where the addon credits them).

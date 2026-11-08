@@ -1,6 +1,6 @@
 [package]
 name = "polestar-recording"
-description = "Polestar's recording library: reads the Recorder's SavedVariables, decodes and validates records, finds WoW: Forever installs, scrubs text, writes the ack file, summarises and normalises recordings."
+description = "Northstar's recording library: reads the Recorder's SavedVariables, decodes and validates records, finds WoW: Forever installs, scrubs text, writes the ack file, summarises and normalises recordings."
 # No workspace inheritance: services/ingest and apps/client build this crate by path without
 # the rest of rust/.
 version = "0.1.1"

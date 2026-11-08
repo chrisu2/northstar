@@ -1,6 +1,6 @@
 'use strict';
 // Every guide under guides/ parses without reference data, so a fresh clone
-// (CI) checks them too. The second test notes when the committed Polestar_Guides
+// (CI) checks them too. The second test notes when the committed Northstar_Guides
 // is out of sync with guides/ but does not fail: maintainers run `compile`
 // after merging guide additions or renames.
 
@@ -28,8 +28,8 @@ test('every guide parses without errors and has its own id', () => {
 	assert.deepEqual(diag.errors.map(format), []);
 });
 
-test('the compiled Polestar_Guides lists the same guides as guides/', (t) => {
-	const lua = fs.readFileSync(path.join(ROOT, 'addon', 'Polestar_Guides', 'Guides.lua'), 'utf8');
+test('the compiled Northstar_Guides lists the same guides as guides/', (t) => {
+	const lua = fs.readFileSync(path.join(ROOT, 'addon', 'Northstar_Guides', 'Guides.lua'), 'utf8');
 	const compiled = [...lua.matchAll(/^-- Source: (.+)$/gm)].map((m) => m[1]).sort();
 	if (compiled.join('\n') !== files.join('\n')) {
 		t.diagnostic(

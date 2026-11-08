@@ -710,7 +710,7 @@ function resolveGuide(ast, data, diag, opts = {}) {
 	setIf(guide, 'cons', h.cons);
 	// A guide without `author` is its pack's author's (opts.author, from
 	// pack.json); ours when no pack author is given.
-	guide.author = h.author || opts.author || 'Polestar';
+	guide.author = h.author || opts.author || 'Northstar';
 	guide.version = h.version !== undefined ? h.version : 1;
 	guide.steps = [];
 	hidden(guide, '_ast', ast);
@@ -881,7 +881,7 @@ function checkLabels(steps, err) {
 	});
 }
 
-// Goals Polestar checks off only on the step the route is on: arrivals, NPC
+// Goals Northstar checks off only on the step the route is on: arrivals, NPC
 // visits, flights, hearths, and tasks and kills, clicks and uses without a
 // quest (the player ticks those). In an along step they never check off.
 const ON_STEP_ONLY = new Set(['goto', 'talk', 'hearth', 'die', 'getfp', 'fly', 'vendor', 'task']);
@@ -899,7 +899,7 @@ function checkAlongGoals(steps, warn) {
 		for (const goal of step.goals) {
 			if (!onStepOnly(goal)) continue;
 			const what = goal.quest === undefined && ['kill', 'interact', 'use'].includes(goal.t) ? `\`${goal.t}\` without \`quest\`` : `\`${goal.t}\``;
-			warn(goal._line, `${what} in an \`along\` step never checks off: Polestar checks it only on the step the route is on, so it stays listed${typeof step.along === 'string' ? ` until the step labelled ${step.along}` : ''}`, 'put it in a step of its own, or track something the game counts (a quest objective, a bag count)');
+			warn(goal._line, `${what} in an \`along\` step never checks off: Northstar checks it only on the step the route is on, so it stays listed${typeof step.along === 'string' ? ` until the step labelled ${step.along}` : ''}`, 'put it in a step of its own, or track something the game counts (a quest objective, a bag count)');
 		}
 	}
 }

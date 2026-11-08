@@ -1,0 +1,36 @@
+<Bindings>
+	<Binding name="NORTHSTAR_TOGGLE" header="NORTHSTAR" category="ADDONS">
+		Northstar.Bindings.Toggle()
+	</Binding>
+	<Binding name="NORTHSTAR_NEXT" category="ADDONS">
+		Northstar.Bindings.Next()
+	</Binding>
+	<Binding name="NORTHSTAR_PREV" category="ADDONS">
+		Northstar.Bindings.Prev()
+	</Binding>
+	<Binding name="NORTHSTAR_FOCUS" category="ADDONS">
+		Northstar.Bindings.Focus()
+	</Binding>
+	<Binding name="NORTHSTAR_MENU" category="ADDONS">
+		Northstar.Bindings.Menu()
+	</Binding>
+	<Binding name="NORTHSTAR_OPTIONS" category="ADDONS">
+		Northstar.Bindings.Options()
+	</Binding>
+	<Binding name="NORTHSTAR_REPORT" category="ADDONS">
+		Northstar.Bindings.Report()
+	</Binding>
+	<Binding name="NORTHSTAR_NEXT_WAYPOINT" category="ADDONS">
+		Northstar.Bindings.NextWaypoint()
+	</Binding>
+	<Binding name="NORTHSTAR_PREV_WAYPOINT" category="ADDONS">
+		Northstar.Bindings.PrevWaypoint()
+	</Binding>
+	<Binding name="CLICK NorthstarQuestItemButton:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK NorthstarTargetButton:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK NorthstarRareButton:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK NorthstarHearthButton:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK NorthstarStepButton:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK NorthstarTravelButton:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK NorthstarBagButton:LeftButton" category="ADDONS"/>
+</Bindings>

@@ -16,48 +16,48 @@ w.moveTo(1411, 52, 43)
 // Durotar's shape: four quests, the last the hand-off to the next zone. @NEXT@ is its `next` (and choices).
 const GUIDES: &str = r#"
 local function q(id, title) return { goals = { { t = "accept", quest = id, title = title, map = 1411, x = 50, y = 50 } } } end
-Polestar.RegisterGuide({ id = "test/durotar", pack = "test", title = "Durotar", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411,
+Northstar.RegisterGuide({ id = "test/durotar", pack = "test", title = "Durotar", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411,
 	@NEXT@ steps = { q(10, "Your Place"), q(11, "Cutting Teeth"), q(12, "Sarkoth"), q(13, "Far Watch Post") } })
-Polestar.RegisterGuide({ id = "test/barrens", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 12, maxLevel = 16, zone = 1413,
+Northstar.RegisterGuide({ id = "test/barrens", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 12, maxLevel = 16, zone = 1413,
 	steps = { { goals = { { t = "level", level = 16 } } } } })
-Polestar.RegisterGuide({ id = "test/silverpine", pack = "test", title = "Silverpine Forest", faction = "Horde", minLevel = 10, maxLevel = 18,
+Northstar.RegisterGuide({ id = "test/silverpine", pack = "test", title = "Silverpine Forest", faction = "Horde", minLevel = 10, maxLevel = 18,
 	steps = { { goals = { { t = "level", level = 18 } } } } })
-Polestar.RegisterGuide({ id = "test/cooking", pack = "test", title = "Cooking", category = "Professions", next = "test/cooking2",
+Northstar.RegisterGuide({ id = "test/cooking", pack = "test", title = "Cooking", category = "Professions", next = "test/cooking2",
 	steps = { q(20, "Cooking 1") } })
-Polestar.RegisterGuide({ id = "test/cooking2", pack = "test", title = "Cooking 2", category = "Professions",
+Northstar.RegisterGuide({ id = "test/cooking2", pack = "test", title = "Cooking 2", category = "Professions",
 	steps = { { goals = { { t = "level", level = 30 } } } } })
 -- Dun Morogh's shape: the last step is the walk on to the next zone. The second also has work in that zone
 -- before it (as Darkshore visits Elwynn before it ends there).
 local walk = { title = "The Barrens", goals = { { t = "goto", map = 1413, x = 50, y = 50, text = "The Barrens" } } }
-Polestar.RegisterGuide({ id = "test/walk", pack = "test", title = "Walk", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
+Northstar.RegisterGuide({ id = "test/walk", pack = "test", title = "Walk", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
 	steps = { q(30, "One"), q(31, "Two"), q(32, "Three"), walk } })
-Polestar.RegisterGuide({ id = "test/visit", pack = "test", title = "Visit", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
+Northstar.RegisterGuide({ id = "test/visit", pack = "test", title = "Visit", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
 	steps = { q(40, "One"), { goals = { { t = "accept", quest = 41, title = "In the Barrens", map = 1413, x = 20, y = 20 } } }, q(42, "Three"), walk } })
 -- Stranglethorn's shape: trailing steps that only offer (riding at a level, all optional; a note), and one
 -- ending at any class trainer.
-Polestar.RegisterGuide({ id = "test/offer", pack = "test", title = "Offer", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
+Northstar.RegisterGuide({ id = "test/offer", pack = "test", title = "Offer", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
 	steps = { q(50, "One"), q(51, "Two"), q(52, "Last quest"),
 		{ title = "Riding", when = { { k = "level", op = ">=", n = 5 } }, goals = { { t = "train", npc = 7954, optional = true }, { t = "vendor", npc = 7955, optional = true } } },
 		{ goals = { { t = "note", text = "Next: the Barrens." } } } } })
-Polestar.RegisterGuide({ id = "test/trainer", pack = "test", title = "Trainer", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
+Northstar.RegisterGuide({ id = "test/trainer", pack = "test", title = "Trainer", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
 	steps = { q(60, "One"), q(61, "Two"), { title = "Class trainer", goals = { { t = "train", class = true } } } } })
 -- The Barrens' Kolkar chain at Regthar Deathgate (#998): each hand-in opens the next quest, and the last
 -- step is the chain's last hand-in.
 local function at(t, id, pre)
 	return { t = t, quest = id, title = "Kolkar " .. id, npc = 3389, npcName = "Regthar Deathgate", map = 1413, x = 45, y = 28, pre = pre }
 end
-Polestar.RegisterGuide({ id = "test/kolkar", pack = "test", title = "Kolkar", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1413, next = "test/barrens",
+Northstar.RegisterGuide({ id = "test/kolkar", pack = "test", title = "Kolkar", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1413, next = "test/barrens",
 	steps = { { goals = { at("accept", 850) } }, { goals = { at("turnin", 850), at("accept", 851, { 850 }) } }, q(70, "Elsewhere"),
 		{ goals = { at("turnin", 851), at("accept", 852, { 851 }) } }, q(71, "Elsewhere too"), { goals = { at("turnin", 852) } } } })
 -- The end of The Barrens (19-23) for a Druid: the last step for everyone (Regthar), then the class's own trip
 -- (Cat Form, done in its class guide as well), here for the character's class (Warrior).
 local mine = { classes = { "WARRIOR" } }
-Polestar.RegisterGuide({ id = "test/catform", pack = "test", title = "Cat Form", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
+Northstar.RegisterGuide({ id = "test/catform", pack = "test", title = "Cat Form", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
 	steps = { q(90, "One"), q(91, "Two"), q(92, "Regthar"),
 		{ title = "Moonglade", only = mine, goals = { { t = "accept", quest = 93, title = "To Thunder Bluff", map = 1413, x = 60, y = 60 } } },
 		{ title = "Turak Runetotem", only = mine, goals = { { t = "turnin", quest = 93, title = "To Thunder Bluff", map = 1413, x = 61, y = 61 } } } } })
 -- Stranglethorn's end for a Dwarf: the last step for everyone, then a trip home only that race takes.
-Polestar.RegisterGuide({ id = "test/home", pack = "test", title = "Home", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
+Northstar.RegisterGuide({ id = "test/home", pack = "test", title = "Home", faction = "Horde", minLevel = 1, maxLevel = 12, zone = 1411, next = "test/barrens",
 	steps = { q(94, "One"), q(95, "Two"), q(96, "Last for everyone"),
 		{ title = "Home", goals = { { t = "goto", map = 1413, x = 70, y = 70, text = "Home", only = { races = { "Orc" } } } } } } })
 "#;
@@ -65,15 +65,15 @@ Polestar.RegisterGuide({ id = "test/home", pack = "test", title = "Home", factio
 const NEXT: &str = r#"next = "test/barrens","#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 w = stub.world
 function flush() stub.advance(0.25) end
 LOG = {}
-Polestar.On("GUIDE_END", function(id, i)
+Northstar.On("GUIDE_END", function(id, i)
 	LOG[#LOG + 1] = "GUIDE_END " .. id .. " undone=" .. i.undone .. " live=" .. tostring(i.live) .. " next=" .. tostring(i.next) .. " choose=" .. tostring(i.choose)
 end)
 for _, m in ipairs({ "GUIDE_COMPLETED", "GUIDE_CHANGED", "ROUTE_CHOICE", "GUIDE_CONTINUED" }) do
-	Polestar.On(m, function(a, b) LOG[#LOG + 1] = m .. " " .. tostring(a) .. (b and (" " .. tostring(b)) or "") end)
+	Northstar.On(m, function(a, b) LOG[#LOG + 1] = m .. " " .. tostring(a) .. (b and (" " .. tostring(b)) or "") end)
 end
 function takeLog() local l = LOG; LOG = {}; return l end
 -- The player's way through: Your Place skipped, Far Watch Post looked up and taken; two quests left.
@@ -95,8 +95,8 @@ fn run(o: Run) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: o.saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: o.saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		script: [TEST_PACK, TEST_SOURCE, &GUIDES.replace("@NEXT@", o.next), HELPERS, "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE")"#, r#"E.SetGuide("test/durotar"); flush(); takeLog()"#, o.script]
 			.join("\n"),
 		..Default::default()
@@ -112,7 +112,7 @@ fn the_last_step_done_with_steps_left_open_ends_the_guide_once_it_stays_on_the_l
 		script: r#"
 			farWatchFirst()
 			local r = { log = takeLog(), guide = E.GetGuide().id, step = E.GetStepIndex(), ended = E.GuideEnded("test/durotar"),
-				saved = PolestarCharDB.guideEnds["test/durotar"], next = E.NextGuide("test/durotar") }
+				saved = NorthstarCharDB.guideEnds["test/durotar"], next = E.NextGuide("test/durotar") }
 			-- The rest done later: complete, no second ask, no hand-off.
 			w.accept(11, {}); flush(); w.accept(12, {}); flush()
 			r.later = { log = takeLog(), guide = E.GetGuide().id }
@@ -129,7 +129,7 @@ fn the_last_step_done_with_steps_left_open_ends_the_guide_once_it_stays_on_the_l
 	// The same character after a reload (its end saved): placed, then the last step again, nothing asks.
 	let reload = run(Run {
 		next: NEXT,
-		saved: Some(r#"PolestarCharDB = { schema = 1, guideEnds = { ["test/durotar"] = true } }"#),
+		saved: Some(r#"NorthstarCharDB = { schema = 1, guideEnds = { ["test/durotar"] = true } }"#),
 		script: "farWatchFirst(); emit({ log = takeLog(), ended = E.GuideEnded(\"test/durotar\") })",
 	});
 	assert_eq!(reload, json!({ "log": {}, "ended": true }));
@@ -144,7 +144,7 @@ fn playing_it_through_ends_it_complete_and_start_next_loads_the_next_guide_in_th
 			for q = 10, 13 do w.accept(q, {}); flush() end
 			local r = { log = takeLog(), guide = E.GetGuide().id }
 			r.started = E.StartNext("test/durotar")
-			r.after = { log = takeLog(), guide = E.GetGuide().id, tabs = tabs(), stored = PolestarCharDB.guide }
+			r.after = { log = takeLog(), guide = E.GetGuide().id, tabs = tabs(), stored = NorthstarCharDB.guide }
 			emit(r)"#,
 	});
 	assert_eq!(out["log"], json!(["GUIDE_COMPLETED test/durotar", "GUIDE_END test/durotar undone=0 live=nil next=test/barrens choose=nil"]));
@@ -205,7 +205,7 @@ fn other_guides_keep_handing_off_by_themselves_and_a_guide_opened_at_its_end_doe
 fn continue_automatically_hands_off_at_completion_and_says_so() {
 	let out = run(Run {
 		next: NEXT,
-		saved: Some(r#"PolestarDB = { schema = 1, settings = { behavior = { guideEnd = "continue" } } }"#),
+		saved: Some(r#"NorthstarDB = { schema = 1, settings = { behavior = { guideEnd = "continue" } } }"#),
 		script: r#"for q = 10, 13 do w.accept(q, {}); flush() end
 			emit({ log = takeLog(), guide = E.GetGuide().id })"#,
 	});
@@ -221,11 +221,11 @@ fn continue_automatically_hands_off_at_completion_and_says_so() {
 #[test]
 fn the_old_continue_to_the_next_guide_toggle_is_dropped_and_both_values_start_on_ask() {
 	for old in ["false", "true"] {
-		let saved = format!("PolestarDB = {{ schema = 1, settings = {{ behavior = {{ autoNextGuide = {old}, autoAccept = false }} }} }}");
+		let saved = format!("NorthstarDB = {{ schema = 1, settings = {{ behavior = {{ autoNextGuide = {old}, autoAccept = false }} }} }}");
 		let out = run(Run {
 			next: NEXT,
 			saved: Some(&saved),
-			script: r#"emit({ old = PolestarDB.settings.behavior.autoNextGuide or "gone", now = Polestar.Get("behavior.guideEnd"), kept = Polestar.Get("behavior.autoAccept") })"#,
+			script: r#"emit({ old = NorthstarDB.settings.behavior.autoNextGuide or "gone", now = Northstar.Get("behavior.guideEnd"), kept = Northstar.Get("behavior.autoAccept") })"#,
 		});
 		assert_eq!(out, json!({ "old": "gone", "now": "ask", "kept": false }), "autoNextGuide = {old}");
 	}

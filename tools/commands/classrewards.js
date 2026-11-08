@@ -3,7 +3,7 @@
 //
 // The guide window's class-quest card (UI/ClassCard.lua) names what a class
 // quest chain gives: the spell it teaches, else the item it hands over. This
-// writes addon/Polestar/UI/ClassRewards.lua from:
+// writes addon/Northstar/UI/ClassRewards.lua from:
 //
 //   data/forever/quests.json        which quests a class may take (classes),
 //                                   their links (next, pre, preAll, preAny) and
@@ -34,7 +34,7 @@ const usage = `usage: node tools/polestar.js classrewards build [--data <dir>] [
   --data <dir>     data/forever (quests.json)
   --sources <dir>  data/sources (forever-tdb/extract.json, client-tables/, wago/)
   --guides <dir>   the guides (default: guides/)
-  --lua <file>     output (default: addon/Polestar/UI/ClassRewards.lua)`;
+  --lua <file>     output (default: addon/Northstar/UI/ClassRewards.lua)`;
 
 const CLASS_BITS = { WARRIOR: 1, PALADIN: 2, HUNTER: 4, ROGUE: 8, PRIEST: 16, SHAMAN: 64, MAGE: 128, WARLOCK: 256, DRUID: 1024 };
 const ALL_CLASSES = Object.values(CLASS_BITS).reduce((a, b) => a | b, 0);
@@ -493,7 +493,7 @@ module.exports = {
 		const tdb = fs.existsSync(tdbFile) ? JSON.parse(fs.readFileSync(tdbFile, 'utf8')) : null;
 		const guides = classGuides(path.resolve(values.guides || path.join(ROOT, 'guides')));
 		const data = { ...buildClassRewards({ quests, tdb, table: tableFinder(sources), guides, npcs, objects, races }) };
-		const out = path.resolve(values.lua || path.join(ROOT, 'addon', 'Polestar', 'UI', 'ClassRewards.lua'));
+		const out = path.resolve(values.lua || path.join(ROOT, 'addon', 'Northstar', 'UI', 'ClassRewards.lua'));
 		fs.mkdirSync(path.dirname(out), { recursive: true });
 		fs.writeFileSync(out, toLua(data));
 		const withReward = data.quests.filter((e) => e.reward).length;

@@ -1,5 +1,5 @@
 'use strict';
-// i18n: Polestar's translations (docs/TRANSLATING.md). `i18n fit` (it needs
+// i18n: Northstar's translations (docs/TRANSLATING.md). `i18n fit` (it needs
 // the preview renderer, tools/preview) runs here; every other subcommand is
 // `forge i18n` (rust/crates/forge-i18n), and `names` is `forge data names`.
 // Adapted from Ding! by Yendi (@moust4ki), GPL-3.0:
@@ -15,7 +15,7 @@ const RETIRED = ['status', 'check', 'sync', 'keys', 'import', 'leaks', 'guides']
 
 const usage = `usage: node tools/polestar.js i18n fit [options]
 
-Polestar's translations (docs/TRANSLATING.md). status, check, sync, keys,
+Northstar's translations (docs/TRANSLATING.md). status, check, sync, keys,
 import, leaks and guides are forge i18n (forge i18n --help); names
 is forge data names. Locales:
 ${LOCALE_CODES.join(', ')}.

@@ -5,21 +5,21 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { runAddon } = require('./helpers/lua');
 
-const FILES = { name: 'Polestar', files: ['Core/Init.lua', 'Core/Compat.lua', 'Theme/Theme.xml', 'QoL/QoL.xml'] };
+const FILES = { name: 'Northstar', files: ['Core/Init.lua', 'Core/Compat.lua', 'Theme/Theme.xml', 'QoL/QoL.xml'] };
 
 function run(script) {
 	return runAddon({ stubs: ['stub_qol.lua'], addons: [FILES], login: true,
-		script: `local B, q = Polestar.QoL.Buttons, stub.qol
-		local function set(k, v) Polestar.Set("qol." .. k, v); stub.runTimers() end
+		script: `local B, q = Northstar.QoL.Buttons, stub.qol
+		local function set(k, v) Northstar.Set("qol." .. k, v); stub.runTimers() end
 		set("guideNameTarget", true)
 		${script}` }).emitted;
 }
 
 test('guide name: one localized chosen NPC uses the shared macro, with marking off by default', () => {
 	const out = run(`
-		emit({ Polestar.GetDefault("qol.guideNameTarget"), Polestar.GetDefault("qol.markTarget") })
-		Polestar.Names = { Npc = function(id) return ({ [10] = "Loup gris", [20] = "Maître des griffons" })[id] end }
-		Polestar.QoL.CurrentStep = function() error("must not inspect other goals") end
+		emit({ Northstar.GetDefault("qol.guideNameTarget"), Northstar.GetDefault("qol.markTarget") })
+		Northstar.Names = { Npc = function(id) return ({ [10] = "Loup gris", [20] = "Maître des griffons" })[id] end }
+		Northstar.QoL.CurrentStep = function() error("must not inspect other goals") end
 		local function result(goal, raw)
 			local macro, name, kind = B.GuideNameMacro(goal, raw)
 			emit({ macro, name, kind, macro == B.TargetMacro({ name }, 1, B.MarkLine(kind)) })
@@ -39,8 +39,8 @@ test('guide name: one localized chosen NPC uses the shared macro, with marking o
 
 test('guide name: collect resolves its chosen or explicit NPC source, never the item or other droppers', () => {
 	const out = run(`
-		Polestar.Names = { Npc = function(id) return ({ [10] = "Araignée choisie", [20] = "Loup source" })[id] end }
-		Polestar.QuestDB = { IsLoaded = function() error("must not inspect unrelated droppers") end }
+		Northstar.Names = { Npc = function(id) return ({ [10] = "Araignée choisie", [20] = "Loup source" })[id] end }
+		Northstar.QuestDB = { IsLoaded = function() error("must not inspect unrelated droppers") end }
 		local function result(goal, raw)
 			local macro, name, kind = B.GuideNameMacro(goal, raw)
 			emit(macro and { name, kind } or false)
@@ -58,7 +58,7 @@ test('guide name: collect resolves its chosen or explicit NPC source, never the 
 
 test('guide name: chosen IDs and names stay together; a missing chosen NPC never becomes another dropper', () => {
 	const out = run(`
-		Polestar.Names = { Npc = function(id) return id == 99 and "Raw NPC" or nil end }
+		Northstar.Names = { Npc = function(id) return id == 99 and "Raw NPC" or nil end }
 		local function result(goal, raw)
 			local macro, name = B.GuideNameMacro(goal, raw)
 			emit(macro and name or false)
@@ -135,8 +135,8 @@ test('mark cycle: guide names, target button and step key advance together witho
 		set("markTarget", true)
 		set("markMob", "cycle")
 		q.step({ { t = "kill", target = "Wolf" }, { t = "kill", target = "Boar" } })
-		local t, s, changes = PolestarTargetButton, PolestarStepButton, {}
-		Polestar.On("QOL_TARGET_MARK_CHANGED", function(kind) changes[#changes + 1] = kind end)
+		local t, s, changes = NorthstarTargetButton, NorthstarStepButton, {}
+		Northstar.On("QOL_TARGET_MARK_CHANGED", function(kind) changes[#changes + 1] = kind end)
 		local function snapshot()
 			local macro = B.GuideNameMacro({ t = "kill", subject = "Wolf" })
 			emit({ t:GetAttribute("macrotext"):match("/targetexact ([^\\n]+)"), s:GetAttribute("macrotext"):match("/targetexact ([^\\n]+)"),
@@ -163,7 +163,7 @@ test('mark cycle: guide names, target button and step key advance together witho
 test('mark cycle: NPCs skip the fixed mob icon; off and fixed settings do not advance or notify', () => {
 	const out = run(`
 		local changes = {}
-		Polestar.On("QOL_TARGET_MARK_CHANGED", function(kind) changes[#changes + 1] = kind end)
+		Northstar.On("QOL_TARGET_MARK_CHANGED", function(kind) changes[#changes + 1] = kind end)
 		emit(B.AdvanceMark("mob"))
 		set("markTarget", true)
 		emit(B.AdvanceMark("mob"))
@@ -173,7 +173,7 @@ test('mark cycle: NPCs skip the fixed mob icon; off and fixed settings do not ad
 		local seen = {}
 		for i = 1, 8 do
 			local macro = B.GuideNameMacro({ t = "talk", npcName = "Innkeeper" })
-			assert(macro == PolestarStepButton:GetAttribute("macrotext"))
+			assert(macro == NorthstarStepButton:GetAttribute("macrotext"))
 			seen[#seen + 1] = macro:match("[~!]%d$")
 			assert(B.AdvanceMark("npc"))
 		end
@@ -190,7 +190,7 @@ test('mark cycle: existing target and step macros stay frozen in combat, then ap
 		set("markTarget", true)
 		set("markMob", "cycle")
 		q.step({ { t = "kill", target = "Wolf" }, { t = "kill", target = "Boar" } })
-		local t, s = PolestarTargetButton, PolestarStepButton
+		local t, s = NorthstarTargetButton, NorthstarStepButton
 		local oldT, oldS = t:GetAttribute("macrotext"), s:GetAttribute("macrotext")
 		q.combat(true)
 		q.click(t, false)

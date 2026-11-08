@@ -85,11 +85,11 @@ pub struct Scene {
 	pub stubs: Vec<&'static str>,
 	/// (addon, saved variables Lua).
 	pub saved: Vec<(String, String)>,
-	/// The addons to load (default Polestar and Polestar_Guides).
+	/// The addons to load (default Northstar and Northstar_Guides).
 	pub addons: Vec<&'static str>,
 	/// The Recorder alone: no world, no packs.
 	pub recorder: bool,
-	/// Loads the walking map (Polestar_Nav).
+	/// Loads the walking map (Northstar_Nav).
 	pub nav: bool,
 	/// Every step and goal shows, whatever class, race or faction it is for.
 	pub every_step: bool,
@@ -100,14 +100,14 @@ pub struct Scene {
 /// The scenes' names, in order.
 pub const SCENE_NAMES: [&str; 14] = ["guide", "guides", "welcome", "picker", "options", "lookup", "dungeons", "rares", "talents", "journey", "tooltips", "slash", "more", "recorder"];
 
-/// The guide ids of our compiled guides, in order: addon/Polestar_Guides/Guides.lua and its faction parts
-/// (Polestar_Guides_Alliance, _Horde; format 8) when present.
+/// The guide ids of our compiled guides, in order: addon/Northstar_Guides/Guides.lua and its faction parts
+/// (Northstar_Guides_Alliance, _Horde; format 8) when present.
 pub fn guide_ids(root: &Path) -> Result<Vec<String>, String> {
 	static ID: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"(?m)^\t\t\tid = "([^"]+)""#).unwrap());
 	let mut out: Vec<String> = Vec::new();
-	for name in ["Polestar_Guides", "Polestar_Guides_Alliance", "Polestar_Guides_Horde"] {
+	for name in ["Northstar_Guides", "Northstar_Guides_Alliance", "Northstar_Guides_Horde"] {
 		let file = root.join("addon").join(name).join("Guides.lua");
-		if name != "Polestar_Guides" && !file.exists() {
+		if name != "Northstar_Guides" && !file.exists() {
 			continue;
 		}
 		let text = std::fs::read_to_string(&file).map_err(|e| format!("{}: {e}", file.display()))?;
@@ -124,12 +124,12 @@ pub fn guide_ids(root: &Path) -> Result<Vec<String>, String> {
 fn guide_script(ids: &[String], hover: bool) -> String {
 	format!(
 		r#"
-local E = Polestar.Engine
+local E = Northstar.Engine
 for _, id in ipairs({}) do
 	leaks.try(id, function()
 		E.SetGuide(id)
 		stub.advance(0.3)
-		if PolestarGuideFrame then PolestarGuideFrame:Show() end
+		if NorthstarGuideFrame then NorthstarGuideFrame:Show() end
 		for i = 1, E.GetStepCount() do
 			leaks.scene(id .. " step " .. i)
 			E.Goto(i)
@@ -139,7 +139,7 @@ for _, id in ipairs({}) do
 	end)
 end"#,
 		lua_list(ids),
-		if hover { "leaks.hover(\"PolestarGuideFrame\")" } else { "" }
+		if hover { "leaks.hover(\"NorthstarGuideFrame\")" } else { "" }
 	)
 }
 
@@ -164,15 +164,15 @@ pub fn scene(root: &Path, name: &str, guides: &[String]) -> Result<Scene, String
 			about: "the welcome and setup windows, route choices, the report and Discord windows".into(),
 			script: format!(
 				r#"
-leaks.try("welcome", function() Polestar.UI.Welcome.Show("welcome"); stub.advance(0.5); leaks.hover() end)
-leaks.try("setup", function() Polestar.UI.Welcome.Show("setup"); stub.advance(0.5); leaks.hover() end)
+leaks.try("welcome", function() Northstar.UI.Welcome.Show("welcome"); stub.advance(0.5); leaks.hover() end)
+leaks.try("setup", function() Northstar.UI.Welcome.Show("setup"); stub.advance(0.5); leaks.hover() end)
 leaks.try("route choice", function()
 	for _, id in ipairs({}) do
-		if Polestar.Engine.GetRouteChoice(id) then leaks.scene("route choice " .. id); Polestar.UI.ShowRouteChoice(id); stub.advance(0.3); leaks.hover() end
+		if Northstar.Engine.GetRouteChoice(id) then leaks.scene("route choice " .. id); Northstar.UI.ShowRouteChoice(id); stub.advance(0.3); leaks.hover() end
 	end
 end)
-leaks.try("report", function() Polestar.Engine.SetGuide({g0}); stub.advance(0.3); Polestar.UI.ShowReport(); stub.advance(0.3); leaks.hover() end)
-leaks.try("discord", function() Polestar.UI.ShowDiscord(); stub.advance(0.3); leaks.hover() end)"#,
+leaks.try("report", function() Northstar.Engine.SetGuide({g0}); stub.advance(0.3); Northstar.UI.ShowReport(); stub.advance(0.3); leaks.hover() end)
+leaks.try("discord", function() Northstar.UI.ShowDiscord(); stub.advance(0.3); leaks.hover() end)"#,
 				lua_list(&guide_ids(root)?)
 			),
 			..base
@@ -181,7 +181,7 @@ leaks.try("discord", function() Polestar.UI.ShowDiscord(); stub.advance(0.3); le
 			about: "the guide picker: its sections, categories, views, factions, searches and selections".into(),
 			script: format!(
 				r#"
-local UI, P = Polestar.UI, Polestar.UI.Picker
+local UI, P = Northstar.UI, Northstar.UI.Picker
 leaks.try("picker", function()
 	UI.ShowPicker(); stub.advance(0.5); leaks.hover()
 	for _, s in ipairs(P.Sections()) do leaks.try("picker section " .. tostring(s.key), function() P.ShowSection(s.key); stub.advance(0.3); leaks.hover() end) end
@@ -190,7 +190,7 @@ leaks.try("picker", function()
 		leaks.try("picker category " .. c, function() P.SetCategory(c); stub.advance(0.2); leaks.hover() end)
 	end
 	for _, v in ipairs({{ "list", "cards", "map", "grid" }}) do leaks.try("picker view " .. v, function() P.SetView(v); stub.advance(0.2); leaks.hover() end) end
-	for _, f in ipairs({{ "Horde", "Alliance" }}) do leaks.try("picker faction " .. f, function() Polestar.Set("ui.pickerFaction", f); UI.ShowPicker(); stub.advance(0.2); leaks.hover() end) end
+	for _, f in ipairs({{ "Horde", "Alliance" }}) do leaks.try("picker faction " .. f, function() Northstar.Set("ui.pickerFaction", f); UI.ShowPicker(); stub.advance(0.2); leaks.hover() end) end
 	for _, q in ipairs({{ "westfall", "hogger", "linen", "deadmines", "saber", "zzzz" }}) do leaks.try("picker search " .. q, function() leaks.typed(q); P.SetQuery(q); stub.advance(0.3); leaks.hover() end) end
 	for _, id in ipairs({}) do leaks.try("picker select " .. id, function() P.SetQuery(""); P.Select(id); stub.advance(0.2); leaks.hover() end) end
 end)"#,
@@ -202,13 +202,13 @@ end)"#,
 			about: "Options: every page and tab".into(),
 			script: r#"
 leaks.try("options", function()
-	Polestar.UI.ShowOptions(); stub.advance(0.3)
-	for _, p in ipairs(Polestar.UI.Options.Pages()) do
+	Northstar.UI.ShowOptions(); stub.advance(0.3)
+	for _, p in ipairs(Northstar.UI.Options.Pages()) do
 		local tabs = (type(p.tabs) == "table" and #p.tabs > 0) and p.tabs or { false }
 		for _, t in ipairs(tabs) do
 			leaks.try("options " .. p.key .. (t and (" > " .. t) or ""), function()
-				Polestar.UI.ShowOptions(p.key)
-				if t then Polestar.UI.Options.Select(p.key, t) end
+				Northstar.UI.ShowOptions(p.key)
+				if t then Northstar.UI.Options.Select(p.key, t) end
 				stub.advance(0.3)
 				leaks.hover()
 			end)
@@ -223,12 +223,12 @@ end)"#
 			needs: vec!["codex", "questdb"],
 			before: "stub.world.level = 60".into(),
 			script: r#"
-local LK = Polestar.UI.Lookup
+local LK = Northstar.UI.Lookup
 leaks.try("lookup", function()
-	Polestar.UI.ShowLookup(); stub.advance(0.5); leaks.hover()
+	Northstar.UI.ShowLookup(); stub.advance(0.5); leaks.hover()
 	for _, q in ipairs({ "saber", "westfall", "hogger", "linen cloth", "deadmines", "tabard", "recipe", "pet", "argent", "stormwind", "kobold", "mooncloth", "riding" }) do
 		leaks.try("lookup " .. q, function()
-			leaks.typed(q); Polestar.Lookup.Show(q); stub.advance(0.5); leaks.hover()
+			leaks.typed(q); Northstar.Lookup.Show(q); stub.advance(0.5); leaks.hover()
 			for i = 1, 3 do
 				leaks.try("lookup " .. q .. " result " .. i, function()
 					if LK.SelectRow then LK.SelectRow(i) end
@@ -241,7 +241,7 @@ leaks.try("lookup", function()
 	end
 	for _, pair in ipairs({ { "mount", 13086 }, { "mount", 8631 }, { "npc", 448 }, { "item", 2589 }, { "item", 19019 }, { "quest", 176 }, { "zone", 1429 }, { "pet", 8485 }, { "tabard", 5976 }, { "recipe", 2553 }, { "npc", 61 } }) do
 		leaks.try("lookup " .. pair[1] .. " " .. pair[2], function()
-			Polestar.Lookup.Show(nil, pair[1], pair[2]); stub.advance(0.5)
+			Northstar.Lookup.Show(nil, pair[1], pair[2]); stub.advance(0.5)
 			if LK.SelectSource then for s = 1, 4 do pcall(LK.SelectSource, s); stub.advance(0.1) end end
 			leaks.hover()
 		end)
@@ -256,15 +256,15 @@ end)"#
 			before: "stub.world.level = 20".into(),
 			script: r#"
 leaks.try("dungeons", function()
-	Polestar.UI.ShowPicker()
-	Polestar.Dungeons.Open(); stub.advance(0.5); leaks.hover()
-	local DS = Polestar.UI.DungeonsSection
+	Northstar.UI.ShowPicker()
+	Northstar.Dungeons.Open(); stub.advance(0.5); leaks.hover()
+	local DS = Northstar.UI.DungeonsSection
 	for _, f in ipairs({ "All", "Horde", "Alliance" }) do leaks.try("dungeons " .. f, function() DS.SetFaction(f); DS.SetBand("all"); stub.advance(0.2); leaks.hover() end) end
 	local keys = {}
-	for _, d in ipairs(Polestar.Dungeons.List and Polestar.Dungeons.List() or {}) do keys[#keys + 1] = type(d) == "table" and d.key or d end
+	for _, d in ipairs(Northstar.Dungeons.List and Northstar.Dungeons.List() or {}) do keys[#keys + 1] = type(d) == "table" and d.key or d end
 	for _, k in ipairs(keys) do
 		leaks.try("dungeon " .. k, function()
-			Polestar.Dungeons.Open(k); stub.advance(0.3); leaks.hover()
+			Northstar.Dungeons.Open(k); stub.advance(0.3); leaks.hover()
 			for _, t in ipairs({ "quests", "bosses", "map", "attune", "loot", "overview" }) do leaks.try("dungeon " .. k .. " " .. t, function() DS.SetTab(t); stub.advance(0.2); leaks.hover() end) end
 		end)
 	end
@@ -278,19 +278,19 @@ end)"#
 			before: "stub.world.level = 10".into(),
 			script: r#"
 leaks.try("rares", function()
-	local R = Polestar.Rares
-	if Polestar.Codex and Polestar.Codex.Load then Polestar.Codex.Load() end
+	local R = Northstar.Rares
+	if Northstar.Codex and Northstar.Codex.Load then Northstar.Codex.Load() end
 	local now = GetServerTime()
 	R.Record({ kind = "rare", id = 61, name = leaks.P("v", 61), level = 11, source = "vignette" }, { map = 1429, x = 89.2, y = 79.1 }, now - 7200, true)
 	R.Record({ kind = "treasure", id = 2843, name = leaks.P("v", 2843), source = "vignette" }, { map = 1429, x = 79.6, y = 55.7 }, now - 3 * 86400, false)
 	R.Show(); stub.advance(0.5); leaks.hover()
-	for _, t in ipairs({ "zone", "seen", "all", "treasures", "rares", "map" }) do leaks.try("rares tab " .. t, function() Polestar.UI.RaresSection.SetTab(t); stub.advance(0.2); leaks.hover() end) end
+	for _, t in ipairs({ "zone", "seen", "all", "treasures", "rares", "map" }) do leaks.try("rares tab " .. t, function() Northstar.UI.RaresSection.SetTab(t); stub.advance(0.2); leaks.hover() end) end
 	leaks.try("rare 61", function() R.Show("rare", 61); stub.advance(0.3); leaks.hover() end)
 	leaks.try("rare 471", function() R.Show("rare", 471); stub.advance(0.3); leaks.hover() end)
 	leaks.try("rare toast", function()
 		local a = R.AlertOf({ source = "vignette", kind = "rare", id = 61, name = leaks.P("v", 61), level = 11 }, { map = 1429, x = 89.2, y = 79.1 }, true); a.yards = 87
-		Polestar.Fire("RARE_SPOTTED", a); stub.advance(1); leaks.hover()
-		Polestar.Fire("RARE_SPOTTED", R.AlertOf({ source = "vignette", kind = "treasure", id = 2843, name = leaks.P("v", 2843) }, { map = 1429, x = 79.6, y = 55.7 }, true)); stub.advance(1); leaks.hover()
+		Northstar.Fire("RARE_SPOTTED", a); stub.advance(1); leaks.hover()
+		Northstar.Fire("RARE_SPOTTED", R.AlertOf({ source = "vignette", kind = "treasure", id = 2843, name = leaks.P("v", 2843) }, { map = 1429, x = 79.6, y = 55.7 }, true)); stub.advance(1); leaks.hover()
 	end)
 	leaks.try("rares sample", function() R.ShowSample(); stub.advance(1) end)
 end)"#
@@ -304,7 +304,7 @@ end)"#
 			before: "stub.talents.class = nil".into(),
 			script: r#"
 leaks.try("talents", function()
-	local T, TS = Polestar.Talents, stub.talents
+	local T, TS = Northstar.Talents, stub.talents
 	for _, cls in ipairs({ "PALADIN", "WARRIOR", "MAGE", "HUNTER", "ROGUE", "PRIEST", "WARLOCK", "DRUID", "SHAMAN" }) do
 		local data = T.Data(cls)
 		if data then
@@ -314,8 +314,8 @@ leaks.try("talents", function()
 				for id, n in pairs(TS.nodes) do n.name = leaks.P("t", id) end
 				if data.builds and data.builds[1] then TS.learn(data.builds[1], 5) end
 				T.Refresh()
-				Polestar.UI.ShowPicker(); T.Show(); stub.advance(0.5); leaks.hover()
-				local TV = Polestar.UI.TalentsView
+				Northstar.UI.ShowPicker(); T.Show(); stub.advance(0.5); leaks.hover()
+				local TV = Northstar.UI.TalentsView
 				if TV and TV.SetTab then for i = 1, 4 do leaks.try("talents " .. cls .. " tab " .. i, function() TV.SetTab(tostring(i)); stub.advance(0.2); leaks.hover() end) end end
 				if TS.openFrame then TS.openFrame(); stub.advance(0.5); leaks.hover() end
 			end)
@@ -328,31 +328,31 @@ end)"#
 		"journey" => Scene {
 			about: "the journey planner and its route to a few far places".into(),
 			nav: true,
-			saved: vec![("Polestar".into(), "PolestarDB = { schema = 1, settings = { nav = { journeySteps = true, journeyOpen = true, distanceUnit = \"yards\" } } }".into())],
+			saved: vec![("Northstar".into(), "NorthstarDB = { schema = 1, settings = { nav = { journeySteps = true, journeyOpen = true, distanceUnit = \"yards\" } } }".into())],
 			script: format!(
 				r#"
 leaks.try("journey", function()
-	local N = Polestar.Nav
-	Polestar.Engine.SetGuide({g0}); stub.advance(0.5)
+	local N = Northstar.Nav
+	Northstar.Engine.SetGuide({g0}); stub.advance(0.5)
 	for _, t in ipairs({{ {{ 1453, 60, 70, "Stormwind" }}, {{ 1457, 40, 50, "Darnassus" }}, {{ 1437, 10, 60, "Menethil" }}, {{ 1454, 50, 50, "Orgrimmar" }}, {{ 1413, 52, 30, "Crossroads" }}, {{ 1446, 50, 30, "Tanaris" }} }}) do
 		leaks.try("journey to " .. t[4], function()
-			if Polestar.Journey and Polestar.Journey.PlanTo then Polestar.Journey.PlanTo(t[1], t[2], t[3], nil, "e") else N.SetTarget(t[1], t[2], t[3], nil, "e") end
+			if Northstar.Journey and Northstar.Journey.PlanTo then Northstar.Journey.PlanTo(t[1], t[2], t[3], nil, "e") else N.SetTarget(t[1], t[2], t[3], nil, "e") end
 			stub.advance(5.5)
 			leaks.hover()
 		end)
 	end
-	leaks.try("/polestar route", function() SlashCmdList.POLESTAR("route") end)
+	leaks.try("/polestar route", function() SlashCmdList.NORTHSTAR("route") end)
 end)"#
 			),
 			..base
 		},
 		"tooltips" => Scene {
-			about: "Polestar's lines in the game's unit, object and item tooltips".into(),
+			about: "Northstar's lines in the game's unit, object and item tooltips".into(),
 			needs: vec!["codex", "questdb"],
 			before: "stub.world.level = 60".into(),
 			script: r#"
 leaks.try("tooltips", function()
-	local H = Polestar.Hooks
+	local H = Northstar.Hooks
 	local guid
 	local oGUID = UnitGUID
 	UnitGUID = function(u) if u == "mouseover" then return guid end return oGUID(u) end
@@ -388,14 +388,14 @@ end)"#
 			script: format!(
 				r#"
 leaks.try("slash", function()
-	Polestar.Engine.SetGuide({g0}); stub.advance(0.5)
-	local S = SlashCmdList.POLESTAR
+	Northstar.Engine.SetGuide({g0}); stub.advance(0.5)
+	local S = SlashCmdList.NORTHSTAR
 	for _, c in ipairs({{ "", "help", "status", "where", "tabs", "tab 9", "path", "route", "xp", "questdb", "near", "near trainer", "near bogus", "near innkeeper", "near flight", "gear", "gear help", "gear bogus",
 		"instances", "instances help", "arrow", "arrow help", "way", "way 1 2", "way bogus", "way Westfall 50 50 Sentinel", "dungeons", "dungeons bogus", "lookup", "lookup hogger", "mount", "rares", "rares help", "rares bogus", "talents",
 		"guide", "guide bogus", "guide forever/alliance/02-westfall", "skipleg", "unknowncommand", "debug", "debug", "show", "hide", "next", "prev", "skip", "close", "welcome", "report", "discord", "packs", "options", "guides", "reset" }}) do
 		leaks.try("/polestar " .. c, function() leaks.typed(c); S(c); stub.advance(0.2) end)
 	end
-	for k, fn in pairs(SlashCmdList) do if k ~= "POLESTAR" then leaks.try("/" .. k:lower(), function() fn(""); fn("help") end) end end
+	for k, fn in pairs(SlashCmdList) do if k ~= "NORTHSTAR" then leaks.try("/" .. k:lower(), function() fn(""); fn("help") end) end end
 end)"#
 			),
 			..base
@@ -408,11 +408,11 @@ end)"#
 				r#"
 leaks.try("more", function()
 	local w = stub.world
-	Polestar.Set("qol.questTooltips", true)
-	Polestar.Engine.SetGuide({g0}); stub.advance(0.5)
+	Northstar.Set("qol.questTooltips", true)
+	Northstar.Engine.SetGuide({g0}); stub.advance(0.5)
 	w.accept(7, {{ 10 }}); w.accept(33, {{ 8 }}); w.accept(15, {{ 1 }}); stub.advance(1)
 	stub.fire("QUEST_LOG_UPDATE"); stub.advance(1)
-	local H = Polestar.Hooks
+	local H = Northstar.Hooks
 	local guid
 	UnitGUID = (function(o) return function(u) if u == "mouseover" then return guid end return o(u) end end)(UnitGUID)
 	GameTooltip.GetUnit = function() return "x", "mouseover" end
@@ -422,10 +422,10 @@ leaks.try("more", function()
 	for _, item in ipairs({{ 750, 752, 1307 }}) do
 		leaks.try("quest tooltip item " .. item, function() GameTooltip:SetOwner(UIParent); GameTooltip.GetItem = function() return "x", "item:" .. item end; H.OnItemTooltip(GameTooltip, {{ id = item }}) end)
 	end
-	leaks.try("nearby menu", function() Polestar.Set("nav.nearbyMenu", true); Polestar.Nav.nearby.AddMenu(nil, leaks.menu()) end)
-	leaks.try("alerts", function() if Polestar.Nav.alerts then Polestar.Nav.alerts.ShowSample(); stub.advance(2) end end)
+	leaks.try("nearby menu", function() Northstar.Set("nav.nearbyMenu", true); Northstar.Nav.nearby.AddMenu(nil, leaks.menu()) end)
+	leaks.try("alerts", function() if Northstar.Nav.alerts then Northstar.Nav.alerts.ShowSample(); stub.advance(2) end end)
 	leaks.try("arrow", function() leaks.hover() end)
-	leaks.try("prompts", function() local P = Polestar.Nav.prompts; for _, it in ipairs(P and P.MenuItems and P.MenuItems() or {{}}) do leaks.rec("menu", it.text); leaks.rec("menu", it.tip) end end)
+	leaks.try("prompts", function() local P = Northstar.Nav.prompts; for _, it in ipairs(P and P.MenuItems and P.MenuItems() or {{}}) do leaks.rec("menu", it.text); leaks.rec("menu", it.tip) end end)
 	leaks.try("world map", function()
 		for _, m in ipairs({{ 1415, 1429, 1436, 1414, 947 }}) do
 			leaks.scene("world map " .. m)
@@ -434,21 +434,21 @@ leaks.try("more", function()
 			stub.advance(0.5); leaks.hover(); WorldMapFrame:Hide()
 		end
 	end)
-	leaks.try("/polestar xp", function() SlashCmdList.POLESTAR("xp"); stub.advance(1); leaks.hover() end)
-	leaks.try("/polestar instances", function() SlashCmdList.POLESTAR("instances"); stub.advance(1); leaks.hover() end)
+	leaks.try("/polestar xp", function() SlashCmdList.NORTHSTAR("xp"); stub.advance(1); leaks.hover() end)
+	leaks.try("/polestar instances", function() SlashCmdList.NORTHSTAR("instances"); stub.advance(1); leaks.hover() end)
 end)"#
 			),
 			..base
 		},
 		"recorder" => Scene {
-			about: "Polestar Recorder: its slash commands".into(),
+			about: "Northstar Recorder: its slash commands".into(),
 			stubs: vec!["stub_recorder.lua"],
-			addons: vec!["Polestar_Recorder"],
+			addons: vec!["Northstar_Recorder"],
 			recorder: true,
 			script: r#"
 leaks.try("recorder", function()
 	for _, c in ipairs({ "", "help", "status", "on", "off", "new", "list", "note test", "mark", "finds", "progress", "route", "clear", "bogus" }) do
-		leaks.try("/psrec " .. c, function() leaks.typed(c); SlashCmdList.POLESTARREC(c); stub.advance(0.2) end)
+		leaks.try("/psrec " .. c, function() leaks.typed(c); SlashCmdList.NORTHSTARREC(c); stub.advance(0.2) end)
 	end
 	leaks.hover()
 end)"#
@@ -553,7 +553,7 @@ fn command_words(root: &Path) -> Vec<String> {
 		}
 	}
 	let mut out = Vec::new();
-	walk(&root.join("addon/Polestar"), &mut out);
+	walk(&root.join("addon/Northstar"), &mut out);
 	out
 }
 
@@ -653,7 +653,7 @@ fn built(root: &Path, name: &str) -> bool {
 
 /// The Codex and the quest database are built (a developer's machine, not CI).
 pub fn full_data(root: &Path) -> bool {
-	built(root, "Polestar_Codex") && built(root, "Polestar_QuestDB")
+	built(root, "Northstar_Codex") && built(root, "Northstar_QuestDB")
 }
 
 /// Why `scene` cannot run: every scene needs the Codex and the quest database (built on the
@@ -661,8 +661,8 @@ pub fn full_data(root: &Path) -> bool {
 pub fn scene_skip(root: &Path, scene: &Scene) -> Option<String> {
 	for n in ["codex", "questdb"].into_iter().chain(scene.needs.iter().copied()) {
 		match n {
-			"codex" if !built(root, "Polestar_Codex") => return Some("addon/Polestar_Codex is not built (forge data codex)".into()),
-			"questdb" if !built(root, "Polestar_QuestDB") => return Some("addon/Polestar_QuestDB is not built (forge data questdb)".into()),
+			"codex" if !built(root, "Northstar_Codex") => return Some("addon/Northstar_Codex is not built (forge data codex)".into()),
+			"questdb" if !built(root, "Northstar_QuestDB") => return Some("addon/Northstar_QuestDB is not built (forge data questdb)".into()),
 			_ => {}
 		}
 	}
@@ -675,16 +675,16 @@ fn packs_lua(root: &Path, locale: &str, scene: &Scene) -> Result<String, String>
 	if scene.recorder {
 		return Ok(String::new());
 	}
-	let mut names: Vec<String> = ["Polestar_QuestDB", "Polestar_Codex", "Polestar_ItemDB"].iter().map(|x| x.to_string()).collect();
-	// The walking map (Polestar_Nav) plans paths in the background, seconds of Lua each step: only the
+	let mut names: Vec<String> = ["Northstar_QuestDB", "Northstar_Codex", "Northstar_ItemDB"].iter().map(|x| x.to_string()).collect();
+	// The walking map (Northstar_Nav) plans paths in the background, seconds of Lua each step: only the
 	// scenes about travel load it.
 	if scene.nav {
-		names.push("Polestar_Nav".into());
+		names.push("Northstar_Nav".into());
 	}
 	// The language folder: our guides' texts and the game's names in this language.
 	names.push(forge_guide::toc::language_addon(locale));
 	// Our pack's faction parts (format 8): both, loaded after login (run_scene), as before the split.
-	names.extend(["Polestar_Guides_Alliance", "Polestar_Guides_Horde"].map(String::from));
+	names.extend(["Northstar_Guides_Alliance", "Northstar_Guides_Horde"].map(String::from));
 	let mut packs = Vec::new();
 	for n in names {
 		if built(root, &n) {
@@ -692,7 +692,7 @@ fn packs_lua(root: &Path, locale: &str, scene: &Scene) -> Result<String, String>
 			packs.push((n, files));
 		}
 	}
-	let mut installed = vec!["Polestar".to_string(), "Polestar_Guides".to_string()];
+	let mut installed = vec!["Northstar".to_string(), "Northstar_Guides".to_string()];
 	installed.extend(packs.iter().map(|(n, _)| n.clone()));
 	let mut lines = vec![format!("stub.addons = {{ {} }}", installed.iter().map(|n| format!("{{ name = {} }}", s(n))).collect::<Vec<_>>().join(", "))];
 	for (k, files) in &packs {
@@ -705,7 +705,7 @@ fn packs_lua(root: &Path, locale: &str, scene: &Scene) -> Result<String, String>
 /// Recorder present.
 fn world_lua(root: &Path) -> Result<String, String> {
 	static MAP: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\[([0-9]+)\] = \{ c = (-?[0-9]+), left = (-?[0-9.]+), right = (-?[0-9.]+), top = (-?[0-9.]+), bottom = (-?[0-9.]+) \}").unwrap());
-	let file = root.join("addon/Polestar_Guides/MapFrames.lua");
+	let file = root.join("addon/Northstar_Guides/MapFrames.lua");
 	let text = std::fs::read_to_string(&file).map_err(|e| format!("{}: {e}", file.display()))?;
 	// A clone has no reference data: no parents.
 	let zones = std::fs::read_to_string(root.join("data/forever/zones.json")).ok().and_then(|t| parse_json(&t).ok()).unwrap_or_else(V::obj);
@@ -740,8 +740,8 @@ w.zone, w.subzone = \"Elwynn Forest\", \"Northshire Valley\"
 OpenWorldMap = OpenWorldMap or function() end
 QuestDifficultyColors = {{ impossible = {{ r = 1, g = 0.1, b = 0.1 }}, verydifficult = {{ r = 1, g = 0.5, b = 0.25 }}, difficult = {{ r = 1, g = 0.82, b = 0 }}, standard = {{ r = 0.25, g = 0.75, b = 0.25 }}, trivial = {{ r = 0.5, g = 0.5, b = 0.5 }} }}
 function GetQuestDifficultyColor() return {{ r = 1, g = 1, b = 0 }} end
-stub.addonsLoaded.Polestar_Recorder = true
-PolestarRecorderDB = {{ schema = 2, enabled = true, install = \"k3j9x0q2m7ab\", seq = 9, acked = 7, chunks = {{ [8] = (\"x\"):rep(3072), [9] = (\"x\"):rep(2048) }}, maps = {{}} }}",
+stub.addonsLoaded.Northstar_Recorder = true
+NorthstarRecorderDB = {{ schema = 2, enabled = true, install = \"k3j9x0q2m7ab\", seq = 9, acked = 7, chunks = {{ [8] = (\"x\"):rep(3072), [9] = (\"x\"):rep(2048) }}, maps = {{}} }}",
 		maps.join("\n")
 	))
 }
@@ -760,15 +760,15 @@ pub fn run_scene(root: &Path, locale: &str, scene: &Scene, allow: &Allow, all: b
 	.join("\n");
 	let mut stubs: Vec<&'static str> = if scene.recorder { Vec::new() } else { vec!["stub_world.lua", "stub_encoding.lua", "stub_packs.lua"] };
 	stubs.extend(scene.stubs.iter().copied());
-	let addons: Vec<&str> = if scene.addons.is_empty() { vec!["Polestar", "Polestar_Guides"] } else { scene.addons.clone() };
+	let addons: Vec<&str> = if scene.addons.is_empty() { vec!["Northstar", "Northstar_Guides"] } else { scene.addons.clone() };
 	let opts = RunAddon {
 		stubs,
 		before,
 		addons: addons.iter().map(|a| Addon::dir(a, root.join("addon").join(a))).collect(),
 		saved: scene.saved.clone(),
 		login: false,
-		// Both factions' guides, as before the faction parts (Polestar loads the other side's when asked).
-		script: format!("leaks.hookPolestar()\nleaks.scene(\"login\")\nstub.login()\nif Polestar.Guides and Polestar.Guides.LoadFaction then Polestar.Guides.LoadFaction(\"All\") end\nstub.advance(1)\n{}\nleaks.dump()", scene.script),
+		// Both factions' guides, as before the faction parts (Northstar loads the other side's when asked).
+		script: format!("leaks.hookNorthstar()\nleaks.scene(\"login\")\nstub.login()\nif Northstar.Guides and Northstar.Guides.LoadFaction then Northstar.Guides.LoadFaction(\"All\") end\nstub.advance(1)\n{}\nleaks.dump()", scene.script),
 	};
 	let out = run_addon_output(&opts)?;
 	for line in out.stdout.split('\n') {
@@ -1363,7 +1363,7 @@ pub fn source_label(s: &V) -> String {
 			json_quote(&mut q, &clip(&s.get("english").to_js_string(), 60));
 			format!("English a translation keeps (as in {q}), shown at {w}")
 		}
-		"unasked" => format!("English name from the guide or data, Polestar.Names not asked, shown at {w}"),
+		"unasked" => format!("English name from the guide or data, Northstar.Names not asked, shown at {w}"),
 		_ => format!("English in the code: {w}"),
 	}
 }

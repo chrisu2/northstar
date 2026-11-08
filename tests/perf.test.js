@@ -1,7 +1,7 @@
 'use strict';
 // Performance budgets: the whole addon, every module on, against the stubbed
 // world (tests/lua/stub_world.lua) with the local data packs loadable on demand
-// when built (Polestar_QuestDB, Polestar_Codex, Polestar_ItemDB). Only game
+// when built (Northstar_QuestDB, Northstar_Codex, Northstar_ItemDB). Only game
 // event handlers, message listeners, OnUpdate scripts and C_Timer callbacks
 // are timed (tests/lua/profile.lua). os.clock is elapsed time on Windows,
 // CPU time elsewhere; harness work is excluded in either case.
@@ -26,7 +26,7 @@
 //
 // Every round also times a reference (REFERENCE below) before each
 // measurement: 500 events through the same event path to a plain handler
-// doing what a Polestar handler does (parses quest objective text, builds and
+// doing what a Northstar handler does (parses quest objective text, builds and
 // sorts rows, formats a line). Its fastest timing over every round is refNow.
 // A slower computer than the one the budgets were set on, or one busy through
 // every round, runs the addon and the reference alike slower, so each budget
@@ -87,7 +87,7 @@ const ALL_ON = {
 // out.refs.
 const REFERENCE = `
 local refFrame = CreateFrame("Frame")
-refFrame:RegisterEvent("POLESTAR_TEST_REFERENCE")
+refFrame:RegisterEvent("NORTHSTAR_TEST_REFERENCE")
 local refText = {
 	"Kobold Vermin slain: 3/10", "Gold Dust: 1/5", "Tough Wolf Meat: 4/8", "Plainstrider Beak: 0/7",
 	"Bring the meat to Grull Hawkwind", "Speak with Thrall in Orgrimmar", "Zhevra Hooves: 2/4", "Explore the Crossroads",
@@ -110,7 +110,7 @@ local function reference()
 	collectgarbage("collect")
 	local t = stub.profile.total()
 	-- Keep the 500-event unit; a longer sample reduces whole-ms rounding.
-	for i = 1, 5000 do stub.fire("POLESTAR_TEST_REFERENCE", i) end
+	for i = 1, 5000 do stub.fire("NORTHSTAR_TEST_REFERENCE", i) end
 	out.refs[#out.refs + 1] = (stub.profile.total() - t) / 10
 end
 `;
@@ -134,8 +134,8 @@ function measureRound(p, leveling, gathering) {
 		stubs: [...packs.stubs, 'profile.lua'],
 		before: `${packs.before}\nstub.profile.start()`,
 		script: `
-local P, E, w = stub.profile, Polestar.Engine, stub.world
-for k, v in pairs(${luaValue(ALL_ON)}) do Polestar.Set(k, v) end
+local P, E, w = stub.profile, Northstar.Engine, stub.world
+for k, v in pairs(${luaValue(ALL_ON)}) do Northstar.Set(k, v) end
 -- Every pack present, loaded once (what a session pays the first time a
 -- feature needs one), then the delayed work after login.
 local out = { packs = {}, packMs = {} }
@@ -143,7 +143,7 @@ local c0, c1 = os.clock(), os.clock()
 while c1 == c0 do c1 = os.clock() end
 out.resolution = math.min((c1 - c0) * 1000, 1)
 for _, name in ipairs(${luaValue(packs.present)}) do
-	out.packMs[name] = P.measure(function() Polestar.Data.Pack(name) end)
+	out.packMs[name] = P.measure(function() Northstar.Data.Pack(name) end)
 end
 for name in pairs(stub.packLoads) do out.packs[#out.packs + 1] = name end
 table.sort(out.packs)

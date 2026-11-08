@@ -1,7 +1,7 @@
-//! `forge data names`: the names of Polestar's data in each client language, Names.lua in the
-//! load-on-demand language folder addon/Polestar_<locale> it shares with our guides' texts
+//! `forge data names`: the names of Northstar's data in each client language, Names.lua in the
+//! load-on-demand language folder addon/Northstar_<locale> it shares with our guides' texts
 //! (forge_guide::toc::language_addon; docs/ARCHITECTURE.md, "Names"; the runtime side is
-//! addon/Polestar/Core/Names.lua). Port of tools/lib/i18n/names.js and the JS `i18n names` command.
+//! addon/Northstar/Core/Names.lua). Port of tools/lib/i18n/names.js and the JS `i18n names` command.
 //!
 //! Kinds: quest, npc, object and item (the ids the data names), and map (instances), encounter (dungeon
 //! bosses and events), faction, taxi (flight points) and objective (a quest's objective text, for the
@@ -14,9 +14,9 @@
 //!   3. DingDB (pinned), whose base data comes from QuestieDB, so --no-questie leaves it out.
 //!   4. pfQuest's db/<locale>, for the names DingDB lacks.
 //!
-//! Only the ids Polestar's data names are kept: the compiled guides (addon/Polestar_Guides/Guides.lua),
-//! the quest database (addon/Polestar_QuestDB), the Codex's data (data/forever/codex), the travel data's
-//! flight points (addon/Polestar/Nav/TravelData.lua) and the lifts' objects (Polestar_Nav's
+//! Only the ids Northstar's data names are kept: the compiled guides (addon/Northstar_Guides/Guides.lua),
+//! the quest database (addon/Northstar_QuestDB), the Codex's data (data/forever/codex), the travel data's
+//! flight points (addon/Northstar/Nav/TravelData.lua) and the lifts' objects (Northstar_Nav's
 //! Chokepoints.lua).
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
@@ -41,7 +41,7 @@ fn kind_index(k: &str) -> usize {
 	PACK_KINDS.iter().position(|x| *x == k).unwrap()
 }
 
-// ---------------------------------------------------------------- the ids Polestar's data names
+// ---------------------------------------------------------------- the ids Northstar's data names
 
 const LIST: &str = r#"
 local function list(set)
@@ -79,14 +79,14 @@ local function walk(t)
   add(from, t.fromId)
   add(from, t.fromAlsoId)
 end
-Polestar = { RegisterGuide = function(g) if type(g) == "table" then walk(g) end return true end, RetireGuides = function() end }
+Northstar = { RegisterGuide = function(g) if type(g) == "table" then walk(g) end return true end, RetireGuides = function() end }
 "#;
 
 /// The quest database's ids: the "\n<id>\t" lines of each kind's LuaChunks text (Q.AddChunk).
 const QUESTDB_ADD: &str = r#"
 __ids = { quest = {}, npc = {}, object = {}, item = {} }
 local KIND = { quests = "quest", npcs = "npc", objects = "object", items = "item" }
-Polestar = { QuestDB = { AddChunk = function(kind, lo, hi, text)
+Northstar = { QuestDB = { AddChunk = function(kind, lo, hi, text)
   local into = KIND[kind] and __ids[KIND[kind]]
   if into and type(text) == "string" then for id in text:gmatch("\n(%-?%d+)\t") do into[tonumber(id)] = true end end
 end } }
@@ -130,13 +130,13 @@ pub fn used_ids(guides: &Path, questdb: &Path, codex: &Path) -> Result<UsedIds, 
 	}
 	let q_files: Vec<PathBuf> = QUESTDB_FILES.iter().map(|f| questdb.join(f)).collect();
 	if q_files.iter().any(|f| !f.exists()) {
-		return Err(format!("the quest database is not built (no {}): run forge data questdb, or pass --questdb <Polestar_QuestDB folder>", questdb.join("Quests.lua").display()));
+		return Err(format!("the quest database is not built (no {}): run forge data questdb, or pass --questdb <Northstar_QuestDB folder>", questdb.join("Quests.lua").display()));
 	}
 	let c_files: Vec<PathBuf> = CODEX_FILES.iter().map(|f| codex.join(f)).collect();
 	if c_files.iter().any(|f| !f.exists()) {
 		return Err(format!("the Codex data is not built (no {}): run forge data codex, or pass --codex <data/forever/codex folder>", c_files[0].display()));
 	}
-	// Polestar's own pack keeps each faction's guides in a part beside it (Polestar_Guides_Alliance, _Horde).
+	// Northstar's own pack keeps each faction's guides in a part beside it (Northstar_Guides_Alliance, _Horde).
 	let parts: Vec<PathBuf> = match (guides.parent(), guides.file_name()) {
 		(Some(dir), Some(file)) => {
 			let folder = dir.file_name().map(|f| f.to_string_lossy().into_owned()).unwrap_or_default();
@@ -237,7 +237,7 @@ local Nav = setmetatable({{ RegisterTravelData = function(d)
   for _, t in ipairs(type(d) == "table" and d.taxi or {{}}) do if type(t[1]) == "number" then ids[#ids + 1] = t[1] end end
 end }}, {{ __index = function() return function() end end }})
 local ns = {{ Nav = Nav }}
-local ok, err = __polestar_loaddata({}, "Polestar", ns)
+local ok, err = __polestar_loaddata({}, "Northstar", ns)
 if not ok then error(err, 0) end
 return ids"#,
 			lua_string(&travel.to_string_lossy())
@@ -467,14 +467,14 @@ pub fn license_text(locale: &str, built: &Built, s: &Sources) -> Result<String, 
 			parts.join(", ")
 		}
 	};
-	let title = format!("Polestar names ({locale}): third-party notices");
+	let title = format!("Northstar names ({locale}): third-party notices");
 	let mut out: Vec<String> = vec![
 		title.clone(),
 		"=".repeat(title.encode_utf16().count()),
 		String::new(),
 		"The names in this folder (quests, NPCs, objects, items, instances, dungeon".into(),
 		"encounters, factions, flight points and some quest objectives) are the game's".into(),
-		format!("texts in {language}, for Polestar. Names and texts of the game belong to"),
+		format!("texts in {language}, for Northstar. Names and texts of the game belong to"),
 		"Blizzard Entertainment. They come from the sources below, in this order, the".into(),
 		"first one with a name for an id winning.".into(),
 		String::new(),
@@ -519,8 +519,8 @@ pub fn license_text(locale: &str, built: &Built, s: &Sources) -> Result<String, 
 		for (p, h) in d.files.iter().filter(|(p, _)| *p == mine || p == src::CREDITS) {
 			out.push(format!("File: {p} (sha256 {h})"));
 		}
-		out.push("License: GPL-3.0 (Copyright Yendi), used in Polestar with his permission".into());
-		out.push("(THIRD_PARTY.md in the Polestar repository).".into());
+		out.push("License: GPL-3.0 (Copyright Yendi), used in Northstar with his permission".into());
+		out.push("(THIRD_PARTY.md in the Northstar repository).".into());
 		out.push(format!("Names taken: {}.", counts(2)));
 		out.push("DingDB's base data is generated from Questie and QuestieDB: see CREDITS.md".into());
 		out.push("beside this file.".into());
@@ -556,7 +556,7 @@ pub struct Meta {
 	pub iface: String,
 }
 
-/// package.json's version and addon/Polestar/Polestar.toc's interface under `root`.
+/// package.json's version and addon/Northstar/Northstar.toc's interface under `root`.
 pub fn meta(root: &Path) -> Result<Meta, String> {
 	let pkg = read_json(&root.join("package.json"))?;
 	let version = pkg["version"].as_str().ok_or("package.json has no version")?.to_string();
@@ -565,13 +565,13 @@ pub fn meta(root: &Path) -> Result<Meta, String> {
 }
 
 /// One language's Names.lua: per kind, LuaChunks text (forge-core luachunks) of "<id>\t<name>" lines, the
-/// name luachunks::field-escaped, registered through Polestar.Names.AddChunk with the pack's locale (the
+/// name luachunks::field-escaped, registered through Northstar.Names.AddChunk with the pack's locale (the
 /// runtime keeps the client's own only). `sources`: what the header names as the pack's sources.
 pub fn names_lua(locale: &str, built: &Built, sources: &str) -> Result<String, String> {
 	use forge_core::luachunks;
 	let language = locale_info(locale).ok_or_else(|| format!("unknown locale {locale}"))?.language;
 	let mut out = format!(
-		"{}\n-- Names in {language} ({locale}) for Polestar.Names (addon/Polestar/Core/Names.lua), by kind.\n-- One name a line, \"<id>\\t<name>\" (% ; , : | tab and line breaks as %XX), read on demand.\n-- Sources and licences: LICENSE-DATA.txt.\n\nlocal N = Polestar and Polestar.Names\nif not (N and N.AddChunk) then return end\nlocal function R(kind, lo, hi, text) N.AddChunk({}, kind, lo, hi, text) end\n",
+		"{}\n-- Names in {language} ({locale}) for Northstar.Names (addon/Northstar/Core/Names.lua), by kind.\n-- One name a line, \"<id>\\t<name>\" (% ; , : | tab and line breaks as %XX), read on demand.\n-- Sources and licences: LICENSE-DATA.txt.\n\nlocal N = Northstar and Northstar.Names\nif not (N and N.AddChunk) then return end\nlocal function R(kind, lo, hi, text) N.AddChunk({}, kind, lo, hi, text) end\n",
 		forge_guide::emit::header("lua", COMMAND, sources),
 		lua_string(locale)
 	);
@@ -610,17 +610,17 @@ pub struct Written {
 	pub bytes: usize,
 }
 
-/// Writes each language with names into its language folder addons_dir/Polestar_<locale>, leaving our
+/// Writes each language with names into its language folder addons_dir/Northstar_<locale>, leaving our
 /// guides' Texts.lua there alone: the names' files the folder no longer gets are removed, and those of
 /// a language left without any (the folder too once it holds no texts). The retired
-/// Polestar_Names_<locale> folder (before 0.3.0) is removed.
+/// Northstar_Names_<locale> folder (before 0.3.0) is removed.
 pub fn write_names_addons(out: &BTreeMap<String, Built>, addons_dir: &Path, meta: &Meta, s: &Sources) -> Result<Vec<Written>, String> {
 	let mut written = Vec::new();
 	fn io(p: &Path) -> impl Fn(std::io::Error) -> String + '_ {
 		move |e| format!("{}: {e}", p.display())
 	}
 	for (locale, built) in out {
-		let retired = addons_dir.join(format!("Polestar_Names_{locale}"));
+		let retired = addons_dir.join(format!("Northstar_Names_{locale}"));
 		if retired.is_dir() {
 			std::fs::remove_dir_all(&retired).map_err(io(&retired))?;
 		}
@@ -674,7 +674,7 @@ pub fn write_same_as_english(out: &BTreeMap<String, Built>, file: &Path) -> Resu
 // ---------------------------------------------------------------- the command
 
 pub struct Options {
-	/// The checkout (package.json, addon/Polestar/Polestar.toc, data/local).
+	/// The checkout (package.json, addon/Northstar/Northstar.toc, data/local).
 	pub root: PathBuf,
 	pub locales: Vec<String>,
 	pub offline: bool,
@@ -711,11 +711,11 @@ impl Options {
 			ding: None,
 			pin: ding_pin(),
 			pfquest: None,
-			guides: root.join("addon/Polestar_Guides/Guides.lua"),
-			questdb: root.join("addon/Polestar_QuestDB"),
+			guides: root.join("addon/Northstar_Guides/Guides.lua"),
+			questdb: root.join("addon/Northstar_QuestDB"),
 			codex: root.join("data/forever/codex"),
-			travel: root.join("addon/Polestar/Nav/TravelData.lua"),
-			chokepoints: root.join("addon/Polestar_Nav/Nav/Chokepoints.lua"),
+			travel: root.join("addon/Northstar/Nav/TravelData.lua"),
+			chokepoints: root.join("addon/Northstar_Nav/Nav/Chokepoints.lua"),
 			out: root.join("addon"),
 			same_as_english: true,
 		}
@@ -880,7 +880,7 @@ impl Report {
 		let id_line = |c: &[Option<usize>]| c.iter().enumerate().filter_map(|(k, n)| n.map(|n| plural(n, WORDS[k]))).collect::<Vec<_>>().join(", ");
 		let mut out = Vec::new();
 		let all: Vec<Option<usize>> = self.ids.iter().map(|s| s.as_ref().map(BTreeSet::len)).collect();
-		out.push(format!("ids Polestar's data names: {}{}", id_line(&all), if self.ids[ENCOUNTER].is_none() { ", every encounter" } else { "" }));
+		out.push(format!("ids Northstar's data names: {}{}", id_line(&all), if self.ids[ENCOUNTER].is_none() { ", every encounter" } else { "" }));
 		for (s, c) in &self.counts {
 			out.push(format!("  {s}: {}", id_line(&c.map(Some))));
 		}

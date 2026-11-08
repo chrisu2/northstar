@@ -14,6 +14,6 @@ is ../nav-grid/nav4). `regen.js` here also writes ../nav-legs and ../nav-store.
   the top surface under the open sky before the highest terrain; the same edit as this tree's path.js), in the
   scratch root nav-grid/regen.js built, its `data/local/nav4` replaced by ../nav-grid/nav4 (so the grid's
   `builtAt` and every key stay the committed grid's).
-- **Command:** `POLESTAR_GRID`/`POLESTAR_CAS` are set by the script:
+- **Command:** `NORTHSTAR_GRID`/`NORTHSTAR_CAS` are set by the script:
   `node rust/tests/golden/nav-walks/regen.js <scratch js root> <out golden dir>`; copy
   `<out>/{nav-walks,nav-legs,nav-store}` here.

@@ -17,17 +17,17 @@ end
 
 const PRELUDE: &str = r#"
 uistub.install()
-Polestar.Guides.Matches = uistub.realGuides.Matches
-Polestar.Compat.GetQuestTitle = function(id) return id == 7 and "Kobold Camp Cleanup" or nil end
+Northstar.Guides.Matches = uistub.realGuides.Matches
+Northstar.Compat.GetQuestTitle = function(id) return id == 7 and "Kobold Camp Cleanup" or nil end
 stub.login()
-local P = Polestar.UI.Picker
+local P = Northstar.UI.Picker
 "#;
 
 fn run_with(script: &str, before: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: format!("{before}{BEFORE}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"])],
 		script: format!("{PRELUDE}{script}"),
 		..Default::default()
 	})
@@ -42,15 +42,15 @@ fn run(script: &str) -> Value {
 fn quest_log_action_opens_guide_search_and_matching_steps_without_codex_or_changing_the_active_guide() {
 	let r = run(r#"
 uistub.setGuide(uistub.tailoring, 2)
-local before = Polestar.Engine.GetGuide().id
+local before = Northstar.Engine.GetGuide().id
 local buttons = questMenu("MENU_QUEST_MAP_LOG_TITLE", { questID = 7 })
 buttons[2].click()
-emit({ label = buttons[2].text, native = buttons[1].text, shown = PolestarPicker:IsShown(),
+emit({ label = buttons[2].text, native = buttons[1].text, shown = NorthstarPicker:IsShown(),
 	section = P.Section(), query = P.Query(), search = P.search:GetText(), selected = P.Selected(),
-	preview = P.details.Pitch:GetText(), active = Polestar.Engine.GetGuide().id,
-	before = before, step = Polestar.Engine.GetStepIndex() })
+	preview = P.details.Pitch:GetText(), active = Northstar.Engine.GetGuide().id,
+	before = before, step = Northstar.Engine.GetStepIndex() })
 "#);
-	assert_eq!(r["label"], "Polestar: Show in Guides");
+	assert_eq!(r["label"], "Northstar: Show in Guides");
 	assert_eq!(r["native"], "Native action");
 	assert_eq!(r["shown"], true);
 	assert_eq!(r["section"], "Guides");
@@ -67,9 +67,9 @@ emit({ label = buttons[2].text, native = buttons[1].text, shown = PolestarPicker
 fn a_quest_menu_leaves_the_account_wide_faction_filter_following_each_character() {
 	let r = run(r#"
 local function after(setting)
-	Polestar.Set("ui.pickerFaction", setting)
+	Northstar.Set("ui.pickerFaction", setting)
 	P.ShowQuest(7)
-	return Polestar.Get("ui.pickerFaction")
+	return Northstar.Get("ui.pickerFaction")
 end
 emit({ auto = after("auto"), all = after("All"), other = after("Horde"), selected = P.Selected() })
 "#);
@@ -143,11 +143,11 @@ emit({ counts = counts })
 #[test]
 fn a_quest_absent_from_installed_guides_shows_an_empty_search_with_no_unrelated_selection() {
 	let r = run(r#"
-Polestar.UI.ShowPicker()
-local active = Polestar.Engine.GetGuide()
+Northstar.UI.ShowPicker()
+local active = Northstar.Engine.GetGuide()
 P.ShowQuest(999999)
 emit({ query = P.Query(), count = P.shown.guides, selected = P.Selected(),
-	empty = PolestarPicker.Empty:GetText(), active = Polestar.Engine.GetGuide() == active })
+	empty = NorthstarPicker.Empty:GetText(), active = Northstar.Engine.GetGuide() == active })
 "#);
 	assert_eq!(r["query"], "999999");
 	assert_eq!(r["count"], 0);
@@ -162,7 +162,7 @@ fn quest_context_uses_the_client_title_filters_inapplicable_steps_and_clears_on_
 local westfall = uistub.guides["forever/alliance/02-westfall"]
 westfall.steps[1].only = { classes = { "Mage" } }
 westfall.steps[1].goals = { { t = "accept", quest = 7, title = "Kobold Camp Cleanup" } }
-Polestar.Compat.GetQuestTitle = function() return "Client quest title" end
+Northstar.Compat.GetQuestTitle = function() return "Client quest title" end
 P.ShowQuest(7)
 local found, query = P.shown.guides, P.Query()
 P.SetQuery("westfall")
@@ -179,14 +179,14 @@ emit({ found = found, query = query, selected = P.Selected(), count = P.shown.gu
 fn menu_wording_and_quest_preview_follow_the_client_language() {
 	let r = run_with(
 		r#"
-Polestar.Compat.GetQuestTitle = function() return "Titolo della missione" end
+Northstar.Compat.GetQuestTitle = function() return "Titolo della missione" end
 local buttons = questMenu("MENU_QUEST_MAP_LOG_TITLE", { questID = 7 })
 buttons[2].click()
 emit({ label = buttons[2].text, query = P.Query(), preview = P.details.Pitch:GetText() })
 "#,
 		&fake_locale("itIT", &[("Show in Guides", "Mostra nelle guide"), ("Step %d of %d: %s", "Passaggio %d di %d: %s")]),
 	);
-	assert_eq!(r["label"], "Polestar: Mostra nelle guide");
+	assert_eq!(r["label"], "Northstar: Mostra nelle guide");
 	assert_eq!(r["query"], "Titolo della missione");
 	assert!(is_match(text(&r["preview"]), r"Passaggio 2 di"));
 }
@@ -201,11 +201,11 @@ stub.world.race, stub.world.raceName, stub.world.raceID = "Scourge", "Undead", 5
 stub.world.faction = "Horde"
 stub.world.titles[364] = "The Mindless Ones"
 "#,
-		// The pack and the Horde part (Polestar loads it on demand in game).
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Lookup/Lookup.xml", "UI/UI.xml"]), Addon::name("Polestar_Guides"), Addon::name("Polestar_Guides_Horde")],
+		// The pack and the Horde part (Northstar loads it on demand in game).
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Lookup/Lookup.xml", "UI/UI.xml"]), Addon::name("Northstar_Guides"), Addon::name("Northstar_Guides_Horde")],
 		saved: vec![(
-			"Polestar".into(),
-			"PolestarDB = { schema = 1, welcomeSeen = 1, settings = { behavior = { autoSelectGuide = false } } }; PolestarCharDB = { schema = 1, welcomeSeen = 1 }".into(),
+			"Northstar".into(),
+			"NorthstarDB = { schema = 1, welcomeSeen = 1, settings = { behavior = { autoSelectGuide = false } } }; NorthstarCharDB = { schema = 1, welcomeSeen = 1 }".into(),
 		)],
 		login: true,
 		script: r#"
@@ -215,11 +215,11 @@ block.id, block.parentModule = 364, QuestObjectiveTracker
 QuestObjectiveTracker.GetExistingBlock = function(_, id) if id == 364 then return block end end
 local header = CreateFrame("Button", nil, block)
 GetMouseFoci = function() return { header } end
-local before = Polestar.Engine.GetGuide()
+local before = Northstar.Engine.GetGuide()
 questMenu("MENU_QUEST_OBJECTIVE_TRACKER", {})[2].click()
-local P = Polestar.UI.Picker
+local P = Northstar.UI.Picker
 emit({ query = P.Query(), selected = P.Selected(), preview = P.details.Pitch:GetText(),
-	active = Polestar.Engine.GetGuide() == before })
+	active = Northstar.Engine.GetGuide() == before })
 "#
 		.into(),
 	})
@@ -240,7 +240,7 @@ emit({ label = buttons[2].text })
 "#,
 		&format!("function GetLocale() return \"{locale}\" end\n"),
 	);
-	assert_eq!(r["label"], format!("Polestar: {label}").as_str());
+	assert_eq!(r["label"], format!("Northstar: {label}").as_str());
 }
 
 #[test]

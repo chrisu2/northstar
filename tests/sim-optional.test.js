@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const { loadPolestarRoutes, requiredEvents } = require('../tools/lib/sim/baselines/polestar');
+const { loadNorthstarRoutes, requiredEvents } = require('../tools/lib/sim/baselines/polestar');
 const { sources } = require('../tools/lib/sim/compare');
 
 const FIX = path.join(__dirname, 'fixtures', 'sim', 'polestar');
@@ -42,7 +42,7 @@ test('sim compare scores the guides without their optional goals; --with-optiona
 	const dir = guides();
 	const simDir = fs.mkdtempSync(path.join(os.tmpdir(), 'polestar-optional-sim-'));
 	try {
-		const all = loadPolestarRoutes({ guidesDir: dir, dataDir: path.join(FIX, 'data'), faction: 'Horde', race: 'Orc' }).default.events;
+		const all = loadNorthstarRoutes({ guidesDir: dir, dataDir: path.join(FIX, 'data'), faction: 'Horde', race: 'Orc' }).default.events;
 		assert.ok(quests(all).includes('turnin 90010') && quests(all).includes('accept 90020'));
 		const o = { guidesDir: dir, dataDir: path.join(FIX, 'data'), simDir };
 		const polestar = (opts) => sources({ ...o, ...opts }, 'Horde', 'Orc', { world: null }, { world: null }).list.find((s) => s.id === 'polestar').events;

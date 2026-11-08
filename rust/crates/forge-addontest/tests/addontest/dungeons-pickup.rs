@@ -1,4 +1,4 @@
-//! "Pick up the quests" for a dungeon (addon/Polestar/Dungeons/Pickup.lua over Lookup's guide machinery):
+//! "Pick up the quests" for a dungeon (addon/Northstar/Dungeons/Pickup.lua over Lookup's guide machinery):
 //! which of a page's quests this character can take before the run, their open prerequisites first, the
 //! givers on a travel route from where the player stands, the entrance last; the guide opens in a new tab,
 //! comes back after /reload, and plays to the end in the real engine. Each quest's giver link points at the
@@ -174,7 +174,7 @@ local function describe(g)
 end
 local function tabIds()
 	local ids = {}
-	for i, t in ipairs(Polestar.Engine.GetTabs()) do ids[i] = t.guideId end
+	for i, t in ipairs(Northstar.Engine.GetTabs()) do ids[i] = t.guideId end
 	return ids
 end
 "#;
@@ -218,13 +218,13 @@ fn run(pack: &CodexPack, script: &str, o: Opts) -> Vec<Value> {
 		stubs: vec!["stub_world.lua"],
 		before,
 		addons: vec![if o.questdb {
-			Addon::files("Polestar", &["Core/Core.xml", "Lookup/Lookup.xml", "Quests/QuestDB.lua", "Dungeons/Dungeons.xml"])
+			Addon::files("Northstar", &["Core/Core.xml", "Lookup/Lookup.xml", "Quests/QuestDB.lua", "Dungeons/Dungeons.xml"])
 		} else {
-			Addon::files("Polestar", &["Core/Core.xml", "Lookup/Lookup.xml", "Dungeons/Dungeons.xml"])
+			Addon::files("Northstar", &["Core/Core.xml", "Lookup/Lookup.xml", "Dungeons/Dungeons.xml"])
 		}],
-		saved: o.saved.map(|s| ("Polestar".to_string(), s)).into_iter().collect(),
+		saved: o.saved.map(|s| ("Northstar".to_string(), s)).into_iter().collect(),
 		login: true,
-		script: format!("{DESCRIBE}\nlocal D = Polestar.Dungeons\n{script}"),
+		script: format!("{DESCRIBE}\nlocal D = Northstar.Dungeons\n{script}"),
 	})
 }
 
@@ -359,14 +359,14 @@ emit({ take = g, target = p and p.name or false })"#);
 fn pickup_opens_the_guide_in_a_new_tab_and_it_plays_to_the_end_the_giver_link_points_at_the_first_prerequisite_still_to_do() {
 	let pack = default_pack();
 	let script = k(r#"
-local before = #Polestar.Engine.GetTabs()
+local before = #Northstar.Engine.GetTabs()
 local function target(id)
 	local p, label, first, turnIn = D.GiverTarget("{KEY}", id)
 	return { p and p.map or false, label or false, first or false, turnIn or false }
 end
 local links = { arugal = target(1014), orb = target(1740) }
 local id, why = D.PickUp("{KEY}")
-emit({ id = id or false, why = why or false, tabs = tabIds(), before = before, active = Polestar.Engine.GetGuide() and Polestar.Engine.GetGuide().id or false })
+emit({ id = id or false, why = why or false, tabs = tabIds(), before = before, active = Northstar.Engine.GetGuide() and Northstar.Engine.GetGuide().id or false })
 stub.world.accept(1010, { 1 })
 links.arugalAfter = target(1014)
 stub.world.abandon(1010)
@@ -396,14 +396,14 @@ fn the_tab_survives_reload_rebuilt_before_the_engine_reopens_it_in_the_same_rout
 		&pack,
 		&k(r#"
 D.PickUp("{KEY}")
-local s = Polestar.CharState()
-emit({ tabs = s.tabs, order = s.dungeonPickup and s.dungeonPickup["{KEY}"] or false, steps = describe(Polestar.Guides.Get("{GID}")) })"#),
+local s = Northstar.CharState()
+emit({ tabs = s.tabs, order = s.dungeonPickup and s.dungeonPickup["{KEY}"] or false, steps = describe(Northstar.Guides.Get("{GID}")) })"#),
 		Opts::default(),
 	)
 	.remove(0);
 	assert!(first["order"].as_array().is_some_and(|a| !a.is_empty()), "the route is kept");
 	let saved = format!(
-		"PolestarCharDB = {{ schema = 1, tabs = {}, activeTab = {}, dungeonPickup = {{ [{}] = {} }} }}",
+		"NorthstarCharDB = {{ schema = 1, tabs = {}, activeTab = {}, dungeonPickup = {{ [{}] = {} }} }}",
 		lua_value(&first["tabs"]),
 		first["tabs"].as_array().unwrap().len(),
 		serde_json::to_string(KEY).unwrap(),
@@ -411,7 +411,7 @@ emit({ tabs = s.tabs, order = s.dungeonPickup and s.dungeonPickup["{KEY}"] or fa
 	);
 	let after = run(
 		&pack,
-		&k(r#"emit({ tabs = tabIds(), active = Polestar.Engine.GetGuide() and Polestar.Engine.GetGuide().id or false, steps = describe(Polestar.Guides.Get("{GID}")) })"#),
+		&k(r#"emit({ tabs = tabIds(), active = Northstar.Engine.GetGuide() and Northstar.Engine.GetGuide().id or false, steps = describe(Northstar.Guides.Get("{GID}")) })"#),
 		Opts { at: None, saved: Some(saved), ..Default::default() },
 	)
 	.remove(0);
@@ -429,7 +429,7 @@ fn nothing_left_to_pick_up_pickup_says_so_and_builds_no_guide() {
 		&k(r#"
 local before = tabIds()
 local id, why = D.PickUp("{KEY}")
-emit({ id = id or false, why = why or false, guide = Polestar.Guides.Get("{GID}") ~= nil, same = #tabIds() == #before, carried = #D.PickupPlan("{KEY}").carried })"#),
+emit({ id = id or false, why = why or false, guide = Northstar.Guides.Get("{GID}") ~= nil, same = #tabIds() == #before, carried = #D.PickupPlan("{KEY}").carried })"#),
 		Opts { done: vec![1098, 1740, 1014, 1016], log: vec![1013], ..Default::default() },
 	)
 	.remove(0);
@@ -544,7 +544,7 @@ fn a_quest_the_codex_gives_no_side_takes_the_quest_database_s_the_horde_never_pi
 	let own = pack_of(&c, &i);
 	// Layout: title, level, minLevel, races, classes, faction: 90410 the Alliance's, 90411 both sides'.
 	let script = format!(
-		"{}\nAddRecords(\"quests\", {{ [90410] = {{ \"Argent Errand\", 24, 18, 77, nil, 1 }}, [90411] = {{ \"Argent Call\", 24, 18 }} }})\nPolestar.QuestDB.SetMeta({{}})\n{}",
+		"{}\nAddRecords(\"quests\", {{ [90410] = {{ \"Argent Errand\", 24, 18, 77, nil, 1 }}, [90411] = {{ \"Argent Call\", 24, 18 }} }})\nNorthstar.QuestDB.SetMeta({{}})\n{}",
 		forge_addontest::questdb::ADD_RECORDS_LUA,
 		k(TAKE)
 	);
@@ -755,7 +755,7 @@ for _, t in ipairs(plan.take) do
 end
 table.sort(take)
 local chain = {}
-for n, q in ipairs(Polestar.Lookup.QuestChain(90678, Polestar.Lookup.PlayerInfo())) do chain[n] = q.id end
+for n, q in ipairs(Northstar.Lookup.QuestChain(90678, Northstar.Lookup.PlayerInfo())) do chain[n] = q.id end
 emit({ take = take, pre = pre, later = plan.later, chain = chain })"#);
 	let any = pack_of(&c, &i);
 	let low = run(&any, &script, Opts::default()).remove(0);
@@ -780,7 +780,7 @@ emit({ take = take, pre = pre, later = plan.later, chain = chain })"#);
 const ZONE_TRAVEL: &str = r#"
 local ZONES = { [1458] = "uc", [1421] = "sp", [1413] = "b" }
 local COST = { ["uc-sp"] = 120, ["uc-b"] = 250, ["sp-b"] = 370 }
-Polestar.TravelCost = function(a, b)
+Northstar.TravelCost = function(a, b)
 	local za, zb = ZONES[a.map], ZONES[b.map]
 	if not (za and zb) then return nil end
 	if za == zb then return 20 + math.abs(a.x - b.x) + math.abs(a.y - b.y) end
@@ -899,7 +899,7 @@ fn after_the_run_a_follow_up_from_a_giver_next_door_is_a_stop_of_its_own_one_far
 local function follow() local o = {} for i, f in ipairs(D.HandinFollowUps(D.HandinPlan("{KEY}"))) do o[i] = f.rec.id end return o end
 emit(follow())
 -- Held, so the Codex keeps this record while its giver is moved.
-local dalar = Polestar.Codex.Quest(1016)
+local dalar = Northstar.Codex.Quest(1016)
 dalar.start.npc = { 1952 } -- High Executor Hadrec, next to Dalar
 emit(describe(D.HandinGuide("{KEY}")))
 dalar.start.npc = { 6247 } -- Doan Karhan, in the Barrens
@@ -930,7 +930,7 @@ fn nothing_to_hand_in_handin_says_so_and_builds_no_guide_the_text_names_what_is_
 		&k(r#"
 local before = tabIds()
 local id, why = D.HandIn("{KEY}")
-emit({ id = id or false, why = why or false, guide = Polestar.Guides.Get("lookup/handin/{KEY}") ~= nil, same = #tabIds() == #before,
+emit({ id = id or false, why = why or false, guide = Northstar.Guides.Get("lookup/handin/{KEY}") ~= nil, same = #tabIds() == #before,
 	text = D.HandinText(D.HandinPlan("{KEY}")) })
 stub.world.abandon(1013)
 emit(D.HandinText(D.HandinPlan("{KEY}")))"#),
@@ -947,14 +947,14 @@ fn handin_takes_the_place_of_the_pick_up_guide_once_that_one_is_at_the_entrance_
 	let script = k(r#"
 -- Return to Dalar is all that is left to pick up: its step, then the entrance.
 D.PickUp("{KEY}")
-Polestar.Engine.OpenTab("lookup/pickup/{KEY}")
+Northstar.Engine.OpenTab("lookup/pickup/{KEY}")
 local early = { D.HandIn("{KEY}") }
 local kept = tabIds()
 stub.world.accept(1016, { 1 })
 stub.advance(0.6)
 local id = D.HandIn("{KEY}")
-local s = Polestar.CharState()
-emit({ early = early[1] or false, kept = kept, id = id or false, tabs = tabIds(), active = Polestar.Engine.GetGuide().id,
+local s = Northstar.CharState()
+emit({ early = early[1] or false, kept = kept, id = id or false, tabs = tabIds(), active = Northstar.Engine.GetGuide().id,
 	order = s.dungeonHandin and s.dungeonHandin["{KEY}"] or false, saved = s.tabs })
 stub.advance(0.6)
 {SIMULATE}"#)
@@ -971,12 +971,12 @@ stub.advance(0.6)
 	assert_eq!(out["done"], true);
 	assert_eq!(out["missing"], json!({}));
 	let saved = format!(
-		"PolestarCharDB = {{ schema = 1, tabs = {}, activeTab = 1, dungeonHandin = {{ [{}] = {} }} }}",
+		"NorthstarCharDB = {{ schema = 1, tabs = {}, activeTab = 1, dungeonHandin = {{ [{}] = {} }} }}",
 		lua_value(&first["saved"]),
 		serde_json::to_string(KEY).unwrap(),
 		lua_value(&first["order"])
 	);
-	let after = run(&pack, &k(r#"emit({ tabs = tabIds(), steps = describe(Polestar.Guides.Get("lookup/handin/{KEY}")) })"#), Opts { at: None, saved: Some(saved), ..opts() }).remove(0);
+	let after = run(&pack, &k(r#"emit({ tabs = tabIds(), steps = describe(Northstar.Guides.Get("lookup/handin/{KEY}")) })"#), Opts { at: None, saved: Some(saved), ..opts() }).remove(0);
 	assert_eq!(after, json!({ "tabs": ["lookup/handin/shadowfang-keep"], "steps": [{ "title": "Keeper Bel'dugur", "goals": "turnin:1013" }] }));
 }
 

@@ -6,7 +6,7 @@ local n = Ding.DB.names
 do local t = n.quests local function f()
 t[176]="Avis de recherche : \"Lardeur\""
 t[33]="Les loups à la frontière"
-t[9999]="Une quête que Polestar ne nomme pas"
+t[9999]="Une quête que Northstar ne nomme pas"
 end f() end
 do local t = n.npcs local function f()
 t[448]="Lardeur"

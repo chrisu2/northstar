@@ -4,7 +4,7 @@
 //! rounded to 0.1 as the tables store them) equal; yards within the router port's tolerance (1 yd or 1 %); same
 //! walkable set; base cells close; each band row's danger table is router.js dangerOf over the
 //! ends' zones. Golden: rust/tests/golden/nav-walks (asks.js's asks-<band>.{bin,json}, ends.json,
-//! areazones.json, walktable/<key>.bin) on the grid of nav-grid; POLESTAR_REF reads the old local
+//! areazones.json, walktable/<key>.bin) on the grid of nav-grid; NORTHSTAR_REF reads the old local
 //! references (tests/common/mod.rs).
 //! ROWS=<n per band> (default 300) cargo test --release -p forge-nav --test walks_parity -- --nocapture
 

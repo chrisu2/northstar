@@ -146,7 +146,7 @@
 
 <svelte:window onclick={() => (menu = null)} onkeydown={menuKeys} />
 
-<PageHeader title="Addons" subtitle="Polestar's addons for WoW: Forever, installed and kept up to date from the project's GitHub releases.">
+<PageHeader title="Addons" subtitle="Northstar's addons for WoW: Forever, installed and kept up to date from the project's GitHub releases.">
 	{#snippet aside()}
 		<button class="btn" onclick={check} disabled={spinning}>
 			<span class="turn" class:spinning><Glyph name="reload" size={13} color="var(--textDim)" /></span>
@@ -285,7 +285,7 @@
 				{#each installed as p, i (p.id)}
 					<div in:receive={{ key: p.id }} out:send={{ key: p.id }} animate:flip={{ duration: 320, easing: ease }}>{@render row(p, i)}</div>
 				{:else}
-					<p class="note none" in:rise>Nothing from Polestar is installed in this game yet.</p>
+					<p class="note none" in:rise>Nothing from Northstar is installed in this game yet.</p>
 				{/each}
 			</div>
 		</section>

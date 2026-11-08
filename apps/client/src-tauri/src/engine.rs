@@ -1,5 +1,5 @@
 //! The client's heart: finds the game, watches each WoW account's
-//! `SavedVariables/Polestar_Recorder.lua`, uploads new chunks, writes the
+//! `SavedVariables/Northstar_Recorder.lua`, uploads new chunks, writes the
 //! addon's ack file and publishes a status snapshot to the window and tray.
 //!
 //! One background task owns the loop (`run`); commands from the window read
@@ -151,7 +151,7 @@ pub struct Engine {
 
 impl Engine {
 	pub fn new(app: AppHandle, store: Store) -> Result<Arc<Engine>, String> {
-		let client = || reqwest::Client::builder().user_agent(concat!("PolestarClient/", env!("CARGO_PKG_VERSION"))).connect_timeout(Duration::from_secs(15)).timeout(Duration::from_secs(90));
+		let client = || reqwest::Client::builder().user_agent(concat!("NorthstarClient/", env!("CARGO_PKG_VERSION"))).connect_timeout(Duration::from_secs(15)).timeout(Duration::from_secs(90));
 		let http = client().build().map_err(|e| e.to_string())?;
 		let packs_http = client().redirect(crate::packs::redirect_policy()).build().map_err(|e| e.to_string())?;
 		let activity = store.activity();
@@ -1029,7 +1029,7 @@ fn old_recorder(installed: Option<&str>, latest: Option<&str>) -> (&'static str,
 	match latest {
 		Some(l) if records_schema2(l) && installed.is_none_or(|have| addons::newer(l, have)) => ("attention", "The Recorder is out of date", "Update it so it records in the format the server reads.", Some("update")),
 		_ if installed.is_some_and(records_schema2) => ("waiting", "Waiting for the new Recorder to run", "Log in (or /reload) with the Recorder on to start recording in the new format.", None),
-		Some(_) => ("attention", "The Recorder is out of date", "It records in an older format the server no longer reads. The new Recorder comes with the next Polestar update.", None),
+		Some(_) => ("attention", "The Recorder is out of date", "It records in an older format the server no longer reads. The new Recorder comes with the next Northstar update.", None),
 		None => ("attention", "The Recorder is out of date", "It records in an older format the server no longer reads. Check for addon updates to get the new one.", None),
 	}
 }
@@ -1060,7 +1060,7 @@ fn status(state: &State, game: &GameView, pending: u64, now: i64) -> StatusView 
 		next_retry: None,
 	};
 	if !state.settings.consent {
-		return make("off", "Sharing is off", "Nothing is sent. Start sharing under Recording to help improve Polestar's guides.".into(), None);
+		return make("off", "Sharing is off", "Nothing is sent. Start sharing under Recording to help improve Northstar's guides.".into(), None);
 	}
 	if state.settings.paused {
 		let detail = if pending > 0 { "Your new play waits on this PC until you resume. The Recorder keeps recording in the game." } else { "Nothing is sent until you resume. The Recorder keeps recording in the game." };
@@ -1086,7 +1086,7 @@ fn status(state: &State, game: &GameView, pending: u64, now: i64) -> StatusView 
 		return make("attention", "The server turned the upload away", message.clone(), Some("retry"));
 	}
 	if state.registering {
-		return make("uploading", "Setting up", "Setting up this PC with the Polestar server. It takes a few seconds, once.".into(), None);
+		return make("uploading", "Setting up", "Setting up this PC with the Northstar server. It takes a few seconds, once.".into(), None);
 	}
 	if let Some(n) = state.uploading {
 		return make("uploading", "Sending", format!("Sending your latest play ({n} {}).", plural(n as u64, "part", "parts")), None);
@@ -1430,7 +1430,7 @@ mod tests {
 	/// An account folder as `poll_files` leaves it: no file, a file read, or one it can't read.
 	fn account(sv: Option<sv::SavedVars>, error: Option<sv::Error>) -> Account {
 		let seen = (sv.is_some() || error.is_some()).then_some((UNIX_EPOCH, 1));
-		Account { sv: sv.map(Arc::new), error, seen, ..Account::new_empty("WOW1", Path::new("Polestar_Recorder.lua")) }
+		Account { sv: sv.map(Arc::new), error, seen, ..Account::new_empty("WOW1", Path::new("Northstar_Recorder.lua")) }
 	}
 
 	fn recording(optout: bool) -> Option<sv::SavedVars> {
@@ -1480,7 +1480,7 @@ mod tests {
 		assert_eq!(action(Some("0.3.1"), Some("0.3.0")), None);
 		// No published release records schema 2 yet: never reinstall the same old one.
 		let (_, _, detail, action) = old_recorder(Some("0.2.6"), Some("0.2.6"));
-		assert!(detail.contains("next Polestar update") && action.is_none(), "{detail}");
+		assert!(detail.contains("next Northstar update") && action.is_none(), "{detail}");
 		assert_eq!(old_recorder(Some("0.2.5"), Some("0.2.6")).3, None);
 		assert_eq!(old_recorder(Some("0.2.6"), None).3, None);
 	}

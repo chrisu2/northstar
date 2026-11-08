@@ -1,4 +1,4 @@
-//! A quest the route had passed leaves the log (addon/Polestar/Core/Engine.lua, Own.holdLost): the live
+//! A quest the route had passed leaves the log (addon/Northstar/Core/Engine.lua, Own.holdLost): the live
 //! step stays where it was and Engine.LostQuestion asks; "back" sends the route to the giver, "skip"
 //! skips the quest and what follows from it. Real Core manifest, stub world (a level 1 Human Warrior in
 //! Elwynn Forest).
@@ -17,7 +17,7 @@ w.onQuest(7, {})
 "#;
 
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/lost", pack = "test", title = "Lost", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Deputy Willem", goals = {
@@ -32,7 +32,7 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 function state()
 	local q, title = E.LostQuestion()
@@ -44,8 +44,8 @@ fn run(script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/lost" }"#.into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/lost" }"#.into())],
 		script: [TEST_PACK, TEST_SOURCE, GUIDE, HELPERS, "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 		..Default::default()
 	})
@@ -57,7 +57,7 @@ fn a_passed_quest_leaving_the_log_holds_the_live_step_and_asks() {
 		emit(state())
 		stub.world.abandon(7); flush()
 		emit(state())
-		emit(PolestarCharDB.lostQuests["test/lost"][7])
+		emit(NorthstarCharDB.lostQuests["test/lost"][7])
 	"#);
 	assert_eq!(out[0], json!({ "live": 3, "skipped": false }));
 	assert_eq!(out[1], json!({ "live": 3, "lost": 7, "title": "Kobold Camp Cleanup", "skipped": false }));
@@ -70,7 +70,7 @@ fn going_back_for_a_lost_quest_sends_the_route_to_its_giver() {
 		stub.world.abandon(7); flush()
 		E.AnswerLost(7, "back"); flush()
 		emit(state())
-		emit(PolestarCharDB.lostQuests == nil)
+		emit(NorthstarCharDB.lostQuests == nil)
 	"#);
 	assert_eq!(out[0], json!({ "live": 2, "skipped": false }));
 	assert_eq!(out[1], true);

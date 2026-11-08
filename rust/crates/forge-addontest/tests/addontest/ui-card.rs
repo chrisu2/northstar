@@ -45,7 +45,7 @@ local function lineFor(needle)
 end
 local function sameColor(fs, name)
 	local r, g, b = fs:GetTextColor()
-	local tr, tg, tb = Polestar.Theme.Color(name)
+	local tr, tg, tb = Northstar.Theme.Color(name)
 	return math.abs(r - tr) < 0.002 and math.abs(g - tg) < 0.002 and math.abs(b - tb) < 0.002
 end
 -- A step shaped like Dun Morogh's Brewnall Village for a gnome (#843, the reporter's screenshot): three persons,
@@ -86,8 +86,8 @@ fn run_with(script: &str, before: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: before.into(),
-		addons: vec![Addon::files("Polestar", &FILES)],
-		script: format!("uistub.install()\nstub.login()\nlocal GF, UI = Polestar.UI.GuideFrame, Polestar.UI\nlocal F = PolestarGuideFrame\n{HELPERS}\n{script}"),
+		addons: vec![Addon::files("Northstar", &FILES)],
+		script: format!("uistub.install()\nstub.login()\nlocal GF, UI = Northstar.UI.GuideFrame, Northstar.UI\nlocal F = NorthstarGuideFrame\n{HELPERS}\n{script}"),
 		..Default::default()
 	})
 }
@@ -111,9 +111,9 @@ fn a_brewnall_hub_shows_the_first_person_s_goal_and_one_line_for_each_other_pers
 		stub.advance(1)
 		local P = GF.parts
 		local calm = { person = P.person.Name:GetText(), items = items(), after = P.after:IsShown(), h = F:GetHeight() }
-		Polestar.Set("ui.wholeStep", true)
+		Northstar.Set("ui.wholeStep", true)
 		local whole = { items = items(), after = plain(P.after.Text:GetText()), persons = P.after.Count:GetText(), h = F:GetHeight() }
-		Polestar.Set("ui.wholeStep", false)
+		Northstar.Set("ui.wholeStep", false)
 		emit({ calm = calm, whole = whole, back = items() })"#)
 	.remove(0);
 	let calm = &out["calm"];
@@ -224,7 +224,7 @@ const FOLD: &str = r#"
 		uistub.update()
 		local h0 = F:GetHeight()
 		local row = rowFor("Kobold Vermin")
-		local at0 = { shown = row ~= nil, popping = Polestar.Anim.IsRunning(row.Icon, "size"), icon = row.Icon:GetTexture():match("([%w-]+)$"),
+		local at0 = { shown = row ~= nil, popping = Northstar.Anim.IsRunning(row.Icon, "size"), icon = row.Icon:GetTexture():match("([%w-]+)$"),
 			done = plain(lineFor("done").Text:GetText()) }
 		local samples = {}
 		frames(1.2, function(t)
@@ -234,7 +234,7 @@ const FOLD: &str = r#"
 				h = F:GetHeight(), done = plain(done.Text:GetText()), glow = not sameColor(done.Text, "textDim") }
 		end)
 		stub.advance(1)
-		emit({ at0 = at0, samples = samples, h0 = h0, rows = subjects(), lines = items(), folding = GF.Folding(), tweens = Polestar.Anim.Active(),
+		emit({ at0 = at0, samples = samples, h0 = h0, rows = subjects(), lines = items(), folding = GF.Folding(), tweens = Northstar.Anim.Active(),
 			framesAdded = uistub.frameCount() - frames0, glowAfter = not sameColor(lineFor("done").Text, "textDim") })"#;
 
 #[test]
@@ -281,7 +281,7 @@ fn a_goal_turning_done_pops_holds_then_folds_shut_while_the_rows_below_glide_up_
 
 #[test]
 fn with_reduced_motion_a_goal_turning_done_only_fades_then_the_count_changes() {
-	let out = run(&format!("Polestar.Set(\"ui.reduceMotion\", true)\n{FOLD}")).remove(0);
+	let out = run(&format!("Northstar.Set(\"ui.reduceMotion\", true)\n{FOLD}")).remove(0);
 	let samples = out["samples"].as_array().unwrap();
 	let h0 = f(&out["h0"]);
 	let visible: Vec<&Value> = samples.iter().filter(|s| s["row"] == true).collect();
@@ -357,8 +357,8 @@ fn the_window_stops_at_its_height_cap_the_goals_scroll_and_the_current_goal_is_s
 	let out = run(r#"
 		local s = brewnall()
 		for g = 1, 5 do uistub.guides[uistub.elwynn].steps[s].goals[g].status = "done" end
-		Polestar.Set("ui.maxHeight", 0.3)
-		Polestar.Set("ui.wholeStep", true)
+		Northstar.Set("ui.maxHeight", 0.3)
+		Northstar.Set("ui.wholeStep", true)
 		uistub.setGuide(uistub.elwynn, s)
 		stub.advance(1)
 		local goals = GF.parts.goals
@@ -373,13 +373,13 @@ fn the_window_stops_at_its_height_cap_the_goals_scroll_and_the_current_goal_is_s
 		local wheeled = { scroll = goals:GetVerticalScroll() }
 		stub.advance(0.2)
 		wheeled.alpha = goals.Bar:GetAlpha()
-		Polestar.Set("ui.width", 260)
+		Northstar.Set("ui.width", 260)
 		local narrow = F:GetHeight()
-		Polestar.Set("ui.maxHeight", 0.9)
+		Northstar.Set("ui.maxHeight", 0.9)
 		local roomy = { h = F:GetHeight(), over = goals.psOver, wheel = goals.mouseWheel }
-		Polestar.Set("ui.wholeStep", false)
-		Polestar.Set("ui.width", 340)
-		Polestar.Set("ui.maxHeight", 0.3)
+		Northstar.Set("ui.wholeStep", false)
+		Northstar.Set("ui.width", 340)
+		Northstar.Set("ui.maxHeight", 0.3)
 		emit({ capped = capped, idleAlpha = idleAlpha, wheeled = wheeled, narrow = narrow, roomy = roomy,
 			calm = { h = F:GetHeight(), content = goals.psContentH } })"#)
 	.remove(0);
@@ -442,7 +442,7 @@ fn the_options_offer_show_the_whole_step_and_a_maximum_height_in_guide_window() 
 			end
 		end
 		emit({ found = found, widgets = { whole = widgets["ui.wholeStep"] ~= nil, max = widgets["ui.maxHeight"] ~= nil },
-			defaults = { whole = Polestar.Get("ui.wholeStep"), max = Polestar.Get("ui.maxHeight") } })"#)
+			defaults = { whole = Northstar.Get("ui.wholeStep"), max = Northstar.Get("ui.maxHeight") } })"#)
 	.remove(0);
 	assert_eq!(out["defaults"], json!({ "whole": false, "max": 0.5 }), "one person at a time and half the screen by default");
 	assert_eq!(out["widgets"], json!({ "whole": true, "max": true }));
@@ -512,7 +512,7 @@ fn a_summary_line_names_one_or_two_goals_and_counts_three_or_more() {
 		goals[4].status = "pending"
 		goals[10].status = "done"
 		uistub.update()
-		emit({ two = two, rejold = rejold, quest = Polestar.Theme.Hex("quest"), three = items() })"#)
+		emit({ two = two, rejold = rejold, quest = Northstar.Theme.Hex("quest"), three = items() })"#)
 	.remove(0);
 	assert_eq!(strings(&out["two"]), ["[Gretta Ganter]", "Bitter Rivals", "[Then: Rejold Barleybrew  ·  Turn in Evershine, Accept A Favor for Evershine]", "[Then out here: Kill Snow Leopards]"]);
 	assert!(text(&out["rejold"]).contains(&format!("|c{}Evershine|r", text(&out["quest"]))), "the quest in the quest colour: {}", out["rejold"]);
@@ -783,8 +783,8 @@ fn along_the_way_up_next_and_the_next_step_s_line_wrap_to_two_lines() {
 			{ t = "kill", verb = "Kill", subject = "Young Wolf", subjectKind = "npc", npc = 299, quest = 33, progress = { cur = 0, max = 4 }, status = "active" },
 		} }
 		uistub.along = { { #steps, { 1, 2 } } }
-		Polestar.Set("ui.upcoming", 3)
-		Polestar.Set("ui.upcomingOpen", true)
+		Northstar.Set("ui.upcoming", 3)
+		Northstar.Set("ui.upcomingOpen", true)
 		uistub.setGuide(uistub.elwynn, 5)
 		local function measure(r, fs, nxt)
 			return { text = plain(fs:GetText()), lines = math.floor(fs:GetStringHeight() / fs:GetLineHeight() + 0.5), cut = fs:IsTruncated(), h = r:GetHeight(),

@@ -10,7 +10,7 @@
 //! the mutation touched, or names one of its quests; for the guide-text scorer, when a gate metric gets
 //! worse (it reports totals, so the single-site mutant is the attribution).
 //!
-//! Levels: $POLESTAR_JSREF/{orc30,human30}.json (the JS walk) and gt/shipped-*.json (the guide-text replay) fit
+//! Levels: $NORTHSTAR_JSREF/{orc30,human30}.json (the JS walk) and gt/shipped-*.json (the guide-text replay) fit
 //! only the unmutated goal lists, so every run aligns its goals to the baseline's by goal key and
 //! interpolates the dump's levels by goal index (harness::Aligned; exact on the baseline). A mutation that
 //! adds a grind or moves work therefore cannot change levels or hours: the sim evaluator is not in Rust.
@@ -21,7 +21,7 @@
 //! (eb7b47840): a row is caught by a check with a finding in a step the row cites.
 //!
 //! cargo test --release -p forge-judge --test seeded -- --nocapture
-//! (POLESTAR_SEEDED_N=<sites per class>, POLESTAR_SEEDED_ONLY=<class id,...>; the report is also written
+//! (NORTHSTAR_SEEDED_N=<sites per class>, NORTHSTAR_SEEDED_ONLY=<class id,...>; the report is also written
 //! to rust/target/seeded.md)
 
 #[path = "../seeded/harness.rs"]
@@ -365,13 +365,13 @@ fn pct(n: usize, d: usize) -> String {
 }
 
 #[test]
-#[ignore = "needs POLESTAR_CHECKOUT, POLESTAR_JSREF (level dumps) and this checkout's data/forever"]
+#[ignore = "needs NORTHSTAR_CHECKOUT, NORTHSTAR_JSREF (level dumps) and this checkout's data/forever"]
 fn seeded() {
-	assert!(std::env::var_os("POLESTAR_CHECKOUT").is_some() && std::env::var_os("POLESTAR_JSREF").is_some(), "seeded needs POLESTAR_CHECKOUT and POLESTAR_JSREF");
+	assert!(std::env::var_os("NORTHSTAR_CHECKOUT").is_some() && std::env::var_os("NORTHSTAR_JSREF").is_some(), "seeded needs NORTHSTAR_CHECKOUT and NORTHSTAR_JSREF");
 	let data = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../data/forever/quests.json");
-	assert!(main_dir().exists() && rsj().join("orc30.json").exists() && data.exists(), "seeded needs POLESTAR_CHECKOUT, the level dumps in POLESTAR_JSREF and this checkout's data/forever");
-	let per_class: usize = std::env::var("POLESTAR_SEEDED_N").ok().and_then(|n| n.parse().ok()).unwrap_or(10);
-	let only: Option<Vec<String>> = std::env::var("POLESTAR_SEEDED_ONLY").ok().map(|s| s.split(',').map(str::to_string).collect());
+	assert!(main_dir().exists() && rsj().join("orc30.json").exists() && data.exists(), "seeded needs NORTHSTAR_CHECKOUT, the level dumps in NORTHSTAR_JSREF and this checkout's data/forever");
+	let per_class: usize = std::env::var("NORTHSTAR_SEEDED_N").ok().and_then(|n| n.parse().ok()).unwrap_or(10);
+	let only: Option<Vec<String>> = std::env::var("NORTHSTAR_SEEDED_ONLY").ok().map(|s| s.split(',').map(str::to_string).collect());
 	let t0 = Instant::now();
 	// Candidate counts per chain and class, exchanged once between the two chain threads.
 	let counts: Vec<Vec<AtomicUsize>> = (0..2).map(|_| (0..CLASSES.len()).map(|_| AtomicUsize::new(0)).collect()).collect();

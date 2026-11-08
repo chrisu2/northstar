@@ -52,7 +52,7 @@ test('guideData is what Guides.lua registers, number rounding included, without 
 	assert.deepEqual(c.errors, []);
 	const g = c.guides[0]._localised || c.guides[0];
 	const lua = emitGuides([{ guide: g }]);
-	const registered = luaToJson({ prelude: `G = {} Polestar = { RegisterGuide = function(g) G[#G + 1] = g end }\n${lua}`, expr: 'return G[1]' });
+	const registered = luaToJson({ prelude: `G = {} Northstar = { RegisterGuide = function(g) G[#G + 1] = g end }\n${lua}`, expr: 'return G[1]' });
 	const { pack, ...rest } = registered;
 	assert.equal(pack, 'yendi');
 	assert.deepEqual(norm(JSON.parse(JSON.stringify(guideData(g)))), norm(rest));
@@ -67,13 +67,13 @@ test('a string reads back to its payload; a damaged one does not', () => {
 	assert.deepEqual(decodeImport(`  ${s.slice(0, 30)}\n${s.slice(30)}  `), payload, 'whitespace from a chat paste is ignored');
 	assert.throws(() => decodeImport(s.slice(0, -8)), /damaged/);
 	assert.throws(() => decodeImport(`!PS1!00000000!${s.slice(14)}`), /checksum/);
-	assert.throws(() => decodeImport('hello'), /not a Polestar import string/);
+	assert.throws(() => decodeImport('hello'), /not a Northstar import string/);
 });
 
-test('importString refuses Polestar\'s own guides and guides over the step cap', () => {
+test('importString refuses Northstar\'s own guides and guides over the step cap', () => {
 	const data = fixtureData();
 	const ours = compile({ 'a.guide': GUIDE('forever/alliance/x') }, data, { pack: 'guides' }).guides[0];
-	assert.match(importString(ours, { manifest: { id: 'guides', license: 'GPL-3.0-only' }, data }).error, /Polestar's own guides/);
+	assert.match(importString(ours, { manifest: { id: 'guides', license: 'GPL-3.0-only' }, data }).error, /Northstar's own guides/);
 	const steps = Array.from({ length: LIMITS.steps + 1 }, (_, i) => `step Step ${i + 1}\n  level ${(i % 59) + 2}\n`).join('\n');
 	const long = compile({ 'b.guide': `guide yendi/long\ntitle Long\nlevels 1-60\nzone Elwynn Forest\n\n${steps}` }, data, { pack: 'yendi' });
 	assert.deepEqual(long.errors, []);
@@ -151,7 +151,7 @@ test('importString refuses a text over the cap and a payload over the cap, as th
 	const steps = Array.from({ length: LIMITS.steps }, () => ({ note: 'n'.repeat(4000), goals: [{ t: 'note', text: 't'.repeat(1000) }] }));
 	const big = { id: 'yendi/big', title: 'Big', steps };
 	const r = importString(big, { manifest, data: null });
-	assert.match(r.error, /bytes of guide data; Polestar reads 262144 at most/);
+	assert.match(r.error, /bytes of guide data; Northstar reads 262144 at most/);
 });
 
 test('importString refuses a guide whose spots, predicates, jumps, reagents, sources, quest lists or names pass their caps, as the addon would', () => {
@@ -179,7 +179,7 @@ test('importString refuses a guide whose spots, predicates, jumps, reagents, sou
 });
 
 test('the writer\'s caps are the addon\'s (Core/Import.lua LIMITS)', () => {
-	const src = fs.readFileSync(path.join(__dirname, '..', 'addon', 'Polestar', 'Core', 'Import.lua'), 'utf8');
+	const src = fs.readFileSync(path.join(__dirname, '..', 'addon', 'Northstar', 'Core', 'Import.lua'), 'utf8');
 	const body = /^local LIMITS = \{([^}]*)\}/m.exec(src)[1];
 	const lua = Object.fromEntries([...body.matchAll(/(\w+) = (\d+)/g)].map((m) => [m[1], Number(m[2])]));
 	assert.deepEqual(lua, LIMITS);

@@ -1,4 +1,4 @@
-//! The options window (addon/Polestar/UI/Options.lua): built-in pages, the options registry other modules use,
+//! The options window (addon/Northstar/UI/Options.lua): built-in pages, the options registry other modules use,
 //! the two-column grid, search, the footer, and the Blizzard Settings entry.
 
 use forge_addontest::{emitted, fake_locale, is_match, text, Addon, RunAddon};
@@ -28,8 +28,8 @@ fn run_opts(script: &str, install: &str, before: &str, between: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: before.into(),
-		addons: vec![Addon::files("Polestar", &FILES)],
-		script: format!("{between}\nuistub.install({install})\nstub.login()\nlocal UI, O = Polestar.UI, Polestar.UI.Options\n{HELPERS}\n{script}"),
+		addons: vec![Addon::files("Northstar", &FILES)],
+		script: format!("{between}\nuistub.install({install})\nstub.login()\nlocal UI, O = Northstar.UI, Northstar.UI.Options\n{HELPERS}\n{script}"),
 		..Default::default()
 	})
 	.remove(0)
@@ -53,32 +53,32 @@ local function lastCall(name)
 end
 local function navLabels()
 	local out = {}
-	for _, b in ipairs(PolestarOptions.navButtons) do if b:IsShown() then out[#out + 1] = b.Label:GetText() end end
+	for _, b in ipairs(NorthstarOptions.navButtons) do if b:IsShown() then out[#out + 1] = b.Label:GetText() end end
 	return out
 end
 local function footer()
 	local out = {}
 	for _, side in ipairs({ "left", "right" }) do
-		for _, b in ipairs(PolestarOptions.footerButtons[side]) do if b:IsShown() then out[#out + 1] = b.Label:GetText() end end
+		for _, b in ipairs(NorthstarOptions.footerButtons[side]) do if b:IsShown() then out[#out + 1] = b.Label:GetText() end end
 	end
 	return out
 end
 local function footerButton(text)
 	for _, side in ipairs({ "left", "right" }) do
-		for _, b in ipairs(PolestarOptions.footerButtons[side]) do if b:IsShown() and b.Label:GetText() == text then return b end end
+		for _, b in ipairs(NorthstarOptions.footerButtons[side]) do if b:IsShown() and b.Label:GetText() == text then return b end end
 	end
 end
 "#;
 
 // A module page, registered the way Quests/Gear/Maps/QoL do.
 const FAKE_PAGE: &str = r#"
-Polestar.RegisterDefaults("fake", { markers = true, size = 1, colour = { 1, 0.5, 0 }, mode = "auto" })
+Northstar.RegisterDefaults("fake", { markers = true, size = 1, colour = { 1, 0.5, 0 }, mode = "auto" })
 local clicks = 0
 uifake = { clicks = function() return clicks end }
-Polestar.RegisterOptions({ page = "Quests", icon = "icon-accept", order = 30, tab = "Map", section = "Markers", controls = {
+Northstar.RegisterOptions({ page = "Quests", icon = "icon-accept", order = 30, tab = "Map", section = "Markers", controls = {
 	{ kind = "toggle", key = "fake.markers", label = "Objective markers", help = "Pins for quest objectives." },
 	{ kind = "slider", key = "fake.size", label = "Marker size", min = 0.5, max = 2, step = 0.05, format = "%.2fx",
-		disabled = function() return not Polestar.Get("fake.markers") end },
+		disabled = function() return not Northstar.Get("fake.markers") end },
 	{ kind = "dropdown", key = "fake.mode", label = "Weights", choices = { { value = "auto", label = "Automatic" }, { value = "manual", label = "Manual" } } },
 	{ kind = "color", key = "fake.colour", label = "Marker colour" },
 	{ kind = "button", label = "Reset lockouts", help = "Forget saved lockouts.", onClick = function() clicks = clicks + 1 end },
@@ -89,10 +89,10 @@ Polestar.RegisterOptions({ page = "Quests", icon = "icon-accept", order = 30, ta
 fn pages_by_order_a_page_with_nothing_to_set_left_out_recorder_and_about_last_tabs_and_sections() {
 	let out = run_opts(
 		r#"
-		Polestar.RegisterOptions({ page = "Gear", icon = "star", order = 40, section = "Weights", controls = {} })
+		Northstar.RegisterOptions({ page = "Gear", icon = "star", order = 40, section = "Weights", controls = {} })
 		UI.ShowOptions()
-		emit({ nav = navLabels(), pages = O.Pages(), title = PolestarOptions.Title:GetText(),
-			tabs = (function() local t = {} for _, b in ipairs(PolestarOptions.tabButtons) do if b:IsShown() then t[#t + 1] = b.Label:GetText() end end return t end)(),
+		emit({ nav = navLabels(), pages = O.Pages(), title = NorthstarOptions.Title:GetText(),
+			tabs = (function() local t = {} for _, b in ipairs(NorthstarOptions.tabButtons) do if b:IsShown() then t[#t + 1] = b.Label:GetText() end end return t end)(),
 			footer = footer() })"#,
 		"",
 		"",
@@ -116,9 +116,9 @@ const SHOW: &str = r#"
 		local headers = {}
 		for _, h in ipairs(O.view.headers) do if h:IsShown() then headers[#headers + 1] = h.Text:GetText() end end
 		local toggle = O.Controls("integrations")["routePlan.questie"]
-		emit({ title = PolestarOptions.Title:GetText(), headers = headers, empty = O.view.empty,
+		emit({ title = NorthstarOptions.Title:GetText(), headers = headers, empty = O.view.empty,
 			line = rawget(O.view, "Empty") and O.view.Empty:IsShown() and O.view.Empty:GetText() or nil,
-			toggle = toggle ~= nil and toggle:IsShown() or false, on = Polestar.Get("routePlan.questie"),
+			toggle = toggle ~= nil and toggle:IsShown() or false, on = Northstar.Get("routePlan.questie"),
 			nav = navLabels() })"#;
 
 #[test]
@@ -129,7 +129,7 @@ fn integrations_lists_spoken_with_its_wait_off_only_while_spoken_quests_is_there
 		for _, h in ipairs(O.view.headers) do if h:IsShown() then headers[#headers + 1] = h.Text:GetText() end end
 		local c = O.Controls("integrations")
 		local function shown(key) return c[key] ~= nil and c[key]:IsShown() or false end
-		emit({ headers = headers, toggle = shown("behavior.spokenDelay"), on = Polestar.Get("behavior.spokenDelay") })"#;
+		emit({ headers = headers, toggle = shown("behavior.spokenDelay"), on = Northstar.Get("behavior.spokenDelay") })"#;
 	let without = run(script);
 	assert_eq!(without["toggle"], false);
 	let with = run(&format!("stub.addonsLoaded.Spoken_Quests = true\n{script}"));
@@ -148,7 +148,7 @@ fn integrations_lists_questie_only_when_it_is_installed_or_loaded_else_says_none
 	};
 	assert_eq!(values, Vec::<Value>::new());
 	assert_eq!(none["empty"], true);
-	assert_eq!(none["line"], "None of the addons Polestar works with is installed.");
+	assert_eq!(none["line"], "None of the addons Northstar works with is installed.");
 	assert_eq!(none["toggle"], false);
 
 	let loaded = run(&format!("stub.addonsLoaded.Questie = true\n{SHOW}"));
@@ -158,7 +158,7 @@ fn integrations_lists_questie_only_when_it_is_installed_or_loaded_else_says_none
 	assert_eq!(loaded["toggle"], true);
 	assert_eq!(loaded["on"], false, "planned turn-ins stay off until the player turns them on");
 
-	// Installed and enabled but loading after Polestar counts too.
+	// Installed and enabled but loading after Northstar counts too.
 	let installed = run(&(r#"
 		table.insert(stub.addons, { name = "Questie" })
 		function C_AddOns.DoesAddOnExist(name) return name == "Questie" end
@@ -178,7 +178,7 @@ fn old_page_keys_open_the_page_and_tab_that_hold_their_settings_now() {
 			UI.ShowOptions(key)
 			local tab
 			for name, v in pairs(O.page.views) do if v == O.view then tab = name end end
-			return PolestarOptions.Title:GetText() .. " > " .. tab
+			return NorthstarOptions.Title:GetText() .. " > " .. tab
 		end
 		local out = {}
 		for _, k in ipairs({ "guidewindow", "navigation", "automation", "appearance", "map", "recorder", "nav", "behaviour", "General" }) do out[k] = at(k) end
@@ -199,15 +199,15 @@ fn old_page_keys_open_the_page_and_tab_that_hold_their_settings_now() {
 	);
 	let mods = emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", &MODS)],
-		script: "uistub.install()\nstub.login()\nlocal UI, O = Polestar.UI, Polestar.UI.Options".to_string()
+		addons: vec![Addon::files("Northstar", &MODS)],
+		script: "uistub.install()\nstub.login()\nlocal UI, O = Northstar.UI, Northstar.UI.Options".to_string()
 			+ r#"
 		local out = {}
 		for _, k in ipairs({ "quests", "gear", "lookup", "dungeons", "rares", "qualityoflife" }) do
 			UI.ShowOptions(k)
 			local tab
 			for name, v in pairs(O.page.views) do if v == O.view then tab = name end end
-			out[k] = PolestarOptions.Title:GetText() .. " > " .. tab
+			out[k] = NorthstarOptions.Title:GetText() .. " > " .. tab
 		end
 		emit(out)"#,
 		..Default::default()
@@ -246,14 +246,14 @@ fn page_keys_stay_english_on_a_translated_client_polestar_options_quests_gear_lo
 				("Lookup", "Nachschlagen"),
 			],
 		),
-		addons: vec![Addon::files("Polestar", &MODS)],
-		script: "uistub.install()\nstub.login()\nlocal O = Polestar.UI.Options".to_string()
+		addons: vec![Addon::files("Northstar", &MODS)],
+		script: "uistub.install()\nstub.login()\nlocal O = Northstar.UI.Options".to_string()
 			+ r#"
 		local function at(cmd)
-			SlashCmdList.POLESTAR(cmd)
+			SlashCmdList.NORTHSTAR(cmd)
 			local tab
 			for name, v in pairs(O.page.views) do if v == O.view then tab = name end end
-			return O.page.key .. ": " .. PolestarOptions.Title:GetText() .. " > " .. tab
+			return O.page.key .. ": " .. NorthstarOptions.Title:GetText() .. " > " .. tab
 		end
 		local out = {}
 		for _, cmd in ipairs({ "options quests", "options gear", "options lookup", "options appearance", "options qualityoflife", "options about", "packs" }) do out[cmd] = at(cmd) end
@@ -290,14 +290,14 @@ fn registered_controls_read_and_write_settings_disabled_functions_follow_other_s
 		c["fake.markers"]:Click()
 		local after = size:IsEnabled()
 		stub.RunScript(size.Slider, "OnValueChanged", 1.5, true)
-		local blocked = Polestar.Get("fake.size")
+		local blocked = Northstar.Get("fake.size")
 		c["fake.markers"]:Click()
 		stub.RunScript(size.Slider, "OnValueChanged", 1.52, true)
 		c["fake.mode"].Button:Click()
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Manual" then r:Click() end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Manual" then r:Click() end end
 		c["Reset lockouts"].Button:Click()
-		emit({ before = before, after = after, blocked = blocked, size = Polestar.Get("fake.size"), mode = Polestar.Get("fake.mode"),
-			label = c["fake.mode"].Button.Label:GetText(), clicks = uifake.clicks(), asked = Polestar.Widgets.ModalShown() })"#,
+		emit({ before = before, after = after, blocked = blocked, size = Northstar.Get("fake.size"), mode = Northstar.Get("fake.mode"),
+			label = c["fake.mode"].Button.Label:GetText(), clicks = uifake.clicks(), asked = Northstar.Widgets.ModalShown() })"#,
 		"",
 		"",
 		FAKE_PAGE,
@@ -316,10 +316,10 @@ fn registered_controls_read_and_write_settings_disabled_functions_follow_other_s
 fn a_registration_made_after_the_window_exists_shows_up_a_malformed_one_is_refused() {
 	let out = run(r#"
 		UI.ShowOptions()
-		Polestar.RegisterDefaults("late", { thing = true })
-		local ok = Polestar.RegisterOptions({ page = "Maps", icon = "icon-explore", order = 20, controls = { { kind = "toggle", key = "late.thing", label = "Late thing" } } })
-		local bad, err = Polestar.RegisterOptions({ page = "Broken", controls = { { kind = "wheel", key = "x" } } })
-		local bad2 = Polestar.RegisterOptions({ page = "Broken", controls = { { kind = "button", label = "No handler" } } })
+		Northstar.RegisterDefaults("late", { thing = true })
+		local ok = Northstar.RegisterOptions({ page = "Maps", icon = "icon-explore", order = 20, controls = { { kind = "toggle", key = "late.thing", label = "Late thing" } } })
+		local bad, err = Northstar.RegisterOptions({ page = "Broken", controls = { { kind = "wheel", key = "x" } } })
+		local bad2 = Northstar.RegisterOptions({ page = "Broken", controls = { { kind = "button", label = "No handler" } } })
 		local nav = navLabels()
 		UI.ShowOptions("maps")
 		emit({ ok = ok, bad = bad, err = err, bad2 = bad2, nav = nav, controls = (function() local n = 0 for _ in pairs(O.Controls("maps")) do n = n + 1 end return n end)() })"#);
@@ -334,11 +334,11 @@ fn a_registration_made_after_the_window_exists_shows_up_a_malformed_one_is_refus
 #[test]
 fn a_registered_page_may_give_its_own_key_which_opens_it_whatever_its_title_a_key_that_is_not_a_string_is_refused() {
 	let out = run(r#"
-		Polestar.RegisterDefaults("mine", { thing = true })
-		local ok = Polestar.RegisterOptions({ page = "Mein Addon", key = "myaddon", controls = { { kind = "toggle", key = "mine.thing", label = "Thing" } } })
-		local bad, err = Polestar.RegisterOptions({ page = "Broken", key = 5, controls = {} })
+		Northstar.RegisterDefaults("mine", { thing = true })
+		local ok = Northstar.RegisterOptions({ page = "Mein Addon", key = "myaddon", controls = { { kind = "toggle", key = "mine.thing", label = "Thing" } } })
+		local bad, err = Northstar.RegisterOptions({ page = "Broken", key = 5, controls = {} })
 		UI.ShowOptions("myaddon")
-		emit({ ok = ok, bad = bad, err = err, key = O.page.key, title = PolestarOptions.Title:GetText() })"#);
+		emit({ ok = ok, bad = bad, err = err, key = O.page.key, title = NorthstarOptions.Title:GetText() })"#);
 	assert_eq!(out, json!({ "ok": true, "bad": false, "err": "RegisterOptions: key must be a string", "key": "myaddon", "title": "Mein Addon" }));
 }
 
@@ -348,31 +348,31 @@ fn built_in_controls_write_settings_and_follow_changes_made_elsewhere() {
 		UI.ShowOptions("guide")
 		local c = O.Controls("guide")
 		c["ui.compact"]:Click()
-		local compact = Polestar.Get("ui.compact")
-		Polestar.Set("ui.showNotes", false)
+		local compact = Northstar.Get("ui.compact")
+		Northstar.Set("ui.showNotes", false)
 		local followed = c["ui.showNotes"].checked
 		local notesOpen = c["ui.notesOpen"]:IsEnabled()
 		O.Select("guide", "Automation")
 		O.Controls("guide", "Automation")["behavior.skipGrey"]:Click()
 		O.Select("guide", "Arrow & routes")
 		local nav = O.Controls("guide", "Arrow & routes")
-		Polestar.Set("nav.tomtom", false)
+		Northstar.Set("nav.tomtom", false)
 		UI.ShowOptions("appearance")
 		local look = O.Controls("appearance")
 		look["ui.accent"]:Click("LeftButton")
 		local info = ColorPickerFrame.info
 		ColorPickerFrame.GetColorRGB = function() return 0.9, 0.3, 0.1 end
 		info.swatchFunc()
-		local picked = Polestar.Get("ui.accent")
+		local picked = Northstar.Get("ui.accent")
 		info.cancelFunc()
 		O.Select("appearance", "Windows")
 		local win = O.Controls("appearance", "Windows")
 		win["ui.style"].Button:Click()
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Transparent" then r:Click() end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Transparent" then r:Click() end end
 		stub.RunScript(win["ui.scale"].Slider, "OnValueChanged", 1.234, true)
 		O.Select("appearance", "Arrow")
-		emit({ compact = compact, followed = followed, notesOpen = notesOpen, style = Polestar.Get("ui.style"),
-			scale = Polestar.Get("ui.scale"), picked = picked, cancelled = Polestar.Get("ui.accent"), skipGrey = Polestar.Get("behavior.skipGrey"),
+		emit({ compact = compact, followed = followed, notesOpen = notesOpen, style = Northstar.Get("ui.style"),
+			scale = Northstar.Get("ui.scale"), picked = picked, cancelled = Northstar.Get("ui.accent"), skipGrey = Northstar.Get("behavior.skipGrey"),
 			tomtomArrow = nav["nav.useTomTomArrow"]:IsEnabled(), arrowStyle = O.Controls("appearance", "Arrow")["nav.arrowStyle"].Button.Label:GetText() })"#);
 	assert_eq!(out["compact"], true);
 	assert_eq!(out["followed"], false);
@@ -401,9 +401,9 @@ fn the_lock_for_the_arrow_buttons_and_timers_sits_under_lock_window_off_by_defau
 				end
 			end
 		end
-		local default = Polestar.Get("ui.lockHud")
+		local default = Northstar.Get("ui.lockHud")
 		w:Click()
-		emit({ labels = labels, help = help, default = default, clicked = Polestar.Get("ui.lockHud"), label = w.Label:GetText() })"#);
+		emit({ labels = labels, help = help, default = default, clicked = Northstar.Get("ui.lockHud"), label = w.Label:GetText() })"#);
 	assert_eq!(out["labels"], json!(["Lock window", "Lock arrow and buttons"]));
 	assert_eq!(out["help"], "Stops stray drags on the arrow, the action buttons and the flight and instance timers. Shift-drag still moves them.");
 	assert_eq!(out["default"], false);
@@ -416,13 +416,13 @@ fn search_finds_settings_by_label_and_help_across_pages_registered_ones_included
 	let out = run_opts(
 		r#"
 		UI.ShowOptions()
-		local box = PolestarOptions.Search
+		local box = NorthstarOptions.Search
 		box:SetText("arrow")
 		stub.RunScript(box, "OnTextChanged", true)
 		local titles = {}
 		for _, g in ipairs(O.results.groups) do titles[#titles + 1] = g.title end
-		local arrow = { titles = titles, count = O.results.count, title = PolestarOptions.Title:GetText(), sub = PolestarOptions.Subtitle:GetText(),
-			tabRow = PolestarOptions.TabRow:IsShown(), footer = footer() }
+		local arrow = { titles = titles, count = O.results.count, title = NorthstarOptions.Title:GetText(), sub = NorthstarOptions.Subtitle:GetText(),
+			tabRow = NorthstarOptions.TabRow:IsShown(), footer = footer() }
 		local groups, n = O.Search("pins objectives")
 		local help = { n = n, label = groups[1] and groups[1].controls[1].label }
 		local _, none = O.Search("zzzz")
@@ -430,7 +430,7 @@ fn search_finds_settings_by_label_and_help_across_pages_registered_ones_included
 		for _, q in ipairs({ "border", "band", "shadow", "arrow colour", "arrival colour" }) do found[q] = select(2, O.Search(q)) end
 		box:SetText("")
 		stub.RunScript(box, "OnTextChanged", true)
-		emit({ arrow = arrow, help = help, none = none, found = found, back = PolestarOptions.Title:GetText() })"#,
+		emit({ arrow = arrow, help = help, none = none, found = found, back = NorthstarOptions.Title:GetText() })"#,
 		"",
 		"",
 		FAKE_PAGE,
@@ -451,18 +451,18 @@ fn search_finds_settings_by_label_and_help_across_pages_registered_ones_included
 #[test]
 fn reset_page_asks_in_the_confirm_dialog_cancel_keeps_the_page_accept_resets_only_that_page() {
 	let out = run(r#"
-		Polestar.Set("ui.compact", true)
-		Polestar.Set("nav.arrowScale", 1.5)
+		Northstar.Set("ui.compact", true)
+		Northstar.Set("nav.arrowScale", 1.5)
 		UI.ShowOptions("guide")
 		local b = footerButton("Reset page")
 		b:Click()
-		local asked = { Polestar.Widgets.ModalShown(), Polestar.Get("ui.compact") }
-		PolestarModal.Box.Cancel:Click()
-		local cancelled = { Polestar.Widgets.ModalShown(), Polestar.Get("ui.compact") }
+		local asked = { Northstar.Widgets.ModalShown(), Northstar.Get("ui.compact") }
+		NorthstarModal.Box.Cancel:Click()
+		local cancelled = { Northstar.Widgets.ModalShown(), Northstar.Get("ui.compact") }
 		b:Click()
-		PolestarModal.Box.Action:Click()
-		emit({ asked = asked, cancelled = cancelled, closed = not Polestar.Widgets.ModalShown(), compact = Polestar.Get("ui.compact"),
-			arrow = Polestar.Get("nav.arrowScale") })"#);
+		NorthstarModal.Box.Action:Click()
+		emit({ asked = asked, cancelled = cancelled, closed = not Northstar.Widgets.ModalShown(), compact = Northstar.Get("ui.compact"),
+			arrow = Northstar.Get("nav.arrowScale") })"#);
 	assert_eq!(out["asked"], json!([true, true]), "the first click only asks");
 	assert_eq!(out["cancelled"], json!([false, true]), "cancel closes the dialog and resets nothing");
 	assert_eq!(out["closed"], true);
@@ -476,8 +476,8 @@ fn a_tab_whose_module_is_not_loaded_is_left_out_a_page_with_nothing_at_all_says_
 		r#"
 		UI.ShowOptions("navigation")
 		local tabs = {}
-		for _, b in ipairs(PolestarOptions.tabButtons) do if b:IsShown() then tabs[#tabs + 1] = b.Label:GetText() end end
-		local landed = PolestarOptions.Title:GetText()
+		for _, b in ipairs(NorthstarOptions.tabButtons) do if b:IsShown() then tabs[#tabs + 1] = b.Label:GetText() end end
+		local landed = NorthstarOptions.Title:GetText()
 		UI.ShowOptions("discovery")
 		emit({ tabs = tabs, landed = landed, empty = O.view.empty, controls = (function() local n = 0 for _ in pairs(O.Controls("discovery")) do n = n + 1 end return n end)() })"#,
 		"{ noNav = true }",
@@ -495,12 +495,12 @@ fn recorder_page_not_installed_then_live_counts_and_a_stop_control() {
 	let missing = run(r#"
 		UI.ShowOptions("recorder")
 		emit({ text = O.view.Refresh and select(1, (function() for _, r in ipairs({ O.view:GetRegions() }) do if r.text and r.text:find("not loaded") then return r.text end end end)()) })"#);
-	assert!(is_match(text(&missing["text"]), r"The Polestar Recorder addon is not loaded"));
+	assert!(is_match(text(&missing["text"]), r"The Northstar Recorder addon is not loaded"));
 	let out = run(r#"
-		stub.addonsLoaded.Polestar_Recorder = true
-		PolestarRecorderDB = { schema = 2, enabled = true, install = "k3j9x0q2m7ab", seq = 9, acked = 7, chunks = { [8] = ("x"):rep(1024), [9] = ("x"):rep(2048) } }
+		stub.addonsLoaded.Northstar_Recorder = true
+		NorthstarRecorderDB = { schema = 2, enabled = true, install = "k3j9x0q2m7ab", seq = 9, acked = 7, chunks = { [8] = ("x"):rep(1024), [9] = ("x"):rep(2048) } }
 		local sent = {}
-		PolestarRecorder_Command = function(arg) sent[#sent + 1] = arg; if arg == "off" then PolestarRecorderDB.enabled = false end end
+		NorthstarRecorder_Command = function(arg) sent[#sent + 1] = arg; if arg == "off" then NorthstarRecorderDB.enabled = false end end
 		UI.ShowOptions("recorder")
 		local values = {}
 		for _, f in ipairs({ O.view:GetChildren() }) do if rawget(f, "Value") and f:IsShown() then values[f.Label:GetText()] = f.Value:GetText() end end
@@ -516,18 +516,18 @@ fn recorder_page_not_installed_then_live_counts_and_a_stop_control() {
 #[test]
 fn about_reset_all_settings_asks_in_the_confirm_dialog_reset_positions_clears_saved_positions() {
 	let out = run(r#"
-		Polestar.Set("ui.scale", 1.4)
-		Polestar.Set("ui.pos", { 10, 20 })
+		Northstar.Set("ui.scale", 1.4)
+		Northstar.Set("ui.pos", { 10, 20 })
 		UI.ShowOptions("about")
 		local reset = O.view.ResetAll
 		reset:Click()
-		local asked = { Polestar.Get("ui.scale"), Polestar.Widgets.ModalShown() }
-		PolestarModal.Box.Cancel:Click()
-		local cancelled = Polestar.Get("ui.scale")
+		local asked = { Northstar.Get("ui.scale"), Northstar.Widgets.ModalShown() }
+		NorthstarModal.Box.Cancel:Click()
+		local cancelled = Northstar.Get("ui.scale")
 		reset:Click()
-		PolestarModal.Box.Action:Click()
+		NorthstarModal.Box.Action:Click()
 		O.ResetPositions()
-		emit({ asked = asked, cancelled = cancelled, accepted = Polestar.Get("ui.scale"), pos = Polestar.Get("ui.pos") or false,
+		emit({ asked = asked, cancelled = cancelled, accepted = Northstar.Get("ui.scale"), pos = Northstar.Get("ui.pos") or false,
 			arrow = lastCall("ResetArrowPosition") })"#);
 	assert_eq!(out["asked"], json!([1.4, true]), "the first click only asks");
 	assert_eq!(out["cancelled"], 1.4);
@@ -547,24 +547,24 @@ fn appearance_every_look_control_is_searchable_menu_scale_applies_when_the_drag_
 		table.sort(keys)
 		local s = O.Controls("appearance", "Windows")["ui.menuScale"]
 		stub.RunScript(s.Slider, "OnValueChanged", 1.2, true)
-		local during = { PolestarOptions:GetScale(), s.Value:GetText() }
+		local during = { NorthstarOptions:GetScale(), s.Value:GetText() }
 		stub.RunScript(s.Slider, "OnMouseUp")
-		local after = PolestarOptions:GetScale()
+		local after = NorthstarOptions:GetScale()
 		O.Select("appearance", "Colour & type")
-		Polestar.Set("ui.brightness", 0.3)
+		Northstar.Set("ui.brightness", 0.3)
 		local bright = look["ui.brightness"].Value:GetText()
 		look["ui.brightness"]:Click("RightButton")
 		look["ui.scheme"].Button:Click()
 		local choices = {}
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then choices[#choices + 1] = r.Text:GetText() end end
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Graphite" then r:Click() end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then choices[#choices + 1] = r.Text:GetText() end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Graphite" then r:Click() end end
 		local found = {}
 		for _, q in ipairs({ "colour scheme", "accent", "background colour", "brightness", "background opacity", "font", "menu scale" }) do
 			local _, n = O.Search(q)
 			found[q] = n
 		end
-		emit({ keys = keys, during = during, after = after, stored = Polestar.Get("ui.menuScale"), bright = bright,
-			reset = Polestar.Get("ui.brightness"), choices = choices, scheme = Polestar.Get("ui.scheme"),
+		emit({ keys = keys, during = during, after = after, stored = Northstar.Get("ui.menuScale"), bright = bright,
+			reset = Northstar.Get("ui.brightness"), choices = choices, scheme = Northstar.Get("ui.scheme"),
 			bgNote = look["ui.bgColor"].Note:GetText(), found = found })"#);
 	assert!(!includes(&out["keys"], "ui.matchAccent") && !includes(&out["keys"], "ui.matchFont"), "without EllesmereUI its follow toggles are left out");
 	assert_eq!(out["during"], json!([1, "120%"]));
@@ -586,10 +586,10 @@ fn appearance_every_look_control_is_searchable_menu_scale_applies_when_the_drag_
 #[test]
 fn the_sidebar_page_list_never_reaches_the_version_line_it_scrolls_the_selected_page_in_view() {
 	let out = run(r#"
-		local W, SH = Polestar.Widgets, Polestar.Widgets.SHELL
-		Polestar.RegisterDefaults("many", { on = true })
+		local W, SH = Northstar.Widgets, Northstar.Widgets.SHELL
+		Northstar.RegisterDefaults("many", { on = true })
 		for i = 1, 14 do
-			Polestar.RegisterOptions({ page = "Module " .. i, order = 60 + i, controls = { { kind = "toggle", key = "many.on", label = "On" } } })
+			Northstar.RegisterOptions({ page = "Module " .. i, order = 60 + i, controls = { { kind = "toggle", key = "many.on", label = "On" } } })
 		end
 		local function measure(F)
 			local side = F:GetHeight() - 2
@@ -611,12 +611,12 @@ fn the_sidebar_page_list_never_reaches_the_version_line_it_scrolls_the_selected_
 		local out = {}
 		for _, font in ipairs({ "game", "inter" }) do
 			for _, scale in ipairs({ 0.7, 1, 1.4 }) do
-				Polestar.Set("ui.font", font)
-				Polestar.Set("ui.menuScale", scale)
+				Northstar.Set("ui.font", font)
+				Northstar.Set("ui.menuScale", scale)
 				UI.ShowOptions("about")
-				out[#out + 1] = measure(PolestarOptions)
+				out[#out + 1] = measure(NorthstarOptions)
 				UI.ShowOptions("guide")
-				out[#out + 1] = measure(PolestarOptions)
+				out[#out + 1] = measure(NorthstarOptions)
 			end
 		end
 		-- The hub: a section whose index holds thirty entries, the last selected.
@@ -626,7 +626,7 @@ fn the_sidebar_page_list_never_reaches_the_version_line_it_scrolls_the_selected_
 			build = function(parent) end, render = function() end })
 		UI.ShowPicker()
 		UI.Picker.ShowSection("Many")
-		out[#out + 1] = measure(PolestarPicker)
+		out[#out + 1] = measure(NorthstarPicker)
 		emit(out)"#);
 	for (i, m) in out.as_array().unwrap().iter().enumerate() {
 		assert!(n(&m["floor"]) <= n(&m["foot"]), "case {i}: the list ends at {}, the version starts at {}", m["floor"], m["foot"]);
@@ -659,14 +659,14 @@ fn round(c: &Value) -> Value {
 #[test]
 fn window_border_band_and_shadow_repaint_every_window_live_right_click_restores_each() {
 	let out = run(r#"
-		local T = Polestar.Theme
+		local T = Northstar.Theme
 		uistub.openTabs({ { uistub.elwynn, 3 } }, 1)
 		UI.ShowOptions("appearance")
 		O.Select("appearance", "Windows")
 		local c = O.Controls("appearance", "Windows")
-		local GF = PolestarGuideFrame
-		local wins = { options = PolestarOptions, guide = GF }
-		local bands = { options = PolestarOptions.Band, guide = Polestar.UI.GuideFrame.parts.band }
+		local GF = NorthstarGuideFrame
+		local wins = { options = NorthstarOptions, guide = GF }
+		local bands = { options = NorthstarOptions.Band, guide = Northstar.UI.GuideFrame.parts.band }
 		local function look()
 			local o = {}
 			for name, f in pairs(wins) do
@@ -685,7 +685,7 @@ fn window_border_band_and_shadow_repaint_every_window_live_right_click_restores_
 		c["ui.borderColor"]:Click("LeftButton")
 		ColorPickerFrame.GetColorRGB = function() return 0.2, 0.9, 0.4 end
 		ColorPickerFrame.info.swatchFunc()
-		out.own = { look = look(), accentOff = Polestar.Get("ui.borderAccent") }
+		out.own = { look = look(), accentOff = Northstar.Get("ui.borderAccent") }
 		for _, k in ipairs({ "ui.borderColor", "ui.borderSize", "ui.band", "ui.shadow" }) do c[k]:Click("RightButton") end
 		out.reset = look()
 		emit(out)"#);
@@ -713,7 +713,7 @@ fn window_border_band_and_shadow_repaint_every_window_live_right_click_restores_
 #[test]
 fn switching_the_font_lays_the_page_out_again_a_label_that_now_wraps_grows_its_row_and_moves_the_rows_below() {
 	let out = run(r#"
-		Polestar.Set("ui.font", "game")
+		Northstar.Set("ui.font", "game")
 		UI.ShowOptions("guide")
 		local c = O.Controls("guide")
 		local row, below = c["ui.shown"], c["ui.locked"]
@@ -735,7 +735,7 @@ fn switching_the_font_lays_the_page_out_again_a_label_that_now_wraps_grows_its_r
 			end
 			return lines * size
 		end
-		Polestar.Set("ui.font", "inter")
+		Northstar.Set("ui.font", "inter")
 		emit({ before = before, after = { h = row:GetHeight(), below = top(below), lines = row.Label:GetStringHeight() } })"#);
 	let (before, after) = (&out["before"], &out["after"]);
 	assert!(n(&after["lines"]) > n(&before["lines"]), "the label wraps: {} -> {}", before["lines"], after["lines"]);
@@ -747,11 +747,11 @@ fn switching_the_font_lays_the_page_out_again_a_label_that_now_wraps_grows_its_r
 fn a_blizzard_settings_category_opens_the_options_window() {
 	let out = run(r#"
 		local cat
-		for _, c in ipairs(Settings.categories) do if c.name == "Polestar" then cat = c end end
+		for _, c in ipairs(Settings.categories) do if c.name == "Northstar" then cat = c end end
 		local open
-		for _, child in ipairs(cat.frame.children) do if type(child.Label) == "table" and child.Label:GetText() == "Open Polestar settings" then open = child end end
+		for _, child in ipairs(cat.frame.children) do if type(child.Label) == "table" and child.Label:GetText() == "Open Northstar settings" then open = child end end
 		open:Click()
-		emit({ registered = cat ~= nil, opened = PolestarOptions:IsShown() })"#);
+		emit({ registered = cat ~= nil, opened = NorthstarOptions:IsShown() })"#);
 	assert_eq!(out, json!({ "registered": true, "opened": true }));
 }
 
@@ -762,16 +762,16 @@ fn in_combat_the_settings_canvas_button_leaves_the_protected_game_panel_alone() 
 		SettingsPanel = CreateFrame("Frame", "SettingsPanel", UIParent)
 		HideUIPanel = function(f) hidden = hidden + 1; f:Hide() end
 		local cat
-		for _, c in ipairs(Settings.categories) do if c.name == "Polestar" then cat = c end end
+		for _, c in ipairs(Settings.categories) do if c.name == "Northstar" then cat = c end end
 		local open
-		for _, child in ipairs(cat.frame.children) do if type(child.Label) == "table" and child.Label:GetText() == "Open Polestar settings" then open = child end end
+		for _, child in ipairs(cat.frame.children) do if type(child.Label) == "table" and child.Label:GetText() == "Open Northstar settings" then open = child end end
 		stub.inCombat = true
 		open:Click()
-		local inCombat = { hidden = hidden, opened = PolestarOptions:IsShown(), hint = #stub.messages > 0 }
-		PolestarOptions:Hide()
+		local inCombat = { hidden = hidden, opened = NorthstarOptions:IsShown(), hint = #stub.messages > 0 }
+		NorthstarOptions:Hide()
 		stub.inCombat = false
 		open:Click()
-		emit({ inCombat = inCombat, hidden = hidden, opened = PolestarOptions:IsShown() })"#);
+		emit({ inCombat = inCombat, hidden = hidden, opened = NorthstarOptions:IsShown() })"#);
 	assert_eq!(out["inCombat"], json!({ "hidden": 0, "opened": true, "hint": true }));
 	assert_eq!(out["hidden"], 1);
 	assert_eq!(out["opened"], true);
@@ -787,26 +787,26 @@ fn with_the_gamepad_interface_the_settings_canvas_button_leaves_the_game_panel_a
 		SettingsPanel = CreateFrame("Frame", "SettingsPanel", UIParent)
 		HideUIPanel = function(f) hidden = hidden + 1; f:Hide() end
 		local cat
-		for _, c in ipairs(Settings.categories) do if c.name == "Polestar" then cat = c end end
+		for _, c in ipairs(Settings.categories) do if c.name == "Northstar" then cat = c end end
 		local open
-		for _, child in ipairs(cat.frame.children) do if type(child.Label) == "table" and child.Label:GetText() == "Open Polestar settings" then open = child end end
+		for _, child in ipairs(cat.frame.children) do if type(child.Label) == "table" and child.Label:GetText() == "Open Northstar settings" then open = child end end
 		open:Click()
-		emit({ hidden = hidden, opened = PolestarOptions:IsShown(), hint = stub.messages[#stub.messages] })"#,
+		emit({ hidden = hidden, opened = NorthstarOptions:IsShown(), hint = stub.messages[#stub.messages] })"#,
 		"",
 		"Enum.InputDeviceInterfaceType = { Mkb = 0, Gamepad = 1 }; C_InputInterfaceStyle = { GetCurrentStyle = function() return 1 end }",
 		"",
 	);
 	assert_eq!(out["hidden"], 0);
 	assert_eq!(out["opened"], true);
-	assert!(is_match(text(&out["hint"]), r"Close the game menu to see Polestar's settings\.$"));
+	assert!(is_match(text(&out["hint"]), r"Close the game menu to see Northstar's settings\.$"));
 }
 
 #[test]
 fn hiding_a_window_mid_drag_on_its_scroll_bar_ends_the_drag() {
 	let out = run(r#"
 		UI.ShowOptions("navigation")
-		local bar = PolestarOptions.Scroll.Bar
-		Polestar.Widgets.SetScrollContent(PolestarOptions.Scroll, 2000, 400)
+		local bar = NorthstarOptions.Scroll.Bar
+		Northstar.Widgets.SetScrollContent(NorthstarOptions.Scroll, 2000, 400)
 		stub.RunScript(bar, "OnMouseDown", "LeftButton")
 		local dragging = bar:IsShown() and bar:GetScript("OnUpdate") ~= nil
 		-- The client fires OnHide on the bar when its window hides (Escape);
@@ -829,10 +829,10 @@ fn the_settings_carry_the_hub_rail_a_section_goes_back_to_the_hub_in_the_same_pl
 		local function place(f) local p, rel, rp, x, y = f:GetPoint(1) return { p, rel == UIParent, rp, x, y } end
 		local function railButton(f, key) for _, b in ipairs(f.railButtons) do if b:IsShown() and b.psKey == key then return b end end end
 		UI.ShowPicker()
-		local hub, settings = PolestarPicker, nil
+		local hub, settings = NorthstarPicker, nil
 		hub.x, hub.y = 200, 100
 		railButton(hub, "Options"):Click()
-		settings = PolestarOptions
+		settings = NorthstarOptions
 		local opened = { shown = settings:IsShown(), hubHidden = not hub:IsShown(), rail = rail(settings), at = place(settings) }
 		settings.x, settings.y = 300, 50
 		railButton(settings, "Guides"):Click()
@@ -854,16 +854,16 @@ fn the_settings_carry_the_hub_rail_a_section_goes_back_to_the_hub_in_the_same_pl
 #[test]
 fn a_shell_subtitle_wraps_to_two_lines_within_the_main_column_and_cuts_the_rest() {
 	let out = run(r#"
-		local W = Polestar.Widgets
+		local W = Northstar.Widgets
 		UI.ShowOptions("appearance")
-		local f = PolestarOptions
+		local f = NorthstarOptions
 		local s = f.Subtitle
 		local page = { text = s:GetText(), width = s:GetWidth(), lines = s:GetNumLines(), wrap = s:GetWordWrap(), height = s:GetHeight() }
 		local long = string.rep("A long subtitle that runs on. ", 12)
 		W.ShellTitle(f, "Title", long)
 		local cut = { text = s:GetText(), lines = s:GetNumLines() }
 		UI.ShowPicker()
-		emit({ page = page, cut = cut, bodyWidth = f.BodyWidth, hub = { width = PolestarPicker.Subtitle:GetWidth(), bodyWidth = PolestarPicker.BodyWidth } })"#);
+		emit({ page = page, cut = cut, bodyWidth = f.BodyWidth, hub = { width = NorthstarPicker.Subtitle:GetWidth(), bodyWidth = NorthstarPicker.BodyWidth } })"#);
 	assert!(is_match(text(&out["page"]["text"]), r"^Colours, type, window frames and the arrow\."));
 	assert_eq!(out["page"]["wrap"], true);
 	assert_eq!(out["page"]["width"], out["bodyWidth"]);
@@ -883,13 +883,13 @@ fn distances_the_arrow_row_picks_yards_or_metres_right_click_restores_yards() {
 		local row = O.Controls("guide", "Arrow & routes")["nav.distanceUnit"]
 		local before = row.Button.Label:GetText()
 		row.Button:Click()
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Metres" then r:Click() end end
-		local picked, label = Polestar.Get("nav.distanceUnit"), row.Button.Label:GetText()
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Metres" then r:Click() end end
+		local picked, label = Northstar.Get("nav.distanceUnit"), row.Button.Label:GetText()
 		row:Click("RightButton")
-		emit({ before = before, picked = picked, label = label, reset = Polestar.Get("nav.distanceUnit") })"#,
+		emit({ before = before, picked = picked, label = label, reset = Northstar.Get("nav.distanceUnit") })"#,
 		"",
 		"",
-		r#"Polestar.RegisterDefaults("nav", { distanceUnit = "yards" })"#,
+		r#"Northstar.RegisterDefaults("nav", { distanceUnit = "yards" })"#,
 	);
 	assert_eq!(out, json!({ "before": "Yards (the game's unit)", "picked": "metres", "label": "Metres", "reset": "yards" }));
 }
@@ -903,16 +903,16 @@ fn guide_window_in_dungeons_and_battlegrounds_hides_by_default_keep_visible_is_a
 		local before = row.Button.Label:GetText()
 		row.Button:Click()
 		local choices = {}
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then choices[#choices + 1] = r.Text:GetText() end end
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Keep visible" then r:Click() end end
-		local picked = Polestar.Get("ui.instance")
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then choices[#choices + 1] = r.Text:GetText() end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Keep visible" then r:Click() end end
+		local picked = Northstar.Get("ui.instance")
 		row:Click("RightButton")
 		local found = {}
 		for _, q in ipairs({ "dungeon", "raid", "battleground", "arena", "instance", "hide" }) do
 			found[q] = false
 			for _, g in ipairs((O.Search(q))) do for _, c in ipairs(g.controls) do if c.key == "ui.instance" then found[q] = true end end end
 		end
-		emit({ label = row.Label:GetText(), before = before, choices = choices, picked = picked, reset = Polestar.Get("ui.instance"), found = found })"#);
+		emit({ label = row.Label:GetText(), before = before, choices = choices, picked = picked, reset = Northstar.Get("ui.instance"), found = found })"#);
 	assert_eq!(
 		out,
 		json!({ "label": "In dungeons and battlegrounds", "before": "Hide", "choices": ["Keep visible", "Hide"], "picked": "show", "reset": "hide",
@@ -926,14 +926,14 @@ fn guide_window_in_dungeons_and_battlegrounds_hides_by_default_keep_visible_is_a
 fn discovery_dungeons_a_toggle_per_classic_dungeon_for_leveling_guides_all_off_chosen_per_character_in_the_client_s_language() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Dungeons/Dungeons.xml", "UI/UI.xml"])],
-		script: format!("uistub.install()\nstub.login()\n{HELPERS}\nlocal UI, O, E = Polestar.UI, Polestar.UI.Options, Polestar.Engine")
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Dungeons/Dungeons.xml", "UI/UI.xml"])],
+		script: format!("uistub.install()\nstub.login()\n{HELPERS}\nlocal UI, O, E = Northstar.UI, Northstar.UI.Options, Northstar.Engine")
 			+ r#"
-		Polestar.Names.Instance = function(id) if id == 389 then return "Огненная пропасть" end end
+		Northstar.Names.Instance = function(id) if id == 389 then return "Огненная пропасть" end end
 		UI.ShowOptions("dungeons")
 		local c = O.Controls("discovery", "Dungeons")
 		local labels, on = {}, 0
-		for _, d in ipairs(Polestar.Dungeons.ROUTE) do
+		for _, d in ipairs(Northstar.Dungeons.ROUTE) do
 			local row = c[d[1] == 389 and "Огненная пропасть" or d[2]]
 			labels[#labels + 1] = row and row.Label:GetText() or ("missing " .. d[2])
 			if row and row.checked then on = on + 1 end
@@ -942,16 +942,16 @@ fn discovery_dungeons_a_toggle_per_classic_dungeon_for_leveling_guides_all_off_c
 		rfc:Click()
 		dm:Click()
 		local saved = {}
-		for k, v in pairs(PolestarCharDB.dungeons) do saved[k] = v end
+		for k, v in pairs(NorthstarCharDB.dungeons) do saved[k] = v end
 		local clicked = { rfc = rfc.checked, chosen = E.DungeonChosen(389), dm = E.DungeonChosen(36), saved = saved }
-		local account = PolestarDB.settings.dungeons or false
+		local account = NorthstarDB.settings.dungeons or false
 		dm:Click("RightButton")
 		local right = { dm = dm.checked, chosen = E.DungeonChosen(36) }
 		local _, found = O.Search("Огненная")
 		footerButton("Reset page"):Click()
-		PolestarModal.Box.Action:Click()
-		emit({ title = PolestarOptions.Title:GetText(), labels = labels, on = on, clicked = clicked, right = right, found = found,
-			reset = { rfc = rfc.checked, chosen = E.DungeonChosen(389), saved = PolestarCharDB.dungeons },
+		NorthstarModal.Box.Action:Click()
+		emit({ title = NorthstarOptions.Title:GetText(), labels = labels, on = on, clicked = clicked, right = right, found = found,
+			reset = { rfc = rfc.checked, chosen = E.DungeonChosen(389), saved = NorthstarCharDB.dungeons },
 			account = account })"#,
 		..Default::default()
 	})
@@ -1005,7 +1005,7 @@ fn guide_automation_an_answer_for_all_group_quests_while_a_guide_has_one_the_cla
 		O.Select("guide", "Automation")
 		local c = O.Controls("guide", "Automation")
 		local dd = c["behavior.groupQuests"]
-		emit({ shown = dd ~= nil, label = dd and dd.Button.Label:GetText() or false, value = Polestar.Get("behavior.groupQuests") })"#);
+		emit({ shown = dd ~= nil, label = dd and dd.Button.Label:GetText() or false, value = Northstar.Get("behavior.groupQuests") })"#);
 	assert_eq!(out, json!({ "shown": true, "label": "Ask me at each", "value": "ask" }));
 }
 
@@ -1015,16 +1015,16 @@ fn guide_automation_an_answer_for_all_group_quests_while_a_guide_has_one_the_cla
 fn the_quest_automation_toggles_are_on_questing_and_quality_of_life_and_stay_in_step() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", &MODS)],
-		script: "uistub.install()\nstub.login()\nlocal UI, O = Polestar.UI, Polestar.UI.Options".to_string()
+		addons: vec![Addon::files("Northstar", &MODS)],
+		script: "uistub.install()\nstub.login()\nlocal UI, O = Northstar.UI, Northstar.UI.Options".to_string()
 			+ r#"
-		Polestar.Set("behavior.autoAccept", true)
+		Northstar.Set("behavior.autoAccept", true)
 		UI.ShowOptions("qualityoflife")
 		O.Select("qualityoflife", "Quests")
 		local qol = O.Controls("qualityoflife", "Quests")
 		local r = { qolHas = qol["behavior.autoAccept"] ~= nil and qol["behavior.autoTurnin"] ~= nil }
 		qol["behavior.autoAccept"]:Click()
-		r.after = Polestar.Get("behavior.autoAccept")
+		r.after = Northstar.Get("behavior.autoAccept")
 		UI.ShowOptions("questing")
 		O.Select("questing", "Quests")
 		local q = O.Controls("questing", "Quests")
@@ -1049,8 +1049,8 @@ fn run_mods(before: &str, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: before.into(),
-		addons: vec![Addon::files("Polestar", &ALL)],
-		script: format!("uistub.install()\nstub.login()\nlocal UI, O = Polestar.UI, Polestar.UI.Options\n{SEARCH_HELPERS}\n{script}"),
+		addons: vec![Addon::files("Northstar", &ALL)],
+		script: format!("uistub.install()\nstub.login()\nlocal UI, O = Northstar.UI, Northstar.UI.Options\n{SEARCH_HELPERS}\n{script}"),
 		..Default::default()
 	})
 	.remove(0)
@@ -1094,18 +1094,18 @@ fn quality_of_life_shows_the_conveniences_from_their_home_pages_as_the_same_sett
 			guide = missing("guide", "Automation", { "behavior.trainReminder" }),
 			mapPage = missing("map", "Guide & quests", { "maps.minimapButton" }),
 		} }
-		Polestar.Set("qol.fastLoot", false)
+		Northstar.Set("qol.fastLoot", false)
 		O.Select("qualityoflife", "Quests")
 		O.Controls("qualityoflife", "Quests")["qol.fastLoot"]:Click()
-		r.fastLoot = Polestar.Get("qol.fastLoot")
+		r.fastLoot = Northstar.Get("qol.fastLoot")
 		O.Select("questing", "Quests")
 		r.questingShows = O.Controls("questing", "Quests")["qol.fastLoot"].checked
-		local before = Polestar.Get("maps.minimapButton")
+		local before = Northstar.Get("maps.minimapButton")
 		O.Select("qualityoflife", "Map")
 		O.Controls("qualityoflife", "Map")["maps.minimapButton"]:Click()
-		r.minimapFlipped = Polestar.Get("maps.minimapButton") ~= before
+		r.minimapFlipped = Northstar.Get("maps.minimapButton") ~= before
 		O.Select("map", "Guide & quests")
-		r.mapShows = O.Controls("map", "Guide & quests")["maps.minimapButton"].checked == Polestar.Get("maps.minimapButton")
+		r.mapShows = O.Controls("map", "Guide & quests")["maps.minimapButton"].checked == Northstar.Get("maps.minimapButton")
 		emit(r)"#,
 	);
 	for (tab, v) in out["missing"].as_object().unwrap() {
@@ -1149,7 +1149,7 @@ fn search_forgives_joined_words_typos_prefixes_and_synonyms_and_puts_the_best_ma
 	assert_eq!(out["hyphen"]["key"], "qol.fastLoot");
 	assert_eq!(out["typo"]["key"], "behavior.autoAccept", "\"acept\" is one letter off");
 	assert_eq!(out["prefixes"]["key"], "behavior.autoAccept", "\"acc\" starts accept, \"quest\" quests");
-	// What changes Polestar's frame cost: the walking paths and route planning first, then Reduce motion; never the
+	// What changes Northstar's frame cost: the walking paths and route planning first, then Reduce motion; never the
 	// Quest database, and no three-letter word matches inside another ("lag" in "flag").
 	for (q, v) in out["perf"].as_object().unwrap() {
 		let k: Vec<&str> = v.as_array().unwrap().iter().map(|x| x.as_str().unwrap()).collect();
@@ -1198,8 +1198,8 @@ fn non_ascii_search_keeps_short_ascii_and_folded_latin_fragments_out() {
 	let out = run_mods(
 		"",
 		r#"
-		Polestar.RegisterDefaults("searchFragment", { flag = true, submarine = true })
-		Polestar.RegisterOptions({ page = "Search fragments", controls = {
+		Northstar.RegisterDefaults("searchFragment", { flag = true, submarine = true })
+		Northstar.RegisterOptions({ page = "Search fragments", controls = {
 			{ kind = "toggle", key = "searchFragment.flag", label = "Flag display" },
 			{ kind = "toggle", key = "searchFragment.submarine", label = "Submarine" },
 		} })
@@ -1220,10 +1220,10 @@ fn search_with_no_match_suggests_the_nearest_settings() {
 		"",
 		r#"
 		UI.ShowOptions()
-		local box = PolestarOptions.Search
+		local box = NorthstarOptions.Search
 		box:SetText("hearthston xyzzy")
 		stub.RunScript(box, "OnTextChanged", true)
-		local r = { count = O.results.count, suggestions = O.results.suggestions, sub = PolestarOptions.Subtitle:GetText() }
+		local r = { count = O.results.count, suggestions = O.results.suggestions, sub = NorthstarOptions.Subtitle:GetText() }
 		local _, n, none = O.Search("qqqq")
 		r.nothing = { n = n, suggestions = none }
 		emit(r)"#,

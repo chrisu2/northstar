@@ -2,7 +2,7 @@
 //! committed data slice (rust/tests/golden/world/root/data/forever) and compares every file and the diagnostics with
 //! the JS compiler's output in rust/tests/golden/guide/expected/<name> (made by
 //! rust/tests/golden/guide/regen.sh; see its README). Any difference fails. Since format 8 the expected
-//! output of Polestar's own pack (both inputs) is forge's: packed spawn spots and faction parts, which the JS
+//! output of Northstar's own pack (both inputs) is forge's: packed spawn spots and faction parts, which the JS
 //! compiler never wrote (the README).
 
 use std::path::{Path, PathBuf};

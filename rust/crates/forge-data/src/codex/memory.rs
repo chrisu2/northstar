@@ -37,11 +37,11 @@ pub fn measure(codex_lua: &Path, order: &[String], files: &[(String, String)]) -
 		let program = format!(
 			r#"
 local ns = {{}}
-Polestar = ns
+Northstar = ns
 function ns.RegisterMapFrames() end
 -- (Codex.lua asks the faction for the Alliance's own way into the City of Dalaran.)
 ns.Compat = {{ GetPlayerFaction = function() return "Horde" end }}
-loadfile({codex})("Polestar", ns)
+loadfile({codex})("Northstar", ns)
 local C = ns.Codex
 collectgarbage("collect"); collectgarbage("collect")
 local base = collectgarbage("count")

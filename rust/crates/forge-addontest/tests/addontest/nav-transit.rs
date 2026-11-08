@@ -1,4 +1,4 @@
-//! Transport timing (addon/Polestar/Nav/Transit.lua) and its generator (tools/lib/travel/timetable.js,
+//! Transport timing (addon/Northstar/Nav/Transit.lua) and its generator (tools/lib/travel/timetable.js,
 //! cmangos.js), after Shortest Path Forever by Cillian Berragan: departure maths (phase, wrap, boarding),
 //! untimed average waits, sightings and the ride observer correcting a drifted one, the guild/group sync's
 //! validation, class teleports, lifts; the generator's transport model, expected waits, lift tracks, portals
@@ -14,12 +14,12 @@ use std::path::{Path, PathBuf};
 // --- the addon ---------------------------------------------------------------
 
 fn transit() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua", "Core/Compat.lua", "Nav/Transit.lua"])
+	Addon::files("Northstar", &["Core/Init.lua", "Core/Compat.lua", "Nav/Transit.lua"])
 }
 
 // A boat loop of 100 s: docked at A 0-20 s, at B 50-70 s; and a lift.
 const DATA: &str = r#"
-local T = Polestar.Transit
+local T = Northstar.Transit
 T.Register({
 	routes = {
 		r = { kind = "boat", period = 100000, fit = { samples = 10, span = 15000, speed = 12 },
@@ -46,7 +46,7 @@ local function nowMs() return T.Now() * 1000 end
 local function at(p, source) return { epoch = nowMs() - p, seen = math.floor(T.Now()), source = source or "you" } end
 local function round(v) return v and math.floor(v * 10 + 0.5) / 10 end
 -- The sighting held for a route (the store is per realm; there is one here).
-local function held(id) for _, s in pairs(Polestar.DB().transit or {}) do return s[id] end end
+local function held(id) for _, s in pairs(Northstar.DB().transit or {}) do return s[id] end end
 "#;
 
 fn lua_with(script: &str, before: &str) -> Vec<Value> {
@@ -121,7 +121,7 @@ fn departure_maths_docked_too_late_to_board_arriving_wrapping_past_phase_zero() 
 #[test]
 fn sightings_a_recent_own_ride_is_not_replaced_by_another_player_s_a_newer_own_one_is_stale_ones_expire() {
 	let out = lua(r#"
-		local s = Polestar.DB().transit
+		local s = Northstar.DB().transit
 		T.Sighted("r", { epoch = nowMs() - 1000, seen = math.floor(T.Now()) - 100, source = "player" })
 		emit(T.Sighted("r", at(10000, "you")))
 		emit(T.Sighted("r", { epoch = nowMs() - 30000, seen = math.floor(T.Now()) + 1, source = "player" }))
@@ -183,7 +183,7 @@ fn c5_a_ride_is_timed_when_the_client_reports_its_height_as_0_along_a_track_up_i
 		addons: vec![transit()],
 		login: true,
 		script: r#"
-			local T = Polestar.Transit
+			local T = Northstar.Transit
 			T.Register({
 				routes = {
 					zep = { kind = "zeppelin", period = 100000, fit = { samples = 10, span = 15000, speed = 12 },
@@ -203,7 +203,7 @@ fn c5_a_ride_is_timed_when_the_client_reports_its_height_as_0_along_a_track_up_i
 			end
 			stub.advance(25)
 			local s
-			for _, realm in pairs(Polestar.DB().transit or {}) do s = realm.zep end
+			for _, realm in pairs(Northstar.DB().transit or {}) do s = realm.zep end
 			emit(s and s.source or false)
 		"#
 		.into(),
@@ -235,7 +235,7 @@ fn lifts_found_near_a_crossing_listed_untimed_average_captions_then_timed_either
 fn sync_shared_sightings_are_validated_unknown_future_stale_out_of_loop_dropped_a_whisper_is_ignored_a_guild_query_gets_your_own() {
 	let out = lua_with(
 		r#"
-		Polestar.Set("nav.shareTransit", true) -- off by default: players opt in
+		Northstar.Set("nav.shareTransit", true) -- off by default: players opt in
 		local now = T.Now()
 		local s = { epoch = nowMs() - 12345, seen = math.floor(now) }
 		local text = T.encode("r", s)
@@ -251,13 +251,13 @@ fn sync_shared_sightings_are_validated_unknown_future_stale_out_of_loop_dropped_
 		local got = {}
 		for id in pairs(T.decode(msg, now)) do got[#got + 1] = id end
 		emit(got)
-		stub.fire("CHAT_MSG_ADDON", "PolestarT1", "Slift:" .. math.floor(now) .. ":16000", "WHISPER", "Stranger-Realm")
+		stub.fire("CHAT_MSG_ADDON", "NorthstarT1", "Slift:" .. math.floor(now) .. ":16000", "WHISPER", "Stranger-Realm")
 		emit(held("lift") == nil)
-		stub.fire("CHAT_MSG_ADDON", "PolestarT1", "Slift:" .. math.floor(now) .. ":16000", "GUILD", "Friend")
+		stub.fire("CHAT_MSG_ADDON", "NorthstarT1", "Slift:" .. math.floor(now) .. ":16000", "GUILD", "Friend")
 		local held = held("lift")
 		emit({ held.source, T.Caption("lift", "lift-x", T.Now(), "bottom") })
 		T.Sighted("r", at(10000, "you"))
-		stub.fire("CHAT_MSG_ADDON", "PolestarT1", "Q", "GUILD", "Friend")
+		stub.fire("CHAT_MSG_ADDON", "NorthstarT1", "Q", "GUILD", "Friend")
 		local before = #SENT
 		stub.advance(13) -- the reply waits 2-12 s
 		local last = SENT[#SENT]
@@ -272,7 +272,7 @@ fn sync_shared_sightings_are_validated_unknown_future_stale_out_of_loop_dropped_
 	assert_eq!(out[1], json!(["r"]));
 	assert_eq!(out[2], true);
 	assert_eq!(out[3], json!(["player", "Lift here, leaves in 0:04"]));
-	assert_eq!(json!([reply[0], reply[2]]), json!(["PolestarT1", "GUILD"]));
+	assert_eq!(json!([reply[0], reply[2]]), json!(["NorthstarT1", "GUILD"]));
 	assert_eq!(reply[3], 0, "security L4: no reply at once");
 	assert!(is_match(text(&reply[1]), r"^Sr:\d+:10000$"), "only your own sightings answer a query; the guildmate's lift is not echoed");
 }
@@ -298,7 +298,7 @@ fn class_teleports_known_spells_with_their_reagents_cooldowns_counted_the_settin
 		COOL[556] = { GetTime(), 900 }
 		COOL[3567] = { GetTime(), 1.5 } -- the global cooldown does not count
 		emit(names(T.Teleports(T.Now())))
-		Polestar.Set("nav.teleports", false)
+		Northstar.Set("nav.teleports", false)
 		emit(#T.Teleports(T.Now()))
 	"#);
 	assert_eq!(out[0], json!([["Teleport: Moonglade", 0, 1450, false], ["Astral Recall", 0, false, true]]), "no Rune of Teleportation: no city teleport");
@@ -324,19 +324,19 @@ fn walk(dir: &Path, compat: &Path, offenders: &mut Vec<String>) {
 #[test]
 fn c5_unitposition_is_read_in_one_place_core_compat_lua() {
 	let mut offenders = Vec::new();
-	let compat = root().join("addon").join("Polestar").join("Core").join("Compat.lua");
-	walk(&root().join("addon").join("Polestar"), &compat, &mut offenders);
+	let compat = root().join("addon").join("Northstar").join("Core").join("Compat.lua");
+	walk(&root().join("addon").join("Northstar"), &compat, &mut offenders);
 	assert_eq!(offenders, Vec::<String>::new());
 }
 
 // --- review fixes ---------------------------------------------------------------
 
 fn travel_data() -> PathBuf {
-	root().join("addon").join("Polestar").join("Nav").join("TravelData.lua")
+	root().join("addon").join("Northstar").join("Nav").join("TravelData.lua")
 }
 
 const P0_1_SCRIPT: &str = r#"
-			local T = Polestar.Transit
+			local T = Northstar.Transit
 			local now = T.Now()
 			T.Sighted("path-285", { epoch = now * 1000 - 1000, seen = math.floor(now), source = "you" })
 			local w, r, timed = T.NextDeparture("zeppelin", "zeppelin-orgrimmar-gromgol", now, "a")
@@ -371,7 +371,7 @@ fn review_p0_1_the_committed_traveldata_lua_s_timetables_index_stops_from_1_a_si
 	assert!(route_ids.iter().any(|s| s == "path-285") && service_ids.iter().any(|s| s == "zeppelin-orgrimmar-gromgol"));
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])],
 		login: true,
 		script: P0_1_SCRIPT.replace("@ROUTES@", &quoted(&route_ids)).replace("@SERVICES@", &quoted(&service_ids)),
 		..Default::default()
@@ -400,7 +400,7 @@ fn build_of(file: &Path) -> Option<String> {
 #[test]
 fn review_p2_2_flightpaths_lua_and_traveldata_lua_are_built_from_the_same_classic_era_tables() {
 	let travel = build_of(&travel_data());
-	let flights = build_of(&root().join("addon").join("Polestar").join("Maps").join("FlightPaths.lua"));
+	let flights = build_of(&root().join("addon").join("Northstar").join("Maps").join("FlightPaths.lua"));
 	assert!(travel.as_deref().is_some_and(|t| is_match(t, r"^1\.15\.")), "TravelData.lua build {}", travel.as_deref().unwrap_or("null"));
 	assert_eq!(flights, travel);
 }
@@ -408,7 +408,7 @@ fn review_p2_2_flightpaths_lua_and_traveldata_lua_are_built_from_the_same_classi
 // Two cars on one lift loop, 20 yd apart: car 1 at x = 0 starts at the top, car 2 at x = 20 at the bottom;
 // each rides 10 s and rests 5 s at each end.
 const TWO_CARS: &str = r#"
-local T = Polestar.Transit
+local T = Northstar.Transit
 T.Register({
 	routes = {
 		duo = { kind = "lift", period = 30000, fit = { samples = 5, span = 4000, speed = 8 },
@@ -453,15 +453,15 @@ fn review_p3_14_riding_one_car_of_a_two_car_lift_the_next_stop_is_that_car_s_lan
 }
 
 const SHARE_TAIL: &str = r#"
-Polestar.Set("nav.shareTransit", true)
+Northstar.Set("nav.shareTransit", true)
 FIRED = {}
-Polestar.On("NAV_TRANSIT", function(changed, own)
+Northstar.On("NAV_TRANSIT", function(changed, own)
 	local ids = {}
 	for id in pairs(changed or {}) do ids[#ids + 1] = id end
 	table.sort(ids)
 	FIRED[#FIRED + 1] = { table.concat(ids, ","), own or false }
 end)
-local function msg(text, chatType, sender) stub.fire("CHAT_MSG_ADDON", "PolestarT1", text, chatType or "GUILD", sender or "Friend") end
+local function msg(text, chatType, sender) stub.fire("CHAT_MSG_ADDON", "NorthstarT1", text, chatType or "GUILD", sender or "Friend") end
 "#;
 
 const SHARE_STUBS: &str = r#"SENT = {}; C_ChatInfo = { RegisterAddonMessagePrefix = function() return true end, SendAddonMessage = function(...) SENT[#SENT + 1] = { ... } end }; GetNormalizedRealmName = function() return "TestRealm" end"#;

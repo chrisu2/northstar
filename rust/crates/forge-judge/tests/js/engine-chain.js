@@ -80,7 +80,7 @@ ${sim}
 end
 local missingSeen, lastGuide = {}, nil
 for n = 1, 4000 do
-	SIM_GUIDE = Polestar.Engine.GetGuide()
+	SIM_GUIDE = Northstar.Engine.GetGuide()
 	if not SIM_GUIDE then break end
 	local G = SIM_GUIDE
 	if lastGuide ~= G.id then
@@ -101,10 +101,10 @@ for n = 1, 4000 do
 	if r.stuck then
 		local s = r.stuck
 		TRACE[#TRACE + 1] = { k = "stuck", g = G.id, s = s.step, i = s.goal, t = s.t, status = s.status, why = s.why }
-		if ${mode === 'skip' ? 'false' : 'true'} or Polestar.Engine.GetGuide() ~= G or Polestar.Engine.GetStepIndex() ~= s.step then break end
-		Polestar.Engine.Skip()
+		if ${mode === 'skip' ? 'false' : 'true'} or Northstar.Engine.GetGuide() ~= G or Northstar.Engine.GetStepIndex() ~= s.step then break end
+		Northstar.Engine.Skip()
 	else
-		local now = Polestar.Engine.GetGuide()
+		local now = Northstar.Engine.GetGuide()
 		if not now or now == G then break end
 	end
 end
@@ -121,7 +121,7 @@ try {
 	const g = pack.guides.find((x) => x.id === firstId);
 	const next = g.nextChoices && g.nextChoices.length ? g.nextChoices : g.next ? [g.next] : [];
 	const opts = playOptions(pack, g, { race, faction, cls, handOver: next.length ? next : null, script });
-	opts.script = patch(opts.script, 'Polestar.Engine.SetGuide(', 'PRE_GUIDE = Polestar.Engine.GetGuide() and Polestar.Engine.GetGuide().id or false\n\t\t\tPolestar.Engine.SetGuide(');
+	opts.script = patch(opts.script, 'Northstar.Engine.SetGuide(', 'PRE_GUIDE = Northstar.Engine.GetGuide() and Northstar.Engine.GetGuide().id or false\n\t\t\tNorthstar.Engine.SetGuide(');
 	const t1 = Date.now();
 	const [res] = runAddon(opts).emitted;
 	const luaMs = Date.now() - t1;

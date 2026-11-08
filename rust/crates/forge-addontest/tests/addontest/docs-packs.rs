@@ -1,5 +1,5 @@
 //! The pack docs keep up with the code: docs/PACK_FORMAT.md (the contract) names every goal verb the runtime
-//! reads (Core/Guides.lua's REQUIRED table, Polestar.Guides.VERBS) and every guide and goal key the compiler
+//! reads (Core/Guides.lua's REQUIRED table, Northstar.Guides.VERBS) and every guide and goal key the compiler
 //! writes (tools/lib/dsl/emit.js); docs/PACKS.md (the handbook) names every problem kind and pack status the
 //! Community guides page can show.
 
@@ -27,8 +27,8 @@ fn has_items(list: &[&str]) -> bool {
 #[test]
 fn pack_format_md_names_every_goal_verb_the_runtime_reads() {
 	let out = emitted(&RunAddon {
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Core/Compat.lua", "Core/Data.lua", "Core/LuaChunks.lua", "Core/Names.lua", "Core/GuideTexts.lua", "Core/Guides.lua"])],
-		script: "local out = {} for k in pairs(Polestar.Guides.VERBS) do out[#out + 1] = k end table.sort(out) emit(out)".into(),
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Core/Compat.lua", "Core/Data.lua", "Core/LuaChunks.lua", "Core/Names.lua", "Core/GuideTexts.lua", "Core/Guides.lua"])],
+		script: "local out = {} for k in pairs(Northstar.Guides.VERBS) do out[#out + 1] = k end table.sort(out) emit(out)".into(),
 		..Default::default()
 	});
 	let verbs = &out[0];

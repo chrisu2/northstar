@@ -2,7 +2,7 @@
 
 The writer turns a route into guides. A route is the simulator's improved
 quest order for one start (see [routes.md](routes.md)). The writer puts that
-order into v1's guides, the current guides Polestar ships. It keeps v1's own
+order into v1's guides, the current guides Northstar ships. It keeps v1's own
 lines, tips and layout wherever it can. The result is a normal guides folder.
 The compiler lints it and builds it into the addon's pack, and the judge
 compares it with v1 (see [judge.md](judge.md)).
@@ -12,10 +12,10 @@ as `forge writer apply-route`, and `forge build` runs it as its `guides` stage
 for every start. The compiler is `forge-guide` (`forge guide compile|lint`).
 See [FORGE.md](../FORGE.md) for the whole pipeline.
 
-## Written for how Polestar plays
+## Written for how Northstar plays
 
 A route is only as good as the way the addon plays it, so the writer writes for the engine
-(`addon/Polestar/Core/Engine.lua`, [GUIDE_FORMAT.md](../GUIDE_FORMAT.md)):
+(`addon/Northstar/Core/Engine.lua`, [GUIDE_FORMAT.md](../GUIDE_FORMAT.md)):
 
 - **One area, all its work.** Quest objectives count from the quest log wherever the mob dies, so
   work on the same ground (plainstriders, raptors and zhevra across the northern Barrens) is one
@@ -488,7 +488,7 @@ be compared byte for byte with the old JavaScript writer.
   route does not name are not written at all, nor a v1 step left with only
   such lines and notes.
 - Hearths and duplicate `only` lines are fixed per audience (see the layout above).
-- **No hearth goals** (Polestar 0.3.3, Fitz: telling the player to hearth is
+- **No hearth goals** (Northstar 0.3.3, Fitz: telling the player to hearth is
   the arrow's job, not the guide's). The route still plans with the
   Hearthstone, and every pass above sees its hearth legs, but the last pass of
   the guides stage (after the travel repair, the travel check and the engine
@@ -885,7 +885,7 @@ and a travel line that starts where the player is not goes to the other races.
 
 ### 5. Engine features
 
-The newer addon engine (Polestar 0.2.6, pack format 4) reads lines that v1's
+The newer addon engine (Northstar 0.2.6, pack format 4) reads lines that v1's
 guides predate. The writer adds them where the route needs them
 (`src/engine.rs`). These R-numbers are the writer's own, in order of how much
 they matter to the player. They are not the judge's honest rules.
@@ -1024,7 +1024,7 @@ they matter to the player. They are not the judge's honest rules.
   `--no-groups` turns it off. Under `--format-0-3`, R5 still asks the other
   group and dungeon quests.
 
-`--format-0-3` adds the pack format 5 lines (Polestar 0.3.0): R5 `when group`,
+`--format-0-3` adds the pack format 5 lines (Northstar 0.3.0): R5 `when group`,
 R6 `task` and `cast`, R7 `abandon` when the log would pass 40 (the game's quest log), R8 `skipto` over
 blocks kept for one carried quest. `--no-engine` writes none of these and uses
 no route legs: the old JavaScript writer's output, byte for byte.
@@ -1198,12 +1198,12 @@ judge it:
 
 ```sh
 forge guide lint --guides out/guides/Orc --data out/data/forever
-forge guide compile --guides out/guides/Orc --data out/data/forever --out out/addon/Polestar_Guides
+forge guide compile --guides out/guides/Orc --data out/data/forever --out out/addon/Northstar_Guides
 forge judge report --route out/routes/Orc.json --guides out/guides --root out/.forge/root --sim out/.forge/sim --out out/review
 ```
 
-Run `forge guide` inside a Polestar checkout. It finds the checkout by
-`addon/Polestar/Polestar.toc` and `guides/pack.json`, or you pass `--root`. It
+Run `forge guide` inside a Northstar checkout. It finds the checkout by
+`addon/Northstar/Northstar.toc` and `guides/pack.json`, or you pass `--root`. It
 reads the pack's manifest from `<root>/guides/pack.json`.
 
 | Flag | Meaning |
@@ -1211,7 +1211,7 @@ reads the pack's manifest from `<root>/guides/pack.json`.
 | `compile` / `lint` | Write the addon files / only check |
 | `--guides DIR` | The guides folder (default `<root>/guides`) |
 | `--data DIR` | The game data (default `<root>/data/forever`) |
-| `--out DIR` | The pack's main addon folder (default `<root>/addon/Polestar_Guides`, **the checkout's own pack**). Race parts are written next to it, and its translations into the language folders (`Polestar_deDE`, …) beside the game's names |
+| `--out DIR` | The pack's main addon folder (default `<root>/addon/Northstar_Guides`, **the checkout's own pack**). Race parts are written next to it, and its translations into the language folders (`Northstar_deDE`, …) beside the game's names |
 | `--format text\|json\|github` | How diagnostics print (`github`: annotations for CI) |
 | `--quiet` | Hide warnings |
 | `--force` | Write the files even with errors |
@@ -1227,7 +1227,7 @@ compiler's. Both commands exit 1 on any error. Their last line is the summary
 [PACK_FORMAT.md](../PACK_FORMAT.md).
 
 Always pass `--out` when you compile a written tree. Otherwise it replaces the
-checkout's own `addon/Polestar_Guides`.
+checkout's own `addon/Northstar_Guides`.
 
 ## When something goes wrong
 

@@ -4,7 +4,7 @@
 // control panel. Every request returns the next frame.
 (function () {
 	'use strict';
-	const { hitTest, toScreen } = window.PolestarHit;
+	const { hitTest, toScreen } = window.NorthstarHit;
 	const $ = (sel, el = document) => el.querySelector(sel);
 	const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
 
@@ -402,11 +402,11 @@
 		if (!changed.length) {
 			text = '-- Every setting is at its default.';
 		} else {
-			const run = changed.map(([k, v]) => `/run Polestar.Set(${JSON.stringify(k)}, ${luaLiteral(v)})`);
-			const db = changed.map(([k, v]) => `PolestarDB.settings.${k.split('.').map((p) => (/^[A-Za-z_]\w*$/.test(p) ? p : `[${JSON.stringify(p)}]`)).join('.').replace(/\.\[/g, '[')} = ${luaLiteral(v)}`);
-			text = ['-- In game: paste each line into chat', ...run, '', '-- As PolestarDB values (WTF/Account/<account>/SavedVariables/Polestar.lua)', ...db].join('\n');
+			const run = changed.map(([k, v]) => `/run Northstar.Set(${JSON.stringify(k)}, ${luaLiteral(v)})`);
+			const db = changed.map(([k, v]) => `NorthstarDB.settings.${k.split('.').map((p) => (/^[A-Za-z_]\w*$/.test(p) ? p : `[${JSON.stringify(p)}]`)).join('.').replace(/\.\[/g, '[')} = ${luaLiteral(v)}`);
+			text = ['-- In game: paste each line into chat', ...run, '', '-- As NorthstarDB values (WTF/Account/<account>/SavedVariables/Northstar.lua)', ...db].join('\n');
 		}
-		showCopy('Changed settings', 'Paste the /run lines into chat in game, or set the values in PolestarDB.', text);
+		showCopy('Changed settings', 'Paste the /run lines into chat in game, or set the values in NorthstarDB.', text);
 	});
 
 	// The copy dialog with its text selected (and on the clipboard when the browser allows).
@@ -684,7 +684,7 @@
 	}
 	// For scripted sessions and debugging: the current hit map and state, and
 	// where a screen point is on the page.
-	window.PolestarPlay = {
+	window.NorthstarPlay = {
 		get hits() { return hits; },
 		get state() { return state; },
 		pageXY(x, y) {

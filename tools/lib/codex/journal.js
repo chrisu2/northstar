@@ -7,7 +7,7 @@
 // release-safe inputs; dungeons.json (DungeonJournal) is present only in a
 // --local-extras build. Built by `codex build` and shipped inside the
 // load-on-demand Codex pack as Dungeons1.lua, which registers into
-// Polestar.Dungeons (addon/Polestar/Dungeons/Dungeons.lua).
+// Northstar.Dungeons (addon/Northstar/Dungeons/Dungeons.lua).
 //
 //   instanceMapsOf(mapRows, areaRows)  Map (+ AreaTable) CSV rows -> [ { id, name, raid, players, area,
 //                                      areas: [areaIds], inner: [areaIds on the map itself], zones: [areaIds], corpse: { c, x, y } | null } ]
@@ -677,9 +677,9 @@ function summaryOf(p) {
 const HEADER = [
 	header('lua', 'codex build', 'the sources listed in Meta.lua (tools/lib/codex/journal.js)'),
 	'-- Dungeon facts (ids, names, levels, coordinates, amounts). Read by',
-	'-- Polestar/Dungeons/Dungeons.lua; each page compiles when opened.',
+	'-- Northstar/Dungeons/Dungeons.lua; each page compiles when opened.',
 	'',
-	'local D = Polestar and Polestar.Dungeons',
+	'local D = Northstar and Northstar.Dungeons',
 	'if not (D and D.Register) then return end',
 	'',
 ];

@@ -13,8 +13,8 @@ has every release command):
 
 | File | Contents |
 |---|---|
-| `Polestar-<version>.zip` | `Polestar` (with `LICENSE` and a player `README.txt`), `Polestar_Guides`, always `Polestar_Nav` (Polestar's walking router, started from Shortest Path Forever by Cillian Berragan, and Polestar's walking maps with `PACK.json`, its own GPL-3.0-or-later `LICENSE` and `CREDITS.md`; `forge nav check` must pass), `Polestar_QuestDB` / `Polestar_ItemDB` when built, and always `Polestar_Codex` (with its `LICENSE-DATA.txt`) |
-| `Polestar_Recorder-<version>.zip` | `Polestar_Recorder` (optional, with `LICENSE`) |
+| `Northstar-<version>.zip` | `Northstar` (with `LICENSE` and a player `README.txt`), `Northstar_Guides`, always `Northstar_Nav` (Northstar's walking router, started from Shortest Path Forever by Cillian Berragan, and Northstar's walking maps with `PACK.json`, its own GPL-3.0-or-later `LICENSE` and `CREDITS.md`; `forge nav check` must pass), `Northstar_QuestDB` / `Northstar_ItemDB` when built, and always `Northstar_Codex` (with its `LICENSE-DATA.txt`) |
+| `Northstar_Recorder-<version>.zip` | `Northstar_Recorder` (optional, with `LICENSE`) |
 | `SHA256SUMS` | checksums of both zips, in the format `sha256sum -c` reads |
 
 Addon folders sit at the top level of each zip, so a player (or an addon
@@ -29,7 +29,7 @@ pack folder (`<pack>/dist/<folder>-<version>.zip`, version from its
 ## Version
 
 The version lives in `package.json`, in `guides/pack.json` (the manifest of
-our guides' pack: `forge guide compile` writes its version into `Polestar_Guides.toc`)
+our guides' pack: `forge guide compile` writes its version into `Northstar_Guides.toc`)
 and in the `## Version` line of every addon TOC. One command sets them all:
 
 ```sh
@@ -43,12 +43,12 @@ follow `x.y.z`; `0.x` releases are betas.
 ## What a release holds
 
 Feature releases are built from the full local data build of the steps below.
-[THIRD_PARTY.md](../THIRD_PARTY.md) ("Distributing Polestar") lists what
-that puts in the zip: QuestieDB facts in `Polestar_Guides`, `Polestar_QuestDB`
-and `Polestar_Codex`, nothing from AtlasLoot, RareScanner or DungeonJournal,
+[THIRD_PARTY.md](../THIRD_PARTY.md) ("Distributing Northstar") lists what
+that puts in the zip: QuestieDB facts in `Northstar_Guides`, `Northstar_QuestDB`
+and `Northstar_Codex`, nothing from AtlasLoot, RareScanner or DungeonJournal,
 and never the zone crossings pack (`forge release pack` leaves it out). The Codex is part of
-Polestar (Lookup, Dungeons and Rares read it): `forge release pack` stops when
-`Polestar_Codex` is not built, or was built with `--local-extras`, or names
+Northstar (Lookup, Dungeons and Rares read it): `forge release pack` stops when
+`Northstar_Codex` is not built, or was built with `--local-extras`, or names
 one of those three among its sources. It warns when the Codex was built from
 another data build than `data/forever` (its `Meta.lua` `builtAt` against
 `data/forever/meta.json`'s): the pick-up guides' quest chains, NPC roles and
@@ -105,10 +105,10 @@ version throughout.
    forge guide compile
    ```
 
-   `Polestar_QuestDB` is not in the repository (it is ignored, like the
+   `Northstar_QuestDB` is not in the repository (it is ignored, like the
    Codex): build it with `forge data questdb` on every release machine
    before `forge release pack`, or the zip goes out without it. The language
-   folders (`Polestar_<locale>`: guide texts and names) are committed; rebuild
+   folders (`Northstar_<locale>`: guide texts and names) are committed; rebuild
    their names with `forge data names` when the data changed.
 
    Before `credits`, add new Ko-fi supporters to `data/credits.json`
@@ -126,20 +126,20 @@ version throughout.
    ```sh
    rm -rf dist && forge release pack
    (cd dist && sha256sum -c SHA256SUMS)
-   unzip -l dist/Polestar-0.2.0.zip      # Polestar_Codex/ with its LICENSE-DATA.txt, and Polestar_Nav/ with its LICENSE and CREDITS.md, are listed
-   forge nav check                       # Polestar_Nav's walking maps match its PACK.json
+   unzip -l dist/Northstar-0.2.0.zip      # Northstar_Codex/ with its LICENSE-DATA.txt, and Northstar_Nav/ with its LICENSE and CREDITS.md, are listed
+   forge nav check                       # Northstar_Nav's walking maps match its PACK.json
    ```
 
 5. Smoke-test the zips as a player gets them: unpack both into an empty
    AddOns folder and load the addons from there under Lua 5.1, with the stub
-   client the addon tests use (`POLESTAR_ADDON_DIR` points the test at
+   client the addon tests use (`NORTHSTAR_ADDON_DIR` points the test at
    another addon folder):
 
    ```sh
    smoke=$(mktemp -d)
-   unzip -q dist/Polestar-0.2.0.zip -d "$smoke/AddOns"
-   unzip -q dist/Polestar_Recorder-0.2.0.zip -d "$smoke/AddOns"
-   (cd rust && POLESTAR_ADDON_DIR="$smoke/AddOns" cargo test --release -p forge-addontest --test addontest release::)
+   unzip -q dist/Northstar-0.2.0.zip -d "$smoke/AddOns"
+   unzip -q dist/Northstar_Recorder-0.2.0.zip -d "$smoke/AddOns"
+   (cd rust && NORTHSTAR_ADDON_DIR="$smoke/AddOns" cargo test --release -p forge-addontest --test addontest release::)
    rm -rf "$smoke"
    ```
 
@@ -147,7 +147,7 @@ version throughout.
    checks that the guides registered, a guide opened, the data addons loaded
    and every TOC carries the release version.
 
-6. Then install the zip into the game itself (remove the old `Polestar*`
+6. Then install the zip into the game itself (remove the old `Northstar*`
    folders first), restart it fully and test what the release changes: play
    the first steps of a guide, and search, Dungeons and Rares when the Codex
    changed. This is a gate: nothing is tagged, pushed or uploaded (steps 7 to
@@ -160,34 +160,34 @@ version throughout.
    open, walk into a fight and out of it (the windows give the gamepad back
    as it starts and take it again after), bind a button and a chord on the
    Key bindings tab, use the quest item from focus mode, and `/reload`.
-   Then `/console taintLog 0`: `Logs/taint.log` names no Polestar file and
+   Then `/console taintLog 0`: `Logs/taint.log` names no Northstar file and
    the chat shows no `ADDON_ACTION_BLOCKED` or `ADDON_ACTION_FORBIDDEN`.
 
    Then once more with the game's gamepad interface on (Options, Gamepad,
    Enable Gamepad UI), with `taintLog` at 0 (on this client it breaks every
-   addon's `hooksecurefunc` post-hooks, so a logged pass shows Polestar
+   addon's `hooksecurefunc` post-hooks, so a logged pass shows Northstar
    misbehaving where nothing is wrong): `/polestar` is unknown, the minimap
    button shows; open the options from it, move through them and close them
    with B, browse the guide, and let a route choice or a new character's
    welcome show by itself: it takes no button until the Browse the guide
    button is pressed. Open and close the world map, a quest giver's window,
    a vendor, the flight map and the talents with the gamepad. LB and RB +
-   the D-pad keep targeting while no Polestar window holds the gamepad, and
+   the D-pad keep targeting while no Northstar window holds the gamepad, and
    no "AddOn blocked" warning shows.
 
 7. Assemble the changelog from the fragments in `changes/` (CONTRIBUTING.md,
    "Commits and pull requests"), then commit it with the version bump and
    the regenerated files that are tracked (`git status` lists them;
-   `Polestar_QuestDB` and the other local packs are ignored) on `next`,
+   `Northstar_QuestDB` and the other local packs are ignored) on `next`,
    bring `main` up to it, tag and push both. The maintainer's pushes pass
    the branch rules (see [Branch rules](#branch-rules)):
 
    ```sh
    forge changelog build 0.2.0     # writes "## 0.2.0 (<today>)", deletes the fragments
-   git add CHANGELOG.md changes package.json guides/pack.json addon/Polestar addon/Polestar_Guides addon/Polestar_ItemDB addon/Polestar_Nav addon/Polestar_Recorder
+   git add CHANGELOG.md changes package.json guides/pack.json addon/Northstar addon/Northstar_Guides addon/Northstar_ItemDB addon/Northstar_Nav addon/Northstar_Recorder
    git commit -m "Release: 0.2.0"
    git switch main && git merge --ff-only next && git switch next
-   git tag -a v0.2.0 -m "Polestar 0.2.0" main
+   git tag -a v0.2.0 -m "Northstar 0.2.0" main
    git push origin main next v0.2.0
    ```
 
@@ -212,16 +212,16 @@ version throughout.
 9. Publish the release with the three files from step 4:
 
    ```sh
-   gh release create v0.2.0 --verify-tag --title "Polestar 0.2.0" \
+   gh release create v0.2.0 --verify-tag --title "Northstar 0.2.0" \
      --notes-file dist/notes-0.2.0.md --latest \
-     dist/Polestar-0.2.0.zip dist/Polestar_Recorder-0.2.0.zip dist/SHA256SUMS
+     dist/Northstar-0.2.0.zip dist/Northstar_Recorder-0.2.0.zip dist/SHA256SUMS
    ```
 
    A release is a full release, marked Latest, from 0.2.1 on, so the
    repository's Releases box and `releases/latest` point at it; the 0.x
    version and the notes say it is a beta.
 
-10. Upload `dist/Polestar-0.2.0.zip` to CurseForge (Forever 1.60.1, release
+10. Upload `dist/Northstar-0.2.0.zip` to CurseForge (Forever 1.60.1, release
     type Release: CurseForge's app lists a project only once it has one) and
     refresh the project description: the steps and settings are in
     [docs/curseforge/README.md](curseforge/README.md).
@@ -253,7 +253,7 @@ the new Forge to read the new pack), then the data pack from a build of that
 commit, then `data-v` and `lib-v` (same `forever-db` version). Tag with
 `git tag -a <tag> -m <tag> && git push origin <tag>`; the workflows do the
 rest. The data pack's first publish creates the release:
-`gh release create data-pack --title "Polestar data pack" --notes "…" --latest=false`.
+`gh release create data-pack --title "Northstar data pack" --notes "…" --latest=false`.
 
 ## Branch rules
 

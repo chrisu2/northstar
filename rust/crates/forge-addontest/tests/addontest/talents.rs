@@ -1,4 +1,4 @@
-//! Talent plans (addon/Polestar/Talents): the plans in Builds.lua replayed under the snapshot's rules, plan
+//! Talent plans (addon/Northstar/Talents): the plans in Builds.lua replayed under the snapshot's rules, plan
 //! progress (T.State: points from the tree's currency, the level only as a fallback), the snapshot checked
 //! against the live tree (moved IDs found by name, a missing talent makes the plan out of date), the marks on
 //! the talent frame (next ring while a point waits, pick numbers, off-plan flags, the tooltip line; no levels;
@@ -14,7 +14,7 @@ const WITH_UI: &[&str] = &["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml", "Tal
 // The plans are paused in the shipped addon (Talents.lua, T.SOON); these tests switch them back on to keep the
 // plan code covered for when they return. what_players_get_while_talents_are_coming_soon tests the pause itself.
 const PRELUDE: &str = r#"
-local T, TS = Polestar.Talents, stub.talents
+local T, TS = Northstar.Talents, stub.talents
 T.SOON = false
 local data = T.Data("PALADIN")
 TS.useSnapshot(data)
@@ -24,7 +24,7 @@ local function plan(key) return T.BuildByKey(data, key) end
 fn run_in(script: &str, files: &[&str], stubs: &[&'static str]) -> Vec<Value> {
 	let mut all = vec!["stub_world.lua", "stub_talents.lua"];
 	all.extend_from_slice(stubs);
-	emitted(&RunAddon { stubs: all, addons: vec![Addon::files("Polestar", files)], script: [PRELUDE, script].join("\n"), ..Default::default() })
+	emitted(&RunAddon { stubs: all, addons: vec![Addon::files("Northstar", files)], script: [PRELUDE, script].join("\n"), ..Default::default() })
 }
 
 fn run(script: &str) -> Vec<Value> {
@@ -122,7 +122,7 @@ fn run_as(cls: &str, script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_talents.lua"],
 		before: format!("stub.talents.class = \"{cls}\""),
-		addons: vec![Addon::files("Polestar", CORE)],
+		addons: vec![Addon::files("Northstar", CORE)],
 		script: script.into(),
 		..Default::default()
 	})
@@ -134,10 +134,10 @@ fn builds_lua_every_class_has_a_plan_per_spec_51_picks_each_every_one_legal_unde
 		let out = run_as(
 			cls,
 			r#"
-local d = Polestar.Talents.Data()
+local d = Northstar.Talents.Data()
 local c = { class = d and d.class, specs = d and d.specs, plans = {} }
 for _, b in ipairs(d and d.builds or {}) do
-	c.plans[#c.plans + 1] = { key = b.key, spec = b.specName, picks = #b.picks, errors = Polestar.Talents.Replay(d, b) }
+	c.plans[#c.plans + 1] = { key = b.key, spec = b.specName, picks = #b.picks, errors = Northstar.Talents.Replay(d, b) }
 end
 emit(c)"#,
 		)
@@ -160,7 +160,7 @@ fn register_only_the_player_s_class_is_kept_so_a_character_does_not_hold_every_c
 	let kept = r#"
 local o = {}
 for _, cls in ipairs({ ${classes} }) do
-	if Polestar.Talents.Data(cls) then o[#o + 1] = cls end
+	if Northstar.Talents.Data(cls) then o[#o + 1] = cls end
 end
 emit(o)"#
 		.replace("${classes}", &classes);
@@ -171,7 +171,7 @@ emit(o)"#
 	let all = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_talents.lua"],
 		before: "stub.talents.class = nil".into(),
-		addons: vec![Addon::files("Polestar", CORE)],
+		addons: vec![Addon::files("Northstar", CORE)],
 		script: kept.clone(),
 		..Default::default()
 	});
@@ -402,7 +402,7 @@ emit({ flag = m and m:IsShown() and m.Flag:IsShown() or false })"#,
 }
 
 // The gamepad interface hooks CreateFrame and, for a parent inside the open talent frame, rebuilds its buttons
-// in the caller's code: from Polestar's, the talent frame's next gamepad action is blocked. wow_stub.lua's
+// in the caller's code: from Northstar's, the talent frame's next gamepad action is blocked. wow_stub.lua's
 // CreateFrame lists those calls in stub.underGameFrames.
 #[test]
 fn overlay_a_mark_and_its_ring_and_badge_are_made_with_no_parent_then_set_under_the_talent_button_so_the_gamepad_interface_never_rebuilds_the_talent_frame_s_buttons_in_polestar_s_code() {
@@ -432,7 +432,7 @@ local nxt = markOf(s.next.node)
 local later
 for _, p in ipairs(b.picks) do if p.order > s.next.order and s.nodeNext[p.node] == p then later = p break end end
 local badges, muted = {}, 0
-local mr, mg, mb = Polestar.Theme.Color("textMuted")
+local mr, mg, mb = Northstar.Theme.Color("textMuted")
 for id, m in pairs(O.marks) do
 	if m:IsShown() and m.Badge:IsShown() then
 		badges[#badges + 1] = m.Badge.Text:GetText()
@@ -449,7 +449,7 @@ local other = TS.button(later.node)
 GameTooltip:SetOwner(other, "ANCHOR_RIGHT")
 stub.RunScript(other, "OnEnter")
 emit({ lines = GameTooltip.lines, order = later.order })
-Polestar.Set("talents.tooltip", false)
+Northstar.Set("talents.tooltip", false)
 GameTooltip:SetOwner(btn, "ANCHOR_RIGHT")
 stub.RunScript(btn, "OnEnter")
 emit(#GameTooltip.lines)"#,
@@ -460,10 +460,10 @@ emit(#GameTooltip.lines)"#,
 	}
 	assert_eq!(outs[0]["muted"], 0, "no badge muted as \"past the cap\"");
 	assert_eq!(outs[1].as_array().unwrap().len(), 1);
-	assert!(is_match(outs[1][0].as_str().unwrap(), r"^Polestar: pick #22, rank \d/\d \(Retribution plan\)  next$"));
+	assert!(is_match(outs[1][0].as_str().unwrap(), r"^Northstar: pick #22, rank \d/\d \(Retribution plan\)  next$"));
 	let line = outs[2]["lines"][0].as_str().unwrap();
 	assert!(!is_match(line, r"(?i)level|cap"), "no level or cap wording");
-	assert!(is_match(line, &format!(r"^Polestar: pick #{}, rank \d/\d \(Retribution plan\)$", outs[2]["order"])));
+	assert!(is_match(line, &format!(r"^Northstar: pick #{}, rank \d/\d \(Retribution plan\)$", outs[2]["order"])));
 	assert_eq!(outs[3], 0);
 }
 
@@ -543,7 +543,7 @@ stub.fire("PLAYER_LEVEL_UP", 30)
 stub.advance(2)
 emit(#stub.messages)
 TS.currency = { quantity = 1, spent = 21 }
-Polestar.Set("talents.reminder", false)
+Northstar.Set("talents.reminder", false)
 stub.messages = {}
 stub.fire("PLAYER_LEVEL_UP", 30)
 stub.advance(2)
@@ -567,7 +567,7 @@ local b = plan("retribution")
 TS.learn(b, 20)
 uistub = uistub
 stub.login()
-local TV = Polestar.UI.TalentsSection
+local TV = Northstar.UI.TalentsSection
 TV.Show()
 local s = TV.Shown()
 local approx, exact = 0, 0
@@ -612,7 +612,7 @@ fn view_every_spec_tab_shows_the_client_s_talent_names_not_only_the_followed_pla
 for id, n in pairs(TS.nodes) do n.name = "es:" .. n.name end
 TS.learn(plan("retribution"), 20)
 stub.login()
-local TV = Polestar.UI.TalentsSection
+local TV = Northstar.UI.TalentsSection
 TV.Show()
 local function english()
 	local n = 0
@@ -637,9 +637,9 @@ fn view_another_class_sees_why_there_is_no_plan() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_talents.lua", "stub_ui.lua"],
 		before: r#"stub.talents.class, stub.talents.className = "DEATHKNIGHT", "Death Knight""#.into(),
-		addons: vec![Addon::files("Polestar", WITH_UI)],
+		addons: vec![Addon::files("Northstar", WITH_UI)],
 		login: true,
-		script: "Polestar.Talents.SOON = false; Polestar.Talents.Refresh(); Polestar.UI.TalentsSection.Show(); emit(Polestar.UI.TalentsSection.Shown().empty)".into(),
+		script: "Northstar.Talents.SOON = false; Northstar.Talents.Refresh(); Northstar.UI.TalentsSection.Show(); emit(Northstar.UI.TalentsSection.Shown().empty)".into(),
 		..Default::default()
 	});
 	assert_eq!(out[0], "class");
@@ -651,9 +651,9 @@ fn view_another_class_sees_why_there_is_no_plan() {
 fn what_players_get_while_talents_are_coming_soon() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_talents.lua", "stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", WITH_UI)],
+		addons: vec![Addon::files("Northstar", WITH_UI)],
 		script: r#"
-local T, TS = Polestar.Talents, stub.talents
+local T, TS = Northstar.Talents, stub.talents
 local data = T.Data("PALADIN")
 TS.useSnapshot(data)
 TS.learn(T.BuildByKey(data, "retribution"), 10)
@@ -663,7 +663,7 @@ stub.messages = {}
 stub.fire("PLAYER_LEVEL_UP", 20)
 stub.advance(2)
 local c, reason = T.Current()
-local TV = Polestar.UI.TalentsSection
+local TV = Northstar.UI.TalentsSection
 TV.Show()
 local tabs = TV.Nav()
 emit({ soon = T.SOON, plan = c ~= nil, reason = reason, messages = #stub.messages, empty = TV.Shown().empty, tabs = #tabs })"#

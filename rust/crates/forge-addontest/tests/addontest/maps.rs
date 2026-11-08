@@ -1,4 +1,4 @@
-//! Maps module (addon/Polestar/Maps): travel pin layers built from the travel data, the flight timer (learning
+//! Maps module (addon/Northstar/Maps): travel pin layers built from the travel data, the flight timer (learning
 //! real durations, falling back to estimates), the instance tracker (hourly window, runs, lockouts) and its
 //! options. Runs Core, Theme, Nav and Maps against stub_world.lua + stub_maps.lua with the small travel world in
 //! stub.maps.travel.
@@ -9,12 +9,12 @@ use serde_json::{json, Value};
 const FILES: [&str; 4] = ["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml", "Maps/Maps.xml"];
 
 const PRELUDE: &str = r#"
-local M = Polestar.Maps
+local M = Northstar.Maps
 local m = stub.maps
 local w = stub.world
-Polestar.Nav.RegisterTravelData(m.travel, true)
+Northstar.Nav.RegisterTravelData(m.travel, true)
 local function known(...)
-	local flags = Polestar.CharState().flags
+	local flags = Northstar.CharState().flags
 	flags.taxi = {}
 	for _, id in ipairs({ ... }) do flags.taxi[id] = true end
 end
@@ -31,14 +31,14 @@ end
 "#;
 
 // travelPins: turn the travel icon layers on (they are off by default).
-const TRAVEL_PINS: &str = "PolestarDB = { schema = 1, settings = { maps = { taxiPins = true, dockPins = true, innPins = true } } }";
+const TRAVEL_PINS: &str = "NorthstarDB = { schema = 1, settings = { maps = { taxiPins = true, dockPins = true, innPins = true } } }";
 
 fn run_with(script: &str, faction: &str, travel_pins: bool) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_maps.lua"],
 		before: format!("stub.maps.useWorld(); stub.maps.place(0, 800); stub.world.faction = \"{faction}\""),
-		addons: vec![Addon::files("Polestar", &FILES)],
-		saved: if travel_pins { vec![("Polestar".into(), TRAVEL_PINS.into())] } else { vec![] },
+		addons: vec![Addon::files("Northstar", &FILES)],
+		saved: if travel_pins { vec![("Northstar".into(), TRAVEL_PINS.into())] } else { vec![] },
 		login: true,
 		script: format!("{PRELUDE}{script}"),
 	})
@@ -60,7 +60,7 @@ fn pin_layers_come_from_the_travel_data_own_faction_and_neutral_flight_masters_k
 		known(1)
 		w.bind("West Hold")
 		M.RefreshTravelPins()
-		local P = Polestar.Pins
+		local P = Northstar.Pins
 		local taxi = {}
 		for _, p in ipairs(P.GetLayer("maps.taxi")) do
 			taxi[#taxi + 1] = { id = p.nodeID, known = p.known, icon = p.icon, badge = p.badge or false, c = p.c, wx = p.wx, wy = p.wy }
@@ -69,8 +69,8 @@ fn pin_layers_come_from_the_travel_data_own_faction_and_neutral_flight_masters_k
 		for _, p in ipairs(P.GetLayer("maps.docks")) do docks[#docks + 1] = p.transport .. ">" .. p.dest end
 		local inns = {}
 		for _, p in ipairs(P.GetLayer("maps.inns")) do inns[#inns + 1] = { bound = p.bound, ring = p.ring ~= nil, glow = p.glow or false, icon = p.icon, size = p.size } end
-		local g = { Polestar.Theme.Color("success") }
-		local a = { Polestar.Theme.Color("warning") }
+		local g = { Northstar.Theme.Color("success") }
+		local a = { Northstar.Theme.Color("warning") }
 		local layer = P.GetLayer("maps.taxi")
 		emit({ taxi = taxi, docks = docks, inns = inns,
 			knownColor = layer[1].color[1] == g[1] and layer[1].color[2] == g[2],
@@ -106,7 +106,7 @@ fn tooltips_name_destinations_with_learned_or_estimated_flight_times_and_where_b
 		known(1, 3)
 		M.LearnFlight(1, 3, nil, nil, 41.4)
 		M.RefreshTravelPins()
-		local P = Polestar.Pins
+		local P = Northstar.Pins
 		local west = P.GetLayer("maps.taxi")[1]
 		local dock = P.GetLayer("maps.docks")[1]
 		local inn = P.GetLayer("maps.inns")[2]
@@ -135,16 +135,16 @@ fn the_horde_sees_its_own_and_neutral_nodes_settings_drop_and_restore_layers() {
 		r#"
 		known()
 		M.RefreshTravelPins()
-		local P = Polestar.Pins
+		local P = Northstar.Pins
 		local ids = {}
 		for _, p in ipairs(P.GetLayer("maps.taxi")) do ids[#ids + 1] = p.nodeID end
 		local docks = {}
 		for _, p in ipairs(P.GetLayer("maps.docks")) do docks[#docks + 1] = p.transport end
-		Polestar.Set("maps.taxiPins", false)
+		Northstar.Set("maps.taxiPins", false)
 		stub.runTimers()
 		local off = P.GetLayer("maps.taxi") == nil
-		Polestar.Set("maps.taxiPins", true)
-		Polestar.Set("maps.travelMinimap", true)
+		Northstar.Set("maps.taxiPins", true)
+		Northstar.Set("maps.travelMinimap", true)
 		stub.runTimers()
 		emit({ ids = ids, docks = docks, off = off, back = #P.GetLayer("maps.taxi") })"#,
 		"Horde",
@@ -162,10 +162,10 @@ fn discovering_a_flight_master_on_the_taxi_map_recolours_its_pin() {
 		r#"
 		known(1)
 		M.RefreshTravelPins()
-		local before = Polestar.Pins.GetLayer("maps.taxi")[3].known
+		local before = Northstar.Pins.GetLayer("maps.taxi")[3].known
 		m.openTaxi(3, { 1 })
 		stub.runTimers()
-		emit({ before = before, after = Polestar.Pins.GetLayer("maps.taxi")[3].known })"#,
+		emit({ before = before, after = Northstar.Pins.GetLayer("maps.taxi")[3].known })"#,
 		"Alliance",
 		true,
 	);
@@ -183,7 +183,7 @@ local function fly(from, slotTo, reach, wx, wy, seconds)
 	m.board()
 	stub.advance(0.5)
 	local dest, left, source = M.GetFlight()
-	local f = stub.frame("PolestarFlightTimer")
+	local f = stub.frame("NorthstarFlightTimer")
 	local shown = { dest = dest, left = left and math.floor(left + 0.5), source = source,
 		text = f and f.Time:GetText(), title = f and f.Dest:GetText(), visible = f and f:IsShown() }
 	stub.advance(seconds - 0.5)
@@ -203,7 +203,7 @@ fn the_flight_timer_estimates_an_unflown_route_then_learns_and_prefers_the_real_
 		r#"
 		known(1, 2, 3)
 		local first = fly(1, 2, { 3, 2 }, 600, 0, 40)      -- West Hold -> Mid Camp, 40 s
-		local learned = Polestar.CharState().flightTimes["1>3"]
+		local learned = Northstar.CharState().flightTimes["1>3"]
 		local second = fly(1, 2, { 3, 2 }, 600, 0, 40)
 		emit({ first = first, learned = learned, second = second })"#,
 	]
@@ -243,13 +243,13 @@ fn a_flight_that_does_not_end_at_its_destination_is_not_learned_the_timer_counts
 		r#"
 		known(1, 2, 3)
 		local f = fly(1, 2, { 3, 2 }, 0, -800, 50)        -- landed at East Hold instead
-		local times = Polestar.CharState().flightTimes or {}
+		local times = Northstar.CharState().flightTimes or {}
 		m.openTaxi(1, { 3 })
 		TakeTaxiNode(2)
 		m.board()
 		stub.advance(36)
-		local late = stub.frame("PolestarFlightTimer").Time:GetText()
-		local during = Polestar.CharState().flightNow
+		local late = stub.frame("NorthstarFlightTimer").Time:GetText()
+		local during = Northstar.CharState().flightNow
 		emit({ learned = times["1>3"] or false, late = late, during = during and during.to or false })"#,
 	]
 	.concat());
@@ -263,10 +263,10 @@ fn the_flight_timer_stays_out_of_the_way_when_disabled() {
 	let out = run(&[
 		FLY,
 		r#"
-		Polestar.Set("maps.flightTimer", false)
+		Northstar.Set("maps.flightTimer", false)
 		known(1, 3)
 		local f = fly(1, 1, { 3 }, 600, 0, 40)
-		emit({ visible = f.visible or false, learned = (Polestar.CharState().flightTimes or {})["1>3"] or false })"#,
+		emit({ visible = f.visible or false, learned = (Northstar.CharState().flightTimes or {})["1>3"] or false })"#,
 	]
 	.concat());
 	assert_eq!(out, json!({ "visible": false, "learned": false }));
@@ -323,9 +323,9 @@ fn entering_counts_once_per_instance_re_entering_continues_the_run_a_reset_start
 		steps[#steps + 1] = st()
 		m.jump(3600)
 		steps[#steps + 1] = st()
-		local runs = Polestar.CharState().instanceRuns
+		local runs = Northstar.CharState().instanceRuns
 		emit({ steps = steps, runs = #runs, firstTime = runs[1].time, firstReset = runs[1].reset or false,
-			entries = #PolestarDB.instances.entries, char = PolestarDB.instances.entries[1].char })"#);
+			entries = #NorthstarDB.instances.entries, char = NorthstarDB.instances.entries[1].char })"#);
 	assert_eq!(out["steps"][0], json!([1, 0]));
 	assert_eq!(out["steps"][1], json!([1, 0]), "going back into the same instance does not count");
 	assert_eq!(out["steps"][2], json!([2, 0]), "after a reset it is a new instance");
@@ -350,7 +350,7 @@ fn a_run_records_its_time_and_experience_across_a_level_up() {
 		local live = M.RunSeconds(M.GetInstanceStatus().run)
 		m.leave()
 		m.addXP(40)                 -- outside: not part of the run
-		local run = Polestar.CharState().instanceRuns[1]
+		local run = Northstar.CharState().instanceRuns[1]
 		emit({ xp = run.xp, time = run.time, live = live, level = run.level })"#);
 	assert_eq!(out, json!({ "xp": 170, "time": 900, "live": 900, "level": 20 }));
 }
@@ -368,7 +368,7 @@ fn a_different_instance_copy_seen_in_a_creature_guid_splits_a_resumed_run_and_co
 		w.units.target = "Creature-0-4372-34-200-1706-0000BBBB"
 		stub.fire("PLAYER_TARGET_CHANGED")      -- ...but it is another copy
 		local s = M.GetInstanceStatus()
-		local runs = Polestar.CharState().instanceRuns
+		local runs = Northstar.CharState().instanceRuns
 		emit({ inHour = s.inHour, runs = #runs, firstTime = runs[1].time, zones = { runs[1].zone, runs[2].zone } })"#);
 	assert_eq!(out, json!({ "inHour": 2, "runs": 2, "firstTime": 600, "zones": ["100", "200"] }));
 }
@@ -384,7 +384,7 @@ fn saved_raid_lockouts_count_down_and_the_slash_command_reports_everything() {
 		local locks = M.GetSavedLockouts()
 		m.enter("Ragefire Chasm", 389)
 		stub.messages = {}
-		SlashCmdList.POLESTAR("instances")
+		SlashCmdList.NORTHSTAR("instances")
 		stub.runTimers()
 		emit({ locks = locks, messages = stub.messages })"#);
 	assert_eq!(out["locks"].as_array().unwrap().len(), 1, "only locked instances");
@@ -401,17 +401,17 @@ fn saved_raid_lockouts_count_down_and_the_slash_command_reports_everything() {
 #[test]
 fn the_compact_tracker_is_off_until_a_player_turns_it_on_then_shows_while_it_matters_and_follows_its_settings() {
 	let out = run(r#"
-		local f = stub.frame("PolestarInstanceTracker")
+		local f = stub.frame("NorthstarInstanceTracker")
 		m.enter("Ragefire Chasm", 389)
 		local default = f:IsShown()
-		Polestar.Set("maps.instanceDisplay", true)
+		Northstar.Set("maps.instanceDisplay", true)
 		local inside = { shown = f:IsShown(), count = f.Count:GetText(), run = f.Run:GetText() }
 		m.leave()
 		local after = f:IsShown()
-		Polestar.Set("maps.instanceDisplay", false)
+		Northstar.Set("maps.instanceDisplay", false)
 		local off = f:IsShown()
-		Polestar.Set("maps.instanceDisplay", true)
-		Polestar.Set("maps.perHour", 1)
+		Northstar.Set("maps.instanceDisplay", true)
+		Northstar.Set("maps.perHour", 1)
 		local capped = f.Wait:GetText()
 		m.jump(3601)
 		stub.advance(1.1)
@@ -438,12 +438,12 @@ fn with_the_lock_on_only_a_shift_drag_moves_the_flight_timer_and_the_instance_tr
 			return started
 		end
 		local r = {}
-		for _, name in ipairs({ "PolestarFlightTimer", "PolestarInstanceTracker" }) do
+		for _, name in ipairs({ "NorthstarFlightTimer", "NorthstarInstanceTracker" }) do
 			local f = stub.frame(name)
-			Polestar.Set("ui.lockHud", false)
+			Northstar.Set("ui.lockHud", false)
 			stub.keys.shift = false
 			local unlocked = drag(f)
-			Polestar.Set("ui.lockHud", true)
+			Northstar.Set("ui.lockHud", true)
 			local locked = drag(f)
 			stub.keys.shift = true
 			r[name] = { unlocked, locked, drag(f), f:IsMouseEnabled() }
@@ -454,8 +454,8 @@ fn with_the_lock_on_only_a_shift_drag_moves_the_flight_timer_and_the_instance_tr
 	assert_eq!(
 		out,
 		json!({
-			"PolestarFlightTimer": [true, false, true, true],
-			"PolestarInstanceTracker": [true, false, true, true],
+			"NorthstarFlightTimer": [true, false, true, true],
+			"NorthstarInstanceTracker": [true, false, true, true],
 		}),
 		"unlocked: a plain drag; locked: only with Shift held"
 	);
@@ -468,18 +468,18 @@ fn with_the_lock_on_a_drag_that_does_not_move_the_flight_timer_or_the_instance_t
 		r#"
 		known(1, 3)
 		fly(1, 1, { 3 }, 600, 0, 40)
-		Polestar.Set("ui.lockHud", true)
+		Northstar.Set("ui.lockHud", true)
 		local r = {}
-		for name, key in pairs({ PolestarFlightTimer = "maps.timerPos", PolestarInstanceTracker = "maps.trackerPos" }) do
+		for name, key in pairs({ NorthstarFlightTimer = "maps.timerPos", NorthstarInstanceTracker = "maps.trackerPos" }) do
 			local f = stub.frame(name)
 			stub.keys.shift = false
 			stub.RunScript(f, "OnDragStart")
 			stub.RunScript(f, "OnDragStop")
-			local refused = Polestar.Get(key)
+			local refused = Northstar.Get(key)
 			stub.keys.shift = true
 			stub.RunScript(f, "OnDragStart")
 			stub.RunScript(f, "OnDragStop")
-			r[name] = { refused, type(Polestar.Get(key)) }
+			r[name] = { refused, type(Northstar.Get(key)) }
 		end
 		emit(r)"#,
 	]
@@ -487,8 +487,8 @@ fn with_the_lock_on_a_drag_that_does_not_move_the_flight_timer_or_the_instance_t
 	assert_eq!(
 		out,
 		json!({
-			"PolestarFlightTimer": [false, "table"],
-			"PolestarInstanceTracker": [false, "table"],
+			"NorthstarFlightTimer": [false, "table"],
+			"NorthstarInstanceTracker": [false, "table"],
 		}),
 		"a plain drag leaves the saved spot alone; a Shift-drag still saves it"
 	);
@@ -503,10 +503,10 @@ fn the_world_map_shows_zone_ranges_on_the_continent_the_hovered_zone_and_player_
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_maps.lua"],
 		before: "stub.maps.useWorld(); stub.maps.withMapCanvas(); stub.maps.place(0, 800); stub.world.level = 8".into(),
-		addons: vec![Addon::files("Polestar", &FILES)],
+		addons: vec![Addon::files("Northstar", &FILES)],
 		login: true,
 		script: r#"
-			local M, m = Polestar.Maps, stub.maps
+			local M, m = Northstar.Maps, stub.maps
 			M.RegisterZoneLevels({ [9000] = { 10, 20, 50, 50 } })
 			local function labels()
 				local out = {}
@@ -518,7 +518,7 @@ fn the_world_map_shows_zone_ranges_on_the_continent_the_hovered_zone_and_player_
 				end
 				return out
 			end
-			local bar = stub.frame("PolestarMapInfo")
+			local bar = stub.frame("NorthstarMapInfo")
 			m.showMap(9100)
 			m.cursor = { 0.4, 0.3 }
 			stub.advance(0.2)
@@ -530,8 +530,8 @@ fn the_world_map_shows_zone_ranges_on_the_continent_the_hovered_zone_and_player_
 			m.showMap(9000)
 			stub.advance(0.2)
 			local zone = { labels = #labels(), zone = bar.Zone:GetText(), coords = bar.Coords:GetText() }
-			Polestar.Set("maps.coords", false)
-			Polestar.Set("maps.zoneLevels", false)
+			Northstar.Set("maps.coords", false)
+			Northstar.Set("maps.zoneLevels", false)
 			emit({ continent = continent, zoomed = zoomed, zone = zone, hidden = not bar:IsShown() })"#
 			.into(),
 		..Default::default()
@@ -561,7 +561,7 @@ fn sorted_strings(v: &Value) -> Vec<String> {
 fn every_maps_setting_is_registered_with_a_label_and_help_map_features_on_the_map_page_flights_and_instances_under_quality_of_life() {
 	let out = run(r#"
 		local pages, missing = {}, {}
-		for _, spec in ipairs(Polestar.Widgets.OptionsRegistry) do
+		for _, spec in ipairs(Northstar.Widgets.OptionsRegistry) do
 			for _, c in ipairs(spec.controls) do
 				if c.key and c.key:find("^maps%.") then
 					if not (c.label and c.help) then missing[#missing + 1] = c.key end

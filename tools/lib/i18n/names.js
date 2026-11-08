@@ -1,10 +1,10 @@
 'use strict';
 // The game's names in each language, Names.lua in the language folders
-// addon/Polestar_<locale> (tools/lib/i18n/toc.js languageAddon), are built by
+// addon/Northstar_<locale> (tools/lib/i18n/toc.js languageAddon), are built by
 // `forge data names` (rust/crates/forge-data/src/names.rs; docs/ARCHITECTURE.md,
-// "Names"; the runtime side is addon/Polestar/Core/Names.lua). What stays here
+// "Names"; the runtime side is addon/Northstar/Core/Names.lua). What stays here
 // is what the JS tools still read: the file of the ids whose every
-// name is the English one (`i18n leaks`), and usedIds, the ids Polestar's data
+// name is the English one (`i18n leaks`), and usedIds, the ids Northstar's data
 // names (the compiled guides, the quest database, the Codex).
 
 const fs = require('node:fs');
@@ -15,8 +15,8 @@ const { ROOT, DATA } = require('../paths');
 const NAME_KINDS = ['quest', 'npc', 'object', 'item'];
 
 const DEFAULTS = {
-	guides: path.join(ROOT, 'addon', 'Polestar_Guides', 'Guides.lua'),
-	questdb: path.join(ROOT, 'addon', 'Polestar_QuestDB'),
+	guides: path.join(ROOT, 'addon', 'Northstar_Guides', 'Guides.lua'),
+	questdb: path.join(ROOT, 'addon', 'Northstar_QuestDB'),
 	codex: path.join(DATA, 'codex'),
 };
 
@@ -62,13 +62,13 @@ local function walk(t)
   add(from, t.fromId)
   add(from, t.fromAlsoId)
 end
-Polestar = { RegisterGuide = function(g) if type(g) == "table" then walk(g) end return true end }
+Northstar = { RegisterGuide = function(g) if type(g) == "table" then walk(g) end return true end }
 `;
 
 const QUESTDB_ADD = `
 __ids = { quest = {}, npc = {}, object = {}, item = {} }
 local KIND = { quests = "quest", npcs = "npc", objects = "object", items = "item" }
-Polestar = { QuestDB = { AddChunk = function(kind, lo, hi, text)
+Northstar = { QuestDB = { AddChunk = function(kind, lo, hi, text)
   local into = KIND[kind] and __ids[KIND[kind]]
   if into and type(text) == "string" then for id in text:gmatch("\\n(%-?%d+)\\t") do into[tonumber(id)] = true end end
 end } }
@@ -87,7 +87,7 @@ function usedIds({ guides = DEFAULTS.guides, questdb = DEFAULTS.questdb, codex =
 	if (!fs.existsSync(guides)) throw new Error(`no compiled guides at ${guides}: run forge guide compile, or pass --guides <Guides.lua>`);
 	const qFiles = QUESTDB_FILES.map((f) => path.join(questdb, f));
 	if (qFiles.some((f) => !fs.existsSync(f))) {
-		throw new Error(`the quest database is not built (no ${path.join(questdb, 'Quests.lua')}): run forge data questdb, or pass --questdb <Polestar_QuestDB folder>`);
+		throw new Error(`the quest database is not built (no ${path.join(questdb, 'Quests.lua')}): run forge data questdb, or pass --questdb <Northstar_QuestDB folder>`);
 	}
 	const cFiles = Object.fromEntries(Object.entries(CODEX_FILES).map(([k, f]) => [k, path.join(codex, f)]));
 	if (Object.values(cFiles).some((f) => !fs.existsSync(f))) {

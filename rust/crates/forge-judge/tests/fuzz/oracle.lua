@@ -1,11 +1,11 @@
 -- The addon's own guide checks as an oracle for tests/fuzz_guide.rs (lua5.1).
--- Loads addon/Polestar/Core/Guides.lua with a bare namespace, then reads Guides.lua chunks the Rust
+-- Loads addon/Northstar/Core/Guides.lua with a bare namespace, then reads Guides.lua chunks the Rust
 -- compiler emitted from stdin, each as "<byte length>\n<chunk>", and runs them the way the client does:
--- the chunk must load and run, and each Polestar.RegisterGuide(def) is checked by ns.Guides.OwnsId
+-- the chunk must load and run, and each Northstar.RegisterGuide(def) is checked by ns.Guides.OwnsId
 -- ("guides", the pack the harness compiles for) and ns.Guides.Validate; a deferred guide (race part)
 -- also has its stepsSrc loaded and its steps validated, as Guides.Steps does on first read.
 -- Answers one line per chunk: "ok <guides>" or "refuse <reason>".
---   lua5.1 oracle.lua <path to addon/Polestar/Core/Guides.lua>
+--   lua5.1 oracle.lua <path to addon/Northstar/Core/Guides.lua>
 
 local guidesFile = assert(arg[1], "usage: oracle.lua <Guides.lua>")
 local noop = function() end
@@ -18,7 +18,7 @@ local ns = {
 	Debug = noop,
 	GuideTexts = {},
 }
-assert(loadfile(guidesFile))("Polestar", ns)
+assert(loadfile(guidesFile))("Northstar", ns)
 local Guides = ns.Guides
 
 local function check(def)
@@ -42,7 +42,7 @@ end
 
 local function answer(chunk)
 	local defs = {}
-	Polestar = {
+	Northstar = {
 		RegisterGuide = function(def) defs[#defs + 1] = def; return true end,
 		PartWants = function() return true end,
 	}

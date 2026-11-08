@@ -9,7 +9,7 @@ use forge_addontest::{emitted, is_match, text, Addon, RunAddon, TEST_PACK, TEST_
 use serde_json::{json, Value};
 
 fn addon() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml"])
+	Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml"])
 }
 
 // What each client calls the places: AreaTable areas (Duskwood 10, Elwynn Forest 12, Darkshire 42, Goldshire
@@ -95,7 +95,7 @@ fn client(locale: &str) -> String {
 
 // As compile writes it for "Darkshire" (docs/GUIDE_FORMAT.md, "Places by ID").
 const DARKSHIRE: &str = r#"
-Polestar.RegisterGuide({ id = "test/darkshire", pack = "test", title = "Darkshire", faction = "Alliance", minLevel = 1, maxLevel = 60, steps = {
+Northstar.RegisterGuide({ id = "test/darkshire", pack = "test", title = "Darkshire", faction = "Alliance", minLevel = 1, maxLevel = 60, steps = {
 	{ goals = { { t = "sethome", npc = 6790, npcName = "Innkeeper Trelayne", location = "Darkshire", area = 42 } } },
 	{ goals = { { t = "getfp", npc = 2409, npcName = "Felicia Maline", location = "Darkshire", node = 12, area = 42 } } },
 	{ goals = { { t = "fly", location = "Stormwind City", area = 1519 } } },
@@ -105,7 +105,7 @@ Polestar.RegisterGuide({ id = "test/darkshire", pack = "test", title = "Darkshir
 "#;
 
 const PRE: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 stub.login()
 stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#;
@@ -128,7 +128,7 @@ fn run(locale: &str, opts: Run, script: &str) -> Value {
 		stubs: vec!["stub_world.lua"],
 		before: client(locale) + opts.before,
 		addons: vec![addon()],
-		saved: vec![("Polestar".into(), format!("PolestarCharDB = {{ schema = 1, guide = \"{}\", flags = {{ {} }} }}", opts.id, opts.flags))],
+		saved: vec![("Northstar".into(), format!("NorthstarCharDB = {{ schema = 1, guide = \"{}\", flags = {{ {} }} }}", opts.id, opts.flags))],
 		script: [TEST_PACK, TEST_SOURCE, &(opts.guide.to_string() + PRE), script].join("\n"),
 		..Default::default()
 	})
@@ -146,7 +146,7 @@ const WALK: &str = r#"
 	openTaxi(2409, { 12, 2 }); closeTaxi(); flush(); trail[#trail + 1] = E.GetStepIndex()
 	w.setZone(AREAS[1519], TRADE); flush(); trail[#trail + 1] = E.GetStepIndex()
 	w.setZone(AREAS[10], AREAS[42]); flush(); trail[#trail + 1] = E.GetStepIndex()
-	local f = PolestarCharDB.flags
+	local f = NorthstarCharDB.flags
 	emit({ texts = texts, trail = trail, inn = f.inn, node12 = f.taxi and f.taxi[12] or false })
 "#;
 
@@ -178,12 +178,12 @@ fn the_same_guide_on_an_english_client_completes_as_before_with_or_without_c_map
 #[test]
 fn t_83_bound_at_darkshire_before_the_step_a_french_client_passes_the_sethome_whether_or_not_polestar_saw_the_bind() {
 	let script = r#"
-		local inn = Polestar.Nav.BoundInn()
+		local inn = Northstar.Nav.BoundInn()
 		emit({ step = E.GetStepIndex(), bound = inn and inn.npc or false })"#;
-	// Polestar saw the bind: Travel learned the innkeeper then (flags.inn).
+	// Northstar saw the bind: Travel learned the innkeeper then (flags.inn).
 	let learned = run("frFR", Run { before: "w.bindLocation = AREAS[42]", flags: r#"inn = { ["sombre-comté"] = 6790 }"#, ..Default::default() }, script);
 	assert_eq!(learned, json!({ "step": 2, "bound": 6790 }));
-	// Bound before Polestar was installed: the inn whose area the client names so.
+	// Bound before Northstar was installed: the inn whose area the client names so.
 	let unseen = run("frFR", Run { before: "w.bindLocation = AREAS[42]", ..Default::default() }, script);
 	assert_eq!(unseen, json!({ "step": 2, "bound": 6790 }));
 	// A bind Travel paired with the wrong innkeeper (bound away from it, as a simulated bind is): the bind
@@ -216,7 +216,7 @@ fn bound_at_another_inn_or_at_a_flight_master_where_darkshire_is_not_yet_known_t
 #[test]
 fn a_goal_the_compiler_left_without_an_id_keeps_matching_by_its_english_name_sethome_by_its_inn_hearth_and_getfp_by_name() {
 	const GUIDE: &str = r#"
-Polestar.RegisterGuide({ id = "test/names", pack = "test", title = "Names", faction = "Alliance", minLevel = 1, maxLevel = 60, steps = {
+Northstar.RegisterGuide({ id = "test/names", pack = "test", title = "Names", faction = "Alliance", minLevel = 1, maxLevel = 60, steps = {
 	{ goals = { { t = "sethome", location = "Darkshire" } } },
 	{ goals = { { t = "hearth", location = "Darkshire" }, { t = "note", text = "Back to the inn." } } }, -- a note keeps it a step (Own.hearthOnly)
 	{ goals = { { t = "getfp", location = "Darkshire" } } },
@@ -270,7 +270,7 @@ fn the_innkeeper_a_sethome_binds_at_its_npc_else_its_location_s_inn_s_innkeeper_
 // A goto labelled with a cave's subzone (compile gives it the area, #105) at the cave's mouth, then one
 // labelled with its zone; Durotar's frame as the client places it (data/forever/map-frames.json).
 const COVEN: &str = r#"
-Polestar.RegisterGuide({ id = "test/coven", pack = "test", title = "Coven", faction = "Alliance", minLevel = 1, maxLevel = 60, steps = {
+Northstar.RegisterGuide({ id = "test/coven", pack = "test", title = "Coven", faction = "Alliance", minLevel = 1, maxLevel = 60, steps = {
 	{ goals = { { t = "goto", text = "{area:365}", area = 365, map = 1411, x = 45, y = 56 } } },
 	{ goals = { { t = "goto", text = "{zone:1411}", area = 14, map = 1411, x = 52, y = 44 } } },
 	{ goals = { { t = "level", level = 60 } } },

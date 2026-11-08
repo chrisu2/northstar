@@ -5,7 +5,7 @@
 //! `compare --wago DIR` (a developer check, not in the help) exports every table a wago.tools
 //! build folder holds and compares the CSVs.
 //!
-//! Common options: `--wow DIR` (World of Warcraft folder; default `$POLESTAR_WOW_DIR` or the
+//! Common options: `--wow DIR` (World of Warcraft folder; default `$NORTHSTAR_WOW_DIR` or the
 //! detected install), `--product P` (default wow_classic_beta, the product wago.tools lists
 //! Forever under; `wowf` is the `_forever_` client), `--build auto|X.Y.Z.B` (the installed one;
 //! anything else must equal it), `--locale enUS`, `--defs DIR` (WoWDBDefs checkout; default
@@ -124,7 +124,7 @@ fn default_defs() -> Option<PathBuf> {
 }
 
 fn wow_dir(o: &Opts) -> Result<PathBuf, String> {
-	o.wow.clone().or_else(find_install).ok_or_else(|| "no World of Warcraft folder found; pass --wow or set POLESTAR_WOW_DIR".to_string())
+	o.wow.clone().or_else(find_install).ok_or_else(|| "no World of Warcraft folder found; pass --wow or set NORTHSTAR_WOW_DIR".to_string())
 }
 
 fn defs_dir(o: &Opts) -> Result<PathBuf, String> {

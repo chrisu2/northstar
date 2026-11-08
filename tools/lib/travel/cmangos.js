@@ -3,7 +3,7 @@
 // world database (GPL-3.0; https://github.com/cmangos/classic-db), pinned to
 // the commit Shortest Path Forever by Cillian Berragan reads (his
 // tools/gen_transit.py, GPL-3.0-or-later, adapted with permission):
-// Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15.
+// Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.
 //
 //   gameobject              where each lift car and tram train is spawned
 //                           (its TransportAnimation is relative to the spawn)

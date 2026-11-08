@@ -18,7 +18,7 @@ const LATER_ALPHA: f64 = 0.4;
 // unit world map at 1 px per unit over a map whose fraction is world yards / 1000 (fx = wy / 1000,
 // fy = wx / 1000).
 const STROKES_PRELUDE: &str = r#"
-local S = Polestar.RouteStrokes
+local S = Northstar.RouteStrokes
 local WALK, FLY, BOAT, TRAM = { 1, 1, 0 }, { 0, 1, 0 }, { 0, 0, 1 }, { 1, 0, 1 }
 local COLORS = { walk = WALK, flight = FLY, boat = BOAT, zeppelin = BOAT, tram = TRAM }
 local function view(extra)
@@ -49,7 +49,7 @@ end
 "#;
 
 fn strokes(script: &str) -> Value {
-	emitted(&RunAddon { addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Maps/RouteStrokes.lua"])], script: format!("{STROKES_PRELUDE}{script}"), ..Default::default() }).remove(0)
+	emitted(&RunAddon { addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Maps/RouteStrokes.lua"])], script: format!("{STROKES_PRELUDE}{script}"), ..Default::default() }).remove(0)
 }
 
 fn near(a: f64, b: f64) -> bool {
@@ -275,11 +275,11 @@ fn the_live_start_the_nearest_point_ahead_on_the_walk_progress_never_runs_back()
 // The painters with Nav: Core/Init.lua, Nav/Nav.xml and the route line files against tests/lua/stub_nav.lua
 // (map 9000: 2000 yd across, origin at its centre).
 fn lines() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml", "Maps/FlightPaths.lua", "Maps/RouteStrokes.lua", "Maps/RouteLines.lua"])
+	Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml", "Maps/FlightPaths.lua", "Maps/RouteStrokes.lua", "Maps/RouteLines.lua"])
 }
 
 const PAINTED_PRELUDE: &str = r#"
-local N, R, Pins, nav = Polestar.Nav, Polestar.RouteLines, Polestar.Pins, stub.nav
+local N, R, Pins, nav = Northstar.Nav, Northstar.RouteLines, Northstar.Pins, stub.nav
 local function target(wx, wy)
 	local m, x, y = nav.mapPoint(wx, wy)
 	N.SetTarget(m, x, y, "Target")
@@ -304,7 +304,7 @@ fn painted(script: &str) -> Value {
 fn the_painters_draw_the_route_on_the_world_map_and_the_minimap_and_stand_in_for_the_trail() {
 	let out = painted(
 		r#"
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		nav.viewRadius = 200
 		nav.place(0, 0)
 		target(0, -600)
@@ -317,11 +317,11 @@ fn the_painters_draw_the_route_on_the_world_map_and_the_minimap_and_stand_in_for
 		r.worldLines = shown(worldPin())
 		r.minimap = R.GetStrokes("minimap").n
 		r.paths = #R.GetPaths()
-		Polestar.Set("nav.routeLines", false)
+		Northstar.Set("nav.routeLines", false)
 		stub.advance(0.3)
 		r.offWorld = worldPin() == nil
 		r.offTrail = Pins.GetTrail() ~= nil
-		Polestar.Set("nav.routeLines", true)
+		Northstar.Set("nav.routeLines", true)
 		stub.advance(0.3)
 		r.backTrail = Pins.GetTrail() ~= nil
 		r.backWorld = shown(worldPin())
@@ -342,7 +342,7 @@ fn the_painters_draw_the_route_on_the_world_map_and_the_minimap_and_stand_in_for
 fn the_minimap_redraws_only_when_something_changed_and_its_line_pool_never_shrinks_or_passes_its_bound() {
 	let out = painted(
 		r#"
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		nav.viewRadius = 200
 		nav.place(0, 0)
 		target(0, -600)
@@ -364,15 +364,15 @@ fn the_minimap_redraws_only_when_something_changed_and_its_line_pool_never_shrin
 	assert!(f(&out["limit"]) <= 600.0);
 }
 
-// The lines are Polestar's own frame on the canvas (Nav/MapCanvas.lua): nothing is acquired from the map or
+// The lines are Northstar's own frame on the canvas (Nav/MapCanvas.lua): nothing is acquired from the map or
 // released to it, so combat changes nothing.
 #[test]
 fn nav_qa_c4_in_combat_the_world_map_lines_redraw_on_the_frame_in_hand_and_turn_off_at_once() {
 	let out = painted(
 		r#"
-		local C = Polestar.Compat
+		local C = Northstar.Compat
 		function C.InCombat() return stub.inCombat and true or false end
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		nav.place(0, 0)
 		target(0, -600)
 		nav.showWorldMap(9000)
@@ -382,7 +382,7 @@ fn nav_qa_c4_in_combat_the_world_map_lines_redraw_on_the_frame_in_hand_and_turn_
 		target(300, -600)
 		stub.advance(0.3)
 		local r = { samePin = worldPin() == pin, lines = shown(pin) }
-		Polestar.Set("nav.routeLines", false)
+		Northstar.Set("nav.routeLines", false)
 		r.offInCombat = worldPin() == nil
 		stub.inCombat = false
 		emit(r)"#,
@@ -396,11 +396,11 @@ fn nav_qa_c4_in_combat_the_world_map_lines_redraw_on_the_frame_in_hand_and_turn_
 fn nav_qa_c5_a_secret_position_or_facing_hides_the_minimap_line_with_no_error() {
 	let out = painted(
 		r#"
-		local C = Polestar.Compat
+		local C = Northstar.Compat
 		-- The client's secret values cannot be faked in plain Lua: this facing reads as secret.
 		local SECRET = 1.2345
 		function C.IsSecret(v) return v == SECRET end
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		nav.viewRadius = 200
 		nav.place(0, 0)
 		target(0, -600)
@@ -425,7 +425,7 @@ fn nav_qa_c5_a_secret_position_or_facing_hides_the_minimap_line_with_no_error() 
 fn nav_qa_c12_a_pooled_line_swapping_between_dot_and_stroke_starts_from_the_whole_texture() {
 	let out = painted(
 		r#"
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		nav.viewRadius = 200
 		nav.place(0, 0)
 		target(0, -600)
@@ -438,7 +438,7 @@ fn nav_qa_c12_a_pooled_line_swapping_between_dot_and_stroke_starts_from_the_whol
 		local geom = { legs = { { kind = "tram", pts = { { 0, 0, 0 }, { 0, 0, -600 } }, current = true } } }
 		local real = N.GetRouteGeometry
 		N.GetRouteGeometry = function() return geom end
-		Polestar.Fire("NAV_ROUTE_GEOMETRY")
+		Northstar.Fire("NAV_ROUTE_GEOMETRY")
 		N.GetRouteGeometry = real
 		emit({ coords = line.texCoord, dot = pin.dots[1] })"#,
 	);
@@ -522,8 +522,8 @@ fn review_p3_8_blizzard_worldmap_loading_after_login_draws_the_route_lines_on_th
 		addons: vec![lines()],
 		login: true,
 		script: r#"
-local N, R, nav = Polestar.Nav, Polestar.RouteLines, stub.nav
-Polestar.Set("nav.travel", false)
+local N, R, nav = Northstar.Nav, Northstar.RouteLines, stub.nav
+Northstar.Set("nav.travel", false)
 nav.place(0, 0)
 local m, x, y = nav.mapPoint(0, -600)
 N.SetTarget(m, x, y, "Target")
@@ -548,8 +548,8 @@ emit({ before = before == nil, shown = f ~= nil and f:IsShown(), strokes = R.Get
 fn review_p3_9_the_world_map_walk_starts_at_the_player_with_the_minimap_line_off() {
 	let out = painted(
 		r#"
-		Polestar.Set("nav.travel", false)
-		Polestar.Set("nav.minimapPins", false)
+		Northstar.Set("nav.travel", false)
+		Northstar.Set("nav.minimapPins", false)
 		nav.place(0, 0)
 		target(0, -600)
 		nav.showWorldMap(9000)
@@ -577,13 +577,13 @@ fn review_p3_9_the_world_map_walk_starts_at_the_player_with_the_minimap_line_off
 fn beside_the_walk_with_the_arrow_aiming_ahead_in_sight_the_line_runs_from_the_player_to_that_point() {
 	let out = painted(
 		r#"
-		Polestar.Set("nav.travel", false)
-		Polestar.Set("nav.minimapPins", false)
+		Northstar.Set("nav.travel", false)
+		Northstar.Set("nav.minimapPins", false)
 		nav.place(50, -100)
 		target(0, -400)
 		local geom = { legs = { { kind = "walk", pts = { { 0, 0, 0 }, { 0, 0, -200 }, { 0, 0, -400 } }, current = true } } }
 		N.GetRouteGeometry = function() return geom end
-		Polestar.Fire("NAV_ROUTE_GEOMETRY")
+		Northstar.Fire("NAV_ROUTE_GEOMETRY")
 		nav.showWorldMap(9000)
 		stub.advance(0.3)
 		local _, px, py = nav.mapPoint(0, -200) -- percent of the map; the canvas is 1000 px, strokes run down from 0
@@ -603,7 +603,7 @@ fn beside_the_walk_with_the_arrow_aiming_ahead_in_sight_the_line_runs_from_the_p
 		local plain = nearest()
 		N.walk.SightAim = function() return 0, 0, -400 end
 		nav.place(50, -101)
-		Polestar.Fire("NAV_ROUTE_GEOMETRY")
+		Northstar.Fire("NAV_ROUTE_GEOMETRY")
 		stub.advance(0.3)
 		emit({ plain = plain, sighted = nearest(), n = R.GetStrokes("world").n })"#,
 	);
@@ -631,7 +631,7 @@ fn review_p3_9_active_counts_only_legs_that_draw_no_one_point_jump_only_or_zero_
 				{ kind = "walk", pts = { { 0, 300, 300 }, { 0, 300, 0 } } } } },
 		}) do
 			geom = { legs = case[2] }
-			Polestar.Fire("NAV_ROUTE_GEOMETRY")
+			Northstar.Fire("NAV_ROUTE_GEOMETRY")
 			r[case[1]] = { active = R.Active(), trail = Pins.GetTrail() ~= nil }
 		end
 		emit(r)"#,
@@ -648,18 +648,18 @@ fn review_p3_9_active_counts_only_legs_that_draw_no_one_point_jump_only_or_zero_
 fn review_p3_9_a_theme_change_re_applies_the_outline_colour_to_pooled_lines() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Theme/Theme.xml", "Nav/Nav.xml", "Maps/FlightPaths.lua", "Maps/RouteStrokes.lua", "Maps/RouteLines.lua"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Theme/Theme.xml", "Nav/Nav.xml", "Maps/FlightPaths.lua", "Maps/RouteStrokes.lua", "Maps/RouteLines.lua"])],
 		login: true,
 		script: r#"
-local N, nav, T = Polestar.Nav, stub.nav, Polestar.Theme
+local N, nav, T = Northstar.Nav, stub.nav, Northstar.Theme
 WorldMapFrame:GetCanvas():SetSize(1000, 1000)
-Polestar.Set("nav.travel", false)
+Northstar.Set("nav.travel", false)
 nav.place(0, 0)
 local m, x, y = nav.mapPoint(0, -600)
 N.SetTarget(m, x, y, "Target")
 nav.showWorldMap(9000)
 stub.advance(0.3)
-local pin = Polestar.RouteLines.GetWorldFrame()
+local pin = Northstar.RouteLines.GetWorldFrame()
 local outline = pin.outlines[1]
 outline:SetVertexColor(1, 0, 0) -- stale
 T.Refresh()
@@ -675,13 +675,13 @@ emit({ got = { r, g, b }, want = { sr, sg, sb } })"#
 
 #[test]
 fn the_committed_flightpaths_lua_holds_the_real_network_s_tracks_not_a_test_fixture_s() {
-	let file = addons_dir().join("Polestar").join("Maps").join("FlightPaths.lua");
+	let file = addons_dir().join("Northstar").join("Maps").join("FlightPaths.lua");
 	let file = serde_json::to_string(file.to_str().unwrap()).unwrap();
 	let script = String::from("\n\t\tlocal f = assert(loadfile(")
 		+ &file
 		+ r#"))
 		local ns = {}
-		f("Polestar", ns)
+		f("Northstar", ns)
 		local pairs_, from = 0, 0
 		for _, to in pairs(ns.FlightTracks) do
 			from = from + 1

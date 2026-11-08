@@ -1,4 +1,4 @@
-//! The built Codex pack (addon/Polestar_Codex, local: `forge data codex`) end to end:
+//! The built Codex pack (addon/Northstar_Codex, local: `forge data codex`) end to end:
 //! searching a mount's name finds it, it has ranked sources, the curated guide that collects it is the one
 //! Lookup opens, and the guide Lookup builds from its best source plays to the end in the real engine
 //! (tools/lib/playtest.js). Skips when the pack has not been built.
@@ -10,11 +10,11 @@ use serde_json::{json, Value};
 use std::path::PathBuf;
 
 fn pack_dir() -> PathBuf {
-	addons_dir().join("Polestar_Codex")
+	addons_dir().join("Northstar_Codex")
 }
 
 fn toc() -> PathBuf {
-	pack_dir().join("Polestar_Codex.toc")
+	pack_dir().join("Northstar_Codex.toc")
 }
 
 fn frames() -> PathBuf {
@@ -39,7 +39,7 @@ fn pack_lua() -> String {
 		"do
   local __files, __load = {list}, C_AddOns.LoadAddOn
   function C_AddOns.LoadAddOn(name)
-    if name ~= \"Polestar_Codex\" then return __load(name) end
+    if name ~= \"Northstar_Codex\" then return __load(name) end
     if not stub.addonsLoaded[name] then
       for _, f in ipairs(__files) do dofile(f) end
       stub.addonsLoaded[name] = true
@@ -118,12 +118,12 @@ fn nums(v: &Value) -> Vec<i64> {
 
 const LOOKUP: &str = r#"
 stub.login()
-local results = Polestar.Search.Query(@QUERY@)
+local results = Northstar.Search.Query(@QUERY@)
 local hit
 for _, r in ipairs(results) do
 	if r.kind == @KIND@ then hit = r; break end
 end
-local rows = hit and Polestar.Lookup.Sources(hit.kind, hit.id) or {}
+local rows = hit and Northstar.Lookup.Sources(hit.kind, hit.id) or {}
 local types = {}
 for i, r in ipairs(rows) do types[i] = r.type .. (r.available and "" or ("!" .. tostring(r.why))) end
 local mounts = {}
@@ -131,11 +131,11 @@ for _, r in ipairs(results) do
 	if r.kind == "mount" then mounts[#mounts + 1] = { id = r.id, status = r.status or false, curated = r.curated or false } end
 end
 emit({ id = hit and hit.id or false, title = hit and hit.title or false, kinds = #results, types = types, mounts = mounts,
-	curated = hit and Polestar.Lookup.CuratedGuide(hit.kind, hit.id) or false })
+	curated = hit and Northstar.Lookup.CuratedGuide(hit.kind, hit.id) or false })
 local best
 for i, r in ipairs(rows) do if r.available and r.guideable then best = i; break end end
-local gid, why = Polestar.Lookup.Guide(hit.kind, hit.id, best or 1)
-local g = gid and Polestar.Guides.Get(gid)
+local gid, why = Northstar.Lookup.Guide(hit.kind, hit.id, best or 1)
+local g = gid and Northstar.Guides.Get(gid)
 emit({ id = gid or false, why = why or false, steps = g and #g.steps or 0 })
 stub.advance(0.6)
 @SIMULATE@"#;
@@ -145,8 +145,8 @@ fn look_up(query: &str, kind_of: &str, race: &str, faction: &str, cls: &str, lev
 	let mut out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: before(&lv(race), &lv(cls), &lv(faction), level, at),
-		// The pack and the player's faction's part (Polestar loads it on demand in game).
-		addons: vec!["Polestar".into(), "Polestar_Guides".into(), Addon::name(&format!("Polestar_Guides_{faction}"))],
+		// The pack and the player's faction's part (Northstar loads it on demand in game).
+		addons: vec!["Northstar".into(), "Northstar_Guides".into(), Addon::name(&format!("Northstar_Guides_{faction}"))],
 		script: LOOKUP.replace("@QUERY@", &lv(query)).replace("@KIND@", &lv(kind_of)).replace("@SIMULATE@", SIMULATE),
 		..Default::default()
 	});
@@ -217,13 +217,13 @@ fn release_refusal(dir: &std::path::Path) -> Option<String> {
 
 const CODEX_SCRIPT: &str = r#"
 stub.login()
-local C = Polestar.Codex
+local C = Northstar.Codex
 local loaded = C.Load()
 local function first(q, kind)
-	for _, r in ipairs(Polestar.Search.Query(q)) do if r.kind == kind then return r.id end end
+	for _, r in ipairs(Northstar.Search.Query(q)) do if r.kind == kind then return r.id end end
 	return false
 end
-local D = Polestar.Dungeons
+local D = Northstar.Dungeons
 D.Load()
 local list, bossed, quested = 0, 0, 0
 for _, d in ipairs(D.List()) do
@@ -248,7 +248,7 @@ fn the_built_codex_is_release_safe_and_in_game_lookup_finds_items_mounts_and_npc
 		return;
 	}
 	assert_eq!(release_refusal(&pack_dir()), None, "pack would ship it");
-	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: pack_lua(), addons: vec!["Polestar".into()], script: CODEX_SCRIPT.into(), ..Default::default() }).remove(0);
+	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: pack_lua(), addons: vec!["Northstar".into()], script: CODEX_SCRIPT.into(), ..Default::default() }).remove(0);
 	assert_eq!(out["loaded"], true);
 	assert_eq!(out["item"], 2589);
 	assert_eq!(out["mount"], 13335);
@@ -266,7 +266,7 @@ fn the_built_codex_is_release_safe_and_in_game_lookup_finds_items_mounts_and_npc
 
 const KP_SCRIPT: &str = r#"
 stub.login()
-local D = Polestar.Dungeons
+local D = Northstar.Dungeons
 D.Load()
 local plan = D.PickupPlan("deadmines")
 local take = {}
@@ -285,7 +285,7 @@ fn kp_s_report_the_deadmines_pick_up_guide_of_a_level_21_gnome_rogue_in_lakeshir
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: before("\"Gnome\"", "\"ROGUE\"", "\"Alliance\"", 21, &[1433.0, 26.5, 45.0]),
-		addons: vec!["Polestar".into()],
+		addons: vec!["Northstar".into()],
 		script: KP_SCRIPT.into(),
 		..Default::default()
 	})
@@ -312,20 +312,20 @@ fn kp_s_report_the_deadmines_pick_up_guide_of_a_level_21_gnome_rogue_in_lakeshir
 
 const TABETHA: &str = r#"
 stub.login()
-local D = Polestar.Dungeons
+local D = Northstar.Dungeons
 D.Load()
 local giver
 for _, t in ipairs(D.PickupPlan("zulfarrak").take) do
 	if t.quest.id == 2861 then giver = t.giver end
 end
 local target = D.GiverTarget("zulfarrak", 2861)
-local npc = giver and Polestar.Codex.Npc(giver.id)
+local npc = giver and Northstar.Codex.Npc(giver.id)
 emit({ giver = giver and giver.name or false, map = giver and giver.map or false, side = npc and npc.faction or false, target = target and target.name or false })"#;
 
 // Tabetha's Task (2861) for Zul'Farrak: the mage trainers of both sides give it; the page names the first,
 // Anastasia Hartwell in the Undercity.
 fn tabetha(race: &str, faction: &str, at: &[f64]) -> Value {
-	emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: before(&lv(race), "\"MAGE\"", &lv(faction), 44, at), addons: vec!["Polestar".into()], script: TABETHA.into(), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: before(&lv(race), "\"MAGE\"", &lv(faction), 44, at), addons: vec!["Northstar".into()], script: TABETHA.into(), ..Default::default() })
 		.remove(0)
 }
 
@@ -333,7 +333,7 @@ const NEARBY_VENDORS: &str = r#"
 stub.login()
 local out = {}
 for _, key in ipairs({ "food", "general", "arrows", "bullets", "ranged" }) do
-	local place, why = Polestar.Nav.nearby.Find(key)
+	local place, why = Northstar.Nav.nearby.Find(key)
 	out[key] = place and { name = place.name, map = place.map } or { why = why or false }
 end
 emit(out)"#;
@@ -348,7 +348,7 @@ fn nearby_services_finds_a_food_general_goods_arrow_bullet_and_bow_vendor_near_g
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: before("\"Human\"", "\"HUNTER\"", "\"Alliance\"", 12, &[1429.0, 42.0, 65.0]),
-		addons: vec!["Polestar".into()],
+		addons: vec!["Northstar".into()],
 		script: NEARBY_VENDORS.into(),
 		..Default::default()
 	})
@@ -375,7 +375,7 @@ fn tabetha_s_task_a_level_44_alliance_mage_in_stormwind_is_sent_to_an_alliance_m
 
 const ATTUNE: &str = r#"
 stub.login()
-local D = Polestar.Dungeons
+local D = Northstar.Dungeons
 D.Load()
 local a
 for _, x in ipairs(D.Attunements(@KEY@)) do if x.id == @ID@ then a = x end end
@@ -395,7 +395,7 @@ emit({ quests = quests, accepts = accepts, bare = table.concat(bare, ", "), why 
 if def then
 	D.Attune(@KEY@, @ID@)
 	stub.advance(0.6)
-	SIM_GUIDE = Polestar.Engine.GetGuide()
+	SIM_GUIDE = Northstar.Engine.GetGuide()
 	@SCRIPT@
 end"#;
 
@@ -412,7 +412,7 @@ fn attune_guide(r: &str, who: &Who, level: u32, script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: before(&lv(who.race), "\"WARRIOR\"", &lv(who.faction), level, &who.at),
-		addons: vec!["Polestar".into()],
+		addons: vec!["Northstar".into()],
 		script: ATTUNE.replace("@KEY@", &lv(key)).replace("@ID@", &lv(id)).replace("@SCRIPT@", script),
 		..Default::default()
 	})
@@ -457,7 +457,7 @@ fn every_attunement_and_key_the_guide_has_a_step_per_quest_still_to_do_none_a_ba
 }
 
 const MC_VIEW: &str = r#"
-local E = Polestar.Engine
+local E = Northstar.Engine
 local v = E.GetStepView(1)
 local goals = {}
 for i, g in ipairs(v.goals) do goals[i] = { t = g.t, text = g.text, detail = g.detail or false, at = g.map and { g.map, g.x, g.y } or false } end
@@ -484,7 +484,7 @@ fn the_maintainer_s_level_20_undead_in_the_undercity_molten_core_s_guide_sends_h
 
 const DUNGEON_QUESTS: &str = r#"
 stub.login()
-local D = Polestar.Dungeons
+local D = Northstar.Dungeons
 D.Load()
 local ids = function(list, f) local o = {} for i, x in ipairs(list or {}) do o[i] = f(x) end return o end
 local plan = D.PickupPlan(@KEY@)
@@ -515,7 +515,7 @@ fn dungeon_quests(key: &str, who: &Dq) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: before(&lv(who.race), &lv(who.cls), &lv(who.faction), who.level, &who.at) + "\nfor _, q in ipairs(" + &lua_value(&json!(who.ready)) + ") do w.onQuest(q, {}) end",
-		addons: vec!["Polestar".into()],
+		addons: vec!["Northstar".into()],
 		script: DUNGEON_QUESTS.replace("@KEY@", &lv(key)),
 		..Default::default()
 	})

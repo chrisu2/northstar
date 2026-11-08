@@ -1,4 +1,4 @@
-//! The Dungeons section of the hub (addon/Polestar/UI/Dungeons.lua) over the real Dungeons runtime and the
+//! The Dungeons section of the hub (addon/Northstar/UI/Dungeons.lua) over the real Dungeons runtime and the
 //! synthetic Codex pack of tests/fixtures/codex/dungeons.json (Wailing Caverns with its quests and bosses, the
 //! Deadmines, a Forever dungeon with nothing known), against the fake Engine of tests/lua/stub_ui.lua. The
 //! character: a level 20 Tauren.
@@ -73,13 +73,13 @@ fn pack() -> CodexPack {
 const SETUP: &str = r#"uistub.player.level, uistub.player.race, uistub.player.class, uistub.player.faction = 20, "Tauren", "DRUID", "Horde"
 OpenWorldMap = function(map) uistub.worldMap = map end
 local done, log = { [1490] = true }, { [914] = true }
-Polestar.Compat.IsQuestCompleted = function(id) return done[id] or false end
-Polestar.Compat.IsOnQuest = function(id) return log[id] or false end
-Polestar.Compat.IsQuestReadyForTurnIn = function() return false end
-local DS, P = Polestar.UI.DungeonsSection, Polestar.UI.Picker
+Northstar.Compat.IsQuestCompleted = function(id) return done[id] or false end
+Northstar.Compat.IsOnQuest = function(id) return log[id] or false end
+Northstar.Compat.IsQuestReadyForTurnIn = function() return false end
+local DS, P = Northstar.UI.DungeonsSection, Northstar.UI.Picker
 local function navs()
 	local out = {}
-	for _, b in ipairs(PolestarPicker.navButtons) do
+	for _, b in ipairs(NorthstarPicker.navButtons) do
 		if b:IsShown() then out[#out + 1] = { b.psKey, b.Label:GetText(), b.Count:IsShown() and b.Count:GetText() or "" } end
 	end
 	return out
@@ -91,7 +91,7 @@ local function cardNames()
 end
 local function tabs()
 	local out = {}
-	for _, t in ipairs(PolestarPicker.tabButtons) do if t:IsShown() then out[#out + 1] = t.Label:GetText() end end
+	for _, t in ipairs(NorthstarPicker.tabButtons) do if t:IsShown() then out[#out + 1] = t.Label:GetText() end end
 	return out
 end
 local function segs()
@@ -129,7 +129,7 @@ fn run_with(script: &str, with_pack: bool) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: pack.as_ref().map(|p| p.stub_lua.clone()).unwrap_or_default(),
-		addons: vec![Addon::files("Polestar", &FILES)],
+		addons: vec![Addon::files("Northstar", &FILES)],
 		script: format!("uistub.install()\nstub.login()\n{SETUP}\n{script}"),
 		..Default::default()
 	})
@@ -146,9 +146,9 @@ fn strs(v: &Value) -> Vec<String> {
 #[test]
 fn show_dungeon_nil_opens_the_hub_at_home_level_bands_in_the_sidebar_the_dungeons_for_your_level_as_cards_the_faction_filter_yours_first() {
 	let out = run(r#"
-		Polestar.Dungeons.Open()
-		emit({ section = P.Section(), navs = navs(), cards = cardNames(), segs = segs(), title = PolestarPicker.Title:GetText(),
-			sub = PolestarPicker.Subtitle:GetText(), tabRow = PolestarPicker.TabRow:IsShown(), shown = DS.Shown(),
+		Northstar.Dungeons.Open()
+		emit({ section = P.Section(), navs = navs(), cards = cardNames(), segs = segs(), title = NorthstarPicker.Title:GetText(),
+			sub = NorthstarPicker.Subtitle:GetText(), tabRow = NorthstarPicker.TabRow:IsShown(), shown = DS.Shown(),
 			stats = DS.cards[1].Stats:GetText(), chip = DS.cards[1].Yours:IsShown() })"#);
 	let out = &out[0];
 	assert_eq!(out["section"], "Dungeons");
@@ -177,18 +177,18 @@ fn show_dungeon_nil_opens_the_hub_at_home_level_bands_in_the_sidebar_the_dungeon
 #[test]
 fn home_all_dungeons_groups_by_band_the_faction_filter_changes_the_counts_search_narrows_and_enter_opens_the_first() {
 	let out = run(r#"
-		Polestar.Dungeons.Open()
+		Northstar.Dungeons.Open()
 		DS.SetBand("all")
 		local deadmines = DS.cards[1].Stats:GetText()
-		local all = { cards = cardNames(), heads = DS.Shown().heads, title = PolestarPicker.Title:GetText(), yours = DS.cards[2].Yours:IsShown(),
+		local all = { cards = cardNames(), heads = DS.Shown().heads, title = NorthstarPicker.Title:GetText(), yours = DS.cards[2].Yours:IsShown(),
 			forever = DS.cards[3].Forever:IsShown() }
 		DS.SetFaction("All")
 		local both = DS.cards[2].Stats:GetText()
 		DS.SetFaction("Alliance")
 		local alliance = { DS.cards[1].Stats:GetText(), segs() }
-		local box = Polestar.UI.Picker.search
+		local box = Northstar.UI.Picker.search
 		box:SetText("wail"); stub.RunScript(box, "OnTextChanged", true)
-		local found = { cards = cardNames(), title = PolestarPicker.Title:GetText(), sub = PolestarPicker.Subtitle:GetText() }
+		local found = { cards = cardNames(), title = NorthstarPicker.Title:GetText(), sub = NorthstarPicker.Subtitle:GetText() }
 		DS.Enter()
 		emit({ deadmines = deadmines, all = all, both = both, alliance = alliance, found = found, page = DS.Page(), tab = DS.Tab() })"#);
 	let out = &out[0];
@@ -211,11 +211,11 @@ fn home_all_dungeons_groups_by_band_the_faction_filter_changes_the_counts_search
 #[test]
 fn home_a_names_pack_landing_late_renames_the_cards() {
 	let out = run(r#"
-		Polestar.Dungeons.Open()
+		Northstar.Dungeons.Open()
 		DS.SetBand("all")
 		local before = cardNames()
-		local list = Polestar.Dungeons.List
-		Polestar.Dungeons.List = function(...)
+		local list = Northstar.Dungeons.List
+		Northstar.Dungeons.List = function(...)
 			local out = {}
 			for i, d in ipairs(list(...)) do
 				local c = {}
@@ -225,7 +225,7 @@ fn home_a_names_pack_landing_late_renames_the_cards() {
 			end
 			return out
 		end
-		Polestar.Fire("NAMES_LOADED")
+		Northstar.Fire("NAMES_LOADED")
 		emit({ before = before, after = cardNames() })"#);
 	assert!(strs(&out[0]["before"]).contains(&"Wailing Caverns".to_string()));
 	assert!(strs(&out[0]["after"]).contains(&"Cavernes des Lamentations".to_string()));
@@ -236,17 +236,17 @@ fn a_page_the_painting_header_with_the_name_facts_and_actions_tabs_with_counts_g
 	let out = run(r#"
 		-- Nothing in the log: the hand-in stays away, so "Show on map" keeps its place among three actions.
 		log[914] = nil
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local _, _, pg = DS.Frames()
 		local head = { pg.Title:GetText(), pg.Sub:GetText(), pg.GoQuiet:IsShown(), pg.MapBtn:IsShown(), pg.Back:IsShown(), pg.Forever:IsShown(),
-			PolestarPicker.Title:GetText(), PolestarPicker.Title:GetAlpha(), PolestarPicker.Band:IsShown(), pg.Art:IsShown() }
+			NorthstarPicker.Title:GetText(), NorthstarPicker.Title:GetAlpha(), NorthstarPicker.Band:IsShown(), pg.Art:IsShown() }
 		local nav = {}
-		Polestar.Nav.SetTarget = function(map, x, y, label) nav = { map, x, y, label } return true end
+		Northstar.Nav.SetTarget = function(map, x, y, label) nav = { map, x, y, label } return true end
 		pg.GoQuiet:Click()
 		pg.MapBtn:Click()
 		pg.Back:Click()
 		emit({ head = head, tabs = (function() DS.Open("wailing-caverns") return tabs() end)(), nav = nav, map = uistub.worldMap,
-			back = (function() DS.Home() return { DS.Page() or false, PolestarPicker.Title:GetAlpha(), PolestarPicker.Band:IsShown(), pg:IsShown() } end)() })"#);
+			back = (function() DS.Home() return { DS.Page() or false, NorthstarPicker.Title:GetAlpha(), NorthstarPicker.Band:IsShown(), pg:IsShown() } end)() })"#);
 	let out = &out[0];
 	// The facts break between two facts where the actions leave too little room.
 	assert_eq!(out["head"], json!(["Wailing Caverns", "Levels 17\u{2013}24  \u{b7}  The Barrens  \u{b7}  10 players\n4 bosses", true, true, true, false, "Wailing Caverns", 0, false, true]));
@@ -261,11 +261,11 @@ fn the_levels_chip_what_the_quests_still_to_do_are_worth_hovering_it_shows_the_x
 	let out = run(r#"
 		-- 19,800 of 23,200 into 20; the page's quests with XP known: 1,600 + 2,350 + 1,900.
 		uistub.player.xp, uistub.player.xpMax = 19800, 23200
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local _, _, pg = DS.Frames()
 		local chip = { pg.XP:IsShown(), pg.XP.Text:GetText() }
 		pg.XP:GetScript("OnEnter")(pg.XP)
-		local t = Polestar.UI.LevelTip.Frame()
+		local t = Northstar.UI.LevelTip.Frame()
 		local cells, marks = 0, {}
 		for _, c in ipairs(t.Cells) do if c:IsShown() then cells = cells + 1 end end
 		for _, m in ipairs(t.Marks) do if m:IsShown() then marks[#marks + 1] = m:GetText() end end
@@ -302,10 +302,10 @@ fn the_levels_chip_what_the_quests_still_to_do_are_worth_hovering_it_shows_the_x
 fn the_levels_chip_below_the_quests_level_it_says_the_recommended_level_the_panel_says_so_first_and_sums_from_there_quests_only() {
 	let out = run(r#"
 		uistub.player.level = 10
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local _, _, pg = DS.Frames()
 		pg.XP:GetScript("OnEnter")(pg.XP)
-		local t = Polestar.UI.LevelTip.Frame()
+		local t = Northstar.UI.LevelTip.Frame()
 		emit({ chip = pg.XP.Text:GetText(), need = t.Need:GetText(), now = t.Now:GetText(), first = t.Marks[1]:GetText(), notes = t.Notes:GetText() })"#);
 	let out = &out[0];
 	// Deviate Hides opens at 13, the lowest of the page's quests.
@@ -321,11 +321,11 @@ fn a_quest_with_a_chain_still_to_do_a_chip_after_its_rewards_says_what_the_quest
 	let out = run(r#"
 		-- Nara Wildmane (650 XP) comes before Leaders of the Fang (2,350 XP).
 		done[1490] = nil
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local b = block(914)
 		local c = b.ChainXP
 		c:GetScript("OnEnter")(c)
-		local t = Polestar.UI.LevelTip.Frame()
+		local t = Northstar.UI.LevelTip.Frame()
 		emit({ shown = c:IsShown(), text = c.Text:GetText(), head = t.Head:GetText(), xp = t.XP:GetText(), notes = t.Notes:GetText(),
 			after = select(4, c:GetPoint(1)) > select(4, b.Chips[1]:GetPoint(1)), own = b.Chips[1].Text:GetText(),
 			plain = block(1486).ChainXP:IsShown() })
@@ -355,7 +355,7 @@ fn hovering_a_quest_in_a_chain_shows_its_levels_state_objective_start_and_end_re
 			for i, l in ipairs(GameTooltip.lines) do lines[i] = plain(l) end
 			return { owner = GameTooltip:GetOwner() == r, lines = lines }
 		end
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		emit(hover())
 		uistub.player.level = 27
 		DS.Open("deadmines"); DS.Open("wailing-caverns")
@@ -377,8 +377,8 @@ fn hovering_a_quest_in_a_chain_shows_its_levels_state_objective_start_and_end_re
 fn a_page_with_quests_to_pick_up_pick_up_the_quests_is_the_primary_action_the_entrance_second_with_none_left_nothing_to_pick_up_says_why() {
 	let out = run(r#"
 		local printed = {}
-		Polestar.Print = function(...) printed[#printed + 1] = table.concat({ ... }, " ") end
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Print = function(...) printed[#printed + 1] = table.concat({ ... }, " ") end
+		Northstar.Dungeons.Open("wailing-caverns")
 		local _, _, pg = DS.Frames()
 		local function shown(b) return b:IsShown() and b.Label:GetText() or false end
 		-- Right to left: the first shown button holds the band's corner.
@@ -390,7 +390,7 @@ fn a_page_with_quests_to_pick_up_pick_up_the_quests_is_the_primary_action_the_en
 		DS.Render()
 		pg.PickupNone:Click()
 		emit({ pickup = shown(pg.Pickup), go = shown(pg.Go), none = shown(pg.PickupNone), corner = corner(), tip = pg.PickupNone.psTipLines, printed = printed,
-			tabs = #Polestar.Engine.GetTabs() })"#);
+			tabs = #Northstar.Engine.GetTabs() })"#);
 	let (open, none) = (&out[0], &out[1]);
 	assert_eq!(json!([open["pickup"], open["go"], open["quiet"], open["none"], open["corner"]]), json!(["Pick up the quests", false, "Guide me to the entrance", false, "Pick up the quests"]));
 	assert_eq!(open["tip"][0], "Pick up the quests");
@@ -409,8 +409,8 @@ fn a_page_with_quests_to_pick_up_pick_up_the_quests_is_the_primary_action_the_en
 fn hand_in_the_quests_shows_only_while_one_of_the_pages_quests_is_in_the_log_leads_once_one_is_finished_and_opens_the_hand_in_guide_nothing_finished_says_what_is_open() {
 	let out = run(r#"
 		local printed = {}
-		Polestar.Print = function(...) printed[#printed + 1] = table.concat({ ... }, " ") end
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Print = function(...) printed[#printed + 1] = table.concat({ ... }, " ") end
+		Northstar.Dungeons.Open("wailing-caverns")
 		local _, _, pg = DS.Frames()
 		local function shown(b) return b:IsShown() and b.Label:GetText() or false end
 		local function corner() for _, b in ipairs({ pg.HandIn, pg.HandInQuiet, pg.Pickup, pg.PickupQuiet, pg.Go, pg.PickupNone, pg.GoQuiet, pg.MapBtn }) do
@@ -418,19 +418,19 @@ fn hand_in_the_quests_shows_only_while_one_of_the_pages_quests_is_in_the_log_lea
 		-- Leaders of the Fang is in the log, its gems still to get.
 		pg.HandInQuiet:Click()
 		emit({ lead = shown(pg.HandIn), quiet = shown(pg.HandInQuiet), corner = corner(), tip = pg.HandInQuiet.psTipLines, printed = printed,
-			tabs = #Polestar.Engine.GetTabs(), fits = pg.Sub:GetWidth() > 0, map = pg.MapBtn:IsShown(), go = shown(pg.GoQuiet) })
+			tabs = #Northstar.Engine.GetTabs(), fits = pg.Sub:GetWidth() > 0, map = pg.MapBtn:IsShown(), go = shown(pg.GoQuiet) })
 		log[914] = nil
 		DS.Render()
 		emit({ lead = shown(pg.HandIn), quiet = shown(pg.HandInQuiet) })
 		log[914] = true
-		Polestar.Compat.IsQuestReadyForTurnIn = function(id) return id == 914 end
+		Northstar.Compat.IsQuestReadyForTurnIn = function(id) return id == 914 end
 		local asked = {}
-		Polestar.Dungeons.HandIn = function(key) asked[#asked + 1] = key return "lookup/handin/" .. key end
+		Northstar.Dungeons.HandIn = function(key) asked[#asked + 1] = key return "lookup/handin/" .. key end
 		DS.Render()
 		emit({ lead = shown(pg.HandIn), quiet = shown(pg.HandInQuiet), pickup = shown(pg.Pickup), pickupQuiet = shown(pg.PickupQuiet),
 			corner = corner(), tip = pg.HandIn.psTipLines, fits = pg.Sub:GetWidth() > 0 })
 		pg.HandIn:Click()
-		emit({ asked = asked, hub = PolestarPicker:IsShown() })"#);
+		emit({ asked = asked, hub = NorthstarPicker:IsShown() })"#);
 	let (open, gone, ready, done2) = (&out[0], &out[1], &out[2], &out[3]);
 	assert_eq!(json!([open["lead"], open["quiet"], open["corner"]]), json!([false, "Hand in the quests", "Pick up the quests"]), "beside \"Pick up the quests\", which leads");
 	assert_eq!(open["tip"], json!(["Not finished yet: Leaders of the Fang."]));
@@ -448,12 +448,12 @@ fn hand_in_the_quests_shows_only_while_one_of_the_pages_quests_is_in_the_log_lea
 #[test]
 fn a_finished_pick_up_guide_offers_the_hand_in_while_the_dungeons_quests_are_in_the_log() {
 	let out = run(r#"
-		local GF = Polestar.UI.GuideFrame
+		local GF = Northstar.UI.GuideFrame
 		local id = "lookup/pickup/wailing-caverns"
 		uistub.guides[id] = { id = id, pack = "lookup", title = "Wailing Caverns: pick up the quests", category = "Lookup",
 			lookup = { kind = "pickup", id = "wailing-caverns" }, steps = { { title = "Wailing Caverns", goals = { { t = "note", text = "n" } } } } }
 		local asked = {}
-		Polestar.Dungeons.HandIn = function(key) asked[#asked + 1] = key return "lookup/handin/" .. key end
+		Northstar.Dungeons.HandIn = function(key) asked[#asked + 1] = key return "lookup/handin/" .. key end
 		uistub.setGuide(id)
 		uistub.complete()
 		local e = GF.parts.empty
@@ -483,9 +483,9 @@ fn a_finished_pick_up_guide_offers_the_hand_in_while_the_dungeons_quests_are_in_
 fn quests_the_giver_line_is_a_link_with_a_prerequisite_still_to_do_it_points_at_that_one() {
 	let out = run(r#"
 		done[1490], log[914] = nil, nil
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local pins = {}
-		Polestar.Nav.SetTarget = function(map, x, y, label) pins[#pins + 1] = { map, x, y, label } return true end
+		Northstar.Nav.SetTarget = function(map, x, y, label) pins[#pins + 1] = { map, x, y, label } return true end
 		local fang, hides = block(914), block(1486)
 		fang.StartLink:Click()
 		hides.StartLink:Click()
@@ -500,12 +500,12 @@ fn quests_the_giver_line_is_a_link_with_a_prerequisite_still_to_do_it_points_at_
 #[test]
 fn quests_one_block_per_quest_with_state_level_flags_objective_start_and_end_pins_the_chain_choice_tiles_and_reward_chips() {
 	let out = run(r#"
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local fang = block(914)
 		local hides = block(1486)
 		local shard = block(6981)
 		local pins = {}
-		Polestar.Nav.SetTarget = function(map, x, y, label) pins[#pins + 1] = { map, x, y, label } return true end
+		Northstar.Nav.SetTarget = function(map, x, y, label) pins[#pins + 1] = { map, x, y, label } return true end
 		fang.StartPin:Click()
 		for _, r in ipairs(kids("Chains")) do r.Pin:Click() end
 		local tile
@@ -566,13 +566,13 @@ fn a_reward_tile_takes_its_colour_from_the_games_tooltip_and_is_painted_again_wh
 	let out = run(r#"
 		local loaded, asked = false, {}
 		ITEM_QUALITY_COLORS = { [3] = { r = 0, g = 0.44, b = 0.87 } }
-		Polestar.Compat.ItemTipColor = function() if loaded then return 0.12, 1, 0 end end
-		Polestar.Compat.RequestItem = function(id) asked[#asked + 1] = id return loaded end
+		Northstar.Compat.ItemTipColor = function() if loaded then return 0.12, 1, 0 end end
+		Northstar.Compat.RequestItem = function(id) asked[#asked + 1] = id return loaded end
 		local function border(t)
 			local r, g, b = t.Well.psBorder[1]:GetVertexColor()
 			return string.format("%.2f %.2f %.2f", r, g, b)
 		end
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local tile
 		for _, b in ipairs(DS.blocks) do
 			for _, t in ipairs(b.Tiles or {}) do if t.psID == 6505 and t:IsShown() then tile = t end end
@@ -595,11 +595,11 @@ fn a_reward_tile_takes_its_colour_from_the_games_tooltip_and_is_painted_again_wh
 fn quest_cards_group_the_details_and_mark_the_next_unfinished_chain_step_names_keep_their_difficulty_colour() {
 	let out = run(r#"
 		done[1490] = nil
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local fang = block(914)
 		local step = fang.Chains[1]
 		local function rgb(r, g, b) return string.format("%.3f %.3f %.3f", r, g, b) end
-		local text, accent = rgb(Polestar.Theme.Color("text")), rgb(Polestar.Theme.Color("accent"))
+		local text, accent = rgb(Northstar.Theme.Color("text")), rgb(Northstar.Theme.Color("accent"))
 		emit({ panel = fang.psSkin ~= nil, rule = fang.HeadRule:IsShown(), rewards = fang.MoreLabel:IsShown(), objective = fang.Obj:GetText(),
 			step = { step.Number:GetText(), step.Number:IsShown(), step.Highlight:IsShown(), step.Glyph:IsShown() },
 			plain = { rgb(fang.Title:GetTextColor()) == text, rgb(step.Title:GetTextColor()) == text, rgb(step.Title:GetTextColor()) == accent } })"#);
@@ -616,10 +616,10 @@ fn quest_cards_group_the_details_and_mark_the_next_unfinished_chain_step_names_k
 fn quests_too_low_shows_the_level_it_opens_at_the_other_faction_is_counted_when_none_are_left() {
 	let out = run(r#"
 		uistub.player.level = 12
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local fang = block(914)
 		DS.SetFaction("Alliance")
-		Polestar.Dungeons.Open("deadmines")
+		Northstar.Dungeons.Open("deadmines")
 		local _, _, pg = DS.Frames()
 		local dm = { DS.Shown().quests, pg.EmptyTitle:IsShown() }
 		DS.SetFaction("Horde")
@@ -636,7 +636,7 @@ fn quests_too_low_shows_the_level_it_opens_at_the_other_faction_is_counted_when_
 #[test]
 fn bosses_kill_order_level_and_the_quests_each_serves_a_quest_line_opens_the_quests_tab_at_it() {
 	let out = run(r#"
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		DS.SetTab("bosses")
 		local names = shownTexts(DS.bossRows, "Name")
 		local levels = shownTexts(DS.bossRows, "Level")
@@ -665,7 +665,7 @@ fn map_the_entrance_on_its_zone_with_the_quest_givers_there() {
 		C_Map = C_Map or {}
 		C_Map.GetMapArtLayers = function(id) if id == 1413 then return { { layerWidth = 1002, layerHeight = 668, tileWidth = 256, tileHeight = 256 } } end return {} end
 		C_Map.GetMapArtLayerTextures = function(id) if id == 1413 then local t = {} for i = 1, 12 do t[i] = 100 + i end return t end return {} end
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		DS.SetTab("map")
 		local _, _, pg = DS.Frames()
 		emit({ shown = DS.Shown(), note = pg.MapNote:GetText(), art = pg.MapArt:IsShown(), blocks = (function() for _, b in ipairs(DS.blocks) do if b:IsShown() then return true end end return false end)() })"#);
@@ -683,12 +683,12 @@ fn speed_pages_reuse_pooled_frames_only_cards_in_view_are_painted_open_and_tab_s
 		-- Thirty more dungeons, so Home scrolls.
 		local extra = {}
 		for i = 1, 30 do extra["extra-" .. i] = { name = "Extra " .. i, kind = "dungeon", minLevel = 10 + i, maxLevel = 14 + i, zone = 1413, entrance = { map = 1413, x = 40, y = 40 }, quests = { A = 1, H = 1 }, bosses = 1 } end
-		Polestar.Dungeons.Load()
-		Polestar.Dungeons.Register("dungeon", extra, {})
-		Polestar.Fire("CODEX_LOADED")
+		Northstar.Dungeons.Load()
+		Northstar.Dungeons.Register("dungeon", extra, {})
+		Northstar.Fire("CODEX_LOADED")
 		local clock = os.clock
 		local t0 = clock()
-		Polestar.Dungeons.Open()
+		Northstar.Dungeons.Open()
 		local tHome = clock() - t0
 		DS.SetBand("all")
 		local cards, painted = DS.Shown().cards, DS.Shown().painted
@@ -706,7 +706,7 @@ fn speed_pages_reuse_pooled_frames_only_cards_in_view_are_painted_open_and_tab_s
 		for i = 1, 40 do
 			qs[i] = string.format('{id=%d,title="Errand %d",level=%d,minLevel=%d,objectives={{k="item",id=1,n=8,name="Things"}},start={kind="npc",id=1,name="Giver",map=1413,x=50,y=50},finish={kind="npc",id=1,name="Giver",map=1413,x=50,y=50},chain={},rewards={items={},xp=900,rep={}}}', 90000 + i, i, 20 + i % 5, 15)
 		end
-		Polestar.Dungeons.Register("dungeon", { big = { name = "Big Hold", kind = "dungeon", minLevel = 20, maxLevel = 25, quests = { A = 40, H = 40 }, bosses = 0 } },
+		Northstar.Dungeons.Register("dungeon", { big = { name = "Big Hold", kind = "dungeon", minLevel = 20, maxLevel = 25, quests = { A = 40, H = 40 }, bosses = 0 } },
 			{ big = "return {quests={" .. table.concat(qs, ",") .. "},chain={},bosses={}}" })
 		t0 = clock()
 		DS.Open("big")
@@ -735,11 +735,11 @@ fn speed_pages_reuse_pooled_frames_only_cards_in_view_are_painted_open_and_tab_s
 fn without_the_codex_pack_an_empty_state_that_says_where_to_get_the_release_leaving_the_section_restores_the_header() {
 	let out = run_with(
 		r#"
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local _, home = DS.Frames()
 		local empty = { DS.Shown().empty, home.EmptyTitle:GetText(), home.EmptyNote:GetText(), home.Watermark:IsVisible() }
 		P.ShowSection("Guides")
-		emit({ empty = empty, title = PolestarPicker.Title:GetAlpha(), band = PolestarPicker.Band:IsShown(), segs = segs() })"#,
+		emit({ empty = empty, title = NorthstarPicker.Title:GetAlpha(), band = NorthstarPicker.Band:IsShown(), segs = segs() })"#,
 		false,
 	);
 	let out = &out[0];
@@ -755,9 +755,9 @@ fn without_the_codex_pack_an_empty_state_that_says_where_to_get_the_release_leav
 fn review_p3_13_show_on_map_in_combat_says_in_chat_why_the_map_stays_shut_and_opens_it_once_combat_is_over() {
 	let out = run(r#"
 		local printed = {}
-		Polestar.Print = function(...) printed[#printed + 1] = table.concat({ ... }, " ") end
+		Northstar.Print = function(...) printed[#printed + 1] = table.concat({ ... }, " ") end
 		uistub.worldMap = nil
-		Polestar.Dungeons.Open("wailing-caverns")
+		Northstar.Dungeons.Open("wailing-caverns")
 		local _, _, pg = DS.Frames()
 		stub.inCombat = true
 		pg.MapBtn:Click()
@@ -772,7 +772,7 @@ fn review_p3_13_show_on_map_in_combat_says_in_chat_why_the_map_stays_shut_and_op
 	assert_eq!(out["lines"], 1, "the out-of-combat click prints nothing");
 }
 
-/// A language folder Polestar_<locale> of a few names as `forge data names` writes it, loaded when Polestar
+/// A language folder Northstar_<locale> of a few names as `forge data names` writes it, loaded when Northstar
 /// asks for it (C_AddOns.LoadAddOn) -> (its folder, Lua stub).
 fn names_pack(locale: &str, names: &[(&str, &[(i64, &str)])]) -> (TempDir, String) {
 	let pack = forge_addontest::names::names_pack(locale, names);
@@ -805,21 +805,21 @@ end
 {}"#,
 			pack.stub_lua
 		),
-		addons: vec![Addon::files("Polestar", &FILES)],
+		addons: vec![Addon::files("Northstar", &FILES)],
 		script: r#"uistub.install()
 stub.login()
-local D = Polestar.Dungeons
+local D = Northstar.Dungeons
 local q = D.Quest("wailing-caverns", 1486)
 local b = D.Bosses("wailing-caverns")
 emit({ q.title, q.start.name, q.rewards.items[1].name, q.rewards.items[2].name, b[1].name, b[1].quests[1].itemName, b[2].name })
-local C = Polestar.Codex
+local C = Northstar.Codex
 emit({ C.Npc(234).name, C.Name("npc", 234), C.Name("npc", 639) })
 local guids = { target = "Creature-0-1-0-1-5767-0000AB", mouseover = "Creature-0-1-0-1-639-0000CD" }
 local named = { target = "Nalpak (client)", mouseover = "Edwin VanCleef (client)" }
 UnitGUID = function(u) return guids[u] end
 UnitName = function(u) return named[u] end
 UnitPlayerControlled = function() return false end
-Polestar.Compat.Readable = function(v) return v end
+Northstar.Compat.Readable = function(v) return v end
 stub.fire("PLAYER_TARGET_CHANGED"); stub.fire("UPDATE_MOUSEOVER_UNIT")
 emit({ D.Quest("wailing-caverns", 1486).start.name, C.Npc(639).name })"#
 			.into(),
@@ -837,12 +837,12 @@ emit({ D.Quest("wailing-caverns", 1486).start.name, C.Npc(639).name })"#
 // The level 20 Tauren: Wailing Caverns (17-24) has its two Horde quests to take now and none for later
 // levels; the Deadmines has none for the Horde; Blackmaw Hold is 55-60.
 const HEADS_UP: &str = r#"
-local DT, CT = Polestar.UI.DungeonToast, Polestar.UI.ClassToast
+local DT, CT = Northstar.UI.DungeonToast, Northstar.UI.ClassToast
 -- The Druid's own class quest heads-up (Cat Form at 20) stays out of these; the card waiting for
 -- one is tested with a card shown by hand.
 CT.Check = function() return false end
-local asked, pickUp = {}, Polestar.Dungeons.PickUp
-Polestar.Dungeons.PickUp = function(key) asked[#asked + 1] = key return "lookup/pickup/" .. key end
+local asked, pickUp = {}, Northstar.Dungeons.PickUp
+Northstar.Dungeons.PickUp = function(key) asked[#asked + 1] = key return "lookup/pickup/" .. key end
 local function card()
 	local f = CT.frame
 	local on = f ~= nil and f:IsShown()
@@ -867,15 +867,15 @@ fn a_level_up_tells_once_that_wailing_caverns_is_open_and_its_button_picks_up_th
 		emit({{ before = card().shown }})
 		stub.advance(2)
 		emit(card())
-		emit({{ sounds = #stub.sounds, seen = Polestar.CharState().dungeonToastSeen }})
+		emit({{ sounds = #stub.sounds, seen = Northstar.CharState().dungeonToastSeen }})
 		CT.frame.Later:Click()
 		levelUp(20)
 		emit({{ again = card().shown }})
 		-- Shown again by the command, the button opens the pick-up guide and the card goes.
-		Polestar.RunCommand("dungeontoast wailing caverns")
+		Northstar.RunCommand("dungeontoast wailing caverns")
 		local shown = card().shown
 		CT.frame.Act:Click()
-		emit({{ shown = shown, asked = asked, after = card().shown, ui = Polestar.Get("ui.shown") }})"#
+		emit({{ shown = shown, asked = asked, after = card().shown, ui = Northstar.Get("ui.shown") }})"#
 	));
 	assert_eq!(out[0], json!({ "before": false }), "it waits for the class quest heads-up's turn (DELAY)");
 	assert_eq!(
@@ -918,12 +918,12 @@ fn the_dungeon_heads_up_wears_the_dungeons_own_picture_and_the_dungeon_glyph_wit
 					masked = l.mask == f.Mask }} or false }}
 		end
 		levelUp(20)
-		local art = Polestar.Dungeons.Art("wailing-caverns")
-		emit({{ dungeon = CT.current.dungeon, ring = ring(), art = {{ art.l, art.r, art.t, art.b }}, lift = art.lift, none = Polestar.Dungeons.Art("blackmaw-hold") or false }})
+		local art = Northstar.Dungeons.Art("wailing-caverns")
+		emit({{ dungeon = CT.current.dungeon, ring = ring(), art = {{ art.l, art.r, art.t, art.b }}, lift = art.lift, none = Northstar.Dungeons.Art("blackmaw-hold") or false }})
 		CT.Hide()
 		DT.Show({{ key = "blackmaw-hold", name = "Blackmaw Hold", minLevel = 55, maxLevel = 60, take = 1, level = 55 }})
-		local r, g, b = Polestar.Theme.Color("dungeon")
-		emit({{ dungeon = CT.current.dungeon, ring = ring(), violet = {{ r, g, b, 1 }}, glyph = Polestar.Theme.Media("icon-dungeon") }})"#
+		local r, g, b = Northstar.Theme.Color("dungeon")
+		emit({{ dungeon = CT.current.dungeon, ring = ring(), violet = {{ r, g, b, 1 }}, glyph = Northstar.Theme.Media("icon-dungeon") }})"#
 	));
 	let (art, glyph) = (&out[0], &out[1]);
 	assert_eq!(art["dungeon"], "wailing-caverns");
@@ -953,7 +953,7 @@ fn turn_these_off_stops_the_heads_ups_and_it_waits_for_combat_and_for_a_class_qu
 	let out = run(&format!(
 		r#"{HEADS_UP}
 		local combat = true
-		Polestar.Compat.InCombat = function() return combat end
+		Northstar.Compat.InCombat = function() return combat end
 		levelUp(20)
 		emit({{ inCombat = card().shown }})
 		combat = false
@@ -961,7 +961,7 @@ fn turn_these_off_stops_the_heads_ups_and_it_waits_for_combat_and_for_a_class_qu
 		stub.advance(1)
 		emit({{ afterCombat = card().dungeon or false }})
 		-- A class quest card first: the dungeon one waits until it is dismissed.
-		Polestar.CharState().dungeonToastSeen = nil
+		Northstar.CharState().dungeonToastSeen = nil
 		CT.ShowCard({{ head = "LEVEL 20 · DRUID", title = "Cat Form ready", class = "DRUID", guideId = "x" }})
 		levelUp(20)
 		local class = card()
@@ -969,9 +969,9 @@ fn turn_these_off_stops_the_heads_ups_and_it_waits_for_combat_and_for_a_class_qu
 		stub.advance(1)
 		emit({{ waited = class.title, open = class.open, act = class.act, thenShown = card().dungeon or false }})
 		CT.frame.Off:Click()
-		Polestar.CharState().dungeonToastSeen = nil
+		Northstar.CharState().dungeonToastSeen = nil
 		levelUp(20)
-		emit({{ setting = Polestar.Get("dungeons.headsUp"), shown = card().shown, candidates = #DT.Candidates(20, "levelup") }})"#
+		emit({{ setting = Northstar.Get("dungeons.headsUp"), shown = card().shown, candidates = #DT.Candidates(20, "levelup") }})"#
 	));
 	assert_eq!(out[0], json!({ "inCombat": false }));
 	assert_eq!(out[1], json!({ "afterCombat": "wailing-caverns" }), "shown once combat ends");
@@ -1001,8 +1001,8 @@ fn at_login_only_a_dungeon_whose_range_began_in_the_last_two_levels_is_told() {
 fn handing_in_a_quest_of_the_dungeons_page_tells_it_once_its_follow_ups_open() {
 	let out = run(&format!(
 		r#"{HEADS_UP}
-		local plan = Polestar.Dungeons.PickupPlan
-		Polestar.Dungeons.PickupPlan = function(key)
+		local plan = Northstar.Dungeons.PickupPlan
+		Northstar.Dungeons.PickupPlan = function(key)
 			local p = plan(key)
 			if p and key == "wailing-caverns" then
 				if done[914] then p.take[#p.take + 1] = {{ quest = {{ id = 90099 }} }} else p.later = 1 end
@@ -1038,12 +1038,12 @@ fn the_command_says_so_for_a_dungeon_with_nothing_to_pick_up_or_a_character_with
 	let out = run(&format!(
 		r#"{HEADS_UP}
 		local printed = {{}}
-		Polestar.Print = function(...) printed[#printed + 1] = table.concat({{ ... }}, " ") end
-		Polestar.RunCommand("dungeontoast deadmines")
+		Northstar.Print = function(...) printed[#printed + 1] = table.concat({{ ... }}, " ") end
+		Northstar.RunCommand("dungeontoast deadmines")
 		emit({{ shown = card().shown, printed = printed }})
 		printed = {{}}
-		Polestar.Levels.Player = function() return {{ faction = "Horde" }} end
-		Polestar.RunCommand("dungeontoast wailing caverns")
+		Northstar.Levels.Player = function() return {{ faction = "Horde" }} end
+		Northstar.RunCommand("dungeontoast wailing caverns")
 		emit({{ shown = card().shown, printed = printed }})"#
 	));
 	assert_eq!(out[0], json!({ "shown": false, "printed": ["Nothing to pick up"] }), "the Deadmines has no Horde quests");
@@ -1058,11 +1058,11 @@ fn the_command_says_so_for_a_dungeon_with_nothing_to_pick_up_or_a_character_with
 fn on_a_narrow_window_the_chip_goes_under_the_header_and_the_buttons_wrap_inside_the_card() {
 	let out = run(&format!(
 		r#"{HEADS_UP}
-		local w, f = Polestar.UI.GuideFrame.frame, nil
+		local w, f = Northstar.UI.GuideFrame.frame, nil
 		levelUp(20)
 		f = CT.frame
 		local names = {{ [f.Act] = "act", [f.More] = "more", [f.Later] = "later", [f.Off] = "off" }}
-		for _, width in ipairs({{ Polestar.UI.MAX_WIDTH, Polestar.UI.MIN_WIDTH }}) do
+		for _, width in ipairs({{ Northstar.UI.MAX_WIDTH, Northstar.UI.MIN_WIDTH }}) do
 			w:SetWidth(width)
 			CT.Place(false)
 			local rows, sums, fits = {{ {{}} }}, {{}}, true
@@ -1129,20 +1129,20 @@ fn only_dungeons_with_quests_for_the_characters_faction_are_told_and_counted_for
 fn pick_up_the_quests_opens_the_dungeons_pick_up_guide_in_a_new_tab() {
 	let out = run(&format!(
 		r#"{HEADS_UP}
-		Polestar.Dungeons.PickUp = pickUp
+		Northstar.Dungeons.PickUp = pickUp
 		-- The fake Engine opens only its sample guides: let it open the registered pick-up guide too.
 		setmetatable(uistub.guides, {{ __index = function(_, k) return uistub.realGuides.Get(k) end }})
 		uistub.openTabs({{ {{ uistub.elwynn, 1 }} }}, 1)
 		levelUp(20)
 		CT.frame.Act:Click()
-		local g = Polestar.Engine.GetGuide()
+		local g = Northstar.Engine.GetGuide()
 		local tabs, accepts = {{}}, {{}}
-		for i, t in ipairs(Polestar.Engine.GetTabs()) do tabs[i] = t.guideId end
+		for i, t in ipairs(Northstar.Engine.GetTabs()) do tabs[i] = t.guideId end
 		for _, st in ipairs(g and g.steps or {{}}) do
 			for _, goal in ipairs(st.goals or {{}}) do if goal.t == "accept" then accepts[#accepts + 1] = goal.quest end end
 		end
 		table.sort(accepts)
-		emit({{ active = g and g.id or false, tabs = tabs, accepts = accepts, card = card().shown, ui = Polestar.Get("ui.shown") }})"#
+		emit({{ active = g and g.id or false, tabs = tabs, accepts = accepts, card = card().shown, ui = Northstar.Get("ui.shown") }})"#
 	));
 	assert_eq!(
 		out[0],
@@ -1157,7 +1157,7 @@ fn open_in_dungeons_shows_the_dungeons_page_in_the_hub() {
 		r#"{HEADS_UP}
 		levelUp(20)
 		CT.frame.More:Click()
-		emit({{ section = P.Section(), page = DS.Page() or false, card = card().shown, seen = Polestar.CharState().dungeonToastSeen }})"#
+		emit({{ section = P.Section(), page = DS.Page() or false, card = card().shown, seen = Northstar.CharState().dungeonToastSeen }})"#
 	));
 	assert_eq!(out[0], json!({ "section": "Dungeons", "page": "wailing-caverns", "card": false, "seen": { "wailing-caverns": true } }));
 }
@@ -1168,8 +1168,8 @@ fn open_in_dungeons_shows_the_dungeons_page_in_the_hub() {
 fn with_the_guide_window_hidden_the_card_waits_for_it_and_the_dungeon_is_told_once_shown() {
 	let out = run(&format!(
 		r#"{HEADS_UP}
-		local w = Polestar.UI.GuideFrame.frame
-		local function told() return (Polestar.CharState().dungeonToastSeen or {{}})["wailing-caverns"] or false end
+		local w = Northstar.UI.GuideFrame.frame
+		local function told() return (Northstar.CharState().dungeonToastSeen or {{}})["wailing-caverns"] or false end
 		w:Hide()
 		levelUp(20)
 		emit({{ shown = card().shown, told = told() }})
@@ -1187,7 +1187,7 @@ fn with_the_guide_window_hidden_the_card_waits_for_it_and_the_dungeon_is_told_on
 fn the_login_and_hand_in_checks_never_load_the_codex_the_login_one_runs_once_it_is_loaded() {
 	let out = run(&format!(
 		r#"{HEADS_UP}
-		local X = Polestar.Codex
+		local X = Northstar.Codex
 		uistub.player.level = 19
 		local start = X.IsLoaded()
 		stub.fire("QUEST_TURNED_IN", 914)

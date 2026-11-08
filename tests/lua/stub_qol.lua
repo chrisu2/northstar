@@ -1,4 +1,4 @@
--- A fake world for Quality of Life tests (addon/Polestar/QoL), loaded after
+-- A fake world for Quality of Life tests (addon/Northstar/QoL), loaded after
 -- wow_stub.lua. It installs contract-faithful fakes for the Engine, Nav and
 -- Pins (just before ADDON_LOADED, after the addon files ran), overrides the
 -- map half of Compat with one flat test map, and provides the client APIs QoL
@@ -180,7 +180,7 @@ end
 C_DeathInfo = {}
 function C_DeathInfo.GetCorpseMapPosition(map)
 	if not q.corpse then return nil end
-	local C = Polestar.Compat
+	local C = Northstar.Compat
 	local c, wx, wy = C.MapToWorld(9000, q.corpse[1], q.corpse[2])
 	local x, y = C.WorldToMap(c, wx, wy, map)
 	if not x then return nil end
@@ -721,11 +721,11 @@ function q.step(goals, index)
 	q.engine.step = index
 	q.engine.view = { index = index, status = "current", goals = views }
 	q.engine.guide = { id = "test", pack = q.guidePack or "guides", steps = steps }
-	Polestar.Fire("STEP_CHANGED", index)
+	Northstar.Fire("STEP_CHANGED", index)
 	stub.runTimers()
 end
 
--- The registry's packs (Core/Guides.lua Guides.Pack): Polestar's own, the
+-- The registry's packs (Core/Guides.lua Guides.Pack): Northstar's own, the
 -- Import page's, and a community pack. q.guidePack picks the step's guide's.
 local Guides = {}
 q.packs = { guides = { id = "guides", official = true }, imported = { id = "imported", imported = true }, yendi = { id = "yendi" } }
@@ -800,12 +800,12 @@ end
 
 local addonLoaded = stub.addonLoaded
 function stub.addonLoaded(name)
-	if name == "Polestar" and Polestar then
-		Polestar.Engine = Engine
-		Polestar.Nav = Nav
-		Polestar.Pins = Pins
-		Polestar.Guides = Polestar.Guides or Guides
-		local C = Polestar.Compat
+	if name == "Northstar" and Northstar then
+		Northstar.Engine = Engine
+		Northstar.Nav = Nav
+		Northstar.Pins = Pins
+		Northstar.Guides = Northstar.Guides or Guides
+		local C = Northstar.Compat
 		function C.MapToWorld(map, x, y, frame)
 			if frame == "e" then return nil end
 			return mapToWorld(map, x, y)
