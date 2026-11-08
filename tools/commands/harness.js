@@ -7,12 +7,15 @@ const path = require('node:path');
 const { runAddon } = require('../../tests/helpers/lua');
 
 const usage = `usage: node tools/polestar.js harness
+       node tools/polestar.js harness play [port]
 
-Runs the route sheet against a mock client. No game, account, or network.
-Prints one PASS or FAIL line per scenario and exits 1 if any fail.
+With no arguments, runs the route sheet against a mock client and prints
+PASS or FAIL. \`play\` serves http://127.0.0.1:8765 (or [port]) where clicks
+go through the same Lua runtime. Needs Node and Lua 5.1 on PATH. No game,
+account, or network.
 
 This is not Forever 1.60.1.70862 and it says nothing about ban-safety.
-CreateFrame, clicks, GetProfessionInfo, and C_AddOns are simulated.
+CreateFrame, clicks, font strings, GetProfessionInfo, and C_AddOns are simulated.
 Quest completion, map geometry, and what the live client would answer are not.
 Fixture names such as "Synthetic Herb" are not quests.`;
 
@@ -38,7 +41,15 @@ function evaluate(report) {
 	];
 }
 
-function run() {
+function run(argv = []) {
+	if (argv[0] === 'play') {
+		const port = argv[1] ? Number(argv[1]) : 8765;
+		if (!Number.isInteger(port) || port < 1) {
+			console.log('port must be an integer');
+			return 1;
+		}
+		return require('../harness/play').serve(port);
+	}
 	const script = fs.readFileSync(path.join(__dirname, '..', 'harness', 'sheet.lua'), 'utf8');
 	console.log('offline harness: mock client only. Not Forever 1.60.1.70862. Not a statement about ban-safety.');
 	console.log('simulated: CreateFrame, clicks, font strings, GetProfessionInfo, GetProfessions, UnitFactionGroup, C_AddOns.GetAddOnInfo, NorthstarCharDB');
