@@ -283,6 +283,16 @@ and guides are not compiled from them. Exit 0 still is not a release. The script
 `--no-questie`, `--allow-build-mismatch`, `--allow-incomplete`, `--no-forever`, or
 `--forever-tables wago`. It was not run on a Windows client from this checkout.
 
+`forge data build` always reads Classic Era `UiMap`, `UiMapAssignment`, `AreaTable` and `Faction`
+from the wago cache before it reads the Forever client. That cache is the pfQuest coordinate
+baseline, not a substitute for the live map. Without it, `--offline` stops and writes nothing.
+`forge data frames` reads only the installed Forever client's three map tables and writes
+`map-frames.json` with a `forever` key and no `era` key, plus `zones.json` and `meta.json`
+(`mapsOnly`, `eraFrames: false`). The baseline Forge binary does not have that command. The grid
+(`forge nav grid --product wowf --continents 0,1,2991 --data <that folder>`) uses those frames.
+It is not a quest data build. Quest completeness still needs `QuestieDB_Forever.toc`
+(`X-Flavor: Forever`, `X-Mode: baked`) and `forge build --until data`, which this command does not replace.
+
 ## The other builders
 
 Each builder is a `forge data` subcommand. All of them read `data/forever`, so run `forge data build`

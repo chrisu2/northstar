@@ -50,6 +50,38 @@ test('an Era fallback fails even when the log also names wowf', () => {
 	assert.match(warned.message, /Era substitution/);
 });
 
+test('forever-only map frames are not an Era cache and are not a quest build', () => {
+	const meta = JSON.stringify({
+		product: 'wowf',
+		build: '1.60.1.70862',
+		source: 'client',
+		mapsOnly: true,
+		eraFrames: false,
+		warnings: ['Era map tables were not read. map-frames.json has forever frames only. This is not a quest data build.'],
+	});
+	const d = policy.judgeMaps({ forgeExit: 0, logText: READING, metaText: meta });
+	assert.equal(d.exit, 0);
+	assert.equal(d.code, 'frames');
+	assert.equal(d.questsIncomplete, true);
+	const grid = policy.judgeGrid({
+		forgeExit: 0,
+		mapsLogText: READING,
+		mapsMetaText: meta,
+		indexProduct: 'wowf',
+		indexBuild: '1.60.1.70862',
+		gridLogText: READING,
+		gridStdoutText: '',
+	});
+	assert.equal(grid.exit, 0);
+	assert.match(grid.message, /Not a release/);
+	const substituted = policy.judgeMaps({
+		forgeExit: 0,
+		logText: READING,
+		metaText: JSON.stringify({ mapsOnly: true, warnings: ['zones and frames from Classic Era'] }),
+	});
+	assert.equal(substituted.exit, 1);
+});
+
 test('a stale meta is not provenance', () => {
 	const d = policy.judgeProvenance({ logText: READING, metaText: meta(), metaOlderThanLog: true });
 	assert.equal(d.exit, 1);
@@ -143,6 +175,8 @@ test('the probe script judges maps before treating a forge exit as success', () 
 	const ps1 = fs.readFileSync(path.join(__dirname, '..', 'tools', 'forever70862', 'windows-forever-70862.ps1'), 'utf8');
 	const maps = ps1.slice(ps1.indexOf("'Maps' {"), ps1.indexOf("'Grid' {"));
 	assert.match(maps, /Invoke-Decision 'maps'/);
+	assert.match(maps, /'data', 'frames'/);
+	assert.doesNotMatch(maps, /'data', 'build'/);
 	assert.doesNotMatch(maps, /if \(\$code -ne 0\) \{ Fail/);
 	assert.match(ps1, /missing policy\.js/);
 	for (const flag of ['--no-questie', '--allow-build-mismatch', '--allow-incomplete', '--no-forever']) {

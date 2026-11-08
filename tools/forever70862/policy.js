@@ -46,13 +46,15 @@ function judgeProvenance({ logText, metaText, metaOlderThanLog }) {
 		}
 	}
 	const n = questCount(meta);
+	const mapsOnly = meta.mapsOnly === true;
 	return {
 		ok: true,
 		exit: 0,
 		code: 'provenance',
 		message: 'provenance passed',
 		provenanceOk: true,
-		questsIncomplete: !(n > 0),
+		mapsOnly,
+		questsIncomplete: mapsOnly || !(n > 0),
 		questieQuests: n,
 	};
 }
@@ -61,6 +63,20 @@ function judgeMaps(input) {
 	const p = judgeProvenance(input);
 	if (!p.ok) return p;
 	const forgeExit = Number(input.forgeExit);
+	if (p.mapsOnly) {
+		if (forgeExit !== 0) {
+			return { ok: false, exit: 1, code: 'forge', provenanceOk: true, mapsOnly: true, questsIncomplete: true, message: `forge data frames exit ${forgeExit}. Not a quest build and not a release.` };
+		}
+		return {
+			ok: true,
+			exit: 0,
+			code: 'frames',
+			provenanceOk: true,
+			mapsOnly: true,
+			questsIncomplete: true,
+			message: `Forever map frames for ${PRODUCT} ${BUILD}. Era tables were not read. Not a quest build and not a release.`,
+		};
+	}
 	if (p.questsIncomplete) {
 		return {
 			ok: false,
@@ -108,6 +124,17 @@ function judgeGrid(input) {
 	if (forgeExit !== 0) {
 		return { ok: false, exit: 1, code: 'forge', provenanceOk: true, questsIncomplete: maps.questsIncomplete, message: `nav grid exit ${forgeExit}. Do not pass --allow-incomplete. Not a release.` };
 	}
+	if (maps.mapsOnly) {
+		return {
+			ok: true,
+			exit: 0,
+			code: 'grid',
+			provenanceOk: true,
+			mapsOnly: true,
+			questsIncomplete: true,
+			message: `Grid index is ${PRODUCT} ${BUILD} from Forever map frames only. Quest data was not built. Not a release.`,
+		};
+	}
 	if (maps.questsIncomplete) {
 		return {
 			ok: false,
@@ -149,6 +176,13 @@ function judgeArgs(args, stage) {
 	}
 	const tables = list.indexOf('--forever-tables');
 	if (tables >= 0 && list[tables + 1] === 'wago') return fail('refusing --forever-tables wago', 'args');
+	if (stage === 'frames') {
+		const p = list.indexOf('--product');
+		if (list[p + 1] !== PRODUCT) return fail(`refusing a product other than ${PRODUCT}`, 'args');
+		const b = list.indexOf('--forever-build');
+		if (list[b + 1] !== BUILD) return fail(`refusing a forever build other than ${BUILD}`, 'args');
+		if (list.includes('--forever-tables')) return fail('forge data frames does not take --forever-tables', 'args');
+	}
 	if (stage === 'maps' || stage === 'grid') {
 		const p = list.indexOf('--product');
 		if (list[p + 1] !== PRODUCT) return fail(`refusing a product other than ${PRODUCT}`, 'args');

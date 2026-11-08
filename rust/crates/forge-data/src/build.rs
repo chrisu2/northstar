@@ -374,7 +374,11 @@ pub fn run(o: &Options, log: &dyn Fn(&str)) -> Result<Output, String> {
 	warnings.extend(pf.warnings.iter().cloned());
 	let license = pfquest::check_license(&pf.dir)?;
 
-	let wago = tables::load(&o.sources, &tables::ERA, o.build.as_deref(), &Source::Wago, log)?;
+	let wago = tables::load(&o.sources, &tables::ERA, o.build.as_deref(), &Source::Wago, log).map_err(|e| {
+		format!(
+			"{e}. The full data build reads Classic Era UiMap, UiMapAssignment, AreaTable and Faction from the wago cache as the pfQuest coordinate baseline, before the Forever client tables. Map frames for the grid do not use that cache: forge data frames"
+		)
+	})?;
 	warnings.extend(wago.warnings.iter().cloned());
 	let era_t = |t: &str| wago.get(t).map(Vec::as_slice).unwrap_or(&[]);
 	let maps = build_maps(era_t("UiMap"), era_t("UiMapAssignment"), era_t("AreaTable"));

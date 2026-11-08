@@ -14,6 +14,7 @@ pub mod corrections;
 pub mod dungeons;
 pub mod extras;
 pub mod factions;
+pub mod frames;
 pub mod gear;
 pub mod itemdb;
 pub mod jsv;

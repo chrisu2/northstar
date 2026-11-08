@@ -358,6 +358,7 @@ fn run() -> Result<(), Fail> {
 		"names" => return names(args.collect()),
 		"talents" => return talents(args.collect()),
 		"maps" => return maps(args.collect()),
+		"frames" => return frames(args.collect()),
 		_ => {}
 	}
 	if cmd != "build" {
@@ -961,6 +962,58 @@ fn talents(args: Vec<String>) -> Result<(), Fail> {
 	Ok(())
 }
 
+pub(super) const FRAMES_USAGE: &str = "usage: forge data frames --out <dir> --wow <dir> --product wowf --forever-build <build> --defs <dir>
+
+Writes map-frames.json, zones.json and meta.json from the installed Forever client's
+UiMap, UiMapAssignment and AreaTable. Classic Era tables are not read. There is no era key.
+This is not a quest data build and not a release: QuestieDB, pfQuest and the wago cache are
+not used. --product wowf is the live client; wow_classic_beta is the published Forever table
+product. Any other product is refused. --forever-build must equal the installed client.
+The grid can use the forever frames (--continents 0,1,2991). Do not pass --no-forever,
+--no-questie, --allow-build-mismatch or --forever-tables wago: this command has none of them.
+
+  --out DIR            where map-frames.json, zones.json and meta.json are written
+  --wow DIR            the World of Warcraft folder (.build.info and Data)
+  --product NAME       wowf or wow_classic_beta
+  --forever-build VER  must be the installed client's version (1.60.x)
+  --defs DIR           WoWDBDefs checkout";
+
+fn frames(args: Vec<String>) -> Result<(), Fail> {
+	let (kv, fl, pos) = opts(args, &["--out", "--wow", "--product", "--forever-build", "--defs"], &[])?;
+	if !fl.is_empty() || !pos.is_empty() {
+		return Err(usage("forge data frames takes only --out, --wow, --product, --forever-build and --defs"));
+	}
+	let get = |k: &str| kv.iter().rev().find(|(a, _)| a == k).map(|(_, v)| v.clone());
+	let out = get("--out").map(abs).ok_or_else(|| usage("--out <dir> is required"))?;
+	let wow = get("--wow").map(abs).ok_or_else(|| usage("--wow <dir> is required"))?;
+	let product = get("--product").ok_or_else(|| usage("--product wowf is required"))?;
+	let build = get("--forever-build").ok_or_else(|| usage("--forever-build <1.60.x> is required"))?;
+	let defs = get("--defs").map(abs).ok_or_else(|| usage("--defs <dir> is required"))?;
+	if !forge_data::frames::forever_product(&product) {
+		return Err(format!("refusing product {product}: forge data frames reads wowf or wow_classic_beta only").into());
+	}
+	if !build.starts_with("1.60.") {
+		return Err(format!("refusing build {build}: a Forever map-frame extract needs a 1.60 build").into());
+	}
+	let src = forge_data::tables::Source::Client { wow, product: product.clone(), defs };
+	let loaded = forge_data::tables::load(Path::new("."), &forge_data::tables::FOREVER_SIM, Some(&build), &src, &|m| eprintln!("{m}"))?;
+	if loaded.product != product {
+		return Err(format!("client tables reported product {}, not {product}", loaded.product).into());
+	}
+	if loaded.build != build {
+		return Err(format!("client tables reported build {}, not {build}", loaded.build).into());
+	}
+	let files = forge_data::frames::from_loaded(&loaded)?;
+	std::fs::create_dir_all(&out).map_err(|e| format!("{}: {e}", out.display()))?;
+	for (name, text) in [("map-frames.json", &files.map_frames), ("zones.json", &files.zones), ("meta.json", &files.meta)] {
+		let path = out.join(name);
+		std::fs::write(&path, text).map_err(|e| format!("{}: {e}", path.display()))?;
+		eprintln!("wrote {}", path.display());
+	}
+	eprintln!("frames: {} map frames, {} zones, {} {}. Era tables were not read. Not a quest data build.", files.frames, files.zones_n, product, build);
+	Ok(())
+}
+
 pub(super) const MAPS_USAGE: &str = "usage: forge data maps build|overlays [options]
 
 build: zone level ranges for the world map (hostile creature levels per zone, spawn-weighted
@@ -1027,6 +1080,7 @@ pub(super) fn sub_usage(sub: &str) -> Option<&'static str> {
 		"names" => NAMES_USAGE,
 		"talents" => TALENTS_USAGE,
 		"maps" => MAPS_USAGE,
+		"frames" => FRAMES_USAGE,
 		"build" => USAGE,
 		_ => return None,
 	})

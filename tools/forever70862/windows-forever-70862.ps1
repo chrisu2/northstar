@@ -36,7 +36,7 @@ $PackUrl = 'https://github.com/fitzforge/polestar/releases/download/data-pack/po
 $Forge = Join-Path $Src 'rust\target\quick\forge.exe'
 $Pack = Join-Path $StageRoot 'pack'
 $Sources = Join-Path $Pack 'data\sources'
-$Defs = Join-Path $Sources 'wowdbdefs'
+$Defs = 'F:\wowaddons\Northstar-build\dependencies\WoWDBDefs'
 $MapsOut = Join-Path $StageRoot 'forever-maps'
 $GridOut = Join-Path $StageRoot 'grid'
 $DataOut = Join-Path $StageRoot 'forge-out'
@@ -188,27 +188,18 @@ switch ($Stage) {
         Write-Host "pack at $Pack. Its wago\1.60.1.70532 tables are not this client. Do not pass --forever-tables wago."
     }
     'Maps' {
-        if (-not (Test-Path -LiteralPath (Join-Path $Defs 'definitions'))) { Fail "run -Stage Fetch first" }
+        if (-not (Test-Path -LiteralPath (Join-Path $Defs 'definitions'))) { Fail "WoWDBDefs definitions are not at $Defs. The gamedata list that exited 0 used this folder. Do not fetch a Classic Era wago cache instead." }
         $log = Join-Path $Logs 'maps.log'
         $meta = Join-Path $MapsOut 'meta.json'
         $args = @(
-            'data', 'build', '--offline', '--forever-tables', 'client', '--product', $Product,
-            '--forever-build', $Build, '--wow', $Wow, '--defs', $Defs, '--sources', $Sources,
-            '--out', $MapsOut, '--root', $Src, '--no-web-xp', '--no-web-zones'
+            'data', 'frames', '--out', $MapsOut, '--wow', $Wow, '--product', $Product,
+            '--forever-build', $Build, '--defs', $Defs
         )
-        Assert-ForgeArgs 'maps' $args
+        Assert-ForgeArgs 'frames' $args
         $code = Invoke-Forge $log $args
-        # Provenance is judged even when Forge exits nonzero. A missing log or
-        # meta fails closed. Incomplete quests exit 3 and are not a release.
         $d = Invoke-Decision 'maps' @{ 'forge-exit' = $code; log = $log; meta = $meta }
         Apply-Decision $d (Join-Path $MapsOut 'QUESTS_INCOMPLETE.txt')
-        if (@($d.provenanceOk) -and (Test-Path -LiteralPath $meta)) {
-            $frames = Get-Content -LiteralPath $meta -Raw | ConvertFrom-Json
-            if (@($frames.liveFrameMaps).Count -eq 0) {
-                Set-Content -LiteralPath (Join-Path $MapsOut 'REVIEW_LIVE_FRAMES.txt') -Value "liveFrameMaps is empty. The wowf log passed the provenance check, and no map's bounds differed from the Era frame by more than 1 yard. Review before using coordinates. This is a flag, not a fabricated map list, and not a release."
-                Write-Host 'REVIEW: liveFrameMaps is empty. See REVIEW_LIVE_FRAMES.txt'
-            }
-        }
+        Write-Host "map-frames.json is Forever client frames only. Era tables were not read. This is not a quest data build."
     }
     'Grid' {
         $frames = Join-Path $MapsOut 'map-frames.json'
