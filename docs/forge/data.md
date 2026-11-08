@@ -304,11 +304,15 @@ It is not a quest data build. Quest completeness still needs `QuestieDB_Forever.
 
 `forge guide compile --data <that folder>` reads the data build. It does not write
 `professions.json` or `trainers.json`, and the data build does not either. Learn and craft
-lines error until `forge data professions --data <that folder> --sources <checkout>/data/sources`.
-That command reads cached wago profession tables (`SkillLine`, `SkillLineAbility`, `SpellName`,
-and the rest of `professions::tables::OWN`). It does not read the wowf client, and
-`forge data sources --only era` does not fetch those tables. Class `train` lines need
-`forge data trainers --data <that folder> --guides <checkout>/guides --recordings <checkout>/data/recordings`.
+lines error until `forge data professions --data <that folder> --sources <cache> --build 1.60.1.70862 --out <that folder>/professions.json`.
+The cache is `<cache>/wago/1.60.1.70862/<Table>.csv` from `https://wago.tools/db2/<Table>/csv?build=1.60.1.70862`.
+SkillLine, SkillLineAbility, SpellName, SpellEffect, SpellReagents, ItemSparse, Item and ItemEffect are required.
+SpellTotems, SpellCastingRequirements, SpellFocusObject and ItemXItemEffect are read when present.
+A missing one is left empty and named in a warning, with that same URL. The command does not
+read the wowf client and does not require a `wow_classic_era` cache. Era rows are added only
+when that cache is already on disk. Class `train` lines need
+`forge data trainers --data <that folder> --guides <checkout>/guides --recordings <empty dir> --out <that folder>/trainers.json`.
+The recordings directory is required by the command. Point it at an empty folder. Do not point it at private sessions.
 A warning that guides changed since their legs were baked is not a compile error.
 `forge guide bake` rewrites legs and needs the walking grid.
 

@@ -50,7 +50,11 @@ impl Output {
 	pub fn summary(&self, out: &Path) -> String {
 		let rel = cwd_relative(out);
 		let rel = if rel.is_empty() { absolute(out).display().to_string() } else { rel };
-		format!("wrote {rel} from Forever build {} (gaps filled from Classic Era {}):\n{}", self.build, self.era_build, self.report.join("\n"))
+		if self.era_build.is_empty() {
+			format!("wrote {rel} from Forever build {} (no Classic Era rows):\n{}", self.build, self.report.join("\n"))
+		} else {
+			format!("wrote {rel} from Forever build {} (gaps filled from Classic Era {}):\n{}", self.build, self.era_build, self.report.join("\n"))
+		}
 	}
 }
 

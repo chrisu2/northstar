@@ -1,26 +1,56 @@
-# Requirements against this checkout
+# Requirements
 
-Checked from the code and the mock client. Nothing in this list was loaded
-in World of Warcraft: Forever from here. A mock pass is not a game result.
+Checked from this checkout and from the native build report for wowf 1.60.1.70862.
+Nothing here was loaded in the Forever client. A mock pass is not a game result.
+Guide counts are not feature functionality.
 
-| Requirement | Status | Where |
+| Requirement | Status | Evidence |
 |---|---|---|
-| Interface 16001, no retail or Classic TOC | Met in the addon TOCs | Code and the guide/UI zip |
-| wowf 1.60.1.70862 data only, no beta grid in the test package | Met for the zip (nav packs left out). The committed walking grid is still wow_classic_beta 1.60.1.70532 and is not shipped | Package |
-| Compact current action, not the tall inherited sheet | Met in code: the default bar is 108px, quest line plus Steps. Class, Trade, and PvP grow the same bar for their rows | Code. Mock test checks the height. Not seen in game |
-| Old wide guide does not open by itself | Met in code: `ui.wideGuide` defaults off, and a saved `ui.journal = false` is put back on login unless `ui.wideGuide` is set | Code. Mock test. Not seen in game |
-| Arrow and sheet show the same current action, including after an accept | Met in code: the sheet refreshes on step and waypoint changes and uses the arrow's line, with the log count | Mock test only. Not seen in game |
-| Arrival keeps the action instead of only saying Arrived | Met in code: the distance line says Here and the action line stays | Code. Not seen in game |
-| Welcome, About, settings, sidebar are not the Polestar wordmark | Met in code: those four say Northstar in text. About names Polestar as the guide credit | Code. Not seen in game |
-| All twelve profession guides | Met in the compiled `Northstar_Guides` already in the checkout | Package. Not seen in game |
-| Fishing is a manual tally, no cast | Met in code | Not seen in game |
-| Class guides for all nine classes, filtered by race and faction | Met in the compiled packs. The bar lists a class guide only when its class, race, and faction fit the character. Atiesh is shared by Priest, Mage, Warlock, and Druid. Not a claim every class has a full Forever chain, and not seen in game | Package and the selection test |
-| Horde and Alliance leveling, and every race part | Met in the compiled packs: both faction folders and Human, Night Elf, Dwarf, Gnome, Orc, Undead (Scourge legs plus `forever/horde/undead/01-tirisfal-glades`), Tauren, Troll, Skyborne | Package. Not seen in game |
-| New quests for every class, race, and both factions, old quests kept | Partial. The published forever-db is build 1.60.1.70532, not 70862. The merger keeps pfQuest rows the Questie store does not have. That is not live coverage | Code and forever-db. Unverified in game |
-| PvP as battleground guides, not a made-up PvP system | Met as a PvP control on the bar that lists the battleground guides already compiled. World PvP and a companion command are not invented | Code. Not seen in game |
-| Cozy Sleeping Bag separate from the leveling route | Met: its own button, its own guide id | Code and package. Not seen in game |
-| Northstar saved variables and commands, Polestar left alone | Met: `NorthstarDB`, `NorthstarCharDB`, `/northstar`, `/ns` | Code |
-| Quest-mob nameplates | Missing from the package. They need `Northstar_QuestDB`, which is not built. The arrow naming a mob is not that icon | Code. Unverified in game |
-| Codex, quest database, item database, recorder, beta nav | Missing on purpose. Login says Codex is not installed | Package |
-| Dun Morogh race errors | Still open in the generated source. Dwarf steps offer warlock quests whose published races are Human and Gnome (1599, 1715, 1688, 1689). Gnome steps offer shaman quests whose published races are Dwarf (94373, 94374, 94375, 94466). Those files are generated, so they were not edited here. A fresh `forge guide compile` against a 70862 data folder still stops on them. The copies already compiled into the race packs are what the package contains | Generated guides. Not rewritten |
-| Profession and trainer tables for a rebuild | Not built here. The compiled profession guides already contain train, buy, and collect steps with named trainers. Rebuilding them needs `forge data professions --data <70862 data folder> --sources <checkout>/data/sources` and `forge data trainers --data <that folder> --guides <checkout>/guides --recordings <checkout>/data/recordings`. The profession command reads cached wago tables, not the wowf client, so it was not run as a substitute for 70862 | Unchanged |
+| Interface 16001, Forever only | Met in the addon TOCs | Every Northstar TOC in the checkout says 16001. No retail or Classic TOC was added |
+| wowf 1.60.1.70862 quest data | Partial, on the PC, not in this checkout | Native report: a data folder of 5414 quests produced Northstar_QuestDB (5176 NPCs, 1030 objects, 2768 items, 49 maps, 77605 spawn points, 37605 clusters, 5 Lua files, 0 warnings). `data/forever` is not in this checkout, so that build was not repeated here |
+| Quest database in the package | Built on the PC, not in this checkout | `complete-inputs` holds that QuestDB. Nameplates need it. The arrow naming a mob is not that icon. Not loaded in game from here |
+| Codex | Command is specified, not run here | `forge data codex` with `--no-recorded` does not read `data/codex/recorded.json` and does not take `--recordings`. It still reads the checkout's attunement and journal tables. A missing Era `1.15.9.70003` cache warns and does not fill items |
+| Item database | Partial. The previous PC run is not a Forever gear list | That run printed "from Classic Era build 1.60.1.70862" and left out 886 name, 2168 season, 11560 slot, keeping 4710 items. The season cutoff is Season of Discovery (id 190000) and was applied to a Forever build. The code now labels a 1.60 build as Forever and does not apply that cutoff. Name and slot filters still run. Not re-run on the 70862 CSVs here |
+| Profession routes | Compiled routes are in the checkout. A fresh profession table was blocked and is now unblocked in code | The compiled guides contain train, buy, and collect steps. `forge data professions --build 1.60.1.70862` then failed looking for a `wow_classic_era` cache after the 70862 tables had already loaded. That lookup was SpellTotems, SpellCastingRequirements, SpellFocusObject, and the unconditional Era row fill. A missing gap table is now empty, with the public URL `https://wago.tools/db2/<Table>/csv?build=1.60.1.70862`. No Era cache is required. Not re-run on the PC cache here |
+| Trainer list | Met on the PC | trainers.json and ClassTrainers.lua: 216 curated trainers, 68 guide goals, 0 recorded NPCs |
+| Public 70862 CSV cache | Met on the PC, provenance is wago.tools | `Northstar-build\sources\wago\1.60.1.70862`. SkillLine 154, SkillLineAbility 7853, SpellName 32482, SpellEffect 43506, SpellReagents 3319, ItemSparse 19324, Item 32007, ItemEffect 12693. Not a client extract |
+| All nine classes, both factions, every race part | Met as compiled guides and as the sheet filter | Selection test reads the compiled Lua. A class guide is listed only when class, race, and faction fit. Not seen in game |
+| Dun Morogh race errors | Met for the eight published mismatches | forever-db: 1599, 1715, 1688, 1689 are races 65 (Human+Gnome). 94373, 94374, 94375, 94466 are races 4 (Dwarf). The writer drops a quest the guide race cannot take. The dwarf and gnome Dun Morogh guides were regenerated from that rule. `tests/dun-morogh-races.test.js` and the writer unit test pass. A full `forge build` was not run here |
+| Compact current-action bar | Met in code, not in game | Default height 108. Wide guide stays closed unless `ui.wideGuide` is on. Mock tests check the height and a saved wide window |
+| Sheet matches the arrow after an accept | Met in the mock, not in game | Accept The Hunt Begins, then Kill Plainstrider for Plainstrider Meat (1/7). Arrival says Here and keeps the action |
+| Welcome, About, settings, sidebar | Met in code | Those four say Northstar in text. About names Polestar as the guide credit |
+| Fishing | Met as a manual tally | No cast |
+| PvP | Met as battleground guides on the bar | Warsong Gulch, Arathi Basin, Alterac Valley, Darkspear Islands when loaded. No world PvP system and no companion command were added |
+| Cozy Sleeping Bag | Met as its own guide | `forever/miscellaneous/cozy-sleeping-bag`. Not play-tested on Forever |
+| Saved variables and commands | Met | `NorthstarDB`, `NorthstarCharDB`, `/northstar`, `/ns`. Polestar is not renamed |
+| Walking grid | Missing from this checkout on purpose | The copy in git is wow_classic_beta 1.60.1.70532. Do not pack it. Pack the existing wowf 1.60.1.70862 grid. Not packed here |
+| Fresh `forge guide compile` of every guide | Not run here | It needs the 70862 data folder and professions.json. The earlier PC compile exited 1 with 301 errors, including these eight race errors and the missing profession tables |
+
+## Native commands
+
+Run these from a checkout of this commit. Do not point them at private recordings, and do not read the live client. `DATA` is the folder that already wrote the 5414 quests. `SRC` is `F:\wowaddons\Northstar-build\sources`. `STAGE` is a directory whose `data\forever` is `DATA` and whose `data\sources` is `SRC`. `OUT` is `F:\wowaddons\Northstar-build\complete-inputs`.
+
+If a profession warning names a missing table, save that public CSV at `SRC\wago\1.60.1.70862\<Table>.csv`. The URL is `https://wago.tools/db2/<Table>/csv?build=1.60.1.70862`. The four the 70862 cache may still lack are SpellTotems, SpellCastingRequirements, SpellFocusObject, and ItemXItemEffect.
+
+```
+forge data professions --data DATA --sources SRC --build 1.60.1.70862 --out DATA\professions.json
+forge data itemdb --offline --build 1.60.1.70862 --sources SRC --root STAGE --out OUT\Northstar_ItemDB
+forge data codex --root STAGE --data DATA --sources SRC --build 1.60.1.70862 --no-recorded --out OUT\codex --pack OUT\Northstar_Codex
+```
+
+Codex still needs the checkout's `data\codex\attunements.json` and `journal-quests.json` under `STAGE`. It must not be given `--recordings` or `--local-extras`.
+
+Trainers already succeeded. Repeating it without private sessions:
+
+```
+forge data trainers --data DATA --guides <checkout>\guides --recordings <an empty directory> --out DATA\trainers.json --lua OUT\ClassTrainers.lua
+```
+
+Grid. Read the grid's `index.json` first. `build` must be `1.60.1.70862` and `product` must be `wowf`. Then:
+
+```
+forge nav pack --root STAGE --dir <that grid> --layers <its nav-layers, if present> --out OUT\Northstar_Nav --date <YYYY-MM-DD>
+forge nav check --out OUT\Northstar_Nav --root STAGE
+```
+
+Do not pass `--leffe`. Do not use `addon\Northstar_Nav` from the checkout. `PACK.json` in the output records the grid product and build. QuestDB is already in `complete-inputs` and does not need another run.

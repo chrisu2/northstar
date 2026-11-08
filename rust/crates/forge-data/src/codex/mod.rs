@@ -65,6 +65,8 @@ pub struct Options {
 	/// Also merge the installed AtlasLoot, RareScanner and data/forever/dungeons.json: a build for
 	/// this machine only (its meta says so and `pack` refuses it).
 	pub local_extras: bool,
+	/// Do not read data/codex/recorded.json. The committed snapshot is left untouched.
+	pub skip_recorded: bool,
 }
 
 impl Options {
@@ -82,6 +84,7 @@ impl Options {
 			load_ms: None,
 			cwd: std::env::current_dir().unwrap_or_else(|_| root.to_path_buf()),
 			local_extras: false,
+			skip_recorded: false,
 		}
 	}
 }
@@ -484,7 +487,7 @@ pub fn load_inputs(opts: &Options, log: &dyn Fn(&str)) -> Result<Inputs, String>
 		atlasloot,
 		rarescanner,
 		local_extras: opts.local_extras,
-		recorded: recorded::load(&lib.join(recorded::FILE))?,
+		recorded: if opts.skip_recorded { V::obj() } else { recorded::load(&lib.join(recorded::FILE))? },
 		client: Some(cl),
 		web,
 		curated: curated_collects(&texts),

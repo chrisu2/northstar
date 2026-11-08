@@ -169,10 +169,15 @@ fn other(cmd: &str, args: Vec<String>) -> Result<(), Fail> {
 			// codex build: --data, --sources, --addons, --build, --out (json), --pack; --local-extras also
 			// merges the installed AtlasLoot, RareScanner and dungeons.json (this machine only);
 			// --recordings <dir> first rewrites data/codex/recorded.json from that recordings folder.
+			// --no-recorded reads neither that file nor a recordings folder, and writes neither.
 			let local_extras = args.iter().any(|a| a == "--local-extras");
-			let kv = pairs(args.into_iter().filter(|a| a != "--local-extras").collect(), &["--root", "--data", "--sources", "--addons", "--build", "--out", "--pack", "--recordings"])?;
+			let skip_recorded = args.iter().any(|a| a == "--no-recorded");
+			let kv = pairs(args.into_iter().filter(|a| a != "--local-extras" && a != "--no-recorded").collect(), &["--root", "--data", "--sources", "--addons", "--build", "--out", "--pack", "--recordings"])?;
 			let get = |k: &str| kv.iter().rev().find(|(a, _)| a == k).map(|(_, v)| v.clone());
 			let root = get("--root").map(abs).or(root).ok_or_else(|| usage("--root <dir> is required (no checkout above here)"))?;
+			if skip_recorded && get("--recordings").is_some() {
+				return Err(usage("--no-recorded does not read or write recordings".to_string()));
+			}
 			if let Some(dir) = get("--recordings").map(abs) {
 				let file = root.join("data").join("codex").join(forge_data::codex::recorded::FILE);
 				std::fs::write(&file, forge_data::codex::recorded::export(&dir)?).map_err(|e| format!("{}: {e}", file.display()))?;
@@ -188,6 +193,7 @@ fn other(cmd: &str, args: Vec<String>) -> Result<(), Fail> {
 			o.addons = get("--addons").map(abs);
 			o.build = get("--build");
 			o.local_extras = local_extras;
+			o.skip_recorded = skip_recorded;
 			let out = forge_data::codex::build_logged(&o, &|m| eprintln!("{m}"))?;
 			// A --local-extras build never lands where `pack` and `install` look.
 			let extras = root.join("data").join("local").join("codex-extras");
@@ -707,12 +713,13 @@ fn check(args: Vec<String>) -> Result<(), Fail> {
 pub(super) const ITEMDB_USAGE: &str = "usage: forge data itemdb [options]
 
 Writes the load-on-demand data addon addon/Northstar_ItemDB (Items.lua + TOC): stats of every
-equippable Classic Era item (item level, required level, inventory type, armor, weapon damage and
-speed, primary stats and the equip bonuses Northstar.Gear scores), from the Classic Era client
-tables (ItemSparse, Item, ItemEffect, SpellEffect). Size budget: 1024 KiB.
+equippable item (item level, required level, inventory type, armor, weapon damage and speed,
+primary stats and the equip bonuses Northstar.Gear scores), from ItemSparse, Item, ItemEffect and
+SpellEffect. A 1.15 build is Classic Era and drops ids at or above 190000 (Season of Discovery).
+A 1.60 build is Forever and keeps those ids. Name and slot filters still apply. Size budget: 1024 KiB.
 
   --offline            use cached tables only
-  --build V            Classic Era build (default: the newest wago.tools lists)
+  --build V            1.15 Classic Era or 1.60 Forever (default: the newest wago.tools lists)
   --root DIR           the Northstar checkout (default: the one above the current folder)
   --sources DIR        source cache (default <root>/data/sources)
   --out DIR            default <root>/addon/Northstar_ItemDB";
@@ -740,7 +747,11 @@ fn itemdb(args: Vec<String>) -> Result<(), Fail> {
 	let skipped: Vec<String> = r.skipped.iter().map(|(k, n)| format!("{n} {k}")).collect();
 	let kib = forge_core::jsnum::js_to_fixed(r.bytes as f64 / 1024.0, 0);
 	let budget = forge_data::itemdb::SIZE_BUDGET / 1024;
-	println!("wrote {} from Classic Era build {}: {} items, {kib} KiB (budget {budget} KiB)", rel(&o.out), r.build, r.count);
+	let label = forge_data::itemdb::product_label(&r.build);
+	println!("wrote {} from {label} build {}: {} items, {kib} KiB (budget {budget} KiB)", rel(&o.out), r.build, r.count);
+	if label == "Forever" {
+		println!("Season of Discovery id cutoff (190000) was not applied. Name and slot filters still ran. This is not a complete Forever gear list.");
+	}
 	println!("left out: {}", skipped.join(", "));
 	if r.bytes > forge_data::itemdb::SIZE_BUDGET {
 		return Err(format!("Items.lua is {kib} KiB, over the {budget} KiB budget").into());
