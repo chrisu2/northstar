@@ -41,7 +41,7 @@ const JSON_MAX_BYTES: u64 = 256 * 1024 * 1024;
 /// The parts `--only` names, in fetch order.
 /// `wago`: the tables `forge data build` reads; `builders`: those of the other builders (itemdb, talents,
 /// maps overlays, codex, professions, travel).
-pub const PARTS: [&str; 8] = ["wago", "builders", "pfquest", "eglink", "forever-vo", "cmangos", "webxp", "wowdbdefs"];
+pub const PARTS: [&str; 9] = ["wago", "era", "builders", "pfquest", "eglink", "forever-vo", "cmangos", "webxp", "wowdbdefs"];
 
 // ---------------------------------------------------------------- HTTP
 
@@ -624,13 +624,48 @@ pub struct Report {
 	pub warnings: Vec<String>,
 }
 
+/// What a plan fetches from wago.tools. `era` alone is the coordinate baseline and does not
+/// fetch the Forever product or QuestXP.
+pub struct FetchScope {
+	pub era: bool,
+	pub forever_wago: bool,
+	pub quest_xp: bool,
+}
+
+pub fn fetch_scope(plan: &Plan) -> FetchScope {
+	let data = plan.wants("wago");
+	let builders = plan.wants("builders");
+	let wide = data || builders;
+	FetchScope { era: wide || plan.wants("era"), forever_wago: wide, quest_xp: wide }
+}
+
 /// Fetches what the plan names into its source cache. Errors only when the Era tables or the
 /// pfQuest checkout cannot be had; the rest are warnings.
 pub fn fetch(plan: &Plan, log: &dyn Fn(&str)) -> Result<Report, String> {
+	let scope = fetch_scope(plan);
+	let (data, builders) = (plan.wants("wago"), plan.wants("builders"));
+	// Named before any request: `--only era` must not look up "the newest" build.
+	if scope.era && !data && !builders {
+		match plan.build.as_deref() {
+			Some(b) if tables::ERA.in_family(b) => {}
+			Some(b) => return Err(format!("--build {b} is not a Classic Era build (wow_classic_era, 1.10 through 1.15)")),
+			None => {
+				return Err(
+					"--only era needs --build V. This checkout already pins 1.15.9.70003 for other Era tables. That pin is not the Forever client, and this part does not fetch wow_classic_beta."
+						.into(),
+				)
+			}
+		}
+	}
 	let http = Http::default_agent();
 	let mut rep = Report::default();
 	let src = &plan.sources;
-	let (data, builders) = (plan.wants("wago"), plan.wants("builders"));
+	if scope.era && !data && !builders {
+		let era = era_tables(true, false);
+		let b = plan.build.clone().unwrap();
+		fetch_set(&http, src, &b, &era, log, &mut rep)?;
+		rep.era_build = Some(b);
+	}
 	if data || builders {
 		let era = era_tables(data, builders);
 		let (b, w) = pick_build(&http, src, &tables::ERA, plan.build.as_deref(), &era.required)?;
@@ -723,6 +758,29 @@ mod tests {
 		all.sort();
 		all.dedup();
 		assert_eq!(all.len(), without.optional.len());
+	}
+
+	#[test]
+	fn era_alone_does_not_fetch_forever_or_quest_xp_and_names_its_build() {
+		let mut plan = Plan::new(Path::new("unused"));
+		plan.parts = vec!["era".into()];
+		let scope = fetch_scope(&plan);
+		assert!(scope.era && !scope.forever_wago && !scope.quest_xp);
+		let err = match fetch(&plan, &|_| {}) {
+			Err(e) => e,
+			Ok(_) => panic!("missing --build must fail before any fetch"),
+		};
+		assert!(err.contains("--build"), "{err}");
+		assert!(err.contains("1.15.9.70003"), "{err}");
+		plan.build = Some("11.0.0.1".into());
+		let err = match fetch(&plan, &|_| {}) {
+			Err(e) => e,
+			Ok(_) => panic!("a retail build must fail before any fetch"),
+		};
+		assert!(err.contains("not a Classic Era build"), "{err}");
+		plan.parts = vec!["wago".into()];
+		let wide = fetch_scope(&plan);
+		assert!(wide.era && wide.forever_wago && wide.quest_xp);
 	}
 
 	#[test]

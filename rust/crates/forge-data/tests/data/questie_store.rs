@@ -824,6 +824,52 @@ fn read(p: &Path) -> String {
 }
 
 #[test]
+fn forever_tables_do_not_inherit_era_zones_or_factions() {
+	let (sources, era, fv) = forever_sources("strict");
+	let uimap = read(&era.join("UiMap.csv")).lines().filter(|l| !l.contains(",2000,")).collect::<Vec<_>>().join("\n") + "\n";
+	std::fs::write(fv.join("UiMap.csv"), uimap).unwrap();
+	std::fs::copy(era.join("UiMapAssignment.csv"), fv.join("UiMapAssignment.csv")).unwrap();
+	std::fs::copy(era.join("AreaTable.csv"), fv.join("AreaTable.csv")).unwrap();
+	let faction = read(&era.join("Faction.csv"));
+	let kept = faction.lines().filter(|l| l.starts_with("Name_lang") || l.starts_with("Stormwind,") || l.starts_with("Alliance,")).collect::<Vec<_>>().join("\n") + "\n";
+	std::fs::write(fv.join("Faction.csv"), kept).unwrap();
+	std::fs::write(era.join("AreaTable.csv"), format!("{}\n1581,TheDeadmines,\"The Deadmines\",36,0\n", read(&era.join("AreaTable.csv")).trim_end())).unwrap();
+	let store =
+		Store { npcs: json!({ "639": { "name": "Edwin VanCleef", "minLevel": 21, "maxLevel": 21, "spawns": { "1581": [[-1, -1]] }, "friendlyToFaction": "", "npcFlags": 0 } }), ..Default::default() };
+	let b = build_with("strict", &store, &|o| {
+		o.sources = sources.clone();
+		o.forever = true;
+	});
+	let zones = b.read("zones");
+	assert!(zones.get("2000").is_none(), "the Era-only inset is not a live zone");
+	assert_eq!(zones["1429"]["name"], "Elwynn Forest");
+	let frames = b.read("map-frames");
+	assert!(frames["era"].get("2000").is_some(), "the Era frame stays available for the coordinate conversion");
+	assert!(frames["forever"].get("2000").is_none());
+	assert_eq!(b.read("quests")["101"]["zone"], 1429, "pfQuest still resolves through the Era area map");
+	assert_eq!(b.read("npcs")["1"]["spawns"]["1429"]["f"], "e", "an unchanged frame converts on the Era baseline");
+	let factions = b.read("factions");
+	assert!(factions.get("72").is_some());
+	assert!(factions.get("76").is_none(), "Orgrimmar is only in the Era faction table");
+	assert!(b.read("npcs")["639"].get("instances").is_none(), "Deadmines is only in the Era AreaTable");
+	let meta = b.meta();
+	let era_src = meta["sources"].as_array().unwrap().iter().find(|s| s["name"].as_str().unwrap_or("").contains("Classic Era client tables")).unwrap();
+	assert!(era_src["role"].as_str().unwrap().contains("coordinate baseline"));
+	assert!(era_src["revision"].as_str().unwrap().contains("wow_classic_era 1.15.9.11111"));
+	let warnings = b.meta()["warnings"].to_string();
+	assert!(warnings.contains("Classic Era zones were not copied"));
+	assert!(warnings.contains("Classic Era factions were not copied"));
+
+	std::fs::remove_file(fv.join("Faction.csv")).unwrap();
+	let b = build_with("strict-no-faction", &store, &|o| {
+		o.sources = sources.clone();
+		o.forever = true;
+	});
+	assert!(b.read("factions").as_object().unwrap().is_empty());
+	assert!(b.meta()["warnings"].to_string().contains("Forever Faction was not read"));
+}
+
+#[test]
 fn forever_tables_decide_changed_frames_and_name_forever_maps() {
 	let (sources, era, fv) = forever_sources("frames");
 	std::fs::write(fv.join("UiMap.csv"), format!("{}\n\"Zephras Isle\",2521,947,4,0,3\n", read(&era.join("UiMap.csv")).trim_end())).unwrap();

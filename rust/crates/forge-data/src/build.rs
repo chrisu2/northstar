@@ -376,7 +376,7 @@ pub fn run(o: &Options, log: &dyn Fn(&str)) -> Result<Output, String> {
 
 	let wago = tables::load(&o.sources, &tables::ERA, o.build.as_deref(), &Source::Wago, log).map_err(|e| {
 		format!(
-			"{e}. The full data build reads Classic Era UiMap, UiMapAssignment, AreaTable and Faction from the wago cache as the pfQuest coordinate baseline, before the Forever client tables. Map frames for the grid do not use that cache: forge data frames"
+			"{e}. The full data build reads Classic Era UiMap, UiMapAssignment and AreaTable from the wago cache to convert pfQuest map percentages, and Faction because that cache product lists it. When Forever client tables were read, zones.json and factions.json do not take rows those tables did not have. Fetch only this cache with: forge data sources --only era --build 1.15.9.70003 (the Era build already pinned in this checkout; not the Forever client). Map frames for the grid do not use it: forge data frames"
 		)
 	})?;
 	warnings.extend(wago.warnings.iter().cloned());
@@ -415,12 +415,16 @@ pub fn run(o: &Options, log: &dyn Fn(&str)) -> Result<Output, String> {
 		None => None,
 	};
 	lap("questie read");
-	let zones = maps.zones_obj();
-	if let Some(fm) = &fmaps {
-		for z in &fm.zones {
-			zones.set(&z.id.to_string(), z.to_v());
-		}
-	}
+	// Forever zones replace the list. Era zones stay only when no Forever map tables
+	// were read; an Era-only ui map is not a live zone.
+	let zones = if let Some(fm) = &fmaps {
+		warnings.push(
+			"Classic Era zones were not copied into zones.json. Era UiMap, UiMapAssignment and AreaTable convert pfQuest coordinates; map-frames.json era is that baseline, not live geography.".into(),
+		);
+		fm.zones_obj()
+	} else {
+		maps.zones_obj()
+	};
 	if let (Some(q), None) = (&qz, &fmaps) {
 		for (&map, &area) in &q.ui_map_to_area {
 			if map > 0 && !zones.has(&map.to_string()) {
@@ -576,17 +580,18 @@ pub fn run(o: &Options, log: &dyn Fn(&str)) -> Result<Output, String> {
 	}
 
 	lap("zone lists/corrections/webxp");
-	// Forever's Faction rows win by id; Era rows fill the rest.
-	let mut faction_rows: IndexMap<i64, &Row> = IndexMap::new();
-	for r in era_t("Faction") {
-		faction_rows.insert(col_num(r, "ID") as i64, r);
-	}
-	if let Some(rows) = fwago.as_ref().and_then(|f| f.get("Faction")) {
-		for r in rows {
-			faction_rows.insert(col_num(r, "ID") as i64, r);
-		}
-	}
-	let factions = build_factions(&faction_rows.values().copied().collect::<Vec<_>>());
+	// Forever's Faction rows are the list. Era rows fill nothing once Forever map
+	// tables were read, including when the Forever Faction table itself is absent.
+	let faction_rows: Vec<&Row> = if let Some(rows) = fwago.as_ref().and_then(|f| f.get("Faction")) {
+		warnings.push("Classic Era factions were not copied into factions.json. Forever Faction rows are the faction list.".into());
+		rows.iter().collect()
+	} else if fmaps.is_some() {
+		warnings.push("Forever Faction was not read. Classic Era factions were not copied into factions.json.".into());
+		Vec::new()
+	} else {
+		era_t("Faction").iter().collect()
+	};
+	let factions = build_factions(&faction_rows);
 	let races = fwago.as_ref().and_then(|f| match (f.get("ChrRaces"), f.get("ChrClasses"), f.get("CharBaseInfo")) {
 		(Some(a), Some(b), Some(c)) => Some(build_races(a, b, c)),
 		_ => None,
@@ -810,6 +815,7 @@ pub fn run(o: &Options, log: &dyn Fn(&str)) -> Result<Output, String> {
 		("url", s(&format!("https://wago.tools/db2?build={}", wago.build))),
 		("revision", s(&format!("{} {}", tables::ERA.key, wago.build))),
 		("license", s("Blizzard Entertainment game client data; factual map geometry, names and faction hierarchy only")),
+		("role", s(if fmaps.is_some() { "coordinate baseline for pfQuest map percentages. Not live zones or factions." } else { "map and faction tables for a build without Forever client tables" })),
 		("copyright", s("World of Warcraft (c) Blizzard Entertainment, Inc.")),
 		("tables", arr(wago.urls.iter().map(|u| s(u)).collect())),
 	]));

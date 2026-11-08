@@ -284,8 +284,17 @@ and guides are not compiled from them. Exit 0 still is not a release. The script
 `--forever-tables wago`. It was not run on a Windows client from this checkout.
 
 `forge data build` always reads Classic Era `UiMap`, `UiMapAssignment`, `AreaTable` and `Faction`
-from the wago cache before it reads the Forever client. That cache is the pfQuest coordinate
-baseline, not a substitute for the live map. Without it, `--offline` stops and writes nothing.
+from the wago cache before it reads the Forever client. The first three convert pfQuest map
+percentages: `map-frames.json` keeps them under `era`, and a spawn whose frame did not change
+is tagged `e`. They are not live geography. When the Forever client tables were read,
+`zones.json` is the Forever zone list and `factions.json` is the Forever `Faction` table.
+An Era-only zone or faction is not copied in. If the Forever `Faction` table was not read, Era
+factions are not substituted; the build warns and `factions.json` has none from either table.
+Without the cache, `--offline` stops and writes nothing. The narrow fetch is
+`forge data sources --only era --build 1.15.9.70003`. `1.15.9.70003` is the Era build this
+checkout already pins for QuestXP and Era item tables. It is not wowf 1.60.1.70862, and this
+part does not download `wow_classic_beta`. `forge data sources --only wago` is wider: it also
+fetches that product and QuestXP, which is not the installed Forever client.
 `forge data frames` reads only the installed Forever client's three map tables and writes
 `map-frames.json` with a `forever` key and no `era` key, plus `zones.json` and `meta.json`
 (`mapsOnly`, `eraFrames: false`). The baseline Forge binary does not have that command. The grid

@@ -594,6 +594,9 @@ Fills the source cache (data/sources) the data builders read, in the layout they
 cached file is never fetched again (cached builds and pinned commits do not change):
   wago        the client table CSVs `forge data build` reads (wago.tools): the Classic Era build's
               map and faction tables, the Forever build's when no client is installed, QuestXP
+  era         only the Classic Era coordinate baseline at --build (UiMap, UiMapAssignment,
+              AreaTable, Faction). Does not fetch wow_classic_beta tables or QuestXP. Not the
+              Forever client. This checkout already pins 1.15.9.70003 for other Era tables.
   builders    the other builders' client tables: itemdb's Era item tables, the Codex's, professions'
               and travel's, and the pinned builds of talents and map overlays
   pfquest     the pfQuest checkout at its pinned commit
