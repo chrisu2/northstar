@@ -45,7 +45,6 @@ step Anvilmar
   turnin 3110 only Dwarf,Priest               -- Branstock Khalder, the priest trainer
   turnin 98581 only Shaman                    -- Teo Hammerstorm, inside Anvilmar
   train class                                 -- Inside Anvilmar
-  accept 1599 only Warlock                    -- Alamar Grimm, inside Anvilmar
 
 step The troggs
   tip Rockjaw Troggs and Burly Rockjaw Troggs dig all over the valley floor south of Anvilmar.
@@ -84,7 +83,6 @@ step Coldridge Valley: kill these as you meet them
   collect 16314 quest 3361 @26.3,79.3         -- Felix's Bucket of Bolts
   collect 16313 quest 3361 @22.8,80.0         -- Felix's Chest
   collect 10438 quest 3361 @20.9,76.1         -- Felix's Box
-  collect 6753 quest 1599.1 only Warlock      -- Feather Charms, from the Frostmane Novices
 
 step Grelin Whitebeard
   label q182
@@ -97,7 +95,6 @@ step Anvilmar
   turnin 3364                                 -- Durnan Furcutter, inside Anvilmar; below ground
   accept 3365                                 -- Durnan Furcutter
   train class                                 -- Level 4 spells, before Gozwin's camp
-  turnin 1599 only Warlock                    -- Alamar Grimm: Summon Imp
   accept 94373 only Shaman                    -- Teo Hammerstorm, inside Anvilmar
   turnin 3361                                 -- Felix Whindlebolt, at the door on the way out; inside
 
@@ -642,7 +639,6 @@ step Ironforge class quests
   zone Ironforge
   tip Belia Thundergranite is in the Hall of Arms, High Priestess Mims in the Hall of Mysteries, Lago Blackwrench in the Forlorn Cavern.
   turnin 6086 only Hunter                     -- Belia Thundergranite: Beast Training
-  accept 1715 only Warlock                    -- Lago Blackwrench: Gakin the Darkbinder in Stormwind takes it
 
 step The Deeprun Tram
   zone Ironforge
@@ -766,13 +762,6 @@ step Woo Ping
   tip While you're here: learn Staves from Woo Ping (Trade District, 10 silver); a staff carries more spell stats than a one-hander while you level.
   train 11867                         -- Woo Ping
 
-step Gakin the Darkbinder
-  only Warlock
-  zone Stormwind City
-  tip Gakin the Darkbinder waits in the cellar of the Slaughtered Lamb, in the Mage Quarter.
-  turnin 1715                                 -- Gakin the Darkbinder
-  accept 1688
-
 step Woo Ping
   only Warlock
   zone Stormwind City
@@ -780,21 +769,6 @@ step Woo Ping
   when !skill "Staves" 1
   tip While you're here: learn Staves from Woo Ping (Trade District, 10 silver); a staff carries more spell stats than a one-hander while you level.
   train 11867                         -- Woo Ping
-
-step Surena Caledon
-  only Warlock
-  zone Elwynn Forest
-  tip Leave Stormwind by the main gate, go south to Goldshire and east along the road to the Brackwell Pumpkin Patch. Surena Caledon (level 9) stands by its farmhouse.
-  collect 6810 quest 1688.1                   -- Surena's Choker: Surena Caledon
-
-step The Binding
-  only Warlock
-  zone Stormwind City
-  tip Back to Gakin. Use the Bloodstone Choker at the summoning circle in the Slaughtered Lamb's cellar and defeat the voidwalker it calls. Westfall is next, west of Goldshire.
-  turnin 1688                                 -- Gakin the Darkbinder
-  accept 1689
-  complete 1689                               -- Subdue the voidwalker
-  turnin 1689                                 -- Summon Voidwalker
 
 step Westfall
   zone Westfall

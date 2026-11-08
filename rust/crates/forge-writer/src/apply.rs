@@ -5425,6 +5425,7 @@ pub fn apply_route(inp: &Inputs) -> Result<Output, String> {
 	}
 	post::repeatable_direct(&mut texts, data);
 	post::class_only_lines(&mut texts, data);
+	post::drop_race_excluded(&mut texts, data);
 	if cx.route_travel {
 		post::repeat_training(&mut texts);
 		post::class_only_steps(&mut texts);

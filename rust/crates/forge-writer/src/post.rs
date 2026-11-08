@@ -1334,6 +1334,87 @@ pub fn class_only_lines(files: &mut [String], data: &Data) {
 	}
 }
 
+fn race_bit(name: &str) -> Option<u64> {
+	let file = if name.eq_ignore_ascii_case("undead") { "Scourge" } else { name };
+	let info = forge_core::race_by_file(file)?;
+	let bit = info.alliance | info.horde;
+	(bit != 0).then_some(bit)
+}
+
+fn mask_bits(races: Option<f64>) -> Option<u64> {
+	let r = races?;
+	if !r.is_finite() || r <= 0.0 || r.fract() != 0.0 || r >= (1u64 << 53) as f64 {
+		return None;
+	}
+	Some(r as u64)
+}
+
+/// A class quest whose published race mask excludes every race of the guide is not written into
+/// that guide. Skyborne-only guides are left as they are: an Era mask does not decide them here.
+/// A step whose quest lines all go, and which has no quest line left, goes with them.
+pub fn drop_race_excluded(files: &mut [String], data: &Data) {
+	for f in files.iter_mut() {
+		let guide: Vec<String> = f.split('\n').take_while(|l| !is_step(l)).find_map(|l| l.strip_prefix("race ")).map(|l| l.split(',').map(|s| trim(s).to_string()).filter(|s| !s.is_empty()).collect()).unwrap_or_default();
+		if guide.is_empty() {
+			continue;
+		}
+		let lines: Vec<String> = f.split('\n').map(str::to_string).collect();
+		let mut drop: Vec<bool> = vec![false; lines.len()];
+		let mut i = 0;
+		while i < lines.len() {
+			if !is_step(&lines[i]) {
+				i += 1;
+				continue;
+			}
+			let mut j = i + 1;
+			while j < lines.len() && !is_step(&lines[j]) && !starts_nonspace(&lines[j]) {
+				j += 1;
+			}
+			let step_only = lines[i + 1..j].iter().find_map(|l| (head_ws(l) == Some("only")).then(|| line_only(l)).flatten());
+			let mut quests: Vec<usize> = Vec::new();
+			let mut kept = false;
+			for k in i + 1..j {
+				if !is_goal(&lines[k]) || quest_of(&lines[k]).is_none() {
+					continue;
+				}
+				quests.push(k);
+				let q = quest_of(&lines[k]).unwrap();
+				let Some(mask) = data.quests.get(&q).and_then(|rec| mask_bits(rec.races)) else {
+					kept = true;
+					continue;
+				};
+				let line = line_only(&lines[k]);
+				let step_aud = step_only.map(forge_guide::conditions::Audience::parse).unwrap_or_default();
+				let line_aud = line.map(forge_guide::conditions::Audience::parse).unwrap_or_default();
+				let aud = step_aud.and(&line_aud);
+				let applicable: Vec<&String> = guide.iter().filter(|r| aud.race_in(r)).collect();
+				let sky_only = !applicable.is_empty() && applicable.iter().all(|r| r.eq_ignore_ascii_case("Skyborne"));
+				let admits = applicable.iter().any(|r| !r.eq_ignore_ascii_case("Skyborne") && race_bit(r).is_none_or(|b| mask & b != 0));
+				// An `only` list for other races already applies to nobody here. Leave it: the
+				// compiler does not call that a race-mask error.
+				if !applicable.is_empty() && !sky_only && !admits {
+					drop[k] = true;
+				} else {
+					kept = true;
+				}
+			}
+			if !quests.is_empty() && !kept {
+				for k in i + 1..j {
+					if is_goal(&lines[k]) {
+						drop[k] = true;
+					}
+				}
+			}
+			i = j;
+		}
+		if !drop.iter().any(|d| *d) {
+			continue;
+		}
+		let kept: Vec<String> = lines.into_iter().enumerate().filter(|(k, _)| !drop[*k]).map(|(_, l)| l).collect();
+		*f = no_empty_steps(kept).join("\n");
+	}
+}
+
 /// A goal line the passes gave two `only` words (one carried from its step, one cutting it to the
 /// guide's races) gets one list: `only !Rogue only Human` -> `only !Rogue,Human` (classes OR, races OR,
 /// the two AND, as two words meant); the compiler refuses a second `only`. Each value once.
@@ -3619,5 +3700,27 @@ mod tests {
 		optional_by_fixes(&mut files, &optional);
 		// (The hand-in as written: it applies only with the quest done.)
 		assert_eq!(files[0], "guide a\n\nstep Nesingwary\n  accept 185\n  accept 338 optional                 -- Barnil Stonepot\n\nstep Pages\n  complete 339 optional               -- Chapter I\n  collect 4628 quest 712 optional\n  turnin 712 only Orc");
+	}
+
+	#[test]
+	fn a_race_guide_drops_a_class_quest_its_published_mask_excludes() {
+		// forever-db quest.jsonl: 1599 Beginnings races 65 (Human+Gnome), 94373 Call of Earth races 4 (Dwarf).
+		let mut quests = BTreeMap::new();
+		quests.insert(1599, crate::input::Quest { races: Some(65.0), ..crate::input::Quest::default() });
+		quests.insert(94373, crate::input::Quest { races: Some(4.0), ..crate::input::Quest::default() });
+		quests.insert(170, crate::input::Quest { races: Some(0.0), ..crate::input::Quest::default() });
+		let data = Data { quests, ..Data::default() };
+		let dwarf = "guide g\nrace Dwarf\n\nstep Anvilmar\n  accept 170\n  accept 1599 only Warlock\n  accept 94373 only Shaman\n\nstep Call of Earth\n  only Shaman\n  turnin 94373\n  use 6635\n\nstep Binding\n  only Warlock\n  turnin 1599\n";
+		let gnome = dwarf.replace("race Dwarf", "race Gnome");
+		let mut files = vec![dwarf.to_string(), gnome];
+		drop_race_excluded(&mut files, &data);
+		assert!(files[0].contains("accept 94373 only Shaman"), "{}", files[0]);
+		assert!(!files[0].contains("1599"), "{}", files[0]);
+		assert!(files[0].contains("step Call of Earth"), "{}", files[0]);
+		assert!(!files[0].contains("step Binding"), "{}", files[0]);
+		assert!(files[1].contains("accept 1599 only Warlock"), "{}", files[1]);
+		assert!(!files[1].contains("94373"), "{}", files[1]);
+		assert!(!files[1].contains("step Call of Earth"), "{}", files[1]);
+		assert!(files[1].contains("accept 170\n"), "{}", files[1]);
 	}
 }
