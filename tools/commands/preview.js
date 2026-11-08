@@ -1010,6 +1010,30 @@ const SCENES = [
 		backdrop: 'terrain',
 	},
 	{
+		file: 'journal.svg',
+		title: 'Offline render of the step list, not an in-game capture. Camp Narache next action; fishing notes with no client skill.',
+		panels: [
+			{
+				roots: ['NorthstarNow'],
+				script: `Northstar.Engine.GetStepIndex = function() return 4 end
+					Northstar.Engine.GetStepView = function()
+						return { index = 4, title = "Camp Narache", current = 1, goals = {
+							{ status = "current", text = "Accept The Hunt Begins", t = "accept" },
+							{ status = "current", text = "Collect Plainstrider Meat", t = "collect" },
+							{ status = "done", text = "Already done", t = "turnin" },
+						} }
+					end
+					Northstar.UI.Now.Show()`,
+			},
+			{
+				roots: ['NorthstarNow'],
+				script: `Northstar.UI.Now.Show()
+					local fish = Northstar.UI.Now.frame.FishBtn
+					if fish.Label:GetText() == "Fish" then fish:Click() end`,
+			},
+		],
+	},
+	{
 		file: 'guide-states.svg',
 		title: 'No guide open, guide complete, out-levelled banner, header menu',
 		panels: [

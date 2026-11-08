@@ -275,6 +275,14 @@ build; tables of another build than the grid's stop the build unless `--allow-bu
 does a source that cannot be read (no silent fallback to Classic Era's zones). `forge doctor` says
 whether the grid's build is saved.
 
+A separate Windows probe for the installed Forever client wowf 1.60.1.70862 lives in
+`tools/forever70862/`. `policy.js` is the decision the script asks, and the fixture tests cover it.
+A missing log, a missing or stale `meta.json`, or a Classic Era fallback is exit 1. A build whose
+`counts.questieQuests` is missing or not greater than zero is exit 3: the files are not a release
+and guides are not compiled from them. Exit 0 still is not a release. The script does not pass
+`--no-questie`, `--allow-build-mismatch`, `--allow-incomplete`, `--no-forever`, or
+`--forever-tables wago`. It was not run on a Windows client from this checkout.
+
 ## The other builders
 
 Each builder is a `forge data` subcommand. All of them read `data/forever`, so run `forge data build`

@@ -193,8 +193,8 @@ function Now.ClassRows()
 	return rows
 end
 
-local function plate(parent)
-	local frame = CreateFrame("Frame", nil, parent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+local function plate(parent, name)
+	local frame = CreateFrame("Frame", name, parent, BackdropTemplateMixin and "BackdropTemplate" or nil)
 	if frame.SetBackdrop then
 		frame:SetBackdrop({
 			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -231,8 +231,8 @@ end
 
 local function build()
 	if f then return f end
-	f = plate(UIParent)
-	f:SetSize(300, 196)
+	f = plate(UIParent, "NorthstarNow")
+	f:SetSize(300, 228)
 	f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 24, -160)
 	f:SetFrameStrata("MEDIUM")
 	f:SetMovable(true)
@@ -257,7 +257,7 @@ local function build()
 	f.More = label(f, "GameFontHighlightSmall", 0.62, 0.60, 0.54)
 	f.More:SetPoint("TOPLEFT", 12, -84)
 	f.More:SetPoint("RIGHT", -12, 0)
-	f.More:SetHeight(36)
+	f.More:SetHeight(78)
 
 	f.ClassBtn = button(f, "Class", function()
 		if UI.ShowPicker then UI.ShowPicker() end
