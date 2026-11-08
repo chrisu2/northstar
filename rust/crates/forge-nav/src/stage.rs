@@ -73,11 +73,26 @@ pub struct WalksOut {
 
 /// The road mask tag of a grid (its walk/roads-0-<tag>.bin; exactly one).
 pub fn roads_tag(grid: &Path) -> Result<String, String> {
-	let mut tags: Vec<String> = std::fs::read_dir(grid.join("walk"))
-		.map_err(|e| format!("{}: {e}", grid.display()))?
-		.flatten()
-		.filter_map(|e| e.file_name().to_str().and_then(|n| n.strip_prefix("roads-0-").and_then(|t| t.strip_suffix(".bin")).map(String::from)))
-		.collect();
+	let walk = grid.join("walk");
+	// A missing walk/ is NotFound. On Windows that is "The system cannot find
+	// the path specified" (os error 3). Naming the grid directory made that
+	// look like --grid itself was wrong; nav pack reads index.json and never
+	// writes walk/.
+	let mut tags: Vec<String> = match std::fs::read_dir(&walk) {
+		Ok(rd) => rd
+			.flatten()
+			.filter_map(|e| e.file_name().to_str().and_then(|n| n.strip_prefix("roads-0-").and_then(|t| t.strip_suffix(".bin")).map(String::from)))
+			.collect(),
+		Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+			return Err(format!(
+				"no prepared walk graphs in {} (index.json of {} can exist without them; forge nav pack does not write walk/). Run `forge nav prepare --dir {}` after the roads and hubs layers",
+				walk.display(),
+				grid.display(),
+				grid.display()
+			));
+		}
+		Err(e) => return Err(format!("{}: {e}", walk.display())),
+	};
 	tags.sort();
 	tags.dedup();
 	if tags.len() != 1 {

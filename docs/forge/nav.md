@@ -669,6 +669,14 @@ forge nav check
   It takes about 2 minutes for the three maps.
 - `forge nav check` compares the folder with its `PACK.json`: every listed file present and unchanged,
   none unlisted, `Nav/Nav.xml` listing them in order, the chokepoints last. Exit 1 when one differs.
+- A Forever install is the checkout's nav addon with this pack's generated files, not the checkout's
+  own `Nav/*.lua`. The checkout's `PACK.json` in this tree is `wow_classic_beta` `1.60.1.70532`,
+  format 5 (Leffe). A native `wowf` `1.60.1.70862` pack is format 3 and has no `Northstar_Nav_EK` or
+  `Northstar_Nav_Kalimdor` parts. Keep the root `Northstar_Nav.toc` (Interface 16001, the Version
+  line, `LoadOnDemand`, `Dependencies: Northstar`, and the file list `Nav\Nav.xml`, `Routing\*.lua`,
+  `API.lua`), plus `LICENSE`, `CREDITS.md`, `API.lua` and `Routing\`. Replace `PACK.json`,
+  `Nav\Nav.xml`, `Nav\Chokepoints.lua` and every `Nav\Nav*.lua` with the native pack's copies. Do not
+  copy the checkout's map Lua or its Eastern Kingdoms and Kalimdor part addons.
 
 The format itself (clusters, cells, entrances, faces, classes, the zone field) is written in each
 `Nav<map>.lua`'s header and in [ARCHITECTURE.md](../ARCHITECTURE.md), "Packing for the in-game engine".
@@ -704,6 +712,12 @@ forge nav layers hubs --dir data/local/nav4
 **`the data pack has no navigation grid (it is built from your own client) and no client … was found: pass --wow <client> or --grid <dir> (or NORTHSTAR_GRID)`**
 The pack never ships a grid, and `forge build` found no game client to build one from. Pass
 `--wow` with your game folder, or build a grid (above) and pass `--grid`.
+
+**`forge guide bake: <grid>: The system cannot find the path specified. (os error 3)`**
+The grid directory and its `index.json` are there. `forge nav pack` reads those and does not write
+`walk/`. Bake prices legs from `<grid>/walk`, and the old message named the grid directory instead
+of that folder. Run `forge nav prepare --dir <grid>` (after `forge nav layers`), then bake again.
+The message now names `<grid>/walk`.
 
 **`walker: no walk graph … for continent N (… router.js prepare builds it)`**
 The grid has no `walk/` files for the current `builtAt`. This happens after `nav build` when

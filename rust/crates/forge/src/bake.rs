@@ -84,6 +84,18 @@ pub fn maps_id(grid: &forge_nav::grid::Grid, leffe: Option<&Path>, lifts: Option
 }
 
 pub fn bake_trees(i: &BakeIn) -> Result<BakeOut, String> {
+	if !i.grid.join("index.json").is_file() {
+		return Err(format!("no navigation grid in {} (no index.json). --grid is that directory, the same one `forge nav pack --dir` used", i.grid.display()));
+	}
+	// Before the guide trees are read: a missing walk/ used to surface only
+	// after they were counted, as an OS error on the grid directory.
+	let _ = forge_nav::stage::roads_tag(i.grid)?;
+	if !i.chokepoints.is_file() {
+		return Err(format!(
+			"{}: not a file. Pass --chokepoints the Chokepoints.lua from the nav pack of this grid, not a Northstar_Nav whose PACK.json grid is another build",
+			i.chokepoints.display()
+		));
+	}
 	let t0 = std::time::Instant::now();
 	let mut ddiag = forge_guide::diag::Diagnostics::new();
 	let data = forge_guide::project::load_project_data(i.data, &mut ddiag)?;
@@ -192,4 +204,56 @@ pub fn bake_trees(i: &BakeIn) -> Result<BakeOut, String> {
 		"bytes": bytes, "corners": corners, "seconds": t0.elapsed().as_secs_f64(),
 	});
 	Ok(BakeOut { files, stats })
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{bake_trees, BakeIn};
+
+	fn fail(dir: &std::path::Path, chokes: &std::path::Path) -> String {
+		let log = |_m: &str| {};
+		match bake_trees(&BakeIn {
+			trees: &[],
+			data: dir,
+			grid: dir,
+			leffe: None,
+			area_table: &dir.join("AreaTable.csv"),
+			zones: &dir.join("zones.json"),
+			chokepoints: chokes,
+			threads: 1,
+			log: &log,
+		}) {
+			Err(e) => e,
+			Ok(_) => panic!("bake should refuse this grid"),
+		}
+	}
+
+	#[test]
+	fn a_grid_without_walk_is_not_reported_as_a_missing_grid_path() {
+		let dir = std::env::temp_dir().join(format!("northstar-bake-walk-{}", std::process::id()));
+		let _ = std::fs::remove_dir_all(&dir);
+		std::fs::create_dir_all(&dir).unwrap();
+		std::fs::write(dir.join("index.json"), b"{}\n").unwrap();
+		let chokes = dir.join("Chokepoints.lua");
+		std::fs::write(&chokes, b"--\n").unwrap();
+		let err = fail(&dir, &chokes);
+		assert!(err.contains(&dir.join("walk").display().to_string()), "{err}");
+		assert!(err.contains("forge nav prepare"), "{err}");
+		assert!(!err.contains("os error"), "{err}");
+		let _ = std::fs::remove_dir_all(&dir);
+	}
+
+	#[test]
+	fn bake_asks_for_the_pack_chokepoints_file() {
+		let dir = std::env::temp_dir().join(format!("northstar-bake-chokes-{}", std::process::id()));
+		let _ = std::fs::remove_dir_all(&dir);
+		std::fs::create_dir_all(dir.join("walk")).unwrap();
+		std::fs::write(dir.join("index.json"), b"{}\n").unwrap();
+		std::fs::write(dir.join("walk").join("roads-0-test.bin"), b"").unwrap();
+		let chokes = dir.join("missing").join("Chokepoints.lua");
+		let err = fail(&dir, &chokes);
+		assert!(err.contains("Chokepoints.lua"), "{err}");
+		assert!(err.contains("not a file"), "{err}");
+		let _ = std::fs::remove_dir_all(&dir);
+	}
 }

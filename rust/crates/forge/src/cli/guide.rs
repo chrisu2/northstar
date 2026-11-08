@@ -6,8 +6,8 @@
 //! <checkout>/data/sim with the default data) reads world-<faction>.json's `excluded` for the solo policy,
 //! skipping a world built from other data.
 //!
-//! `forge guide bake --guides <dir>[,<dir>...] [--grid <dir>] [--leffe <dir>] [--root <repo>] [--data <dir>] [--threads N]`:
-//! the baked legs of written guide trees (forge::bake).
+//! `forge guide bake --guides <dir>[,<dir>...] [--grid <dir>] [--leffe <dir>] [--root <repo>] [--data <dir>] [--chokepoints <file>] [--threads N]`:
+//! the baked legs of written guide trees (forge::bake). The grid must already have walk/ from `forge nav prepare`.
 
 use forge_guide::data::Data;
 use forge_guide::diag::{format_diagnostics, Diag, Diagnostics};
@@ -184,7 +184,7 @@ fn bake(args: &[String]) -> i32 {
 		eprintln!("forge guide: {m}\n(forge guide --help for the options)");
 		2
 	};
-	if let Err(e) = super::check_args(args, &["--guides", "--grid", "--leffe", "--root", "--data", "--threads"], &[], 0) {
+	if let Err(e) = super::check_args(args, &["--guides", "--grid", "--leffe", "--root", "--data", "--chokepoints", "--threads"], &[], 0) {
 		return usage(&e);
 	}
 	let opt = |k: &str| args.iter().position(|a| a == k).and_then(|i| args.get(i + 1)).cloned().or_else(|| args.iter().find_map(|a| a.strip_prefix(k)?.strip_prefix('=').map(String::from)));
@@ -205,6 +205,7 @@ fn bake(args: &[String]) -> i32 {
 	let src = forge_world::data::DirSource::repo(&root);
 	let Some(build) = forge_world::data::forever_build(&src) else { return usage(&format!("no cached Forever AreaTable in {}/data/sources/wago", root.display())) };
 	let area_table = root.join(format!("data/sources/wago/{build}/AreaTable.csv"));
+	let chokepoints = opt("--chokepoints").map(|c| cwd.join(c)).unwrap_or_else(|| root.join("addon/Northstar_Nav/Nav/Chokepoints.lua"));
 	let say = |m: &str| eprintln!("forge guide bake: {m}");
 	let r = forge::bake::bake_trees(&forge::bake::BakeIn {
 		trees: &trees,
@@ -213,7 +214,7 @@ fn bake(args: &[String]) -> i32 {
 		leffe: leffe.as_deref(),
 		area_table: &area_table,
 		zones: &data.join("zones.json"),
-		chokepoints: &root.join("addon/Northstar_Nav/Nav/Chokepoints.lua"),
+		chokepoints: &chokepoints,
 		threads,
 		log: &say,
 	});
