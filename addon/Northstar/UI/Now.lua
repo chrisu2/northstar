@@ -169,12 +169,28 @@ function Now.Compose(view)
 			if #more == 3 then break end
 		end
 	end
-	return {
-		step = view.index and ("Step " .. view.index) or "",
-		title = view.title or "",
-		next = nextGoal and UI.PlainGoalText(nextGoal) or "Nothing left on this step.",
-		more = more,
-	}
+	local step = view.index and ("Step " .. view.index) or ""
+	local title = view.title or ""
+	local nextText = nextGoal and UI.PlainGoalText(nextGoal) or "Nothing left on this step."
+	-- The arrow's waypoint can be an along goal (a kill while the step is a
+	-- turn-in). The sheet says that same line, with the log's count.
+	local wp = ns.Engine and ns.Engine.GetWaypoint and ns.Engine.GetWaypoint()
+	if wp and type(wp.label) == "string" and wp.label ~= "" then
+		nextText = wp.label
+		if wp.stepIndex and ns.Engine.GetStepView then
+			local sv = ns.Engine.GetStepView(wp.stepIndex)
+			if sv then
+				step = "Step " .. wp.stepIndex
+				if sv.title and sv.title ~= "" then title = sv.title end
+				local g = sv.goals and wp.goalIndex and sv.goals[wp.goalIndex]
+				local p = g and g.progress
+				if p and type(p.cur) == "number" and type(p.max) == "number" then
+					nextText = nextText .. " (" .. p.cur .. "/" .. p.max .. ")"
+				end
+			end
+		end
+	end
+	return { step = step, title = title, next = nextText, more = more }
 end
 
 Sheet.SLEEP_ID = "forever/miscellaneous/cozy-sleeping-bag"
@@ -561,6 +577,11 @@ ns.On("SETTING_CHANGED", function(path)
 	if path == "ui.journal" or path == "ui.shown" then sync() end
 end)
 ns.On("GUIDE_CHANGED", function() Now.Refresh() end)
+-- The arrow already follows these. The sheet was only painted on guide
+-- changes, so an accepted quest left "Accept ..." on screen.
+ns.On("STEP_CHANGED", function() Now.Refresh() end)
+ns.On("STEP_UPDATED", function() Now.Refresh() end)
+ns.On("WAYPOINT_CHANGED", function() Now.Refresh() end)
 
 if ns.RegisterCommand then
 	ns.RegisterCommand("journal", function() ns.Fire("TOGGLE_JOURNAL") end, "Show or hide the step list")
