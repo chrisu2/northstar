@@ -1321,7 +1321,7 @@ end`,
 	},
 	{
 		file: 'recorder-window.svg',
-		title: 'The Recorder window (/psrec ui) in Northstar\'s look: a trail running on the next spot of the tour, one spot done, this session\'s trails',
+		title: 'The Recorder window (/nsrec ui) in Northstar\'s look: a trail running on the next spot of the tour, one spot done, this session\'s trails',
 		panels: [
 			{ roots: ['NorthstarRecorderPanel'], addons: ['Northstar_Recorder'], before: RECORDER_PLAYER, script: `NorthstarRecorder_Command("on")
 				NorthstarRecorder_Command("ui")

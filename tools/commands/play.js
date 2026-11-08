@@ -14,9 +14,9 @@ const { PACK_OPTIONS, PACK_USAGE, otherPack, buildPack, folderIn } = require('..
 const { packImporter } = require('../lib/pack/importstring');
 
 const { ROOT } = require('../lib/paths');
-const DEFAULT_ART = '/tmp/polestar-art';
+const DEFAULT_ART = '/tmp/northstar-art';
 
-// Client art when none is named: $NORTHSTAR_CLIENT_ART, else /tmp/polestar-art
+// Client art when none is named: $NORTHSTAR_CLIENT_ART, else /tmp/northstar-art
 // when it holds maps.json, else '' (draw without art).
 function defaultArt() {
 	return process.env.NORTHSTAR_CLIENT_ART || (fs.existsSync(path.join(DEFAULT_ART, 'maps.json')) ? DEFAULT_ART : '');
@@ -132,7 +132,7 @@ const usage = [
 	'',
 	'  --port <n>   port on 127.0.0.1 (default 8077; 0 picks a free one)',
 	'  --art <dir>  local client art (default $NORTHSTAR_CLIENT_ART, else',
-	'               /tmp/polestar-art when present); served locally only',
+	'               /tmp/northstar-art when present); served locally only',
 	'  --no-art     draw without client art',
 	'  --fresh      forget the character and SavedVariables (data/play/, or',
 	'               $NORTHSTAR_PLAY_DATA)',

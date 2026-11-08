@@ -590,7 +590,7 @@ end
 -- effect: says why nothing shows yet.
 function Nav.SayGuideHidden()
 	if Nav.HiddenWithGuide() then
-		ns.Print(L["The guide is hidden and \"Hide the arrow with the guide\" is on, so the arrow is hidden too: /polestar show brings them back."])
+		ns.Print(L["The guide is hidden and \"Hide the arrow with the guide\" is on, so the arrow is hidden too: /northstar show brings them back."])
 	end
 end
 
@@ -632,7 +632,7 @@ ns.RegisterCommand("way", function(rest)
 		if (rest or ""):match("^%s*$") then
 			Nav.ClearTarget()
 		else
-			ns.Print(L["Usage: /polestar way <x> <y> [label]"])
+			ns.Print(L["Usage: /northstar way <x> <y> [label]"])
 		end
 		return
 	end

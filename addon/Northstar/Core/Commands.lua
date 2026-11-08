@@ -1,4 +1,4 @@
--- Slash commands and key binding labels. Init.lua owns the /polestar
+-- Slash commands and key binding labels. Init.lua owns the /northstar
 -- dispatcher; every command registers here or in its module, after the
 -- locale file, so its help line is read in the client's language.
 -- Bindings.xml (addon root) calls into the functions below.
@@ -45,7 +45,7 @@ ns.Bindings = {
 
 local function needGuide()
 	if Engine.GetGuide() then return true end
-	ns.Print(L["No guide selected. Use /polestar guides to pick one."])
+	ns.Print(L["No guide selected. Use /northstar guides to pick one."])
 	return false
 end
 

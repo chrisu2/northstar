@@ -234,7 +234,7 @@ local function changedBy(route, into)
 	return into
 end
 
--- Tests and /polestar tools: forget every sighting on this realm.
+-- Tests and /northstar tools: forget every sighting on this realm.
 function Transit.ForgetSightings()
 	local db = ns.DB()
 	if type(db.transit) == "table" then db.transit[realmName or "?"] = nil end

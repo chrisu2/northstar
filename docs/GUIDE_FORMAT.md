@@ -417,7 +417,7 @@ next forever/horde/02-the-barrens
 Northstar checks the condition on the character as they are when it lists the
 options: at the end of the guide, that decides where it goes. An option whose
 `when` does not hold is left out of the "Choose your path" window, the guide
-menu's "Next" line, `/polestar path` and a route change. With one option left
+menu's "Next" line, `/northstar path` and a route change. With one option left
 Northstar goes on to it without asking; with none the guide ends there, like a
 guide without `next`. Nothing is stored: the condition is checked again each
 time. A subzone is looked up in the zone where the guide ends.
@@ -1081,7 +1081,7 @@ from the data, so the arrow leads to the nearest camp.
 gets there: use it where a `goto` point would be one spot of a large place.
 
 Typed coordinates are in the Era map frame unless the guide says `coords
-live` or the goal says `live`. In game, `/polestar where` gives your own
+live` or the goal says `live`. In game, `/northstar where` gives your own
 position as `zone map <id>` and `goto <x>,<y> live`, ready to paste, and the
 `@x,y live` form for any other goal.
 

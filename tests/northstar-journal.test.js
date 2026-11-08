@@ -73,16 +73,45 @@ test('the step list names the next open goal and keeps the wide window hidden', 
 
 test('fishing notes do not invent catches, lures, or casts', () => {
 	const [idle, ranked] = load(`
-		emit(table.concat(Northstar.UI.Fish.Lines(nil, nil, nil), ' | '))
-		emit(table.concat(Northstar.UI.Fish.Lines(12, 75, 120), ' | '))
+		emit(table.concat(Northstar.UI.Fish.Lines(nil, nil, nil, 0), ' | '))
+		emit(table.concat(Northstar.UI.Fish.Lines(12, 75, 120, 3), ' | '))
 	`);
 	for (const text of [idle, ranked]) {
 		assert.match(text, /does not cast or loot/);
-		assert.match(text, /Catches are not counted/);
+		assert.match(text, /Not a detected bite/);
 		assert.match(text, /Lures and pole enchants are not read/);
+		assert.match(text, /Kept on this character/);
+		assert.match(text, /Not sent/);
+		assert.doesNotMatch(text, /Not saved/);
 		assert.doesNotMatch(text, /1,300|Classic|pool|Booty Bay|Nat Pagle|Shiny Bauble/i);
 	}
 	assert.match(idle, /Fishing skill: not reported/);
+	assert.match(idle, /Manual tally: 0/);
 	assert.match(ranked, /Skill the client reported: 12 \/ 75/);
 	assert.match(ranked, /Session timer: 2 min/);
+	assert.match(ranked, /Manual tally: 3/);
+});
+
+test('a fishing tally is a local note, and skill is a named profession only', () => {
+	const now = fs.readFileSync(path.join(ROOT, 'addon', 'Northstar', 'UI', 'Now.lua'), 'utf8');
+	assert.doesNotMatch(now, /\b356\b|\b7620\b|CastSpell|UseAction|GetWeaponEnchant/);
+	const [loaded, count, named, other] = load(`
+		NorthstarCharDB = { fish = { caught = 4, started = time() - 90 } }
+		Northstar.UI.Fish.Load()
+		emit({ caught = Northstar.UI.Fish.caught, elapsed = Northstar.UI.Fish.Elapsed() })
+		Northstar.UI.Fish.AddCatch()
+		emit(NorthstarCharDB.fish.caught)
+		GetProfessions = function() return 1 end
+		GetProfessionInfo = function() return "Fishing", nil, 12, 75 end
+		local rank, maxRank = Northstar.UI.Fish.Rank()
+		emit(rank .. "/" .. maxRank)
+		GetProfessionInfo = function() return "Alchemy", nil, 40, 75 end
+		local again = Northstar.UI.Fish.Rank()
+		emit(again == nil)
+	`);
+	assert.equal(loaded.caught, 4);
+	assert.ok(loaded.elapsed >= 90 && loaded.elapsed < 95);
+	assert.equal(count, 5);
+	assert.equal(named, '12/75');
+	assert.equal(other, true);
 });

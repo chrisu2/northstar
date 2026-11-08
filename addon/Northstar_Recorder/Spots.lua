@@ -1,4 +1,4 @@
--- The spots to walk with /psrec trail for Northstar's navigation checks
+-- The spots to walk with /nsrec trail for Northstar's navigation checks
 -- (level 30 or lower; the ones waiting for a higher level cap are left out),
 -- in each faction's tour order (Panel.lua). Generated once from the
 -- maintainers' trail list (data/local/research/RecordSpots.md, not shipped);

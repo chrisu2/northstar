@@ -1359,7 +1359,7 @@ end
 
 function Q.IsRunning() return running end
 
--- Run a pending update now (tests, /polestar commands).
+-- Run a pending update now (tests, /northstar commands).
 function Q.Flush()
 	if pending or dirtyLog or dirtyAvailable or dirtyPublish then flush() end
 end

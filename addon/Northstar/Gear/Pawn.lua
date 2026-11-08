@@ -48,7 +48,7 @@
 --
 -- Scale: an imported scale is used as it is, not rescaled. Upgrade
 -- percentages are ratios of two scores of the same scale, so they do not
--- depend on its size; only the absolute numbers of /polestar gear differ from
+-- depend on its size; only the absolute numbers of /northstar gear differ from
 -- the built-in specs (whose main stat is about 1).
 
 local ADDON, ns = ...

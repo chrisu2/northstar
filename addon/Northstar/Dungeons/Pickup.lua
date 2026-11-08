@@ -557,7 +557,7 @@ function Dungeons.PickupGuide(key)
 	end
 	-- The hand-in half (Dungeons/Handin.lua) is built after the run, from the
 	-- quests then finished; this guide's own end offers it too (UI/GuideFrame).
-	last.goals[#last.goals + 1] = { t = "note", text = format(L["After the run: open this dungeon's page (/polestar dungeons %s) and choose Hand in the quests."], d.name) }
+	last.goals[#last.goals + 1] = { t = "note", text = format(L["After the run: open this dungeon's page (/northstar dungeons %s) and choose Hand in the quests."], d.name) }
 	steps[#steps + 1] = last
 	return { title = format(L["%s: pick up the quests"], d.name), steps = steps, dungeon = key }
 end

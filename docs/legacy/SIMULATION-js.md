@@ -1033,7 +1033,7 @@ so an edit to export, search, cases or the command keeps it.
 
 **The shared store.** Built worlds, the world build's floors and the walks files
 are also kept in one store shared by every worktree (`tools/lib/sim/cas.js`:
-`$NORTHSTAR_CAS`, else `~/.cache/polestar/cas`; `off`: none), by the hash of what
+`$NORTHSTAR_CAS`, else `~/.cache/northstar/cas`; `off`: none), by the hash of what
 they were made from: a world by its `dataHash`, faction, band width, open cap and
 the world builder's code; walks by the world's `dataHash`, the faction, the router
 and its walking maps (what `walksUsable` checks). A worktree's `data/sim` that

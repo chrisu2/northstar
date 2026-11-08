@@ -97,8 +97,8 @@ Skins (Northstar's own, Halo, Hearth, WoW Forever, Blizzard and Classic), colour
 
 ## Getting started
 
-*   A short **welcome** opens on each new character with the guide Northstar suggests (`/polestar welcome` shows it again).
-*   **`/polestar guides`** opens the hub, **`/polestar`** shows the guide window, **`/polestar options`** holds every setting, **`/polestar help`** lists every command.
+*   A short **welcome** opens on each new character with the guide Northstar suggests (`/northstar welcome` shows it again).
+*   **`/northstar guides`** opens the hub, **`/northstar`** shows the guide window, **`/northstar options`** holds every setting, **`/northstar help`** lists every command.
 
 ## Beta
 

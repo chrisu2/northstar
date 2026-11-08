@@ -830,7 +830,7 @@ ns.OnLogin(function()
 end)
 
 ---------------------------------------------------------------------------
--- /polestar gear [item link]
+-- /northstar gear [item link]
 ---------------------------------------------------------------------------
 
 -- A gain in a few characters: whole percents ("+12%", "-8%", "+<1%"), and
@@ -847,12 +847,12 @@ end
 -- Where the spec in use came from (Gear.GetSpec's source).
 local SPEC_SOURCE = { setting = L["setting"], talents = L["talents"], default = L["default"], custom = L["custom"] }
 
--- /polestar gear scales: the custom scales for this class, the chosen one marked.
+-- /northstar gear scales: the custom scales for this class, the chosen one marked.
 function Gear.PrintScales()
 	local class = Gear.GetPlayer().class
 	local list = class and Gear.Scales.List(class) or {}
 	if #list == 0 then
-		ns.Print(L["No custom scales yet. /polestar gear import adds one."])
+		ns.Print(L["No custom scales yet. /northstar gear import adds one."])
 		return
 	end
 	local chosen = class and Gear.Scales.Chosen(class)

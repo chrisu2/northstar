@@ -1496,7 +1496,7 @@ function GF.ShowOverview(anchor)
 	if #items > 0 then W.ShowMenu(anchor, items, { point = "TOPLEFT", relPoint = "BOTTOMLEFT", minWidth = 260 }) end
 end
 
--- PLAYER_SKIPPED_STEP(guideId, step): from the window or /polestar skip, the
+-- PLAYER_SKIPPED_STEP(guideId, step): from the window or /northstar skip, the
 -- banner offers the undo for SKIPPED_SECONDS.
 ns.On("PLAYER_SKIPPED_STEP", function(guideId, step)
 	if not F or type(step) ~= "number" then return end
@@ -2317,7 +2317,7 @@ local function setEmpty(kind)
 		-- Our own guides switched off on the Community guides page: one
 		-- click turns them back on.
 		empty.Title:SetText(L["No guides shown"])
-		empty.Text:SetText(L["Northstar's own guides are switched off on the Community guides page (/polestar packs)."])
+		empty.Text:SetText(L["Northstar's own guides are switched off on the Community guides page (/northstar packs)."])
 		W.SetButtonText(empty.Primary, L["Show Northstar's guides"])
 		empty.Primary.psAction = function()
 			if G and G.SetPackShown then G.SetPackShown("guides", true) end
@@ -2329,7 +2329,7 @@ local function setEmpty(kind)
 	elseif kind == "noguides" and UI.Packs and UI.Packs.AnySwitchedOff() then
 		-- Installed but switched off on the Community guides page.
 		empty.Title:SetText(L["No guides shown"])
-		empty.Text:SetText(L["The community addons are switched off. Turn one on under Options, Community guides (/polestar packs)."])
+		empty.Text:SetText(L["The community addons are switched off. Turn one on under Options, Community guides (/northstar packs)."])
 		W.SetButtonText(empty.Primary, L["Community guides"])
 		empty.Primary.psAction = function() UI.ShowOptions("guidepacks") end
 		empty.Primary:Show()
@@ -3425,7 +3425,7 @@ function GF.ApplyVisibility()
 	F:SetShown(show and true or false)
 end
 
--- The toggle (/polestar, the key binding, the minimap button) inside, with
+-- The toggle (/northstar, the key binding, the minimap button) inside, with
 -- ui.instance "hide" and the window on, now and on the way in: opens or
 -- closes it for this visit, ui.shown untouched. -> true when it did. A
 -- window that was off on the way in toggles ui.shown as anywhere else, so
@@ -3511,7 +3511,7 @@ function GF.ApplyScale()
 end
 
 local APPLY = {
-	-- Shown inside (a guide picked, /polestar show, the switch): open for the visit.
+	-- Shown inside (a guide picked, /northstar show, the switch): open for the visit.
 	["ui.shown"] = function()
 		if inInstance and ns.Get("ui.shown") then openInside = true end
 		GF.ApplyVisibility()
@@ -3848,7 +3848,7 @@ local function openMenu(button)
 		{ text = L["Options"], icon = "gear", onClick = function() UI.ShowOptions() end },
 		{ text = L["Hide window"], icon = "close", onClick = function()
 			ns.Set("ui.shown", false)
-			ns.Print(L["Guide window hidden. Type /polestar to bring it back."])
+			ns.Print(L["Guide window hidden. Type /northstar to bring it back."])
 		end },
 	}) do items[#items + 1] = it end
 	-- The Recorder's window, while the Recorder addon is loaded.
@@ -4907,7 +4907,7 @@ local function sayHiddenOnce()
 	local db = ns.DB()
 	if db.instanceHideTold then return end
 	db.instanceHideTold = true
-	ns.Print(L["The guide window hides in dungeons and battlegrounds. Type /polestar to show it here, or change it in Options > Guide > Window."])
+	ns.Print(L["The guide window hides in dungeons and battlegrounds. Type /northstar to show it here, or change it in Options > Guide > Window."])
 end
 
 -- Every way in or out passes a loading screen, a /reload included. Going in

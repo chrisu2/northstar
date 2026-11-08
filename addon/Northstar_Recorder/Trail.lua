@@ -1,8 +1,8 @@
--- Position trail: `/psrec trail on [label]` records where the player walks,
+-- Position trail: `/nsrec trail on [label]` records where the player walks,
 -- densely enough to rebuild the path (city ramps, lifts, rope bridges) for
 -- Northstar's navigation. Off by default, and only while the Recorder itself
--- records; `/psrec trail off` ends it, and it stops by itself after
--- MAX_TIME, on /psrec off and on logout or /reload.
+-- records; `/nsrec trail off` ends it, and it stops by itself after
+-- MAX_TIME, on /nsrec off and on logout or /reload.
 --
 -- Records (docs/RECORDING.md): a `mark` "trail on: <label>" at the start
 -- and "trail off: <label> (<points> points, <yards> yd, <reason>)" at the
@@ -146,7 +146,7 @@ ns.TrailStop = stop
 
 function ns.Trail() return trail end
 
--- A new session (a login, /psrec clear) starts an empty list; a /reload or
+-- A new session (a login, /nsrec clear) starts an empty list; a /reload or
 -- logout ends the Lua state, so the trail is closed while it can be.
 ns.OnSession(function()
 	history = {}

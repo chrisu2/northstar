@@ -166,7 +166,7 @@ version throughout.
    Then once more with the game's gamepad interface on (Options, Gamepad,
    Enable Gamepad UI), with `taintLog` at 0 (on this client it breaks every
    addon's `hooksecurefunc` post-hooks, so a logged pass shows Northstar
-   misbehaving where nothing is wrong): `/polestar` is unknown, the minimap
+   misbehaving where nothing is wrong): `/northstar` is unknown, the minimap
    button shows; open the options from it, move through them and close them
    with B, browse the guide, and let a route choice or a new character's
    welcome show by itself: it takes no button until the Browse the guide
@@ -246,7 +246,7 @@ an addon release.
 | Forge | `forge-v<rust/Cargo.toml version>` | `.github/workflows/forge.yml` on the tag: builds Linux, Windows and macOS, checks the tag against the workspace version | `polestar-forge-<os>.tar.gz/.zip` and `SHA256SUMS` ([FORGE.md](FORGE.md), "Install") |
 | The open Forever database | `data-v<forever-db/index.json version>` | `.github/workflows/data-release.yml`: `forge data publish --check`, then the zip and the SQLite | `forever-db-<version>.zip`, `forever-db-<version>.sqlite.zst`, `SHA256SUMS` ([forge/data.md](forge/data.md)) |
 | LibForeverData | `lib-v<api>.<forever-db version>` | `.github/workflows/lib-release.yml`: the same guard, the library, its Lua test | `LibForeverData-<version>.zip` |
-| The data pack | the fixed `data-pack` release (its assets are replaced) | the maintainer: `forge data pack --out dist --walks-from <a build with Leffe's maps>`, then `gh release upload data-pack dist/polestar-data-pack.* --clobber` | the contributors' data: client tables, the public KB, the walk stores including the walks on Leffe's maps (never his maps) |
+| The data pack | the fixed `data-pack` release (its assets are replaced) | the maintainer: `forge data pack --out dist --walks-from <a build with Leffe's maps>`, then `gh release upload data-pack dist/northstar-data-pack.* --clobber` | the contributors' data: client tables, the public KB, the walk stores including the walks on Leffe's maps (never his maps) |
 
 Order for a release that changes them all: Forge first (contributors need
 the new Forge to read the new pack), then the data pack from a build of that

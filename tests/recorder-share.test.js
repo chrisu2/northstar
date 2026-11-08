@@ -2,7 +2,7 @@
 // The client's share flag (addon/Northstar_Recorder/Recorder.lua, docs/RECORDING.md
 // "Ack file"): Polestar Client writes NorthstarRecorderShare into Ack.lua while
 // sharing (on by default there). true turns recording on at login (once, with
-// a message) unless the player typed /psrec off; false turns it off; nil (no
+// a message) unless the player typed /nsrec off; false turns it off; nil (no
 // client) leaves the player's choice, so a Recorder on its own stays off.
 
 const { test } = require('node:test');
@@ -29,7 +29,7 @@ const NONE = 'NorthstarRecorderDB = nil';
 test('the client sharing turns recording on, once, and says so', () => {
 	const out = run('true', OFF);
 	assert.equal(out.on, true);
-	assert.match(out.said, /on, because sharing is on in Polestar Client\. \/psrec off to stop\./);
+	assert.match(out.said, /on, because sharing is on in Polestar Client\. \/nsrec off to stop\./);
 	// Already on: nothing to say.
 	assert.doesNotMatch(run('true', ON).said, /because sharing is on/);
 	assert.equal(run('true', NONE).on, true);
@@ -41,7 +41,7 @@ test('the client not sharing turns recording off without an opt-out', () => {
 	assert.equal(out.optout, false);
 });
 
-test('/psrec off beats the client; /psrec on clears it', () => {
+test('/nsrec off beats the client; /nsrec on clears it', () => {
 	const out = run('true', 'NorthstarRecorderDB = { schema = 2, enabled = false, optout = true }');
 	assert.equal(out.on, false);
 	assert.equal(out.optout, true);
@@ -61,7 +61,7 @@ test('/psrec off beats the client; /psrec on clears it', () => {
 	assert.deepEqual(after, { off: { on: false, optout: true }, on: true, optout: false });
 });
 
-test('without the client (no flag) the old behaviour holds: off unless /psrec on', () => {
+test('without the client (no flag) the old behaviour holds: off unless /nsrec on', () => {
 	assert.equal(run(undefined, OFF).on, false);
 	assert.equal(run(undefined, ON).on, true);
 	assert.equal(run(undefined, NONE).on, false);

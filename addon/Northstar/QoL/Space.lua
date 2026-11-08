@@ -199,7 +199,7 @@ ns.On("SETTING_CHANGED", function(path)
 	if path == "" or path == "qol" or path == "qol.bagSpace" or path == "qol.bagsLow" then refreshSoon() end
 end)
 
--- /polestar bags: the free slots and the cheapest junk, in chat.
+-- /northstar bags: the free slots and the cheapest junk, in chat.
 if ns.RegisterCommand then
 	ns.RegisterCommand("bags", function()
 		local f, t = Space.Count()

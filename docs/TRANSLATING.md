@@ -243,7 +243,7 @@ install with its own warnings, so the scenes skip, as on CI; run
 `i18n leaks` before a pull request that changes what the addon shows. A text that is right
 to show in Latin letters goes on the allow list with the reason in its group,
 never to make a finding go away. Developer output stays English on purpose:
-the guide lines `/polestar where` prints and the details block of a bug
+the guide lines `/northstar where` prints and the details block of a bug
 report, both read by maintainers, are on the allow list.
 
 ## Game names

@@ -761,7 +761,7 @@ end
 -- like the compiler writes), then `x,y live` for the hint; nil where the
 -- game gives no position. The client reports live-frame coordinates, and
 -- typed coordinates are read in the Era frame unless marked, so the goal
--- modifier `live` goes with them (Forever moved some zones). /polestar where
+-- modifier `live` goes with them (Forever moved some zones). /northstar where
 -- and the report window's right spot (UI/Report.lua).
 -- Not in the Compat table: it reads ns.Compat at the call, so a test's fake
 -- Compat gives it the position.

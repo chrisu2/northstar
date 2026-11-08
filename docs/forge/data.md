@@ -612,8 +612,8 @@ So a pack user's routes leave out the same uncertain quests, and their skip list
 
 ```sh
 forge data fetch
-forge data fetch --dest ~/polestar-pack
-forge data fetch --url ./dist/polestar-data-pack.json   # a local or test pack
+forge data fetch --dest ~/northstar-pack
+forge data fetch --url ./dist/northstar-data-pack.json   # a local or test pack
 ```
 
 1. It reads the index, `polestar-data-pack.json`: by default from the `data-pack` release, or
@@ -665,8 +665,8 @@ forge data pack --out dist --walks-from out
 Build the `--walks-from` output with Leffe's maps (`--leffe`), so its `store-leffe-*.psbn` hold his
 walks and each place's zone on his maps. Never pass his maps to the pack: they are private.
 
-It writes `dist/polestar-data-pack.tar.gz`, a `.blake3` file
-beside it, and the index `dist/polestar-data-pack.json`. The archives are deterministic: the same
+It writes `dist/northstar-data-pack.tar.gz`, a `.blake3` file
+beside it, and the index `dist/northstar-data-pack.json`. The archives are deterministic: the same
 files give the same bytes.
 
 **The private-data guard.** Before writing any archive, `forge data pack` scans everything it gathered:

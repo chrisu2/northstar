@@ -8,7 +8,7 @@
 -- Northstar is heard while party sync listens in a party, unless the player
 -- closed it (party.panel false); hidden with the guide, and in combat when
 -- the guide hides there. Toggled from the guide window's party line and
--- /polestar party (which says why when nothing can show yet; "/polestar
+-- /northstar party (which says why when nothing can show yet; "/northstar
 -- party debug" prints Party.Debug); its place is kept in party.panelPos.
 
 local ADDON, ns = ...
@@ -179,9 +179,9 @@ local function whyNot()
 	return nil
 end
 
--- The guide window's party line and /polestar party: an open panel closes
+-- The guide window's party line and /northstar party: an open panel closes
 -- (and stays closed: party.panel false), a closed one opens, or it says why
--- it cannot yet. "/polestar party debug": Party.Debug's lines.
+-- it cannot yet. "/northstar party debug": Party.Debug's lines.
 function PP.Toggle(arg)
 	if type(arg) == "string" and arg:lower() == "debug" then
 		for _, line in ipairs(ns.Party.Debug()) do ns.Print(line) end

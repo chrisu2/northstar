@@ -61,7 +61,7 @@ local function keyOf(name) return (name:lower():gsub("[^%w]+", "")) end
 -- Recorder, then About.
 local TAIL = { [L["Recorder"]] = 1, [L["About"]] = 2 }
 
--- key: the page's stable key (`/polestar options <key>`, O.Select), the
+-- key: the page's stable key (`/northstar options <key>`, O.Select), the
 -- spec's own or else made from the name. Built-in pages give theirs, so a
 -- translated title does not move them.
 local function pageOf(name, icon, order, builtin, key)
@@ -196,7 +196,7 @@ local BUILTIN = {
 	-- Following the guide: the window, the arrow and routes, automation.
 	{ page = GUIDE, key = "guide", icon = "window", order = 10, tab = L["Window"], section = L["What it shows"],
 		subtitle = L["The guide window, the arrow and its routes, and what Northstar does for you."], controls = {
-		{ kind = "toggle", key = "ui.shown", label = L["Show the window"], help = L["Also /polestar, or the key binding."], search = "show guide, hide guide, toggle window, open window" },
+		{ kind = "toggle", key = "ui.shown", label = L["Show the window"], help = L["Also /northstar, or the key binding."], search = "show guide, hide guide, toggle window, open window" },
 		{ kind = "toggle", key = "ui.compact", label = L["Compact mode"], help = L["Only the header and the current step's goals."], search = "minimal, small, smaller window, simple" },
 		{ kind = "toggle", key = "ui.wholeStep", label = L["Show the whole step"],
 			help = L["Every goal of the step at once, finished ones kept, instead of one person at a time with the others on one line each."] },
@@ -231,7 +231,7 @@ local BUILTIN = {
 	} },
 	{ page = GUIDE, tab = L["Window"], section = L["Dungeons and battlegrounds"], controls = {
 		{ kind = "dropdown", key = "ui.instance", label = L["In dungeons and battlegrounds"],
-			help = L["What the window, its buttons and alerts do in dungeons, raids, battlegrounds and arenas. /polestar or the key binding opens it there until you leave."],
+			help = L["What the window, its buttons and alerts do in dungeons, raids, battlegrounds and arenas. /northstar or the key binding opens it there until you leave."],
 			search = "dungeon, raid, battleground, arena, instance, hide, pvp, healer",
 			choices = { { value = "show", label = L["Keep visible"] }, { value = "hide", label = L["Hide"] } } },
 	} },
@@ -295,7 +295,7 @@ local BUILTIN = {
 		{ kind = "toggle", key = "behavior.autoSelectGuide", label = L["Pick a guide for me"], help = L["Opens the suggested guide when no tab is open."], search = "auto guide, choose guide, suggested guide" },
 		{ kind = "dropdown", key = "behavior.guideEnd", label = L["When a leveling guide ends"], help = L["Ask me: a window says the guide is done and offers the next one. Continue automatically: the next guide loads in the same tab."],
 			choices = { { value = "ask", label = L["Ask me"] }, { value = "continue", label = L["Continue automatically"] } } },
-		{ kind = "dropdown", key = "behavior.routeChoice", label = L["Where to level next"], help = L["Where a guide offers more than one zone to continue in (/polestar path)."],
+		{ kind = "dropdown", key = "behavior.routeChoice", label = L["Where to level next"], help = L["Where a guide offers more than one zone to continue in (/northstar path)."],
 			choices = { { value = "ask", label = L["Let me choose"] }, { value = "recommended", label = L["Take the recommended zone"] } } },
 		-- `die` steps (Core/Engine.lua, Own.deathskips): the player's choice, never in Hardcore.
 		{ kind = "toggle", key = "behavior.deathskips", label = L["Use deathskips"], search = "death skip, die on purpose, corpse run, spirit healer",
@@ -684,11 +684,11 @@ local function buildAbout(view)
 	whyText:SetText(table.concat(paras, "\n\n"))
 	local whyClose = W.Text(view, "title", "text")
 	whyClose:SetText(L["Open source and free is the future."])
-	local cmdH, cmdText = block(L["Commands"], hex .. "/polestar|r   " .. L["show or hide the guide window"] .. "\n"
-		.. hex .. "/polestar guides|r   " .. L["choose a guide"] .. "\n"
-		.. hex .. "/polestar next, prev, skip|r   " .. L["move through steps"] .. "\n"
-		.. hex .. "/polestar report|r   " .. L["report a problem with a step on the Polestar Discord"] .. "\n"
-		.. hex .. "/polestar help|r   " .. L["every command"])
+	local cmdH, cmdText = block(L["Commands"], hex .. "/northstar|r   " .. L["show or hide the guide window"] .. "\n"
+		.. hex .. "/northstar guides|r   " .. L["choose a guide"] .. "\n"
+		.. hex .. "/northstar next, prev, skip|r   " .. L["move through steps"] .. "\n"
+		.. hex .. "/northstar report|r   " .. L["report a problem with a step on the Polestar Discord"] .. "\n"
+		.. hex .. "/northstar help|r   " .. L["every command"])
 	local welcome = W.Button(view, L["Show the welcome again"], function() ns.Fire("SHOW_WELCOME") end)
 	view.Welcome = welcome
 	local credH, credText = block(L["Credits"], L["Inter typeface by The Inter Project Authors, SIL Open Font License 1.1."] .. "\n"

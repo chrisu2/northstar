@@ -285,7 +285,7 @@ local function countsOf(s)
 	return out
 end
 
--- What `/polestar party debug` reports (Party.Debug): the prefix's
+-- What `/northstar party debug` reports (Party.Debug): the prefix's
 -- registration, the last send and its result, the messages heard.
 local diag = { sends = 0, heard = 0, matched = 0 }
 
@@ -1092,7 +1092,7 @@ end
 -- Whether party sync is listening: a party, and sharing or showing on.
 function Party.IsLive() return liveOn end
 
--- `/polestar party debug`: the lines that say whether the party's messages
+-- `/northstar party debug`: the lines that say whether the party's messages
 -- go out and come in, for a player to paste into a report: the last
 -- sender's name as it arrived beside each member's as the roster keys it.
 function Party.Debug()
@@ -1459,7 +1459,7 @@ Party.OPTIONS = {
 			disabled = function() return not ns.Get("party.show") end,
 			help = L["On a loot window or roll, a line under a quest item a party member still needs and you don't. Nothing is passed or said for you."] },
 		{ kind = "toggle", key = "party.panel", label = L["Party panel"], search = SEARCH,
-			help = L["Opens by itself when someone in your party runs Northstar too: each member's level, step and what they still need of yours; click a name to point the arrow at them. Closed, it stays closed; /polestar party opens it again."] },
+			help = L["Opens by itself when someone in your party runs Northstar too: each member's level, step and what they still need of yours; click a name to point the arrow at them. Closed, it stays closed; /northstar party opens it again."] },
 		{ kind = "toggle", key = "party.chat", label = L["Tell my party in chat when I finish a quest objective"], search = SEARCH .. ", chat, announce, objective, tell",
 			help = L["One party chat line with the quest's link when you finish an objective, and one when the quest is ready to turn in. Everyone in the party sees it, Northstar or not. Never solo or in a raid."] },
 	},

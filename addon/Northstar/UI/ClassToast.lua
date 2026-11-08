@@ -25,7 +25,7 @@
 --   UI.ClassToast.Check(level, mode)       show the best candidate
 --   UI.ClassToast.Show(quest), .Hide(), .Open(), .ShowMe(), .Place()
 --   UI.ClassToast.frame, .current
---   /polestar classtoast [quest]           show it again (the best due one, or `quest`)
+--   /northstar classtoast [quest]           show it again (the best due one, or `quest`)
 
 local ADDON, ns = ...
 local UI, Theme, W, Anim = ns.UI, ns.Theme, ns.Widgets, ns.Anim

@@ -131,7 +131,7 @@ Messages:
 | `NAMES_LOADED` | — | Names, when the names pack loads after a refusal in combat (the quest tracker reads its names again) |
 | `NAME_LEARNED` | kind ("npc" \| "object"), id | Names, when a name learned in play is new or changed (the Codex, Dungeons and ItemDB caches drop their copy) |
 | `STEP_SKIPPED` | fromStep, toStep or nil, `{ { quest, title, reason, text }, ... }` | Engine, active tab, just before `STEP_CHANGED` (or `STEP_UPDATED`): the live step, or the step the player looks at as it follows forward, moved past a step whose open quest goals became unavailable (reasons as in "Unavailable quests"); while the player looks at another step the notice waits and fires once they are back on the live step, toStep being it |
-| `PLAYER_SKIPPED_STEP` | guideId, stepIndex | Engine, after `Skip()` (the window, the menu, `/polestar skip`): the guide window offers the undo |
+| `PLAYER_SKIPPED_STEP` | guideId, stepIndex | Engine, after `Skip()` (the window, the menu, `/northstar skip`): the guide window offers the undo |
 | `PLAYER_SKIPPED_QUEST` | questID, title or nil | Engine, after `SkipQuest(questID)` (a quest's line, right-clicked): the guide window offers the undo |
 | `WAYPOINT_CHANGED` | waypoint or nil | Engine (and Nav when an override is set/cleared) |
 | `GUIDE_COMPLETED` | guideId | Engine |
@@ -143,12 +143,12 @@ Messages:
 | `TOGGLE_FRAME` / `SHOW_FRAME` / `HIDE_FRAME` | — | commands, keybinds → UI |
 | `SHOW_PICKER` | — | commands → UI |
 | `SHOW_OPTIONS` | section or nil | commands → UI |
-| `SHOW_WELCOME` | page or nil | About's "Show the welcome again", `/polestar welcome` → UI/Welcome.lua |
-| `SHOW_COPY` | title, text | `/polestar where` → UI/Copy.lua |
-| `SHOW_REPORT` | — | `/polestar report` → UI/Report.lua |
-| `SHOW_DISCORD` | — | `/polestar discord` → UI/Report.lua |
-| `SHOW_QUEST_ROOM` | — | `/polestar questlog`, the full-log banner's Make room → UI/QuestRoom.lua |
-| `SHOW_IMPORT` | — | `/polestar import` (Core/Import.lua) → UI/Import.lua: the hub at Import |
+| `SHOW_WELCOME` | page or nil | About's "Show the welcome again", `/northstar welcome` → UI/Welcome.lua |
+| `SHOW_COPY` | title, text | `/northstar where` → UI/Copy.lua |
+| `SHOW_REPORT` | — | `/northstar report` → UI/Report.lua |
+| `SHOW_DISCORD` | — | `/northstar discord` → UI/Report.lua |
+| `SHOW_QUEST_ROOM` | — | `/northstar questlog`, the full-log banner's Make room → UI/QuestRoom.lua |
+| `SHOW_IMPORT` | — | `/northstar import` (Core/Import.lua) → UI/Import.lua: the hub at Import |
 | `TOGGLE_PICKER` / `TOGGLE_OPTIONS` | — | key bindings and gamepad chords (`NORTHSTAR_MENU`, `NORTHSTAR_OPTIONS`) → UI: open, or close when open |
 | `TOGGLE_FOCUS` | — | `NORTHSTAR_FOCUS` → UI/GamepadGuide.lua (focus mode) |
 
@@ -218,7 +218,7 @@ ids) lets a pack update carry them to the steps it kept (see "Placement").
 Northstar.RegisterCommand(name, fn(argString), help)
 ```
 
-`/polestar` and `/pole`. No argument fires `TOGGLE_FRAME`. `help` lists
+`/northstar` and `/ns`. No argument fires `TOGGLE_FRAME`. `help` lists
 registered commands with their `help` lines (already translated:
 `L["..."]`). Core registers (Core/Commands.lua): `guides`, `options`, `show`, `hide`,
 `next`, `prev` (look at the next/previous step; nothing changes), `skip`
@@ -269,7 +269,7 @@ noted and passed on like a handler's. An error handed on is passed to the
 game's handler at most once every 30 seconds per message (a loop that keeps
 failing would flood it); every one is still noted and counted. The rolling
 log holds `Northstar.Debug` lines, caught errors and blocked calls whether or
-not `/polestar debug` prints them; the report ends its details with its last
+not `/northstar debug` prints them; the report ends its details with its last
 five lines under "Log:", before anything else gives way to Discord's 2000
 characters, after the quest log ("Quest log 12/40: 783 1/3, 7 done, …") and
 the settings turned away from their defaults ("Settings: path=value, …"),
@@ -305,7 +305,7 @@ code whose parent is, or is under, a frame addon code did not make
 ```lua
 Northstar.GamepadUI() -> bool   -- Forever's Gamepad interface style is on (read once, as the addon loads)
 Northstar.CloseOnEscape(name)   -- add a Northstar window to UISpecialFrames, except with the gamepad interface
-Northstar.RunCommand(msg)       -- what /polestar runs; registered as a slash command only with the keyboard and mouse
+Northstar.RunCommand(msg)       -- what /northstar runs; registered as a slash command only with the keyboard and mouse
 ```
 
 With Forever's Gamepad interface on (Options, Gamepad, Enable Gamepad UI;
@@ -326,8 +326,8 @@ gamepad interface on, they keep to their own windows.
 `GamepadUI()` reads the style once, as `Core/Init.lua` loads (the client
 reloads the UI when it changes). With it on, Northstar:
 
-- registers no slash command: `/polestar`, `/pole`, `/way` (Nav/Journey)
-  and `/psrec` (Northstar_Recorder, which reads the style itself). The chat
+- registers no slash command: `/northstar`, `/ns`, `/way` (Nav/Journey)
+  and `/nsrec` (Northstar_Recorder, which reads the style itself). The chat
   box calls a command's function, then closes itself in that function's
   taint. The minimap button, on by default then (`maps.minimapButton`), and
   the key bindings open Northstar; the Recorder page calls
@@ -1364,7 +1364,7 @@ Northstar.Engine.StepNumberOf(guide, i) -> number, hidden; Northstar.Engine.Step
   a skip (Fitz, #741: a giver the server lacks would otherwise take the quest
   and its later steps out of the guide): the accept stays open, the focus and
   the arrow stay on that giver, and its view's `noticeText` reads "Not
-  offered by <giver>? Report it with /polestar" (`Own.notListed`, for the
+  offered by <giver>? Report it with /northstar" (`Own.notListed`, for the
   session, until that giver's window lists the quest or it is taken; never
   saved). The player can still skip it (Skip this quest). Nor is a refusal
   while the missing prerequisite is in the log ready to hand in
@@ -1443,7 +1443,7 @@ Northstar.Engine.StepNumberOf(guide, i) -> number, hidden; Northstar.Engine.Step
   and each once.
   The guide window's banner says so on the live step ("Quest log full …",
   dismissed per step) and its Make room opens `UI/QuestRoom.lua`
-  (`/polestar questlog`, `SHOW_QUEST_ROOM`; also the guide window menu's
+  (`/northstar questlog`, `SHOW_QUEST_ROOM`; also the guide window menu's
   "Clean up quest log (N)", shown while `Unneeded()` lists any, and the
   button under Questing > Quests > Tooltips and quest log): the unneeded
   quests, each with its reason and
@@ -1628,7 +1628,7 @@ Northstar.Engine.PendingRouteChoice() -> fromId | nil -- the active tab's finish
 Northstar.Engine.RouteChoiceFor(id) -> fromId | nil  -- the choice that offers guide `id` to this character
 Northstar.Engine.RouteOffered(fromId, toId) -> bool  -- fromId's `next` names toId and its `when`, if any, holds now
 Northstar.Engine.NextGuide(fromId) -> id | nil       -- where the hand-off goes now; nil: none offered, or the player chooses
-Northstar.Engine.OfferRouteChoice() -> fromId | nil  -- /polestar path: fires ROUTE_CHOICE
+Northstar.Engine.OfferRouteChoice() -> fromId | nil  -- /northstar path: fires ROUTE_CHOICE
 Northstar.Engine.GuideFocus(id) -> x, y | nil       -- live-frame percent of where the guide is for this character, for the
                                                     -- guide menu's zone art: open in a tab and unfinished, the current
                                                     -- step's first goal on the guide's zone map (`zone`); else (or when
@@ -1843,7 +1843,7 @@ each goal):
   arrow's mark while it is the target.
 
 Placement: when a tab loads a guide (login and reload, `SetGuide`/`OpenTab`,
-auto-chaining to `next`, `/polestar reset`), the evaluations until the quest
+auto-chaining to `next`, `/northstar reset`), the evaluations until the quest
 log is readable (the first `QUEST_LOG_UPDATE` of the session), at most 10 s,
 and ended early by the player's own Next/Prev/Skip/Goto or check-off, place
 it from the quest log (a Class guide not yet available is not placed: it
@@ -2309,7 +2309,7 @@ Northstar.Pins.MinimapCursor() -> dNorth, dWest | nil      -- yards from the pla
   `/way [#mapID | zone] x y [title]`: the zone is any name under the player's
   world, exactly, the one zone it begins, else the one it is part of
   ("barrens"); several print their names. `/way reset` clears.
-- **Nearby services** (`/polestar near <kind> [profession]`; `nav.nearbyMenu`
+- **Nearby services** (`/northstar near <kind> [profession]`; `nav.nearbyMenu`
   adds a "Nearby services" submenu to `MENU_WORLD_MAP_TRACKING` and
   `MENU_MINIMAP_TRACKING`): kinds trainer (profession, by skill line, or any),
   class, weapon (a weapon skill's line, or any), repair, reagents, vendor,
@@ -2463,9 +2463,9 @@ Northstar.Nav.handoff.Yielding() -> bool  -- the option off and a journey not No
   Distances, boat-time sharing, map pins, following TomTom and the nearby
   menu still act and stay. `Nav.SayHandedOff()` prints one line ("Shortest
   Path Forever is guiding. Turn off "Hand guiding to Shortest Path Forever"
-  ...", or the yield's line above) instead of `/polestar arrow show`
-  (or the bare toggle turning it on), `/polestar route` and
-  `/polestar skipleg`. Northstar's arrival chime is silent meanwhile.
+  ...", or the yield's line above) instead of `/northstar arrow show`
+  (or the bare toggle turning it on), `/northstar route` and
+  `/northstar skipleg`. Northstar's arrival chime is silent meanwhile.
 
 Tested by `rust/crates/forge-addontest/tests/addontest/nav-handoff.rs` against a fake API written to its
 `docs/api.md` (v1.16.0).
@@ -3950,7 +3950,7 @@ Northstar.Party.Roster() -> rows                      -- the party panel's (UI/P
 Northstar.Party.PointAt(unit) -> bool                 -- the arrow at a member (Nav.SetTarget, followed every 3 s)
 Northstar.Party.ItemNeeds(itemID) -> { { name, unit, need }, ... }; NeedText(e)  -- UI/PartyLoot.lua
 Northstar.Party.IsLive() -> bool                     -- PARTY_LIVE (on) fires when it changes
-Northstar.Party.Debug() -> lines                      -- /polestar party debug: prefix, last send and result, messages heard, roster keys
+Northstar.Party.Debug() -> lines                      -- /northstar party debug: prefix, last send and result, messages heard, roster keys
 Northstar.Compat.UnitFullName(unit) -> full, first | nil | false  -- "Ana Smith" on Forever, "Ana"/"Ana-OtherRealm" elsewhere
 Northstar.Compat.SenderName(sender) / SenderIsUnit(sender, unit) / SenderIsMe(sender)
 ```
@@ -4027,10 +4027,10 @@ Northstar.Compat.SenderName(sender) / SenderIsUnit(sender, unit) / SenderIsMe(se
   `party.panelPos`): a row per party member who has spoken Northstar, from
   `Party.Roster`; opens by itself with `party.panel` (on by default) while
   `Party.IsLive()` and there is such a member, hidden with the guide and in
-  combat under `ui.combat` "hide". The party line's click and `/polestar
+  combat under `ui.combat` "hide". The party line's click and `/northstar
   party` close an open panel (`party.panel` false, kept) or open a closed
   one, and say in chat why it cannot show yet (sync off, no party, guide
-  hidden, nobody heard); `/polestar party debug` prints `Party.Debug()`.
+  hidden, nobody heard); `/northstar party debug` prints `Party.Debug()`.
 - Loot (UI/PartyLoot.lua, `party.lootNeeds`): on `LOOT_OPENED` and
   `START_LOOT_ROLL`, a line per item a member's counts are short of while
   yours are not (the item's log line from the active guide's collect goals,
@@ -4573,7 +4573,7 @@ Northstar.QoL.Restock.Run()                           -- the button's press: Buy
   `RESTOCK_CHANGED` while the merchant is open. The options page's sliders
   hold per-character state through `get`/`set` (no settings key), which
   `W.Slider` and the options registry accept as they do for toggles;
-  `/polestar restock [drink|food|ammo|<item>] <amount>` sets any of them.
+  `/northstar restock [drink|food|ammo|<item>] <amount>` sets any of them.
 
 ## Lookup — Codex, sources, generated guides, mount spotting
 
@@ -4655,8 +4655,8 @@ Northstar.Lookup.QuestStep(quest, from) -> step         -- accept, objectives, t
   Codex's mount spells (the client's `ItemEffect`: aura spell → item, class
   mounts with their class), else `C_MountJournal.GetMountFromSpell`. The unit
   tooltip gets "Mount: <name>" and its best source; `MOUNT_SPOTTED(unit, info)`
-  fires on target change and mouseover; `/polestar mount` opens Lookup at the
-  target's (else the mouseover's) mount, `/polestar lookup [text]` searches.
+  fires on target change and mouseover; `/northstar mount` opens Lookup at the
+  target's (else the mouseover's) mount, `/northstar lookup [text]` searches.
 
 ## Dungeons — dungeon quest journal, pick-up and hand-in guides
 
@@ -4752,7 +4752,7 @@ prerequisites its quests wait on (one step with an accept per quest; the
 giver comes up again for a quest still waiting, and visits to the same giver
 in a row are one step). The last step lists the carried quests as notes,
 goes to the entrance and says where the hand-in guide is (a note naming
-`/polestar dungeons <name>`). Nothing to take: nil, "nothing". The route is
+`/northstar dungeons <name>`). Nothing to take: nil, "nothing". The route is
 kept per character (`CharState().dungeonPickup[key]`, the stop keys in
 order) and used when the guide is rebuilt without a position
 (`Dungeons.OrderStops(stops, from, finish, field, key)`, shared with the
@@ -4918,7 +4918,7 @@ quests: Guide, Quest markers; Rares & travel: Rares and treasures, Dungeons and
 travel; Zones: Zones, Coordinates) Nav, Quests, Rares and Maps place every map
 and minimap setting.
 
-A page is opened by its key (`/polestar options <key>`, `UI.ShowOptions(key)`,
+A page is opened by its key (`/northstar options <key>`, `UI.ShowOptions(key)`,
 `Options.Select`), not its title: the built-in pages give English keys
 (`guide`, `appearance`, `map`, `questing`, `discovery`, `qualityoflife`,
 `guidepacks`, `recorder`, `about`) so a translated title does not move them;
@@ -5115,7 +5115,7 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   it came from is kept in `classReturn`, and the finished guide offers
   "Close and return"), else "Show me" (Nav.SetTarget on the giver). "Later"
   and the close button dismiss. Chime with `ui.classCardSound`.
-  `/polestar classtoast [quest]` shows it again. `classrewards build` writes
+  `/northstar classtoast [quest]` shows it again. `classrewards build` writes
   `starts`: each rewarded chain's first quest with its givers, and for each
   race and side the start and giver it takes for the reward: a giver in the
   race's home (its starting zone or capital), else one in no race's home,
@@ -5156,7 +5156,7 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   have to load) or while another card is shown it waits for
   `PLAYER_REGEN_ENABLED` or `HEADS_UP_HIDDEN` (fired by `UI.ClassToast.Hide`);
   the waiting checks run in order until one shows a card.
-  `/polestar dungeontoast [dungeon]` shows it again ("Nothing to pick up" for
+  `/northstar dungeontoast [dungeon]` shows it again ("Nothing to pick up" for
   a dungeon with no quest to take now).
 - **Hub** (`UI/Picker.lua`, `UI.ShowPicker(opts)`; the window the guide menu
   grew into, `docs/SUITE.md` "UI"). A section rail (`W.Shell` with
@@ -5185,7 +5185,7 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   A section registered with `foot = true` sits at the rail's foot, above
   Options, instead of among the sections (`P.FootItems(onOptions)`: Options,
   then each foot section, from the bottom up).
-- **Import** (`UI/Import.lua`, a foot section, order 90; `/polestar import`
+- **Import** (`UI/Import.lua`, a foot section, order 90; `/northstar import`
   and `SHOW_IMPORT` open it). The two ways to bring someone else's guides
   into Northstar side by side (an import string for one small guide, a
   community addon for a route or a set), then a single-line box: what is
@@ -5357,7 +5357,7 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   has a credits line for every guide ("By <author> · <pack title> <version> ·
   <licence>", plus the pack's `source`; ours "By Northstar"). The empty states
   name both Northstar Guides and community addons.
-- **Community guides page** (`UI/Packs.lua`, Options order 70, `/polestar
+- **Community guides page** (`UI/Packs.lua`, Options order 70, `/northstar
   packs`): one row per `Guides.Packs()` record: title, credits, guide count,
   website as a `W.Link` (the address without its scheme; the click opens
   `UI.ShowCopy("<title> website", <address>)`), source, and a `W.Switch` (`Guides.SetPackShown`) or
@@ -5404,18 +5404,18 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   cinematic closes comes back on its page when the cinematic ends. Set up and Route style are in it only while the account has not had its
   welcome (`NorthstarDB.welcomeSeen`); the page set is fixed when a showing
   starts. Any close marks the account (and the character). About's "Show the
-  welcome again" and `/polestar welcome` open it with every page.
+  welcome again" and `/northstar welcome` open it with every page.
 - **Copy window** (`UI/Copy.lua`, frame `NorthstarCopy`, `UI.ShowCopy(title,
   text)` or `SHOW_COPY`): a small window with the band, a title, a read-only
   `W.CopyBox` holding the text, selected and focused, and how to copy it; ✕
-  and Escape close it. `/polestar where` uses it. `opts` (`UI.ShowCopy(title,
+  and Escape close it. `/northstar where` uses it. `opts` (`UI.ShowCopy(title,
   text, opts)`): `icon` and `iconColor` put a mark before the title, `hint`
   replaces the line above the box; the Polestar Discord's invite
   (`UI.ShowDiscord`) comes with Discord's mark.
 - **Reporting a problem** (`UI/Report.lua`, frame `NorthstarReport`,
   `UI.ShowReport()` or `SHOW_REPORT`): the guide window's bug (in the
   navigator while a guide is open), its menu's "Report a problem" and
-  `/polestar report` open it on the step on screen. The player types what
+  `/northstar report` open it on the step on screen. The player types what
   went wrong (250 letters); the report is `UI.Report.Text(description,
   details, spot)`: their words after "**What went wrong:**", then as bold
   lines under it the right spot when one is marked ("**Right spot:**") and
@@ -5480,7 +5480,7 @@ Reading flow: `docs/DESIGN.md` ("Intent" and "The Guide Window").
   is reopened on the same step. The hub's and the settings' sidebars carry
   the Discord's mark at the end of the version line
   (`UI.Report.SidebarLink(shell)`), which opens the invite like
-  `/polestar discord` (`UI.ShowDiscord`, `SHOW_DISCORD`).
+  `/northstar discord` (`UI.ShowDiscord`, `SHOW_DISCORD`).
 - **Per-character UI state** in `CharState().ui`: `recentGuides` (ids, newest
   first, at most 10), `favoriteGuides` (id -> true), `pickerSelected` (id).
 
@@ -5747,7 +5747,7 @@ Northstar.Talents.State(build, ranks, level, granted) -> { status, done, total, 
 Northstar.Talents.Replay(data, build) -> errors              -- pure; the snapshot's rules
 Northstar.Talents.Validate(data, live) -> { map, back, moved, missing, ok }
 Northstar.Talents.Choose(key | "auto")                       -- per character; "auto" follows Gear's spec, else the column with most points
-Northstar.Talents.Show()                                     -- SHOW_TALENTS; /pole talents
+Northstar.Talents.Show()                                     -- SHOW_TALENTS; /ns talents
 ```
 
 - **Client.** Forever's talents are one C_Traits tree per class (Paladin:
@@ -5843,7 +5843,7 @@ Northstar.Alts.IsCurrent(entry), Northstar.Alts.MaxLevel(), Northstar.Alts.Enabl
 - **Section.** One `Button` row per character (so the gamepad can focus it),
   sorted by `alts.sort` (the hub tabs: Last played, Most rested, Level); the
   sidebar has an entry per character, which selects and scrolls to its row; the instance count, in the subtitle, is `Maps.GetInstanceStatus()`.
-  Forget uses `W.Confirm`. `SHOW_ALTS` opens it (`/pole alts`).
+  Forget uses `W.Confirm`. `SHOW_ALTS` opens it (`/ns alts`).
 
 ## Toolchain (Node ≥ 24, zero npm dependencies)
 
@@ -6653,7 +6653,7 @@ the XP on Forever's zone quest list
 What the Recorder collects, its SavedVariables, chunk and record format, the
 upload API and the trust rules are the contract in
 [docs/RECORDING.md](RECORDING.md) (schema 2). The library that reads it is
-`rust/crates/polestar-recording` (shared by the Polestar Client, the ingest server and
+`rust/crates/northstar-recording` (shared by the Polestar Client, the ingest server and
 forge; `forge record import` (this PC's game: every account of every Forever
 install, or `--wtf <path>`) and `forge record pull` (the server's
 `GET /v1/export`, after the last line in `data/recordings/.pull-state.json`)
@@ -6788,7 +6788,7 @@ disagreed with; the knowledge base ranks `correction` (0) above `recorder`
 (0.5). `forge record resession` normalises every archive in `raw/` again, for
 record kinds an older forge skipped.
 
-`record trail <session|file> [--out file.json]` writes a session's `/psrec
+`record trail <session|file> [--out file.json]` writes a session's `/nsrec
 trail` runs as `[{ label, start, end, reason, points: [{ t, map, x, y, speed,
 mounted, swimming, falling, indoors, flying }] }]`: the `pos` events with
 `trail` (flag 64) between a `mark` "trail on: <label>" and its "trail off:
@@ -6799,11 +6799,11 @@ the character's name and realm; its JSON (`{ schema: 1, build, session, char:
 { name, realm, race, class, faction }, started, ended, events, maps }`) is still
 read by the data build and `record report|draft`; nothing writes it any more.
 
-The Recorder window (`Panel.lua`; `/psrec ui`, Northstar's Options > Recorder
+The Recorder window (`Panel.lua`; `/nsrec ui`, Northstar's Options > Recorder
 and its guide menu; drawn with Northstar's Theme and Widgets when Northstar is
 loaded, else the game's templates) turns recording on and off, starts and
 stops a trail (also the key binding "Recorder: start or stop the position
-trail", `/psrec trail toggle`), marks a point, lists this session's trails
+trail", `/nsrec trail toggle`), marks a point, lists this session's trails
 and has Save now (a /reload). Its spot list is `Spots.lua`, generated once
 from the maintainers' trail list (spots up to level 30, in each faction's tour
 order); the label box offers the first spot not done that the player's level
@@ -6814,9 +6814,9 @@ stops with at least one point. The window's place is `NorthstarRecorderDB.panel`
 #### Measuring routes
 
 Recording is off until turned on (`NorthstarRecorderDB.enabled == true`, set
-by `/psrec on`, Options > Recorder, or Polestar Client's share flag, which is
+by `/nsrec on`, Options > Recorder, or Polestar Client's share flag, which is
 on by default in the client unless the player stops sharing or typed
-`/psrec off`, docs/RECORDING.md "Ack file"); while it is off the Recorder writes nothing, not even a
+`/nsrec off`, docs/RECORDING.md "Ack file"); while it is off the Recorder writes nothing, not even a
 session. Testers turn it on, play with Northstar, run `forge record import`
 (or `forge record pull` for the server's), then `record report [--guide <text>]
 [--json] [--top n]`. The report rebuilds step passes from every session and

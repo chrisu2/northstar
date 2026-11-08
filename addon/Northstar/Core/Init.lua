@@ -629,7 +629,7 @@ end
 
 ns.debug = false
 -- A debug line: always into the rolling log (ns.Log), to chat while
--- /polestar debug is on.
+-- /northstar debug is on.
 function ns.Debug(...)
 	local n = select("#", ...)
 	local parts = {}
@@ -639,7 +639,7 @@ function ns.Debug(...)
 end
 
 ---------------------------------------------------------------------------
--- Slash commands: /polestar and /pole. Not with the gamepad interface: the
+-- Slash commands: /northstar and /ns. Not with the gamepad interface: the
 -- chat box calls a command's function and then closes itself in that
 -- function's taint, which blocks the gamepad's actions (ns.GamepadUI).
 -- The minimap button and the key bindings open Northstar then.

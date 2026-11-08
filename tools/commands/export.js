@@ -14,7 +14,7 @@ const { importString, LIMITS } = require('../lib/pack/importstring');
 const usage = `usage: node tools/polestar.js export <file.guide> [options]
 
 Prints the import string of the one guide in <file.guide>: a line of text a
-player pastes into Northstar's Import page (/polestar import) to get the
+player pastes into Northstar's Import page (/northstar import) to get the
 guide without installing anything (docs/GUIDE_PACKS.md, "Import strings").
 The guide belongs to a community pack: the nearest folder above the file
 holding a pack.json, whose id is the guide id's prefix and whose license the

@@ -488,7 +488,7 @@ function Rares.Show(kind, id)
 	ns.Fire("SHOW_RARES", kind, id)
 end
 
--- A sample alert (Options, /pole rares test): the nearest rare the Codex
+-- A sample alert (Options, /ns rares test): the nearest rare the Codex
 -- knows when it is loaded, else a stand-in at the player's level. It plays
 -- the sound and leaves the history alone.
 function Rares.ShowSample()

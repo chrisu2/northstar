@@ -7,7 +7,7 @@
 -- (zone, hearth, gold, professions). Click a row to select it; "Forget"
 -- drops the selected character's snapshot (never the one playing).
 --
--- Registered with UI.RegisterSection; opened by SHOW_ALTS (/polestar alts).
+-- Registered with UI.RegisterSection; opened by SHOW_ALTS (/northstar alts).
 
 local ADDON, ns = ...
 local UI, Theme, W = ns.UI, ns.Theme, ns.Widgets

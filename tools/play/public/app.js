@@ -435,7 +435,7 @@
 		if (!id) return;
 		let r;
 		try { r = await post('/api/import', { guide: id }); } catch (err) { r = { error: err.message }; }
-		if (r.text) showCopy('Import string', `${id}: paste it on the Import page in game (/polestar import).`, r.text);
+		if (r.text) showCopy('Import string', `${id}: paste it on the Import page in game (/northstar import).`, r.text);
 		else showCopy('No import string', `${id} cannot go in an import string.`, r.error || 'unknown error');
 	});
 

@@ -21,10 +21,10 @@ local function nowClock()
 	return nil
 end
 
-function Fish.Lines(rank, maxRank, elapsed)
+function Fish.Lines(rank, maxRank, elapsed, caught)
 	local lines = {
 		"Open the fishing guide for the route.",
-		"Catches are not counted.",
+		"The client is not asked to detect a bite.",
 		"Lures and pole enchants are not read.",
 		"Northstar does not cast or loot.",
 	}
@@ -35,29 +35,102 @@ function Fish.Lines(rank, maxRank, elapsed)
 		lines[#lines + 1] = "Fishing skill: not reported."
 	end
 	if type(elapsed) == "number" then
-		lines[#lines + 1] = "Session timer: " .. math.floor(elapsed / 60) .. " min. Not a catch count."
+		lines[#lines + 1] = "Session timer: " .. math.floor(elapsed / 60) .. " min."
 	else
 		lines[#lines + 1] = "Session timer off."
 	end
+	local n = type(caught) == "number" and caught or 0
+	lines[#lines + 1] = "Manual tally: " .. n .. ". You tapped this. Kept on this character. Not a detected bite. Not sent."
 	return lines
 end
 
+local function fishNote()
+	if not ns.CharState then return nil end
+	local s = ns.CharState()
+	if type(s) ~= "table" then return nil end
+	if type(s.fish) ~= "table" then s.fish = {} end
+	return s.fish
+end
+
+-- A wall clock can be kept across a reload. GetTime cannot: it restarts
+-- with the UI, so a timer based on it stays on this login only.
+local function wallClock()
+	if type(time) ~= "function" then return nil end
+	local ok, t = pcall(time)
+	if ok and type(t) == "number" and t > 0 then return t end
+	return nil
+end
+
+local function sessionClock()
+	return wallClock() or nowClock()
+end
+
+-- Name match only. The classic skill-line id is not treated as a Forever fact,
+-- and this does not read lures, enchants, or a cast.
 function Fish.Rank()
-	local C = ns.Compat
-	if not (C and C.GetSkillRank) then return nil, nil end
-	return C.GetSkillRank("Fishing")
+	local want = "fishing"
+	if GetProfessions and GetProfessionInfo then
+		local profs = { GetProfessions() }
+		for i = 1, 5 do
+			local index = profs[i]
+			if index then
+				local pname, _, rank, maxRank = GetProfessionInfo(index)
+				if pname and pname:lower() == want and type(rank) == "number" then
+					return rank, maxRank
+				end
+			end
+		end
+	end
+	local S = C_SkillInfo
+	if S and S.GetNumSkillLines and S.GetSkillLineInfo then
+		for i = 1, S.GetNumSkillLines() or 0 do
+			local info = S.GetSkillLineInfo(i)
+			if info and not info.isHeader and info.name and info.name:lower() == want then
+				local rank = tonumber(info.rank)
+				local maxRank = tonumber(info.maxRank)
+				if rank and not (rank == 0 and (maxRank or 0) == 0) then
+					return rank, maxRank
+				end
+			end
+		end
+	end
+	return nil, nil
+end
+
+function Fish.Load()
+	local note = fishNote()
+	Fish.caught = (note and tonumber(note.caught)) or 0
+	local started = note and tonumber(note.started)
+	if started and wallClock() then
+		Fish.started = started
+	else
+		Fish.started = nil
+		if note then note.started = nil end
+	end
 end
 
 function Fish.Elapsed()
 	if not Fish.started then return nil end
-	local t = nowClock()
+	local t = sessionClock()
 	if not t then return nil end
-	return t - Fish.started
+	local elapsed = t - Fish.started
+	if elapsed < 0 then return nil end
+	return elapsed
+end
+
+function Fish.AddCatch()
+	local note = fishNote()
+	local count = ((note and tonumber(note.caught)) or Fish.caught or 0) + 1
+	Fish.caught = count
+	if note then note.caught = count end
+	if Now.Refresh then Now.Refresh() end
 end
 
 function Fish.ToggleSession()
-	if not nowClock() then return end
-	if Fish.started then Fish.started = nil else Fish.started = nowClock() end
+	if not sessionClock() then return end
+	if Fish.started then Fish.started = nil else Fish.started = sessionClock() end
+	local note = fishNote()
+	if note then note.started = wallClock() and Fish.started or nil end
 	if Now.Refresh then Now.Refresh() end
 end
 
@@ -209,6 +282,8 @@ local function build()
 	f.FullBtn:SetPoint("LEFT", f.MoreBtn, "RIGHT", 8, 0)
 	f.TimerBtn = button(f, "Timer", function() Fish.ToggleSession() end)
 	f.TimerBtn:Hide()
+	f.CatchBtn = button(f, "Caught", function() Fish.AddCatch() end)
+	f.CatchBtn:Hide()
 
 	Now.frame = f
 	return f
@@ -226,6 +301,9 @@ function Now.Apply(composed, fishLines)
 		frame.TimerBtn:Show()
 		frame.TimerBtn:ClearAllPoints()
 		frame.TimerBtn:SetPoint("BOTTOMLEFT", 12, 28)
+		frame.CatchBtn:Show()
+		frame.CatchBtn:ClearAllPoints()
+		frame.CatchBtn:SetPoint("LEFT", frame.TimerBtn, "RIGHT", 8, 0)
 		frame.FishBtn.Label:SetText("Steps")
 	else
 		frame.Step:SetText(composed.step or "")
@@ -233,6 +311,7 @@ function Now.Apply(composed, fishLines)
 		frame.Next:SetText(composed.next or "")
 		frame.More:SetText(table.concat(composed.more or {}, "\n"))
 		frame.TimerBtn:Hide()
+		frame.CatchBtn:Hide()
 		frame.FishBtn.Label:SetText("Fish")
 	end
 end
@@ -241,7 +320,7 @@ function Now.Refresh()
 	if not f or not f:IsShown() then return end
 	if mode == "fish" then
 		local rank, maxRank = Fish.Rank()
-		Now.Apply(nil, Fish.Lines(rank, maxRank, Fish.Elapsed()))
+		Now.Apply(nil, Fish.Lines(rank, maxRank, Fish.Elapsed(), Fish.caught or 0))
 		return
 	end
 	local E = ns.Engine
@@ -300,5 +379,11 @@ if ns.RegisterCommand then
 	end, "Fishing notes, and open the fishing guide")
 end
 
-ns.OnLogin(function() sync() end)
-if ns.IsLoggedIn and ns.IsLoggedIn() then sync() end
+ns.OnLogin(function()
+	Fish.Load()
+	sync()
+end)
+if ns.IsLoggedIn and ns.IsLoggedIn() then
+	Fish.Load()
+	sync()
+end

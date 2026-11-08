@@ -21,7 +21,7 @@
 --   item wins.
 --
 --   Skip a leg: right-click the arrow (or the travel button), or
---   /polestar skipleg. A Hearthstone, teleport, flight, ride or portal leg
+--   /northstar skipleg. A Hearthstone, teleport, flight, ride or portal leg
 --   ("Skip this leg") is left out and the rest of this trip planned without
 --   it; a walk or lift step ("Mark this leg done") is marked done and the
 --   arrow moves on (Nav.travel.SkipLeg, Nav.travel.SkipReplans).

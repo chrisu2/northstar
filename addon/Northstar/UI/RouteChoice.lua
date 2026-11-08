@@ -368,10 +368,10 @@ local function build()
 	F.AlwaysLabel:SetText(L["From now on, take the recommended zone"])
 	F.Hint = W.Text(foot, "small", "textMuted")
 	F.Hint:SetPoint("LEFT", F.Always, "RIGHT", 10, -17)
-	F.Hint:SetText(L["Change your mind any time with /polestar path"])
+	F.Hint:SetText(L["Change your mind any time with /northstar path"])
 	F.Later = W.Button(foot, L["Decide later"], function() RC.Hide() end, { ghost = true })
 	F.Later:SetPoint("RIGHT", foot, "RIGHT", -PAD + 8, 0)
-	F.Later.psTip = L["The guide window keeps offering the choice; /polestar path opens it again."]
+	F.Later.psTip = L["The guide window keeps offering the choice; /northstar path opens it again."]
 
 	F:SetScript("OnShow", function(self) Anim.To(self, "alpha", 0, 1, Anim.BASE, "out") end)
 	ns.CloseOnEscape("NorthstarRouteChoice")

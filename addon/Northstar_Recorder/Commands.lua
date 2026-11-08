@@ -1,11 +1,11 @@
--- /psrec: status, on | off, ui, mark <text>, trail on [label] | off, clear.
+-- /nsrec: status, on | off, ui, mark <text>, trail on [label] | off, clear.
 
 local ADDON, ns = ...
 local L = ns.L
 
 local tostring, GetTime, floor = tostring, GetTime, math.floor
 
-local CLEAR_WINDOW = 30 -- seconds to confirm /psrec clear
+local CLEAR_WINDOW = 30 -- seconds to confirm /nsrec clear
 
 ---------------------------------------------------------------------------
 -- Status
@@ -21,7 +21,7 @@ local function status()
 		ns.Print(L["the uploader has not confirmed a chunk yet (newest: %d)"]:format(st.seq))
 	end
 	ns.Print(L["install id: %s"]:format(tostring(st.install)))
-	ns.Print(L["commands: /psrec on | off | ui | mark <text> | trail on [label] | trail off | clear"])
+	ns.Print(L["commands: /nsrec on | off | ui | mark <text> | trail on [label] | trail off | clear"])
 end
 
 ---------------------------------------------------------------------------
@@ -48,11 +48,11 @@ end
 
 commands.mark = function(rest)
 	if rest == "" then
-		ns.Print(L["usage: /psrec mark <text>"])
+		ns.Print(L["usage: /nsrec mark <text>"])
 		return
 	end
 	if not ns.IsEnabled() then
-		ns.Print(L["recording is off; /psrec on first"])
+		ns.Print(L["recording is off; /nsrec on first"])
 		return
 	end
 	if ns.Rec("mark", ns.P(), rest) then
@@ -62,12 +62,12 @@ commands.mark = function(rest)
 	end
 end
 
--- /psrec trail on [label] | off | toggle: a dense position trail
+-- /nsrec trail on [label] | off | toggle: a dense position trail
 -- (Trail.lua). toggle (the key binding, the window's button) starts with the
 -- window's label, else the next spot's.
 local function trailOn(label)
 	if not ns.IsEnabled() then
-		ns.Print(L["recording is off; /psrec on first"])
+		ns.Print(L["recording is off; /nsrec on first"])
 		return
 	end
 	if label == "" and ns.PanelLabel then label = ns.PanelLabel() or "" end
@@ -76,7 +76,7 @@ local function trailOn(label)
 		ns.Print(L["trail already on: %s"]:format(running.label))
 		return
 	end
-	ns.Print(L["trail on: %s (stops by itself after %d min; /psrec trail off to end)"]:format(tr.label, ns.TRAIL_MAX_MINUTES))
+	ns.Print(L["trail on: %s (stops by itself after %d min; /nsrec trail off to end)"]:format(tr.label, ns.TRAIL_MAX_MINUTES))
 end
 
 local function trailOff()
@@ -98,17 +98,17 @@ commands.trail = function(rest)
 	elseif sub == "toggle" then
 		if ns.Trail() then trailOff() else trailOn("") end
 	else
-		ns.Print(L["usage: /psrec trail on [label] | trail off"])
+		ns.Print(L["usage: /nsrec trail on [label] | trail off"])
 	end
 	if ns.RefreshPanel then ns.RefreshPanel() end
 end
 
--- /psrec ui: the Recorder window (Panel.lua).
+-- /nsrec ui: the Recorder window (Panel.lua).
 commands.ui = function()
 	if ns.TogglePanel then ns.TogglePanel() end
 end
 
--- /psrec clear: deletes every chunk not yet uploaded.
+-- /nsrec clear: deletes every chunk not yet uploaded.
 commands.clear = function(rest)
 	local now = GetTime()
 	if rest == "confirm" and clearArmedAt and now - clearArmedAt <= CLEAR_WINDOW then
@@ -118,10 +118,10 @@ commands.clear = function(rest)
 		return
 	end
 	clearArmedAt = now
-	ns.Print(L["this deletes every recording not yet uploaded. Type |cffffd100/psrec clear confirm|r within %d seconds to proceed."]:format(CLEAR_WINDOW))
+	ns.Print(L["this deletes every recording not yet uploaded. Type |cffffd100/nsrec clear confirm|r within %d seconds to proceed."]:format(CLEAR_WINDOW))
 end
 
--- Northstar's Recorder page calls NorthstarRecorder_Command. /psrec is not
+-- Northstar's Recorder page calls NorthstarRecorder_Command. /nsrec is not
 -- registered with Forever's gamepad interface on: the chat box calls a
 -- command and then closes itself in the command's taint, which blocks the
 -- gamepad's actions until a reload (Northstar's Core/Init.lua, ns.GamepadUI).

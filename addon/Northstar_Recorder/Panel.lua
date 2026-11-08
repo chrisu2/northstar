@@ -1,4 +1,4 @@
--- The Recorder window (/psrec ui, Northstar's Options > Recorder and its
+-- The Recorder window (/nsrec ui, Northstar's Options > Recorder and its
 -- guide menu): recording on/off, the position trail (label, Start/Stop,
 -- elapsed time, points, distance, the auto-stop countdown), a mark at the
 -- player's position, the spots still to walk for the navigation checks

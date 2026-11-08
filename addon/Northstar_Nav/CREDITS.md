@@ -56,28 +56,28 @@ finer maps) and `Polestar_Nav.toc`.
 
 Polestar does not copy his journey planner or tracker: its own travel planner
 (flights, boats, hearth) asks this router only for the walking legs
-(`addon/Polestar/Nav/Walk.lua`, which also carries his copyright notice).
+(`addon/Northstar/Nav/Walk.lua`, which also carries his copyright notice).
 
 Also adapted from his work (v1.15.0, GPL-3.0-or-later, with the same
 permission), outside this folder, each file saying so at its top:
 
-- `addon/Polestar/Maps/RouteStrokes.lua`: the route-line geometry of his
+- `addon/Northstar/Maps/RouteStrokes.lua`: the route-line geometry of his
   `UI/Strokes.lua` and `UI/FlightLines.lua`.
-- `addon/Polestar/Maps/RouteLines.lua`: the map and minimap painters of his
+- `addon/Northstar/Maps/RouteLines.lua`: the map and minimap painters of his
   `UI/Route.lua`.
-- `addon/Polestar/Nav/Prompts.lua`: his cast prompt (`UI/Arrow.lua`) and
+- `addon/Northstar/Nav/Prompts.lua`: his cast prompt (`UI/Arrow.lua`) and
   "complete this step" (`SkipJourneyStep`, `Journey/Journey.lua`).
-- `addon/Polestar/Nav/Alerts.lua`: his transport alerts (`UI/Alert.lua`).
-- `addon/Polestar/QoL/Flight.lua`: the flight-route line and choosing a
+- `addon/Northstar/Nav/Alerts.lua`: his transport alerts (`UI/Alert.lua`).
+- `addon/Northstar/QoL/Flight.lua`: the flight-route line and choosing a
   flight master's node by ID (`Transport/Taxi.lua`).
-- `addon/Polestar/Nav/Journey.lua`: journey input and the way commands
+- `addon/Northstar/Nav/Journey.lua`: journey input and the way commands
   (`Journey/JourneyInput.lua`, `Core/API.lua`, `Core/TomTom.lua`,
   `Core/Way.lua`).
-- `addon/Polestar/Nav/Nearby.lua`: nearby places (`UI/Nearby.lua`).
-- `addon/Polestar/UI/JourneyPanel.lua`: the journey tracker's step wording,
+- `addon/Northstar/Nav/Nearby.lua`: nearby places (`UI/Nearby.lua`).
+- `addon/Northstar/UI/JourneyPanel.lua`: the journey tracker's step wording,
   "leaves in about" and a header summing whole-second step times
   (`UI/Tracker.lua`, `Journey/JourneySteps.lua`).
-- `addon/Polestar/Nav/Transit.lua`: boat, zeppelin and tram timing and
+- `addon/Northstar/Nav/Transit.lua`: boat, zeppelin and tram timing and
   teleports (`Transport/Model.lua`, `Timetable.lua`, `Observer.lua`,
   `Sync.lua`, `Teleports.lua`).
 - `tools/lib/travel/timetable.js` and `tools/lib/travel/cmangos.js`: his

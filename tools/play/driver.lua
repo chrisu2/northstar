@@ -602,7 +602,7 @@ function play.key(key, text)
 end
 function M.SetMaxLetters(self, n) self.maxLetters = n end
 
--- "/polestar options", "/run code", or any registered slash command.
+-- "/northstar options", "/run code", or any registered slash command.
 function play.slash(line)
 	line = tostring(line or ""):gsub("^%s+", "")
 	local cmd, rest = line:match("^/(%S+)%s*(.-)%s*$")

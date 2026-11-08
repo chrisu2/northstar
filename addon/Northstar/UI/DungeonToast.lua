@@ -33,7 +33,7 @@
 --       mode "levelup" | "login" | "turnin" (questId handed in) | "any"
 --   UI.DungeonToast.Check(level, mode, questId)  show the first candidate
 --   UI.DungeonToast.Show(candidate), .Model(candidate), .PickUp(key), .SeePage(key)
---   /polestar dungeontoast [dungeon]         show it again
+--   /northstar dungeontoast [dungeon]         show it again
 
 local ADDON, ns = ...
 local UI, Theme = ns.UI, ns.Theme

@@ -1,7 +1,7 @@
 -- The quest settings on the Questing options page (its Quests tab; the page
 -- and its tabs are declared in UI/Options.lua), the quest markers' section
 -- of the Map page (Northstar.RegisterOptions, defined in Theme/Widgets.lua),
--- and the /polestar questdb command.
+-- and the /northstar questdb command.
 
 local ADDON, ns = ...
 

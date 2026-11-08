@@ -1,11 +1,11 @@
 'use strict';
 // Reporting a problem (addon/Northstar/UI/Report.lua): the guide window's bug
-// button, its menu entry and /polestar report open a window that sets the
+// button, its menu entry and /northstar report open a window that sets the
 // player's words above the details a fix needs, as one report: to copy for
 // the Polestar Discord's #bugs, or in a link that opens a filled-in GitHub
 // issue for a player with an account;
 // the sidebars of the hub and the settings, and
-// /polestar discord, give the invite with Discord's mark. Against the real
+// /northstar discord, give the invite with Discord's mark. Against the real
 // Core, Theme and UI and the fakes of tests/lua/stub_ui.lua.
 
 const { test } = require('node:test');
@@ -277,7 +277,7 @@ test('what the player typed stays while it is the same step; a report on another
 	assert.deepEqual(out.other, { text: '', placeholder: true, report: '**What went wrong:** (not described)' });
 });
 
-test('the guide window\'s menu and /polestar report open it too; Escape closes it', () => {
+test('the guide window\'s menu and /northstar report open it too; Escape closes it', () => {
 	const [out] = run(`
 		uistub.setGuide(uistub.elwynn, 3)
 		GF.menuButton:Click()
@@ -443,7 +443,7 @@ test('"Mark the right spot" steps the window aside while the player walks; "Mark
 	assert.deepEqual(out.back, { report: true, bar: false, note: 'Right spot marked: zone map 1429 · goto 51.23,40.50 live', button: 'Mark again' });
 	const added = out.after.split('\n').filter((l) => !out.before.split('\n').includes(l));
 	assert.deepEqual(added, ['**Right spot:** zone map 1429 · goto 51.23,40.50 live'], 'the spot is the one line added: the report taken at the open is kept');
-	assert.equal(new URL(out.url).searchParams.get('where'), 'zone map 1429\ngoto 51.23,40.50 live', 'the right spot field holds what /polestar where prints');
+	assert.equal(new URL(out.url).searchParams.get('where'), 'zone map 1429\ngoto 51.23,40.50 live', 'the right spot field holds what /northstar where prints');
 	assert.equal(new URL(out.url).searchParams.get('wrong'), out.before, 'the issue gives the spot once, in its own field');
 	assert.equal(out.reopened, out.back.note, 'the spot stays while it is the same step');
 	assert.match(out.otherStep, /^Optional:/, 'another step starts unmarked');

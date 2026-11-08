@@ -7,7 +7,7 @@
 // of every flight master (recognising a flight master's gossip without
 // reading its localized option text), and the NPC IDs of every reagent
 // vendor (a vendor whose subtitle names reagents; Nav/Nearby.lua's
-// `/polestar near reagents`). Writes addon/Northstar/QoL/Data.lua.
+// `/northstar near reagents`). Writes addon/Northstar/QoL/Data.lua.
 
 const fs = require('node:fs');
 const path = require('node:path');

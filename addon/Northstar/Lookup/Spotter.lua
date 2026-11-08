@@ -2,8 +2,8 @@
 -- rides and where it comes from, and where an item comes from.
 --
 --   Lookup.UnitMount(unit) -> { spell, item|nil, name, icon|nil, class|nil } | nil
---   /polestar mount            -- the target's mount (else the mouseover's) in Lookup
---   /polestar lookup [text]    -- open Lookup, searching text
+--   /northstar mount            -- the target's mount (else the mouseover's) in Lookup
+--   /northstar lookup [text]    -- open Lookup, searching text
 --   MOUNT_SPOTTED(unit, info)  -- on target change and mouseover of a mounted player
 --
 -- Reading another player's auras on Forever (Blizzard_APIDocumentationGenerated):
@@ -206,7 +206,7 @@ function Lookup.UnitTooltip(tooltip, unit)
 		right = L["Class mount"]
 	end
 	H.AddLine(tooltip, L["Mount"] .. ": " .. info.name, right, lr, lg, lb, rr, rg, rb)
-	H.AddLine(tooltip, L["/pole mount: how to get it"], nil, rr, rg, rb)
+	H.AddLine(tooltip, L["/ns mount: how to get it"], nil, rr, rg, rb)
 end
 
 ns.Hooks.ItemLines("lookup", Lookup.ItemTooltip)

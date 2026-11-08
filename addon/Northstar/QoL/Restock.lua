@@ -4,7 +4,7 @@
 -- button under the merchant window. Nothing is bought without that press.
 --
 -- The amounts: Drinks, Food and Ammunition on the options page (Quality of
--- Life > Vendors > Restock), and any item with `/polestar restock <item>
+-- Life > Vendors > Restock), and any item with `/northstar restock <item>
 -- <amount>` (0 forgets it). Drinks, food and ammunition go by kind, so they
 -- keep up with your level: everything of that kind in the bags counts
 -- towards the amount, and the merchant's best one you can use now is bought
@@ -272,7 +272,7 @@ ns.On("SETTING_CHANGED", function(path)
 end)
 
 ---------------------------------------------------------------------------
--- /polestar restock [drink|food|ammo|<item>] [amount]
+-- /northstar restock [drink|food|ammo|<item>] [amount]
 ---------------------------------------------------------------------------
 
 local WORDS = { drink = "drink", drinks = "drink", water = "drink", food = "food", ammo = "ammo", ammunition = "ammo", arrows = "ammo", shot = "ammo" }
@@ -298,13 +298,13 @@ function Restock.Command(rest)
 			ns.Print(format(L["Restock: %s to %d"], link, v))
 			any = true
 		end
-		if not any then ns.Print(L["Nothing to restock. Set amounts on the options page, or: /polestar restock <item> <amount>."]) end
+		if not any then ns.Print(L["Nothing to restock. Set amounts on the options page, or: /northstar restock <item> <amount>."]) end
 		return
 	end
 	local kind = WORDS[what:lower()]
 	local id = not kind and (Client.ItemIDFromLink(what) or tonumber(what))
 	if not (kind or id) or not n then
-		ns.Print(L["Usage: /polestar restock [drink|food|ammo|<item>] <amount>"])
+		ns.Print(L["Usage: /northstar restock [drink|food|ammo|<item>] <amount>"])
 		return
 	end
 	if kind then

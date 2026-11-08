@@ -6,8 +6,8 @@ in this repository.
 
 | Part | Where | Job |
 |---|---|---|
-| Recorder addon | `addon/Northstar_Recorder/` | Writes compact records into `NorthstarRecorderDB` while the player plays: off until `/psrec on` or Polestar Client's share flag, which is on by default in the client (see "Ack file"). |
-| Recording library | `rust/crates/polestar-recording/` | Reads the SavedVariables file, decodes and validates records, finds WoW installs, scrubs text, writes the ack file, summarises. Shared by the three below. |
+| Recorder addon | `addon/Northstar_Recorder/` | Writes compact records into `NorthstarRecorderDB` while the player plays: off until `/nsrec on` or Polestar Client's share flag, which is on by default in the client (see "Ack file"). |
+| Recording library | `rust/crates/northstar-recording/` | Reads the SavedVariables file, decodes and validates records, finds WoW installs, scrubs text, writes the ack file, summarises. Shared by the three below. |
 | Polestar Client | `apps/client/` (Tauri) | Desktop app for Windows, macOS and Linux: finds the game, installs the Recorder, uploads new chunks, shows exactly what was sent. |
 | Ingest server | `services/ingest/` | Receives uploads, validates them with the library, stores them, serves stats, deletion and the maintainer export. |
 | forge | `forge record import`, `forge record pull`, `forge record resession` | Turns local files or the server export into `data/recordings/<session>.json` for the data build (`resession` rewrites them all from the archived chunks after a forge update). `import` marks this PC's own installs' contributor `local`. A file someone sent in needs `import --vouch <name>` (contributor `sent-<name>`, a name the maintainer chooses; trusted like the maintainer's own) or `import --anonymize` (contributor `anon-<16 hex>`; never used for the data). |
@@ -18,8 +18,8 @@ Character names, realm names, account names, chat, whispers, guild, friends,
 other players' names, who is in the player's group (only how many), mail,
 auction or trade data, the text of the game's messages (only the constant
 name of a refusal, see `refuse`), the server, instance and zone parts of
-creature GUIDs, the player's typed text other than `/psrec mark` notes and
-`/psrec trail` labels, and anything from outside the game folder.
+creature GUIDs, the player's typed text other than `/nsrec mark` notes and
+`/nsrec trail` labels, and anything from outside the game folder.
 Quest and gossip text has the player's name replaced with `$N` (and race and
 class with `$R`, `$C`) in the addon, and again in Polestar Client.
 
@@ -28,8 +28,8 @@ class with `$R`, `$C`) in the addon, and again in Polestar Client.
 ```lua
 NorthstarRecorderDB = {
 	schema = 2,
-	enabled = true,            -- recording on (/psrec on, or Polestar Client's share flag); nothing is written while false
-	optout = true,             -- only after /psrec off: the client's share flag does not turn recording on; /psrec on clears it
+	enabled = true,            -- recording on (/nsrec on, or Polestar Client's share flag); nothing is written while false
+	optout = true,             -- only after /nsrec off: the client's share flag does not turn recording on; /nsrec on clears it
 	install = "k3j9x0q2m7ab",  -- 12 random base-36 characters, made once per WoW account folder
 	seq = 41,                  -- last chunk number used
 	acked = 37,                -- highest chunk Polestar Client confirmed (from Ack.lua), kept for display
@@ -76,11 +76,11 @@ only means a chunk is uploaded twice; the server ignores a repeated
 `(install, seq)`.
 
 `NorthstarRecorderShare` is written only once sharing has been on in Northstar
-Client at least once (before that the file has no flag, so a `/psrec on` of
+Client at least once (before that the file has no flag, so a `/nsrec on` of
 someone whose client never shared is left alone). Sharing is on by default in
 the client: once it has found the game, a player who never chose shares, as
 if they had pressed Start sharing, unless an account's `NorthstarRecorderDB`
-says `optout` (`/psrec off`), and a notice in the client says once what is
+says `optout` (`/nsrec off`), and a notice in the client says once what is
 shared, with Stop sharing. A player who stopped sharing in the client stays
 off; it never turns back on by itself. From then on the flag is `true` while
 sharing is on and uploads are not paused, `false` otherwise; the client
@@ -88,9 +88,9 @@ writes it whenever that changes and with every ack. At login the Recorder
 reads it: `true` turns recording on (saying so once in chat) unless `optout`
 is set, `false` turns it off (without setting `optout`), and no flag leaves
 `enabled` as the player set it. So the client's sharing is enough;
-`/psrec off` stays the player's last word until `/psrec on`. The Recorder's
+`/nsrec off` stays the player's last word until `/nsrec on`. The Recorder's
 own default does not change: installed without Polestar Client (no flag), it
-stays off until `/psrec on`.
+stays off until `/nsrec on`.
 
 ### Field encoding
 
@@ -131,13 +131,13 @@ Context
 | `xp` | xp, xpMax, rested | every 5 minutes and at level up |
 | `dropped` | count | after chunks were dropped for size |
 | `group` | size, raid (1/0) | at session start and whenever it changes: `size` 0 solo, the other party members (1–4) in a party, the raid's size (the player included) in a raid. Readers carry it onto the `kill`, `xp`, `progress` and `turnin` records after it. Never who is in the group |
-| `mark` | P, text | `/psrec mark <text>` |
+| `mark` | P, text | `/nsrec mark <text>` |
 
 Movement
 
 | Kind | Fields | When |
 |---|---|---|
-| `pos` | P, flags, speed | 25 yd and 2 s since the last, or 4 yd and 20 s; every 1 yd/0.25 s while `/psrec trail` is on. `flags` bits: 1 mounted, 2 swimming, 4 indoors, 8 flying, 16 falling, 32 dead or ghost, 64 trail sample. `speed` = yards/s ×10 when readable |
+| `pos` | P, flags, speed | 25 yd and 2 s since the last, or 4 yd and 20 s; every 1 yd/0.25 s while `/nsrec trail` is on. `flags` bits: 1 mounted, 2 swimming, 4 indoors, 8 flying, 16 falling, 32 dead or ghost, 64 trail sample. `speed` = yards/s ×10 when readable |
 | `zone` | P, zoneText, subzoneText | map or zone text changes |
 | `ride` | on (1/0), P | moved while the player's own speed is 0 (boat, zeppelin, lift, tram) and when it stops |
 | `taxi` | fromNode, toNode | flight takeoff (`UnitOnTaxi` confirmed); nodes are taxi node ids |

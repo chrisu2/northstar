@@ -1,5 +1,5 @@
 -- Report a problem: the window behind the guide window's bug button (in the
--- navigator, beside Skip and the menu), its menu entry and /polestar report.
+-- navigator, beside Skip and the menu), its menu entry and /northstar report.
 -- The player says what went wrong; the report sets that above everything a
 -- fix needs, taken when the window opens: the guide and the step on screen
 -- with every goal's state, ids and position, the arrow, where the player
@@ -13,7 +13,7 @@
 -- link that opens a new issue with the report, its title, the version and
 -- the addons filled in (R.IssueURL). UI.ShowDiscord: the invite alone
 -- (ns.DiscordURL), in the copy window with Discord's mark (that button, the
--- sidebars' Discord mark, /polestar discord).
+-- sidebars' Discord mark, /northstar discord).
 --
 -- The game gives addons no clipboard and opens no links (LaunchURL is
 -- Blizzard's alone): everything to take away sits in a read-only copy box,
@@ -952,7 +952,7 @@ end
 -- the player typed stays while it is the same step.
 function UI.ShowReport()
 	-- Opened again while the player walks to mark the right spot (the bug
-	-- button, the menu, /polestar report): back to the report they started,
+	-- button, the menu, /northstar report): back to the report they started,
 	-- not a new one about wherever the guide is now.
 	if M and M:IsShown() then
 		backToReport()

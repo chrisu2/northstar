@@ -10,8 +10,8 @@ guides; it is not made by Northstar.
 2. Download `{{folder}}-<version>.zip` from this project's releases and unzip
    it into the game's `Interface/AddOns/` folder, next to `Northstar`.
 3. Restart the game. Its guides appear in Northstar's guide menu
-   (`/polestar guides`) under Community guides; Options > Community guides
-   (`/polestar packs`) turns the addon on or off.
+   (`/northstar guides`) under Community guides; Options > Community guides
+   (`/northstar packs`) turns the addon on or off.
 
 Credits: {{author}}. Licence: {{license}} (see `LICENSE`).
 

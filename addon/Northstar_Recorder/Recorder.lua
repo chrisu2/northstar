@@ -1,13 +1,13 @@
 -- Northstar Recorder: writes what the player does while leveling into
 -- NorthstarRecorderDB as compact records, in schema 2 of docs/RECORDING.md
 -- (the contract with the uploader, the ingest server and forge). Off until
--- the player turns it on (/psrec on, or Options > Recorder): while off
+-- the player turns it on (/nsrec on, or Options > Recorder): while off
 -- nothing is written.
 --
 -- This file: SavedVariables, the chunk writer, positions and maps, the
 -- session record, and the lifecycle. Quests.lua, World.lua, Finds.lua,
 -- Progress.lua, Route.lua and Trail.lua add the collectors, Commands.lua
--- the /psrec command, on the shared namespace.
+-- the /nsrec command, on the shared namespace.
 --
 -- A record is one line of tab-separated fields: kind, dt (tenths of a second
 -- since the chunk's epoch), then the kind's fields in the contract's order.
@@ -225,11 +225,11 @@ end
 ---------------------------------------------------------------------------
 
 -- Recording is opt-in: nothing is written until the player turns it on, with
--- /psrec on or by sharing in Polestar Client (NorthstarRecorderShare in
+-- /nsrec on or by sharing in Polestar Client (NorthstarRecorderShare in
 -- Ack.lua). The choice lives in the DB and here, so a DB table lost
 -- mid-session keeps recording on.
 local enabled = false
--- /psrec off was typed (and not undone by /psrec on): it wins over the
+-- /nsrec off was typed (and not undone by /nsrec on): it wins over the
 -- client's share flag.
 local optout = false
 
@@ -295,7 +295,7 @@ function ns.TextSeen() return CharDB().textSeen end
 -- sessions carried names and nothing reads it now); only the opt-in and the
 -- Recorder window's own settings (position, ticked spots) stay. Then the
 -- client's share flag (Ack.lua, loaded before the SavedVariables): true turns
--- recording on unless the player typed /psrec off, false turns it off, nil
+-- recording on unless the player typed /nsrec off, false turns it off, nil
 -- (no Polestar Client) leaves the player's own choice.
 local function adopt()
 	local db = NorthstarRecorderDB
@@ -753,7 +753,7 @@ local function startSession(isReload)
 end
 ns.StartSession = startSession
 
--- The player's own choice (/psrec on|off, the Recorder window): off is kept
+-- The player's own choice (/nsrec on|off, the Recorder window): off is kept
 -- as an opt-out that the client's share flag does not undo; on clears it.
 -- Turning recording on in play starts a session at once; off closes the
 -- chunk.
@@ -779,7 +779,7 @@ function ns.ClearAll()
 	if enabled and inWorld then startSession(false) end
 end
 
--- What /psrec status and the Options page show.
+-- What /nsrec status and the Options page show.
 function ns.Stats()
 	local n, bytes = 0, 0
 	for seq, text in pairs(state.chunks) do
@@ -808,7 +808,7 @@ ns.On("PLAYER_LOGIN", function()
 	end
 	if shareNote then
 		shareNote = false
-		ns.Print(L["on, because sharing is on in Polestar Client. /psrec off to stop."])
+		ns.Print(L["on, because sharing is on in Polestar Client. /nsrec off to stop."])
 	end
 end)
 

@@ -232,7 +232,7 @@ end
 if QoL.Restock then
 	register(QOL, L["Vendors"], L["Restock"], {
 		{ kind = "toggle", key = "qol.restock", label = L["Restock button"],
-			help = L["At a merchant that sells what you are short of, a Restock button under its window buys up to the amounts below (this character's). Nothing is bought until you press it. Other items, such as reagents: /polestar restock <item> <amount>."],
+			help = L["At a merchant that sells what you are short of, a Restock button under its window buys up to the amounts below (this character's). Nothing is bought until you press it. Other items, such as reagents: /northstar restock <item> <amount>."],
 			search = "restock, food, water, drink, ammo, arrows, bullets, reagents, auto buy, vendor" },
 		restockSlider("drink", L["Drinks"], 5, L["Keeps this many drinks in your bags. The merchant's best one for your level is bought."]),
 		restockSlider("food", L["Food"], 5, L["Keeps this much food in your bags. The merchant's best one for your level is bought."]),
@@ -263,7 +263,7 @@ register(QOL, L["Vendors"], L["Trainers"], {
 
 register(QOL, L["Trackers"], L["Experience"], {
 	{ kind = "toggle", key = "qol.xpTracker", label = L["XP tracker"],
-		help = L["XP per hour, time, kills and quests to level, and level splits (/pole xp)."], search = "experience, xp per hour, exp, leveling speed, time to level" },
+		help = L["XP per hour, time, kills and quests to level, and level splits (/ns xp)."], search = "experience, xp per hour, exp, leveling speed, time to level" },
 	{ kind = "toggle", key = "qol.xpTargetMark", label = L["Guide level on the XP bar"],
 		help = L["A mark at the end of the game's XP bar with the level the guide wants you to reach before it moves on, and how many levels away that is when it is more than one."],
 		search = "experience bar, exp bar, target level" },

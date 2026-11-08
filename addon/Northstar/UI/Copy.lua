@@ -1,4 +1,4 @@
--- A small window holding text to copy (a position from /polestar where, a
+-- A small window holding text to copy (a position from /northstar where, a
 -- link): the band with a title, a read-only copy box with the text selected
 -- and focused, and how to copy it. The ✕ and Escape close it.
 -- UI.ShowCopy(title, text, opts), or SHOW_COPY(title, text) from Core.

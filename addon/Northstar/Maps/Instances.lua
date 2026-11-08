@@ -392,7 +392,7 @@ local function buildFrame()
 	frame:SetScript("OnEnter", function(self)
 		W.Tooltip(self, "ANCHOR_BOTTOMLEFT", L["Instances"], {
 			L["New instances you entered on this account in the last hour. Re-entering an instance you have not reset does not count."],
-			L["/pole instances for runs and raid lockouts."],
+			L["/ns instances for runs and raid lockouts."],
 		})
 	end)
 	frame:SetScript("OnLeave", function(self) W.HideTooltip(self) end)
@@ -400,7 +400,7 @@ local function buildFrame()
 end
 
 ---------------------------------------------------------------------------
--- Slash command: /pole instances [clear]
+-- Slash command: /ns instances [clear]
 ---------------------------------------------------------------------------
 
 local function report()

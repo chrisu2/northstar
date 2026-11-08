@@ -6,9 +6,9 @@
 -- entry and the command), here on Northstar's own data.
 -- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.
 --
---   /polestar near <kind> [profession]   kinds: trainer, class, repair, reagents, vendor,
+--   /northstar near <kind> [profession]   kinds: trainer, class, repair, reagents, vendor,
 --                                        innkeeper, bank, mailbox, auction, flight, stable;
---                                        `/polestar near mining` = trainer mining
+--                                        `/northstar near mining` = trainer mining
 --   Nearby.Find(kind, line) -> place, seconds | nil, reason
 --       reason "kind" | "combat" | "none" | a Codex failure: "missing" (not installed, or no
 --       Codex module), "disabled" (off in the AddOns list), "empty" (loaded, but its NPC roles
@@ -493,7 +493,7 @@ function Nearby.Go(key, line)
 	if not place then
 		local why = seconds
 		if why == "kind" then
-			ns.Print(L["Usage: /polestar near trainer [profession] | class | weapon | repair | reagents | vendor | food | general | arrows | bullets | ranged | innkeeper | bank | mailbox | auction | flight | stable"])
+			ns.Print(L["Usage: /northstar near trainer [profession] | class | weapon | repair | reagents | vendor | food | general | arrows | bullets | ranged | innkeeper | bank | mailbox | auction | flight | stable"])
 		elseif why == "combat" then
 			ns.Print(L["Nearby services can be looked up after combat."])
 		elseif why == "missing" then
@@ -526,12 +526,12 @@ function Nearby.Go(key, line)
 	return true
 end
 
--- "/polestar near <kind> [profession]"; a profession alone means its trainer.
+-- "/northstar near <kind> [profession]"; a profession alone means its trainer.
 function Nearby.Command(rest)
 	local text = lower((rest or ""):match("^%s*(.-)%s*$"))
 	local word, more = text:match("^(%S+)%s*(.-)$")
 	if not word then
-		ns.Print(L["Usage: /polestar near trainer [profession] | class | weapon | repair | reagents | vendor | food | general | arrows | bullets | ranged | innkeeper | bank | mailbox | auction | flight | stable"])
+		ns.Print(L["Usage: /northstar near trainer [profession] | class | weapon | repair | reagents | vendor | food | general | arrows | bullets | ranged | innkeeper | bank | mailbox | auction | flight | stable"])
 		return
 	end
 	local key = ALIAS[word] or word
@@ -651,7 +651,7 @@ if ns.RegisterOptions then
 		return {
 			{ kind = "toggle", key = "nav.nearbyMenu", label = L["Nearby services in map menus"],
 				search = "nearest vendor, repair, trainer, mailbox, bank, inn, find npc, tracking",
-				help = L["The world map's and minimap's tracking menus find the nearest trainer, vendor, inn, bank and more (/polestar near)."] },
+				help = L["The world map's and minimap's tracking menus find the nearest trainer, vendor, inn, bank and more (/northstar near)."] },
 			{ kind = "toggle", key = "nav.nearbyButton", label = L["Nearby services button"],
 				search = "nearest vendor, repair, trainer, inn, flight master, find npc",
 				help = L["A button in the guide window's header, left of the menu, finds the nearest vendor, repair, inn, flight master or trainer and points the arrow there."] },

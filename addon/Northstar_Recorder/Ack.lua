@@ -5,6 +5,6 @@
 -- and at the next login Recorder.lua deletes those chunks. It also writes
 --   NorthstarRecorderShare = true|false
 -- (sharing on in the client and not paused): true turns recording on at
--- login unless the player typed /psrec off, false turns it off. The release
+-- login unless the player typed /nsrec off, false turns it off. The release
 -- ships it empty; a lost ack only means a chunk is uploaded twice.
 NorthstarRecorderAck = nil

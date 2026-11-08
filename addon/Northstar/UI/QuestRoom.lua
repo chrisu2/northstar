@@ -4,7 +4,7 @@
 -- through the game's own confirmation (Compat.AskAbandonQuest); nothing is
 -- ever abandoned without it. Opened by the guide window's full-log notice
 -- and menu ("Clean up quest log (N)"), the Options button and
--- /polestar questlog.
+-- /northstar questlog.
 -- UI.ShowQuestRoom(), or SHOW_QUEST_ROOM from Core.
 --
 -- Built on first use; colours are Theme tokens only.

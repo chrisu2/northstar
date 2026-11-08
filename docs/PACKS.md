@@ -133,7 +133,7 @@ polestar dev --play               # lint and build on every save, with the playg
    running `dev`.
 5. **In game:** the first time, restart the game so the client sees the new
    addon; after that, `/reload` shows every change. Open the guide menu
-   (`/polestar guides`) and pick your guide under "Community guides".
+   (`/northstar guides`) and pick your guide under "Community guides".
 
 ## Three ways to write guides
 
@@ -147,7 +147,7 @@ Record your own play and turn it into a draft:
 
 ```sh
 polestar install --recorder        # in the Northstar clone (not the pack): installs Northstar_Recorder with Northstar
-# in game: /psrec on, play the route, then log out
+# in game: /nsrec on, play the route, then log out
 forge record import                # copies the recorded sessions out of SavedVariables into data/recordings
 polestar record list
 polestar record draft <session>    # writes drafts/<faction>-<race>-<date>-<time>.guide
@@ -213,7 +213,7 @@ printed under it); besides:
 Fields with nothing to say are left out (a quest with no starter has no `x`),
 except a quest's `objectives` and `notes`, which are empty lists.
 
-In game, **`/polestar where`** prints where you stand as two guide lines and
+In game, **`/northstar where`** prints where you stand as two guide lines and
 puts them in a box to copy:
 
 ```
@@ -225,7 +225,7 @@ goto 42.11,65.93 live
 coordinates are read in the Era frame unless marked (GUIDE_FORMAT.md,
 `coords`), and Forever moved some zones, so keep the `live`. For any other
 goal, add the `@x,y live` form chat prints (`kill 299 @42.11,65.93 live`). A
-guide written mostly from `/polestar where` can say `coords live` in its
+guide written mostly from `/northstar where` can say `coords live` in its
 header once instead.
 
 A pack's guide may hand over to any of Northstar's guides with `next`
@@ -334,7 +334,7 @@ race, another level range).
 
 A single small guide (a quest chain, an item, a mount, an errand) can go to
 players as one line of text instead of a zip. They paste it on Northstar's
-Import page (`/polestar import`, or **Import** above Options in the hub);
+Import page (`/northstar import`, or **Import** above Options in the hub);
 nothing to install, no restart.
 
 ```sh
@@ -386,7 +386,7 @@ community addons.
 
 ## In game: statuses and problems
 
-Options > **Community guides** (`/polestar packs`) lists every pack the game
+Options > **Community guides** (`/northstar packs`) lists every pack the game
 has installed, ours first. The rules behind the statuses and problems below are
 in PACK_FORMAT.md, "Rules Northstar enforces". Each row has a status:
 
@@ -449,8 +449,8 @@ messages, and nothing is saved:
 | This import string holds no guide. | export again with `polestar export <file.guide>` |
 | This game client cannot read import strings. | the client lacks the decoding Northstar needs (`C_EncodingUtil`): publish a community addon for that client |
 
-`/polestar import delete <guide-id>` removes one imported guide, and
-`/polestar import clear` removes them all; the Import page's **Delete**
+`/northstar import delete <guide-id>` removes one imported guide, and
+`/northstar import clear` removes them all; the Import page's **Delete**
 buttons do the same.
 
 ## Lint messages
@@ -485,7 +485,7 @@ checks authors meet most; the rest are listed in GUIDE_FORMAT.md
 | `next` offers <faction> guide "<id>" after a <faction> guide | hand over to a guide of the same faction |
 | no <races> character can follow <id> (it is for <its races> only) | the `next` guide's `race` or `class` leaves out every character of yours: pick one for the same races (or classes) with `polestar find --kind guide <zone> --race <Race>` |
 | LICENSE still holds the placeholder line `polestar new` writes, not the licence text (warning) | replace the line with the full text of your licence |
-| map <id>: this pack's Era frame differs from the one Northstar's guides register; in game Northstar's wins, so coordinates on this map may be off (warning) | mark the coordinates on that map `live` or retake them with `/polestar where` |
+| map <id>: this pack's Era frame differs from the one Northstar's guides register; in game Northstar's wins, so coordinates on this map may be off (warning) | mark the coordinates on that map `live` or retake them with `/northstar where` |
 | `kill` npc <id> (<name>) is elite; … / <item> drops only from elites (<names>); … / quest <id> (<title>) is elite … (warning in packs) | Northstar's own house rule (errors in our guides): in a Leveling guide put the goal in a step with `when group <quest>` (the player chooses it; the quest's goals elsewhere go with its accept) or make it `optional`, with the tip "<name> is elite: grouping up is advised." |
 | quest <id> (<title>) needs <Profession> <rank>, and the guide does not train it before here: characters without it never see this goal (warning, Leveling guides) | the quest giver offers it only to characters with that profession, and Northstar hides its goals from the others: make the goal `optional`, or `train <Profession>` (and `skill <Profession> <rank>` above rank 1) earlier in the guide |
 | enter "<place>": no zone or area has that name; the game never reports it, so the goal never checks off by itself (warning) | write the place as the minimap shows it there, as the game spells it |

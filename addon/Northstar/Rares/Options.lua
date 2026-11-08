@@ -39,7 +39,7 @@ register({
 	section = L["When a rare shows up"],
 	controls = {
 		{ kind = "toggle", key = "rares.enabled", label = L["Rares"], search = "rare, elite, silver dragon, rare spawn, treasure, chest",
-			help = L["Watch for rare NPCs and treasures and keep when you last met them (/pole rares). Their map pins are under Map, off by default."] },
+			help = L["Watch for rare NPCs and treasures and keep when you last met them (/ns rares). Their map pins are under Map, off by default."] },
 		{ kind = "toggle", key = "rares.alerts", label = L["Alert for rares"], disabled = off, search = "rare alert, rare spawn, notification, warning, popup",
 			help = L["A card with its name, level and distance, and a waypoint to it."] },
 		{ kind = "toggle", key = "rares.treasureAlerts", label = L["Alert for treasures"], disabled = alertsOff, child = true,

@@ -54,14 +54,14 @@ you only see one if you install it yourself.
 
 ### Find its guides
 
-Open the guide menu (`/polestar guides`). Below Northstar's own categories is
+Open the guide menu (`/northstar guides`). Below Northstar's own categories is
 the **Community guides** heading, with one entry per community addon: its
 title and its author. Every guide's details say who wrote it:
 "By &lt;author&gt; · &lt;title&gt; &lt;version&gt; · &lt;licence&gt;".
 
 ### Turn one on or off
 
-**Options > Community guides** (`/polestar packs`) lists every community
+**Options > Community guides** (`/northstar packs`) lists every community
 addon you have installed, with its author, version, licence and website.
 
 <p align="center">
@@ -135,7 +135,7 @@ come as an **import string** instead of an addon: one line of text its
 author shares on Discord, GitHub or a forum. Nothing to install.
 
 1. Open **Import** at the foot of the hub's left rail, just above Options
-   (`/polestar import`).
+   (`/northstar import`).
 2. Paste the string into the box. Northstar reads it and shows what it
    holds before anything is saved: "Cozy Sleeping Bag · by Yendi · 14
    steps · levels 30–40 · Alliance and Horde · CC-BY-4.0".
@@ -256,7 +256,7 @@ them.
    `LICENSE` you chose. In a clone of the public repository it also writes
    a GitHub workflow that checks every push.
 2. **Write**: `polestar find <text>` prints quest, NPC, object, item, inn
-   and flight-point lines ready to paste. In the game, `/polestar where`
+   and flight-point lines ready to paste. In the game, `/northstar where`
    prints where you stand as a guide line.
 3. **Check**: `forge guide lint` checks every guide against the game's data,
    and `polestar playtest` plays each one to the end, for each race that
@@ -339,7 +339,7 @@ Northstar reads both.
 ### Import strings
 
 A single small guide can go to players as one line of text instead of an
-addon: they paste it on Northstar's Import page (`/polestar import`). Use it
+addon: they paste it on Northstar's Import page (`/northstar import`). Use it
 for a quest chain, an item, a mount, an errand; a route or a set of guides is
 a community addon.
 

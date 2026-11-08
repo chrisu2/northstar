@@ -4,7 +4,7 @@
 // every worktree, so a new worktree, a rebase or a gate snapshot with the same inputs reuses them
 // instead of building again (the 1.2 h cold rebuild after the rebase).
 //
-//   dir: $NORTHSTAR_CAS, else ~/.cache/polestar/cas ($NORTHSTAR_CAS=off: no store); one directory
+//   dir: $NORTHSTAR_CAS, else ~/.cache/northstar/cas ($NORTHSTAR_CAS=off: no store); one directory
 //     per kind (world, floors, walks), a file per key. $NORTHSTAR_CAS_SKIP=kind,...: those kinds
 //     are neither read nor written (the rest shared)
 //   enabled(simDir): only for a worktree's own data/sim (a test's or a scratch sim dir keeps its

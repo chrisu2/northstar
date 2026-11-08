@@ -1,5 +1,5 @@
 'use strict';
-// /psrec trail (addon/Northstar_Recorder/Trail.lua): a dense position trail
+// /nsrec trail (addon/Northstar_Recorder/Trail.lua): a dense position trail
 // sampled at 4 Hz, written after 1 yd of movement (height included), a map
 // change or 2 s, as `pos` records with the trail flag (64) between a
 // "trail on" and a "trail off" `mark` (docs/RECORDING.md).
@@ -71,7 +71,7 @@ test('trail on records a sample per yard moved, height change, map change or 2 s
 		emit({ refused = refused, first = first, messages = messages, afterOff = afterOff, last = all[#all], lastMsg = stub.messages[#stub.messages] })`,
 	});
 
-	assert.match(out.refused.msg, /recording is off; \/psrec on first/);
+	assert.match(out.refused.msg, /recording is off; \/nsrec on first/);
 
 	const recs = out.first;
 	assert.deepEqual(recs.map((r) => r[0]), ['mark', 'pos', 'pos', 'pos', 'pos', 'pos', 'mark']);

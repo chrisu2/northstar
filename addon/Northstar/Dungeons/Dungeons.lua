@@ -61,7 +61,7 @@
 --   screen cropped square): Dungeons/Art.lua.
 -- Settings: dungeons.enabled, dungeons.headsUp (the heads-up when a
 -- dungeon opens up, UI/DungeonToast.lua); per character, the dungeons run in leveling
--- guides (Dungeons.ROUTE, Engine.ChooseDungeon). Command: /polestar dungeons [name].
+-- guides (Dungeons.ROUTE, Engine.ChooseDungeon). Command: /northstar dungeons [name].
 
 local ADDON, ns = ...
 local L = ns.L

@@ -171,7 +171,7 @@ test('needs-info asks the reporter the maintainer\'s question in their thread, w
 	const sync = createSync({ discord, github, media: fakeMedia(), config: { forumId: FORUM, botId: BOT }, log: quietLog, sleep: async () => {} });
 	discord.post('1001', { content: fs.readFileSync(path.join(__dirname, 'fixtures', 'discord', 'elwynn-trainer.md'), 'utf8'), tags: ['t-questing'] });
 	await sync.newPost('1001');
-	await github.comment(1, 'Which class were you playing, and could you type `/polestar where` at the trainer?');
+	await github.comment(1, 'Which class were you playing, and could you type `/northstar where` at the trainer?');
 	await github.comment(1, `${ISSUE_MARK}\n**Pull requests for this issue**\n\n- #9 by @a, into \`next\``);
 	const sent = discord.sent.length;
 	const { onIssue } = require('../tools/discord-bot/lib/notify');

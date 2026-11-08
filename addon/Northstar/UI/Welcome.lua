@@ -52,7 +52,7 @@
 -- whose start closes every special window (CloseAllWindows) and hides the UI:
 -- a welcome closed that way is not marked seen and comes back on the page it
 -- left once the cinematic stops. About's "Show the welcome again" and
--- /polestar welcome (SHOW_WELCOME) open it with every page.
+-- /northstar welcome (SHOW_WELCOME) open it with every page.
 --
 -- The window takes the height of its tallest page, laid out in the current
 -- language and font, so it never jumps. Motion: the window fades in and the
@@ -887,7 +887,7 @@ PAGES[#PAGES + 1] = {
 	shown = function() return full end,
 	build = function(P)
 		compactHero(P.Hero, L["Make it yours"],
-			(L["Three choices to start with. Everything else is in %s."]):format(cmd("/polestar options")), true)
+			(L["Three choices to start with. Everything else is in %s."]):format(cmd("/northstar options")), true)
 		local p = P.Body
 		F.AutoQuest = toggleRow(p, L["Accept and turn in guide quests for me"], "behavior.autoAccept",
 			L["Only quests in the next steps of your open guides. Never picks between rewards. Hold Shift to skip."],
@@ -1690,7 +1690,7 @@ end
 
 -- Open the welcome at `page` (a page key: "welcome", "setup", "route",
 -- "start"; or its number among the pages shown), the first by default, with
--- every page. Opens even when already seen (About, /polestar welcome, the
+-- every page. Opens even when already seen (About, /northstar welcome, the
 -- preview).
 function WEL.Show(page)
 	full = true

@@ -2323,7 +2323,7 @@ end
 
 -- Placement: where the quest log puts the player in the guide. Runs while the
 -- tab is being placed (`placing`: its guide was just loaded at login, reload,
--- in a new tab, after /polestar reset).
+-- in a new tab, after /northstar reset).
 --
 -- The start is the first open step with work the player has started (a goal
 -- of a quest in the log: objectives in progress, ready to turn in) or can do
@@ -2762,7 +2762,7 @@ function Own.acceptNotice(s, g, goal, status)
 	if checked(s, g) then return L["%s isn't in your quest log"]:format(questTitle(goal) or titleOfQuest(goal.quest)) end
 	if Own.notListed[goal.quest] then
 		local N = ns.Names
-		return L["Not offered by %s? Report it with /polestar"]:format(N.Npc(goal.npc) or goal.npcName or N.Object(goal.object) or goal.objName or L["the quest giver"])
+		return L["Not offered by %s? Report it with /northstar"]:format(N.Npc(goal.npc) or goal.npcName or N.Object(goal.object) or goal.objName or L["the quest giver"])
 	end
 	return nil
 end
@@ -5617,7 +5617,7 @@ function Engine.RouteChoiceFor(id)
 	return from and from.id or nil
 end
 
--- `/polestar path`: the waiting choice of the active tab, else the choice that
+-- `/northstar path`: the waiting choice of the active tab, else the choice that
 -- offered the active guide. Fires ROUTE_CHOICE; returns the from-guide id or nil.
 function Engine.OfferRouteChoice()
 	local fromId = Engine.PendingRouteChoice() or (guide and Engine.RouteChoiceFor(guide.id))
@@ -6204,7 +6204,7 @@ function Engine.DismissWhileHere()
 	return true
 end
 
--- The candidates now, for tests and /polestar debug: { { step, index, kind, left }, ... }.
+-- The candidates now, for tests and /northstar debug: { { step, index, kind, left }, ... }.
 function Engine.GetWhileHereCandidates()
 	local out = {}
 	for i = 1, Own.hereN do
@@ -7155,7 +7155,7 @@ end
 -- refusal the data does not explain is never a skip (Fitz, #741: a giver the
 -- server lacks would take the quest and its later steps out of the guide):
 -- the accept stays open, the arrow stays on the giver, and its line says
--- "Not offered by <giver>? Report it with /polestar" (Own.notListed, this
+-- "Not offered by <giver>? Report it with /northstar" (Own.notListed, this
 -- session, until the giver's window lists the quest or it is taken). Nor is
 -- a refusal while the missing prerequisite is in the log ready to hand in
 -- (Own.preReady): the window shows before the hand-in that opens the quest

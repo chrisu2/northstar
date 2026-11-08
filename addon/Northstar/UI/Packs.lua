@@ -1,5 +1,5 @@
 -- The Community guides page of the options window (Options.lua registers it at
--- order 70; `/polestar packs` opens it): one row per pack the core found
+-- order 70; `/northstar packs` opens it): one row per pack the core found
 -- (Guides.Packs: ours first, then by title) with its credits, its website
 -- (a link opening the copy window), its source and its state: a switch while
 -- it can be shown or hidden, otherwise why it is not running, and its

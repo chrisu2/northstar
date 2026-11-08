@@ -19,7 +19,7 @@ page says which part is which.
 | `Northstar_Nav` | The arrow's walking routes: Northstar's walking router (`Routing/`, started from [Shortest Path Forever](https://github.com/cjber/shortest-path-forever)'s by Cillian Berragan, GPL-3.0-or-later, used with his permission, and Northstar's since 2026-10-16; `CREDITS.md`), pricing each step by its ground class and the player's faction (`Routing/Costs.lua`), on the walking maps of Eastern Kingdoms, Kalimdor and Zephras Isle (maps format 5: Leffe's navigation maps, with the walk's chokepoints and our floors' area names; format 3 from our grid without `--leffe`). `API.lua` hands the engine to Northstar as `Northstar_NavEngine`; it reads only its own maps (`NorthstarPathData`), also with Shortest Path Forever installed. Loaded on demand at login. | the router hand-written; `forge nav pack --leffe` (the maps and `Chokepoints.lua`, `PACK.json`); the maps never edited by hand | yes (the maps generated) | yes, in `Northstar-<version>.zip` |
 | `Northstar_Nav_EK`, `Northstar_Nav_Kalimdor` | Each continent's map parts of Leffe's maps; Northstar_Nav's router loads the player's continent's the first time it searches there (never in combat). | `forge nav pack --leffe` | yes (generated) | yes, in `Northstar-<version>.zip` |
 | `Northstar_Travel` | Zone crossings for the travel planner, from the optional local crossings file `data/local/crossings.json`. Loads with Northstar. | `travel build` | no (gitignored, built locally) | no: `install` copies it when built, `pack` never packages it |
-| `Northstar_Recorder` | An optional, standalone recorder (no dependency on Northstar): quests, routes, world data and, while Northstar runs, guide progress, as compact records into `NorthstarRecorderDB` (schema 2, [docs/RECORDING.md](../docs/RECORDING.md)). Off until turned on (`/psrec on`, or Polestar Client's share flag: sharing is on by default in the client; `/psrec off` always wins). Polestar Client sends it; `forge record import` reads what it wrote. `Ack.lua` is the client's acknowledgement and share flag, shipped empty. | Hand-written | yes | yes, as its own `Northstar_Recorder-<version>.zip`; `install --recorder` |
+| `Northstar_Recorder` | An optional, standalone recorder (no dependency on Northstar): quests, routes, world data and, while Northstar runs, guide progress, as compact records into `NorthstarRecorderDB` (schema 2, [docs/RECORDING.md](../docs/RECORDING.md)). Off until turned on (`/nsrec on`, or Polestar Client's share flag: sharing is on by default in the client; `/nsrec off` always wins). Polestar Client sends it; `forge record import` reads what it wrote. `Ack.lua` is the client's acknowledgement and share flag, shipped empty. | Hand-written | yes | yes, as its own `Northstar_Recorder-<version>.zip`; `install --recorder` |
 
 The data addons Northstar can do without: with `Northstar_QuestDB`,
 `Northstar_Codex` or `Northstar_ItemDB` missing, the features that read them say
@@ -74,7 +74,7 @@ never in saved variables.
 
 | File | Public table | What it does |
 |---|---|---|
-| `Init.lua` | `Northstar` (`ns`) | The namespace and shared plumbing: lifecycle (`OnInit`, `OnLogin`), message bus (`On`, `Off`, `Fire`), game events, settings (`Get`, `Set`, `RegisterDefaults`), per-character state, the `/polestar` and `/pole` commands; translations (`L`, `LC`; `Locales/<locale>.lua` loads right after it from Core.xml), game terms in the client's words (`StandingName`, `QualityName`, `FactionName`) and `AI_LOCALES` |
+| `Init.lua` | `Northstar` (`ns`) | The namespace and shared plumbing: lifecycle (`OnInit`, `OnLogin`), message bus (`On`, `Off`, `Fire`), game events, settings (`Get`, `Set`, `RegisterDefaults`), per-character state, the `/northstar` and `/ns` commands; translations (`L`, `LC`; `Locales/<locale>.lua` loads right after it from Core.xml), game terms in the client's words (`StandingName`, `QualityName`, `FactionName`) and `AI_LOCALES` |
 | `Compat.lua` | `Compat` | Every quest, map and unit client call, in one place, so tests can swap it for a fake; also the one copy of the client helpers every module shares: `IsSecret` and `Readable` (secret values from combat-restricted APIs), `Now` (the server clock) and `MapName` (the client's map name, else the Codex zone's) |
 | `Data.lua` | `Data` | Loads the load-on-demand data addons (`Data.Pack(name)`) |
 | `Names.lua` | `Names` | Quest, NPC, object and item names in the client's language: the client's own, else its language folder `Northstar_<locale>`'s `Names.lua`, loaded on demand; nil (English) on an English client |
@@ -115,7 +115,7 @@ never in saved variables.
 | `Tracker.lua` | `QuestDB` | Quest markers on the map: objectives, turn-ins and quest givers with quests available now |
 | `Tooltips.lua` | `QuestDB` | Quest lines on unit, item and object tooltips; quest icons on nameplates |
 | `QuestLevels.lua` | (local) | Quest levels before quest titles wherever the client draws a title without one |
-| `Options.lua` | `QuestDB.OPTIONS` | The quest settings and the `/polestar questdb` command |
+| `Options.lua` | `QuestDB.OPTIONS` | The quest settings and the `/northstar questdb` command |
 
 ### Gear
 
@@ -198,7 +198,7 @@ never in saved variables.
 | `RouteChoice.lua` | `UI.RouteChoice` | "Choose your path": one card per zone where a guide offers several next guides |
 | `Welcome.lua` | `UI.Welcome` | The welcome a character sees the first time Northstar meets it |
 | `Copy.lua` | `UI.ShowCopy` | A small window holding text to copy |
-| `Report.lua` | `UI.Report` | "Report a problem" (the guide window's bug button, `/polestar report`): a report on the step on screen to copy for the Polestar Discord; `UI.ShowDiscord`, the invite on its own |
+| `Report.lua` | `UI.Report` | "Report a problem" (the guide window's bug button, `/northstar report`): a report on the step on screen to copy for the Polestar Discord; `UI.ShowDiscord`, the invite on its own |
 | `Packs.lua` | `UI.Packs` | The Community guides page of the options window |
 | `Options.lua` | `UI.Options` | The options window: pages, tabs, sections, settings search |
 

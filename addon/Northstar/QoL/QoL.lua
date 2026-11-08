@@ -140,7 +140,7 @@ function QoL.WhileOn(keys, event, fn)
 	return w
 end
 
--- Whether `event` is registered for a watch right now (tests, /pole status).
+-- Whether `event` is registered for a watch right now (tests, /ns status).
 function QoL.Watching(event)
 	for i = 1, #watches do
 		if watches[i].event == event and watches[i].live then return true end

@@ -12,7 +12,7 @@ local ok, err = ns.RegisterOptions({
 	page = L["Discovery"], tab = L["Characters"], section = L["Characters"],
 	controls = {
 		{ kind = "toggle", key = "alts.enabled", label = L["Characters"], search = "alts, alt characters, other characters, toons, roster",
-			help = L["Keep a note of each character you play, for the Characters page (/pole alts)."] },
+			help = L["Keep a note of each character you play, for the Characters page (/ns alts)."] },
 	},
 })
 if not ok and geterrorhandler then geterrorhandler()(err) end

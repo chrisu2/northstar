@@ -190,7 +190,7 @@ function GetActionInfo(slot)
 	if a then return a[1], a[2] end
 end
 function UseAction() end
--- What a /psrec trail sample reads: world position with height (UnitPosition
+-- What a /nsrec trail sample reads: world position with height (UnitPosition
 -- from the map's world bounds and W.z; W.noUnitPosition for a client that
 -- answers nil), facing, speed and movement flags.
 function UnitPosition(unit)

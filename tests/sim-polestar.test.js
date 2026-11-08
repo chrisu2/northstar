@@ -1,6 +1,6 @@
 'use strict';
 // Northstar route extractor (docs/legacy/SIMULATION-js.md §5) on a synthetic sample in
-// tests/fixtures/sim/polestar: invented guide names and ids.
+// tests/fixtures/sim/northstar: invented guide names and ids.
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');

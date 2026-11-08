@@ -86,11 +86,11 @@
 
 Good to know:
 
-- `/polestar guides` opens the hub: every guide, Lookup, Dungeons, Talents
-  and Rares. `/polestar options` holds every setting; quest markers on the map
+- `/northstar guides` opens the hub: every guide, Lookup, Dungeons, Talents
+  and Rares. `/northstar options` holds every setting; quest markers on the map
   are off until you turn them on under **Map**. Right-click the minimap
   button for a short menu.
-- `/polestar skip` moves on for good; `/polestar next` and `prev` only look
+- `/northstar skip` moves on for good; `/northstar next` and `prev` only look
   ahead or back.
 - **Updating:** the CurseForge app and the Polestar Client update Northstar for
   you. By hand, delete the old Northstar folders, then unzip the new release
@@ -105,8 +105,8 @@ Good to know:
   same release, or from the Polestar Client) records your play for the
   recording program that improves the routes. With the Polestar Client it
   records while sharing is on, which it is by default (one click in the
-  Client stops it, and `/psrec off` always wins); on its own it stays off
-  until you type `/psrec on`.
+  Client stops it, and `/nsrec off` always wins); on its own it stays off
+  until you type `/nsrec on`.
 - **Community guides** are routes other players publish for Northstar, on
   [polestar.guide](https://polestar.guide/community): see
   [Community guides](#community-guides).
@@ -116,7 +116,7 @@ Good to know:
   [Polestar Discord](https://discord.gg/polestar): a bot files it for the
   developers and replies in your thread when it's fixed. **Get the invite** is
   there if you're not in the Discord yet. Have a GitHub account?
-  **Open on GitHub** pre-fills a new issue with your report. `/polestar report`
+  **Open on GitHub** pre-fills a new issue with your report. `/northstar report`
   opens the window too, and [issues](https://github.com/fitzforge/polestar/issues)
   are welcome as well. The release's `SHA256SUMS` holds the zips' checksums.
 
@@ -158,7 +158,7 @@ first login opens a short welcome: a hello and what Northstar does; on the
 account's first character, quest automation, the guide at login and the color
 scheme, then the route style (Fastest, Balanced or Roads, with a line on what
 each does); then the guide Northstar suggests for that character, the Discord
-and community guides (`/polestar welcome` shows it again).
+and community guides (`/northstar welcome` shows it again).
 
 ### New in 0.3.0
 
@@ -310,8 +310,8 @@ keeps them safe to play and fair to their authors:
    up to date. Or download it from wherever its author publishes it and
    install it like any addon, next to the `Northstar` folders.
 2. Restart the game. Its guides appear in the guide menu
-   (`/polestar guides`) under **Community guides**.
-3. **Options > Community guides** (`/polestar packs`) turns each one on or
+   (`/northstar guides`) under **Community guides**.
+3. **Options > Community guides** (`/northstar packs`) turns each one on or
    off without a reload, and picks where the guide for your level is
    suggested from.
 
@@ -323,7 +323,7 @@ from authors you trust.
 
 A short guide shared as a single line of text (a quest chain, an item, a
 mount, an errand) can be pasted on the **Import page** without installing
-anything: `/polestar import` opens it, or follow the foot of the hub's left
+anything: `/northstar import` opens it, or follow the foot of the hub's left
 rail above Options. Northstar shows what the guide is before saving it, says
 why when it turns one down, offers **Update** for a newer version and keeps
 your progress, and lists your imported guides with **Delete**. Imported guides
@@ -465,7 +465,7 @@ its source is in [apps/client](apps/client).
 - **Hidden in dungeons and battlegrounds** (Options, Guide, Window, In
   dungeons and battlegrounds; on by default): the guide window, its action
   buttons and alerts stay out of the way inside dungeons, raids,
-  battlegrounds and arenas and come back when you leave. `/polestar`, the key
+  battlegrounds and arenas and come back when you leave. `/northstar`, the key
   binding or the minimap button still opens it while you are inside.
 
 ### Navigation
@@ -483,12 +483,12 @@ its source is in [apps/client](apps/client).
   passes, bridges and gates (Carbonite's zone connections), one waypoint at a
   time ("Go to Ashenvale"): from Sun Rock Retreat to Astranaar through the
   Talondeep Path, not over the ridge.
-- **`/polestar way <x> <y> [label]`** points the arrow anywhere on the current
+- **`/northstar way <x> <y> [label]`** points the arrow anywhere on the current
   map.
 - **Go anywhere.** Shift-click the world map or the minimap and the arrow
   takes you there, routed like any goal; Alt-click works over map icons.
   Click the spot again to let it go.
-- **Nearby services.** `/polestar near repair` (trainer, a profession,
+- **Nearby services.** `/northstar near repair` (trainer, a profession,
   class, weapon, reagents, vendor, food, general, arrows, bullets, ranged,
   innkeeper,
   bank, mailbox, auction, flight, stable) points the arrow at the quickest one to
@@ -623,7 +623,7 @@ runs solo or in a raid.
   XP, the step they are on, what they still need of yours, and whether they
   are dead, far away or offline. Click a name to point the arrow at them
   where the game gives their place on the map. Close it and it stays
-  closed; a click on the guide window's party line or `/polestar party`
+  closed; a click on the guide window's party line or `/northstar party`
   brings it back (and says why when nothing can show yet). Without a
   Northstar member in the party it stays hidden.
 - **Loot a friend needs**: "Ana still needs 2 Scalding Mornbrew" under a
@@ -651,7 +651,7 @@ runs solo or in a raid.
   in the game's bags, in Baganator and in EllesmereUI Bags. With Pawn
   installed, "Leave bag arrows to Pawn" hides Northstar's.
 - **Your own stat weights**: paste a Pawn scale string (Options, Questing,
-  Rewards & gear, or `/polestar gear import`) and choose it under Stat weights
+  Rewards & gear, or `/northstar gear import`) and choose it under Stat weights
   as "Custom: <name>". It replaces the built-in weights at every level. One
   window lists your scales for every class: use, rename, export or delete
   them, change their weights, and start one from a built-in spec.
@@ -675,7 +675,7 @@ runs solo or in a raid.
   drop, and an alert when one shows up on your minimap, nameplates or target.
   A **Rare button** appears under the Target button when Northstar spots a rare
   nearby and targets it by name (Options, Questing, Buttons, Rare button).
-- **Characters** (`/polestar alts`): every character on the account with its
+- **Characters** (`/northstar alts`): every character on the account with its
   level, zone, guide, gold and an estimate of its rested XP.
 
 Lookup, Dungeons and Rares read the Codex, a data pack that ships in the
@@ -722,7 +722,7 @@ the flight helper once, or to answer a request yourself.
 ### With a gamepad
 
 Northstar plays with a gamepad on Forever (ported from Ding! by Yendi,
-@moust4ki). Open its options from the minimap button (or `/polestar
+@moust4ki). Open its options from the minimap button (or `/northstar
 gamepad` without the game's gamepad interface): their **Gamepad** page names
 the buttons (Xbox letters or PlayStation shapes, read off the gamepad by
 default), and its **Key bindings** tab binds every Northstar action: next and
@@ -764,8 +764,8 @@ shows: everything works with the mouse and keyboard as before.
 `Northstar_Recorder` is an optional companion addon that records your play
 for the recording program, to improve the routes. It records while sharing
 is on in the [Polestar Client](https://polestar.guide/client) (on by
-default there, unless you stop it or type `/psrec off`); without the Client
-it is off until you turn it on (`/psrec on`, or Options > Recorder), and it
+default there, unless you stop it or type `/nsrec off`); without the Client
+it is off until you turn it on (`/nsrec on`, or Options > Recorder), and it
 writes nothing while off. It writes
 compact chunks with no character, realm or account names, and records what
 the guides need most: kill pace and kill XP, drops counted against what your
@@ -779,8 +779,8 @@ steps and detours, the steps to fix first.
 
 ### Slash commands
 
-`/polestar` (or `/pole`) shows or hides the guide window; settings live in
-`/polestar options`, grouped by what you came to do: Guide, Appearance, Map,
+`/northstar` (or `/ns`) shows or hides the guide window; settings live in
+`/northstar options`, grouped by what you came to do: Guide, Appearance, Map,
 Questing, Discovery, Quality of Life, Integrations (settings for other addons
 Northstar works with, such as Questie, shown while they are installed), Guide
 packs, Gamepad, Recorder and About, with a search that finds any setting.
@@ -833,11 +833,11 @@ settings instead, and Northstar keeps out of the game's own windows.
 | `discord` | The invite to the Polestar Discord, to copy |
 | `debug` | Toggle debug output |
 
-The Recorder has its own: `/psrec on | off | ui | mark <text> | trail on
-[label] | trail off | clear` and a few more listed by `/psrec`. `/psrec trail
+The Recorder has its own: `/nsrec on | off | ui | mark <text> | trail on
+[label] | trail off | clear` and a few more listed by `/nsrec`. `/nsrec trail
 on Brill` records a dense position trail (a point every yard, height
-included) until `/psrec trail off` or 30 minutes; `record trail <session>`
-writes it out. `/psrec ui` (or Options > Recorder > Recorder window) opens a
+included) until `/nsrec trail off` or 30 minutes; `record trail <session>`
+writes it out. `/nsrec ui` (or Options > Recorder > Recorder window) opens a
 small window with the same controls, a key binding for the trail, and a
 checklist of the spots we need walked.
 
@@ -853,7 +853,7 @@ Every command with its help line, every option and every key binding are on
   [FAQ](https://polestar.guide/docs/players/faq), and every
   [slash command](https://polestar.guide/docs/reference/commands) and
   [option](https://polestar.guide/docs/reference/options).
-- **A wrong step?** Click the bug in the guide window (or `/polestar report`)
+- **A wrong step?** Click the bug in the guide window (or `/northstar report`)
   and post the report in **#bugs** on the
   [Polestar Discord](https://discord.gg/polestar), or open it on GitHub from
   the same window. What makes a good report is in

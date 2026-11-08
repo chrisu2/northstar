@@ -26,7 +26,7 @@ server; both write data/recordings/<session>.json.
                          pack is --pack, else the nearest pack.json, else our
                          guides/; another pack's draft id starts with "<pack id>/"
   list                   List the sessions in data/recordings
-  trail <session|file>   The session's position trails (/psrec trail) as JSON:
+  trail <session|file>   The session's position trails (/nsrec trail) as JSON:
                          [{ label, start, end, reason, points: [{ t, map, x, y,
                          speed, mounted, swimming, falling, indoors, flying }] }],
                          to stdout or --out <file.json>

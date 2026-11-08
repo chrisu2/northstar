@@ -1,5 +1,5 @@
 -- The Import page, a section of the hub at the rail's foot above Options
--- (UI.RegisterSection with `foot`; `/polestar import` and SHOW_IMPORT open
+-- (UI.RegisterSection with `foot`; `/northstar import` and SHOW_IMPORT open
 -- it). It sets the two ways to bring someone else's guides into Northstar
 -- side by side (an import string for one small guide, a community addon for
 -- a route or a set), then:
