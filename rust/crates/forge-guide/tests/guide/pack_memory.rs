@@ -31,6 +31,21 @@ fn guides() -> Vec<forge_guide::js::V> {
 }
 
 #[test]
+fn a_horde_race_guide_stays_in_the_horde_part_until_its_legs_are_baked() {
+	let tauren = guide("forever/horde/tauren/01-mulgore", Some("Horde"));
+	tauren.set("races", v(&json!(["Tauren"])));
+	let plain = pack_files(&[tauren.clone()], &manifest("guides", "Northstar_Guides"), &fixture_data());
+	assert!(plain["../Northstar_Guides_Horde/Guides.lua"].contains("forever/horde/tauren/01-mulgore"));
+	assert!(plain.keys().all(|k| !k.contains("Northstar_Guides_Tauren")));
+	tauren.set_hidden("_legs", v(&json!({ "1": "AAAA" })));
+	let baked = pack_files(&[tauren], &manifest("guides", "Northstar_Guides"), &fixture_data());
+	assert!(baked["../Northstar_Guides_Horde/Guides.lua"].contains("forever/horde/tauren/01-mulgore"));
+	assert!(baked.contains_key("../Northstar_Guides_Tauren/Legs.lua"));
+	assert!(!baked.contains_key("../Northstar_Guides_Tauren/Guides.lua"));
+	assert!(!baked.keys().any(|k| k.contains("Northstar_Guides_Orc")));
+}
+
+#[test]
 fn our_pack_ships_each_faction_s_guides_in_a_part_and_packs_spawn_spots_in_format_8() {
 	let files = pack_files(&guides(), &manifest("guides", "Northstar_Guides"), &fixture_data());
 	let main = &files["Guides.lua"];

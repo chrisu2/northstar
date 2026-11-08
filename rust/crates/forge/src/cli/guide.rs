@@ -583,6 +583,24 @@ fn run() -> i32 {
 	} else if summary {
 		let steps: usize = guides.iter().map(|g| g.get("steps").len()).sum();
 		println!("compiled {} ({}) from {} into {}; {}", plural(guides.len(), "guide"), plural(steps, "step"), plural(files, "file"), out.display(), plural(w, "warning"));
+		if let Some(written) = built.files.as_ref() {
+			let mut legs: Vec<&str> = Vec::new();
+			for (name, _) in written {
+				if let Some(race) = name.strip_prefix("../Northstar_Guides_").and_then(|r| r.strip_suffix("/Legs.lua")) {
+					legs.push(race);
+				}
+			}
+			legs.sort();
+			let absent: Vec<&str> = forge_guide::races::RACE_FILES.iter().copied().filter(|r| !legs.iter().any(|x| x == r)).collect();
+			if legs.is_empty() {
+				println!("parts: leveling guides are in Northstar_Guides_Alliance and Northstar_Guides_Horde. No race folder was written: baked legs did not match (forge guide bake, after the 70862 nav pack).");
+			} else {
+				println!("parts: leveling guides are in Northstar_Guides_Alliance and Northstar_Guides_Horde. Baked legs for {}.", legs.join(", "));
+				if !absent.is_empty() {
+					println!("parts: no baked legs for {} (Undead is the Scourge folder). Their leveling guides are still in the faction part.", absent.join(", "));
+				}
+			}
+		}
 		// Place ids (places.rs): how many place goals got an area, getfp goals a taxi node.
 		let p = forge_guide::places::place_counts(guides);
 		let n = |v: &V, k: &str| v.get(k).num() as usize;
@@ -609,7 +627,7 @@ fn run() -> i32 {
 				plural(n(&h, "spots"), "spawn spot")
 			);
 		} else {
-			println!("heights: none (no spawnz.json in the reference data; `forge data build` writes it)");
+			println!("heights: none (no spawnz.json). A data build writes it only when the classic-db extract is in the cache. Goals keep their map point and have no z.");
 		}
 	}
 	i32::from(e > 0)
