@@ -302,6 +302,16 @@ fetches that product and QuestXP, which is not the installed Forever client.
 It is not a quest data build. Quest completeness still needs `QuestieDB_Forever.toc`
 (`X-Flavor: Forever`, `X-Mode: baked`) and `forge build --until data`, which this command does not replace.
 
+`forge guide compile --data <that folder>` reads the data build. It does not write
+`professions.json` or `trainers.json`, and the data build does not either. Learn and craft
+lines error until `forge data professions --data <that folder> --sources <checkout>/data/sources`.
+That command reads cached wago profession tables (`SkillLine`, `SkillLineAbility`, `SpellName`,
+and the rest of `professions::tables::OWN`). It does not read the wowf client, and
+`forge data sources --only era` does not fetch those tables. Class `train` lines need
+`forge data trainers --data <that folder> --guides <checkout>/guides --recordings <checkout>/data/recordings`.
+A warning that guides changed since their legs were baked is not a compile error.
+`forge guide bake` rewrites legs and needs the walking grid.
+
 ## The other builders
 
 Each builder is a `forge data` subcommand. All of them read `data/forever`, so run `forge data build`

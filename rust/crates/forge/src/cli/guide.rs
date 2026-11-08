@@ -489,6 +489,24 @@ fn run() -> i32 {
 		(data, context_data)
 	};
 	let t_data = t0.elapsed();
+	if !no_data && summary && !data.has_professions {
+		eprintln!(
+			"forge guide {cmd}: professions.json is not in {}. forge data build does not write it, so learn and craft lines error. Next: forge data professions --data {} --sources {}",
+			data_dir.display(),
+			data_dir.display(),
+			root.join("data").join("sources").display()
+		);
+		eprintln!("forge guide {cmd}: that command reads cached wago profession tables (SkillLine, SkillLineAbility, SpellName, and the rest of professions::tables::OWN). It does not read the wowf client, and the era-only cache fetch does not include those tables.");
+	}
+	if !no_data && summary && !data.has_trainers {
+		eprintln!(
+			"forge guide {cmd}: trainers.json is not in {}. Class train lines error without it. Next: forge data trainers --data {} --guides {} --recordings {}",
+			data_dir.display(),
+			data_dir.display(),
+			root.join("guides").display(),
+			root.join("data").join("recordings").display()
+		);
+	}
 	let context = context_dir.as_ref().map(|dir| Context { sources: read_sources(dir, &find_guide_files(dir, false)), data: context_data.as_ref().unwrap_or(&data) });
 	let opts = BuildOpts { include_drafts: flag("--include-drafts"), context, force: flag("--force") };
 	let built = match build_pack(&root, &pack_dir, &manifest, extra, &data, data_diag, opts) {
