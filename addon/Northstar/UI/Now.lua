@@ -17,7 +17,8 @@ Sheet.AREAS = { "quest", "class", "trade", "pvp" }
 local f
 local area = "quest"
 local stepsOpen = false
-local COMPACT_H = 108
+local COMPACT_H = 128
+local BAR_W = 320
 local ROW_H = 16
 
 local function nowClock()
@@ -194,6 +195,44 @@ function Now.Compose(view)
 		end
 	end
 	return { step = step, title = title, next = nextText, more = more }
+end
+
+-- Facing-relative words. 0 is straight ahead. This is not the floating dart.
+function Now.BearingWord(angle)
+	if type(angle) ~= "number" then return "" end
+	local pi = math.pi
+	local a = angle % (2 * pi)
+	if a > pi then a = a - 2 * pi end
+	local abs = math.abs(a)
+	if abs < pi / 8 then return "ahead" end
+	if abs > pi - pi / 8 then return "behind" end
+	if a > 0 then
+		if a < 3 * pi / 8 then return "ahead right" end
+		if a < 5 * pi / 8 then return "right" end
+		return "behind right"
+	end
+	a = -a
+	if a < 3 * pi / 8 then return "ahead left" end
+	if a < 5 * pi / 8 then return "left" end
+	return "behind left"
+end
+
+-- Arrival stays on this line. It does not replace the action and it is not a green ring.
+function Now.DistanceLine(mode, yards)
+	if mode == "arrived" or mode == "search" then return "at the point" end
+	if mode == "far" then return "other continent" end
+	if mode == "nopos" then return "no position" end
+	if mode == "none" or mode == nil then return "" end
+	if type(yards) == "number" and ns.FormatDistance then return ns.FormatDistance(yards) end
+	if type(yards) == "number" then return math.floor(yards + 0.5) .. " yd" end
+	return ""
+end
+
+function Now.ReadCourse()
+	local Nav = ns.Nav
+	if not Nav or not Nav.Sample then return "", "", nil end
+	local mode, dist, angle = Nav.Sample()
+	return Now.BearingWord(angle), Now.DistanceLine(mode, dist), angle
 end
 
 Sheet.SLEEP_ID = "forever/miscellaneous/cozy-sleeping-bag"
@@ -389,7 +428,7 @@ local AREAS = {
 local function build()
 	if f then return f end
 	f = plate(UIParent, "NorthstarNow")
-	f:SetSize(280, COMPACT_H)
+	f:SetSize(BAR_W, COMPACT_H)
 	f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -120)
 	f:SetFrameStrata("MEDIUM")
 	f:SetMovable(true)
@@ -400,18 +439,26 @@ local function build()
 	f:SetClampedToScreen(true)
 
 	f.Area = label(f, "GameFontHighlightSmall", 0.55, 0.42, 0.32)
-	f.Area:SetPoint("TOPLEFT", 16, -12)
+	f.Area:SetPoint("TOPLEFT", 16, -28)
 	f.Step = label(f, "GameFontHighlightSmall", 0.62, 0.60, 0.54)
-	f.Step:SetPoint("TOPLEFT", 16, -30)
-	f.Step:SetPoint("TOPRIGHT", -12, -30)
+	f.Step:SetPoint("TOPLEFT", 72, -28)
+	f.Step:SetPoint("TOPRIGHT", -12, -28)
+	f.Tick = f:CreateTexture(nil, "OVERLAY")
+	f.Tick:SetColorTexture(0.93, 0.90, 0.84, 1)
+	f.Tick:SetSize(3, 14)
+	f.Tick:SetPoint("TOPLEFT", 16, -46)
+	f.Bear = label(f, "GameFontHighlightSmall", 0.93, 0.90, 0.84)
+	f.Bear:SetPoint("TOPLEFT", 24, -46)
+	f.Dist = label(f, "GameFontHighlight", 0.93, 0.90, 0.84)
+	f.Dist:SetPoint("TOPLEFT", 120, -44)
 	f.Head = label(f, "GameFontHighlight", 0.93, 0.90, 0.84)
-	f.Head:SetPoint("TOPLEFT", 16, -48)
-	f.Head:SetPoint("TOPRIGHT", -12, -48)
-	f.Next = label(f, "GameFontHighlight", 0.86, 0.78, 0.62)
-	f.Next:SetPoint("TOPLEFT", 16, -70)
-	f.Next:SetPoint("TOPRIGHT", -12, -70)
+	f.Head:SetPoint("TOPLEFT", 16, -64)
+	f.Head:SetPoint("TOPRIGHT", -12, -64)
+	f.Next = label(f, "GameFontHighlight", 0.93, 0.90, 0.84)
+	f.Next:SetPoint("TOPLEFT", 16, -84)
+	f.Next:SetPoint("TOPRIGHT", -12, -84)
 	f.More = label(f, "GameFontHighlightSmall", 0.62, 0.60, 0.54)
-	f.More:SetPoint("TOPLEFT", 16, -96)
+	f.More:SetPoint("TOPLEFT", 16, -104)
 	f.More:SetPoint("RIGHT", -12, 0)
 	f.More:SetHeight(36)
 
@@ -422,12 +469,12 @@ local function build()
 	f.Wide:SetPoint("TOPRIGHT", -10, -10)
 	f.Areas = {}
 	for i, spec in ipairs(AREAS) do
-		local b = button(f, spec.label, 70, function()
+		local b = button(f, spec.label, 52, function()
 			area = spec.id
 			Now.Refresh()
 		end)
 		b.areaId = spec.id
-		b:SetPoint("BOTTOMLEFT", 16, 12 + (4 - i) * 16)
+		b:SetPoint("TOPLEFT", 16 + (i - 1) * 56, -8)
 		f.Areas[spec.id] = b
 	end
 	f.Rows = {}
@@ -435,7 +482,7 @@ local function build()
 		local b = button(f, "", 300, function(self)
 			if self.rowId then openListed(self.rowId) end
 		end)
-		b:SetPoint("TOPLEFT", 16, -78 - (i - 1) * ROW_H)
+		b:SetPoint("TOPLEFT", 16, -96 - (i - 1) * ROW_H)
 		b:Hide()
 		f.Rows[i] = b
 	end
@@ -498,6 +545,9 @@ function Now.Apply(composed)
 	showRows(frame, {})
 	frame.Wide.Label:SetText(stepsOpen and "Less" or "Steps")
 	local headers = Sheet.Headers()
+	frame.Bear:Hide()
+	frame.Dist:Hide()
+	frame.Tick:Hide()
 	if area == "class" then
 		local view = Sheet.ClassView(headers, Sheet.Player())
 		frame.Area:SetText("CLASS")
@@ -539,6 +589,13 @@ function Now.Apply(composed)
 		frame.Step:SetText(composed.step or "")
 		frame.Head:SetText(composed.title or "")
 		frame.Next:SetText(composed.next or "")
+		local bear, dist, angle = Now.ReadCourse()
+		frame.Bear:SetText(bear)
+		frame.Dist:SetText(dist)
+		frame.Bear:Show()
+		frame.Dist:Show()
+		frame.Tick:Show()
+		if frame.Tick.SetRotation then frame.Tick:SetRotation(type(angle) == "number" and angle or 0) end
 		local more = stepsOpen and table.concat(composed.more or {}, "\n") or ""
 		local sleep = Sheet.Open(headers, Sheet.SLEEP_ID)
 		if sleep.ok then frame.Sleep:Show() end
@@ -617,6 +674,19 @@ ns.OnLogin(function()
 	-- An older saved window that opened the wide guide does not bring that
 	-- window back. ui.wideGuide is the only switch for it.
 	if not ns.Get("ui.wideGuide") then ns.Set("ui.journal", true) end
+	-- SavedVariables schema 1 stored the floating dart on, because that was
+	-- the default. Schema 2 drops that stored value back to the new default
+	-- (off) once. A later /northstar arrow stores true and is left alone.
+	local db = ns.DB()
+	if (db.schema or 1) < 2 then
+		-- Only a stored "on" is cleared. The default itself is already off,
+		-- and writing false over an absent key shows up as a changed setting.
+		local nav = db.settings and db.settings.nav
+		if type(nav) == "table" and nav.arrow == true then ns.Set("nav.arrow", false) end
+		db.schema = 2
+		local arrow = ns.Nav and ns.Nav.arrow
+		if arrow and arrow.Refresh then arrow:Refresh() end
+	end
 	Fish.Load()
 	sync()
 end)

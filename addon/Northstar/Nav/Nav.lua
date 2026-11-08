@@ -31,7 +31,7 @@ Nav.DEFAULT_RADIUS = 8 -- yards, matches the guide format's goto default
 local FLOOR_GAP = 8
 
 ns.RegisterDefaults("nav", {
-	arrow = true,
+	arrow = false, -- direction sits on the current-action bar; /northstar arrow turns the old dart on
 	arrowScale = 1,
 	arrowAlpha = 1,
 	arrowEta = true,

@@ -50,7 +50,7 @@ test('accept then kill refreshes the sheet to the same line as the arrow', () =>
 });
 
 test('the default sheet is a short bar and does not open the wide guide', () => {
-	const [height, journal, wide, grown] = load(`
+	const [height, journal, wide, grown, arrow, schema] = load(`
 		local N = Northstar.UI.Now
 		Northstar.Engine.GetStepIndex = function() return 1 end
 		Northstar.Engine.GetGuide = function() return { id = "synthetic/leveling/camp", category = "Leveling" } end
@@ -67,11 +67,106 @@ test('the default sheet is a short bar and does not open the wide guide', () => 
 		emit(Northstar.Get("ui.wideGuide"))
 		N.frame.Wide:Click()
 		emit(N.frame:GetHeight())
+		emit(Northstar.Get("nav.arrow"))
+		emit(NorthstarDB.schema)
 	`);
-	assert.ok(height <= 120, `quest bar is ${height}`);
+	assert.ok(height >= 100 && height <= 160, `quest bar is ${height}`);
+	assert.ok(grown <= 220, `steps open is ${grown}`);
 	assert.equal(journal, true);
 	assert.equal(wide, false);
+	assert.equal(arrow, false);
+	assert.equal(schema, 2);
 	assert.ok(grown > height);
+});
+
+test('direction and distance sit on the action bar, and arrival keeps the action', () => {
+	const [word, right, left, line, action, dist, bear, still, here] = load(`
+		emit(Northstar.UI.Now.BearingWord(0))
+		emit(Northstar.UI.Now.BearingWord(math.pi / 2))
+		emit(Northstar.UI.Now.BearingWord(-math.pi / 2))
+		emit(Northstar.UI.Now.DistanceLine("arrived", 2))
+		Northstar.Nav = { Sample = function() return "travel", 375, 0 end }
+		Northstar.Engine.GetStepIndex = function() return 2 end
+		Northstar.Engine.GetGuide = function() return { id = "synthetic/leveling/camp", category = "Leveling" } end
+		Northstar.Engine.GetStepView = function()
+			return { index = 2, title = "On the way", current = 1, goals = {
+				{ status = "active", text = "Kill Plainstrider for Plainstrider Meat", progress = { cur = 1, max = 7 } },
+			}}
+		end
+		Northstar.Engine.GetWaypoint = function() return { label = "Kill Plainstrider for Plainstrider Meat", stepIndex = 2, goalIndex = 1 } end
+		Northstar.UI.Now.Show()
+		emit(Northstar.UI.Now.frame.Next:GetText())
+		emit(Northstar.UI.Now.frame.Dist:GetText())
+		emit(Northstar.UI.Now.frame.Bear:GetText())
+		Northstar.Nav.Sample = function() return "arrived", 2, 0 end
+		Northstar.UI.Now.Refresh()
+		emit(Northstar.UI.Now.frame.Next:GetText())
+		emit(Northstar.UI.Now.frame.Dist:GetText())
+	`);
+	assert.equal(word, 'ahead');
+	assert.equal(right, 'right');
+	assert.equal(left, 'left');
+	assert.equal(line, 'at the point');
+	assert.match(action, /Kill Plainstrider for Plainstrider Meat \(1\/7\)/);
+	assert.match(dist, /375/);
+	assert.equal(bear, 'ahead');
+	assert.match(still, /Kill Plainstrider for Plainstrider Meat \(1\/7\)/);
+	assert.equal(here, 'at the point');
+});
+
+test('class, trade and pvp stay on the bar and hide the course tick', () => {
+	const [klass, trade, pvp, tick, back] = load(`
+		local N = Northstar.UI.Now
+		Northstar.Nav = { Sample = function() return "travel", 40, 0 end }
+		Northstar.Engine.GetStepIndex = function() return 1 end
+		Northstar.Engine.GetGuide = function() return { id = "synthetic/leveling/camp", category = "Leveling" } end
+		Northstar.Engine.GetStepView = function()
+			return { index = 1, title = "Camp", current = 1, goals = {
+				{ status = "current", text = "Accept The Hunt Begins" },
+			}}
+		end
+		Northstar.Engine.GetWaypoint = function() return { label = "Accept The Hunt Begins", stepIndex = 1, goalIndex = 1 } end
+		N.Show()
+		N.frame.Areas.class:Click()
+		emit(N.frame.Area:GetText())
+		N.frame.Areas.trade:Click()
+		emit(N.frame.Area:GetText())
+		N.frame.Areas.pvp:Click()
+		emit(N.frame.Area:GetText())
+		emit(N.frame.Tick:IsShown())
+		N.frame.Areas.quest:Click()
+		emit(N.frame.Dist:GetText())
+	`);
+	assert.equal(klass, 'CLASS');
+	assert.equal(trade, 'TRADE');
+	assert.equal(pvp, 'PVP');
+	assert.equal(tick, false);
+	assert.match(back, /40/);
+});
+
+test('an old saved floating arrow and wide window do not come back', () => {
+	const [journal, arrow, schema, shown, width, dart] = runAddon({
+		stubs: ['stub_ui.lua'],
+		addons: [{ name: 'Northstar', files: ['Core/Core.xml', 'Theme/Theme.xml', 'Nav/Nav.xml', 'UI/UI.xml'] }],
+		saved: { Northstar: 'NorthstarDB = { schema = 1, settings = { nav = { arrow = true }, ui = { journal = false, shown = true } } }' },
+		script: `uistub.install()\nstub.login()\nemit(Northstar.Get("ui.journal"))\nemit(Northstar.Get("nav.arrow"))\nemit(NorthstarDB.schema)\nemit(Northstar.UI.GuideFrame and Northstar.UI.GuideFrame.Frame and Northstar.UI.GuideFrame.Frame:IsShown())\nemit(Northstar.UI.Now.frame and Northstar.UI.Now.frame:GetWidth())\nemit(NorthstarNavArrow and NorthstarNavArrow:IsShown())`,
+	}).emitted;
+	assert.equal(journal, true);
+	assert.equal(arrow, false);
+	assert.equal(schema, 2);
+	assert.notEqual(shown, true);
+	assert.ok(width >= 280 && width <= 360, `width ${width}`);
+	assert.notEqual(dart, true);
+});
+
+test('a later choice to use the floating arrow is kept', () => {
+	const [arrow] = runAddon({
+		stubs: ['stub_ui.lua'],
+		addons: [{ name: 'Northstar', files: ['Core/Core.xml', 'Theme/Theme.xml', 'Nav/Nav.xml', 'UI/UI.xml'] }],
+		saved: { Northstar: 'NorthstarDB = { schema = 2, settings = { nav = { arrow = true } } }' },
+		script: `uistub.install()\nstub.login()\nemit(Northstar.Get("nav.arrow"))`,
+	}).emitted;
+	assert.equal(arrow, true);
 });
 
 test('an old saved wide window stays closed unless wideGuide is set', () => {

@@ -753,7 +753,7 @@ function uistub.install(opts)
 	Northstar.Compat = Compat
 	-- The real modules register these; the fakes stand in for them.
 	if not opts.noNav and Northstar.GetDefault("nav.arrow") == nil then
-		Northstar.RegisterDefaults("nav", { arrow = true, arrowStyle = "3d", arrowScale = 1, arrowAlpha = 1, arrowEta = true,
+		Northstar.RegisterDefaults("nav", { arrow = false, arrowStyle = "3d", arrowScale = 1, arrowAlpha = 1, arrowEta = true,
 			worldPins = true, minimapPins = true, trailDots = true, tomtom = true, useTomTomArrow = false, blizzardWaypoint = false, arrivalSound = true, travel = true,
 			arrowColor = false, arrowNearColor = false })
 	end
