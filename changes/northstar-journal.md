@@ -1,4 +1,4 @@
 ---
 section: players
 ---
-- Northstar is its own addon beside Polestar: `/northstar` (and `/ns`) opens a short step list with the next action, class guides, and the rest of the tools behind More. Help text uses those commands. Fishing notes can time a session and keep a manual catch tally on this character. They do not cast, detect bites, or send anything, and they do not treat old fishing-guide rates as Forever facts.
+- Northstar opens on a route sheet: Quest, Class, Trade, and PvP. The next leveling action stays in front. Class quests, every profession guide loaded with the addon, and battleground guides are the other three lists. The Cozy Sleeping Bag guide is a separate line on the quest sheet and does not replace the leveling route. Fishing is one profession row with a manual tally. Northstar does not cast, detect bites, or send a companion command.

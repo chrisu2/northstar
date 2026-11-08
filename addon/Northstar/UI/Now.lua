@@ -1,20 +1,21 @@
--- The compact step list. One next action, the rest of the step in quiet lines,
--- and the wide guide window, search, and collections kept behind text buttons.
--- Fishing is a mode of this same list, not a second dashboard.
+-- The route sheet. One column: the current action, then four areas down the
+-- side. Quest is the leveling route. Class, Trade and PvP open guides that
+-- are already in this install. Fishing is one trade row.
 --
 -- Forever only: Interface 16001. Nothing here is checked in the 1.60.1.70862
--- client. Skill numbers are shown only when the client answers. Catch counts,
--- lure timers, pool maps, and casting are omitted.
+-- client. A skill number is shown only when the client names that profession.
+-- No cast, loot, recast, honor read, or companion command.
 
 local ADDON, ns = ...
 local UI = ns.UI
-local Now, Fish = {}, {}
-UI.Now, UI.Fish = Now, Fish
+local Now, Fish, Sheet = {}, {}, {}
+UI.Now, UI.Fish, UI.Sheet = Now, Fish, Sheet
 
 Fish.GUIDE = "forever/professions/fishing"
+Sheet.AREAS = { "quest", "class", "trade", "pvp" }
 
 local f
-local mode = "step" -- "step" | "fish"
+local area = "quest"
 
 local function nowClock()
 	if GetTime then return GetTime() end
@@ -67,8 +68,9 @@ end
 
 -- Name match only. The classic skill-line id is not treated as a Forever fact,
 -- and this does not read lures, enchants, or a cast.
-function Fish.Rank()
-	local want = "fishing"
+function Sheet.NamedRank(name)
+	local want = type(name) == "string" and name:lower() or ""
+	if want == "" then return nil, nil end
 	if GetProfessions and GetProfessionInfo then
 		local profs = { GetProfessions() }
 		for i = 1, 5 do
@@ -95,6 +97,10 @@ function Fish.Rank()
 		end
 	end
 	return nil, nil
+end
+
+function Fish.Rank()
+	return Sheet.NamedRank("fishing")
 end
 
 function Fish.Load()
@@ -171,26 +177,128 @@ function Now.Compose(view)
 	}
 end
 
--- Class guides for this character, from the loaded packs. Empty when the
--- client has not named a class or no class guide is loaded.
-function Now.ClassRows()
-	local rows = {}
-	local G, C = ns.Guides, ns.Compat
-	local info = C and C.GetPlayerInfo and C.GetPlayerInfo()
-	local class = info and info.class
-	if not (G and G.List and class) then return rows end
-	for _, h in ipairs(G.List()) do
-		if h.category == "Class" and type(h.classes) == "table" then
-			for i = 1, #h.classes do
-				if h.classes[i] == class then
-					rows[#rows + 1] = { id = h.id, title = h.title or h.id }
-					break
-				end
-			end
-		end
-		if #rows == 3 then break end
+Sheet.SLEEP_ID = "forever/miscellaneous/cozy-sleeping-bag"
+
+function Sheet.Headers()
+	if type(Sheet.headers) == "table" then return Sheet.headers end
+	local G = ns.Guides
+	if G and G.List then return G.List() end
+	return {}
+end
+
+function Sheet.Player()
+	if type(Sheet.player) == "table" then return Sheet.player end
+	local C = ns.Compat
+	if C and C.GetPlayerInfo then return C.GetPlayerInfo() end
+	return {}
+end
+
+function Sheet.TradeName(header)
+	local title = header and header.title
+	if type(title) == "string" and title ~= "" and not title:find("{", 1, true) then
+		return (title:gsub(" %d+%-%d+$", ""))
 	end
-	return rows
+	local id = header and header.id or ""
+	local name = id:match("/([^/]+)$") or id
+	return (name:gsub("^%l", string.upper))
+end
+
+function Sheet.MatchesClass(header, classToken)
+	if type(classToken) ~= "string" or classToken == "" then return false end
+	if not header or header.category ~= "Class" or type(header.classes) ~= "table" then return false end
+	local want = classToken:lower()
+	for i = 1, #header.classes do
+		local c = header.classes[i]
+		if type(c) == "string" and c:lower() == want then return true end
+	end
+	return false
+end
+
+local function byTitle(a, b) return (a.title or "") < (b.title or "") end
+
+function Sheet.ClassView(headers, player)
+	if not player or type(player.class) ~= "string" or player.class == "" then
+		return { kind = "unknown", rows = {}, text = "Class is not reported. Class quests stay closed." }
+	end
+	local rows = {}
+	for _, h in ipairs(headers or {}) do
+		if Sheet.MatchesClass(h, player.class) then
+			rows[#rows + 1] = { id = h.id, title = h.title or h.id }
+		end
+	end
+	table.sort(rows, byTitle)
+	if #rows == 0 then
+		return { kind = "missing", class = player.class, rows = {}, text = "No " .. player.class .. " class guide is loaded." }
+	end
+	local who = player.class
+	if type(player.race) == "string" and player.race ~= "" then who = player.race .. " " .. who end
+	return { kind = "class", class = player.class, race = player.race, rows = rows, text = who .. ". Class quests, separate from the leveling route." }
+end
+
+function Sheet.TradeView(headers, rankOf)
+	local rows = {}
+	for _, h in ipairs(headers or {}) do
+		if h.category == "Professions" and type(h.id) == "string" then
+			local title = Sheet.TradeName(h)
+			local rank, maxRank = nil, nil
+			if rankOf then rank, maxRank = rankOf(title) end
+			local skill = "not reported"
+			if type(rank) == "number" then
+				skill = type(maxRank) == "number" and (rank .. " / " .. maxRank) or tostring(rank)
+			end
+			rows[#rows + 1] = { id = h.id, title = title, skill = skill, fishing = title:lower() == "fishing" }
+		end
+	end
+	table.sort(rows, byTitle)
+	local text = #rows == 0 and "No profession guide is loaded." or "Profession guides in this install. A number is the client's own name match. Routes inside a guide are not repeated here."
+	return { kind = "trade", rows = rows, text = text }
+end
+
+function Sheet.PvpView(headers)
+	local bg, mounts = {}, {}
+	for _, h in ipairs(headers or {}) do
+		if h.folder == "Reputation · Battlegrounds" then
+			bg[#bg + 1] = { id = h.id, title = h.title or h.id }
+		elseif h.folder == "Mounts · PvP" then
+			mounts[#mounts + 1] = { id = h.id, title = h.title or h.id }
+		end
+	end
+	table.sort(bg, byTitle)
+	table.sort(mounts, byTitle)
+	return {
+		kind = "pvp",
+		battlegrounds = bg,
+		mounts = mounts,
+		rows = bg,
+		world = "World PvP has no guide in this checkout.",
+		companion = "No companion command is sent.",
+		text = #bg == 0 and "Battleground guides are not loaded." or "Battleground guides in this install.",
+	}
+end
+
+function Sheet.NoteLevel(levelId, header)
+	if header and type(header.id) == "string" and (header.category == nil or header.category == "Leveling") then
+		return header.id
+	end
+	return levelId
+end
+
+function Sheet.Open(headers, id)
+	for _, h in ipairs(headers or {}) do
+		if h.id == id then return { ok = true, id = id, category = h.category, title = h.title or id } end
+	end
+	return { ok = false, id = id, reason = "not loaded" }
+end
+
+function Sheet.ReleaseLabel(on)
+	if on then return "Release in a battleground: on. You turned this on." end
+	return "Release in a battleground: off."
+end
+
+-- Class guides for this character, from the loaded packs.
+function Now.ClassRows()
+	local view = Sheet.ClassView(Sheet.Headers(), Sheet.Player())
+	return view.rows
 end
 
 local function plate(parent, name)
@@ -198,13 +306,18 @@ local function plate(parent, name)
 	if frame.SetBackdrop then
 		frame:SetBackdrop({
 			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = true, tileSize = 16, edgeSize = 12,
-			insets = { left = 3, right = 3, top = 3, bottom = 3 },
+			tile = true, tileSize = 16, edgeSize = 0,
+			insets = { left = 0, right = 0, top = 0, bottom = 0 },
 		})
-		frame:SetBackdropColor(0.06, 0.06, 0.05, 0.94)
-		frame:SetBackdropBorderColor(0.45, 0.40, 0.32, 1)
+		frame:SetBackdropColor(0.10, 0.11, 0.12, 0.96)
+		if frame.SetBackdropBorderColor then frame:SetBackdropBorderColor(0, 0, 0, 0) end
 	end
+	local bar = frame:CreateTexture(nil, "ARTWORK")
+	bar:SetColorTexture(0.42, 0.26, 0.16, 1)
+	bar:SetPoint("TOPLEFT", 0, 0)
+	bar:SetPoint("BOTTOMLEFT", 0, 0)
+	bar:SetWidth(5)
+	frame.Bar = bar
 	return frame
 end
 
@@ -216,24 +329,39 @@ local function label(parent, font, r, g, b)
 	return fs
 end
 
-local function button(parent, text, onClick)
+local function button(parent, text, width, onClick)
 	local b = CreateFrame("Button", nil, parent)
-	b:SetSize(68, 16)
+	b:SetSize(width or 120, 15)
 	local fs = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	fs:SetAllPoints()
 	fs:SetJustifyH("LEFT")
 	fs:SetText(text)
-	fs:SetTextColor(0.78, 0.74, 0.66)
+	fs:SetTextColor(0.72, 0.70, 0.64)
 	b.Label = fs
 	b:SetScript("OnClick", onClick)
 	return b
 end
 
+local function openListed(id)
+	local found = Sheet.Open(Sheet.Headers(), id)
+	if not found.ok then return found end
+	local E = ns.Engine
+	if E and E.OpenTab then E.OpenTab(id, true) end
+	return found
+end
+
+local AREAS = {
+	{ id = "quest", label = "Quest" },
+	{ id = "class", label = "Class" },
+	{ id = "trade", label = "Trade" },
+	{ id = "pvp", label = "PvP" },
+}
+
 local function build()
 	if f then return f end
 	f = plate(UIParent, "NorthstarNow")
-	f:SetSize(300, 228)
-	f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 24, -160)
+	f:SetSize(348, 430)
+	f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -120)
 	f:SetFrameStrata("MEDIUM")
 	f:SetMovable(true)
 	f:EnableMouse(true)
@@ -242,88 +370,154 @@ local function build()
 	f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 	f:SetClampedToScreen(true)
 
-	f.Title = label(f, "GameFontHighlightSmall", 0.55, 0.52, 0.46)
-	f.Title:SetPoint("TOPLEFT", 12, -10)
-	f.Title:SetText("Northstar")
-	f.Step = label(f, "GameFontHighlightSmall", 0.70, 0.66, 0.58)
-	f.Step:SetPoint("TOPLEFT", 12, -26)
-	f.Step:SetPoint("TOPRIGHT", -12, -26)
-	f.Head = label(f, "GameFontHighlight", 0.90, 0.86, 0.76)
-	f.Head:SetPoint("TOPLEFT", 12, -42)
-	f.Head:SetPoint("TOPRIGHT", -12, -42)
-	f.Next = label(f, "GameFontHighlight", 0.93, 0.84, 0.62)
-	f.Next:SetPoint("TOPLEFT", 12, -62)
-	f.Next:SetPoint("TOPRIGHT", -12, -62)
+	f.Area = label(f, "GameFontHighlightSmall", 0.55, 0.42, 0.32)
+	f.Area:SetPoint("TOPLEFT", 16, -12)
+	f.Step = label(f, "GameFontHighlightSmall", 0.62, 0.60, 0.54)
+	f.Step:SetPoint("TOPLEFT", 16, -30)
+	f.Step:SetPoint("TOPRIGHT", -12, -30)
+	f.Head = label(f, "GameFontHighlight", 0.93, 0.90, 0.84)
+	f.Head:SetPoint("TOPLEFT", 16, -48)
+	f.Head:SetPoint("TOPRIGHT", -12, -48)
+	f.Next = label(f, "GameFontHighlight", 0.86, 0.78, 0.62)
+	f.Next:SetPoint("TOPLEFT", 16, -70)
+	f.Next:SetPoint("TOPRIGHT", -12, -70)
 	f.More = label(f, "GameFontHighlightSmall", 0.62, 0.60, 0.54)
-	f.More:SetPoint("TOPLEFT", 12, -84)
+	f.More:SetPoint("TOPLEFT", 16, -96)
 	f.More:SetPoint("RIGHT", -12, 0)
-	f.More:SetHeight(78)
+	f.More:SetHeight(36)
 
-	f.ClassBtn = button(f, "Class", function()
-		if UI.ShowPicker then UI.ShowPicker() end
-		local P = UI.Picker
-		if P and P.ShowSection then P.ShowSection("Guides") end
-		if P and P.SetCategory then P.SetCategory("Class") end
-	end)
-	f.ClassBtn:SetPoint("BOTTOMLEFT", 12, 10)
-	f.FishBtn = button(f, "Fish", function()
-		mode = mode == "fish" and "step" or "fish"
-		Now.Refresh()
-	end)
-	f.FishBtn:SetPoint("LEFT", f.ClassBtn, "RIGHT", 8, 0)
-	f.MoreBtn = button(f, "More", function()
-		if UI.ShowPicker then UI.ShowPicker() end
-	end)
-	f.MoreBtn:SetPoint("LEFT", f.FishBtn, "RIGHT", 8, 0)
-	f.FullBtn = button(f, "Full guide", function()
+	f.Wide = button(f, "Wide", 40, function()
 		ns.Set("ui.journal", false)
 		ns.Set("ui.shown", true)
 	end)
-	f.FullBtn:SetPoint("LEFT", f.MoreBtn, "RIGHT", 8, 0)
-	f.TimerBtn = button(f, "Timer", function() Fish.ToggleSession() end)
-	f.TimerBtn:Hide()
-	f.CatchBtn = button(f, "Caught", function() Fish.AddCatch() end)
-	f.CatchBtn:Hide()
+	f.Wide:SetPoint("TOPRIGHT", -10, -10)
+	f.Areas = {}
+	for i, spec in ipairs(AREAS) do
+		local b = button(f, spec.label, 70, function()
+			area = spec.id
+			Now.Refresh()
+		end)
+		b.areaId = spec.id
+		b:SetPoint("BOTTOMLEFT", 16, 12 + (4 - i) * 16)
+		f.Areas[spec.id] = b
+	end
+	f.Rows = {}
+	for i = 1, 12 do
+		local b = button(f, "", 300, function(self)
+			if self.rowId then openListed(self.rowId) end
+		end)
+		b:SetPoint("TOPLEFT", 16, -132 - (i - 1) * 16)
+		b:Hide()
+		f.Rows[i] = b
+	end
+	f.Sleep = button(f, "Sleeping bag", 140, function() openListed(Sheet.SLEEP_ID) end)
+	f.Sleep:SetPoint("TOPLEFT", 16, -132)
+	f.Sleep:Hide()
+	f.FishTime = button(f, "Fish time", 70, function() Fish.ToggleSession() end)
+	f.FishTime:SetPoint("BOTTOMLEFT", 100, 78)
+	f.FishTime:Hide()
+	f.FishTally = button(f, "Fish tally", 70, function() Fish.AddCatch() end)
+	f.FishTally:SetPoint("LEFT", f.FishTime, "RIGHT", 8, 0)
+	f.FishTally:Hide()
+	f.Release = button(f, "Release", 220, function()
+		local on = ns.Get and ns.Get("qol.autoReleasePvP")
+		if ns.Set then ns.Set("qol.autoReleasePvP", not on) end
+		Now.Refresh()
+	end)
+	f.Release:SetPoint("TOPLEFT", 16, -300)
+	f.Release:Hide()
 
 	Now.frame = f
 	return f
 end
 
-function Now.Apply(composed, fishLines)
+local function showRows(frame, rows)
+	for i = 1, #frame.Rows do
+		local b = frame.Rows[i]
+		local row = rows[i]
+		if row then
+			b.rowId = row.id
+			b.Label:SetText(row.label or row.title or row.id)
+			b:Show()
+		else
+			b.rowId = nil
+			b:Hide()
+		end
+	end
+end
+
+local function markAreas(frame)
+	for _, spec in ipairs(AREAS) do
+		local b = frame.Areas[spec.id]
+		local on = spec.id == area
+		b.Label:SetText((on and "· " or "  ") .. spec.label)
+		b.Label:SetTextColor(on and 0.93 or 0.55, on and 0.86 or 0.52, on and 0.72 or 0.46)
+	end
+end
+
+function Now.Apply(composed)
 	local frame = build()
-	if fishLines then
-		frame.Step:SetText("Fishing")
-		frame.Head:SetText(fishLines[1] or "")
-		frame.Next:SetText(fishLines[2] or "")
-		local rest = {}
-		for i = 3, #fishLines do rest[#rest + 1] = fishLines[i] end
-		frame.More:SetText(table.concat(rest, "\n"))
-		frame.TimerBtn:Show()
-		frame.TimerBtn:ClearAllPoints()
-		frame.TimerBtn:SetPoint("BOTTOMLEFT", 12, 28)
-		frame.CatchBtn:Show()
-		frame.CatchBtn:ClearAllPoints()
-		frame.CatchBtn:SetPoint("LEFT", frame.TimerBtn, "RIGHT", 8, 0)
-		frame.FishBtn.Label:SetText("Steps")
+	markAreas(frame)
+	frame.Sleep:Hide()
+	frame.FishTime:Hide()
+	frame.FishTally:Hide()
+	frame.Release:Hide()
+	showRows(frame, {})
+	local headers = Sheet.Headers()
+	if area == "class" then
+		local view = Sheet.ClassView(headers, Sheet.Player())
+		frame.Area:SetText("CLASS")
+		frame.Step:SetText("Not the leveling route")
+		frame.Head:SetText(view.text)
+		frame.Next:SetText("")
+		frame.More:SetText("")
+		showRows(frame, view.rows)
+	elseif area == "trade" then
+		local view = Sheet.TradeView(headers, Sheet.NamedRank)
+		frame.Area:SetText("TRADE")
+		frame.Step:SetText("All loaded profession guides")
+		frame.Head:SetText(view.text)
+		local fish = Fish.Lines(nil, nil, Fish.Elapsed(), Fish.caught or 0)
+		frame.Next:SetText("")
+		frame.More:SetText(fish[#fish])
+		local rows = {}
+		for i, row in ipairs(view.rows) do
+			rows[i] = { id = row.id, label = row.title .. "  " .. row.skill }
+		end
+		showRows(frame, rows)
+		frame.FishTime:Show()
+		frame.FishTally:Show()
+	elseif area == "pvp" then
+		local view = Sheet.PvpView(headers)
+		frame.Area:SetText("PVP")
+		frame.Step:SetText("Battlegrounds, then what is not here")
+		frame.Head:SetText(view.text)
+		frame.Next:SetText(view.world)
+		frame.More:SetText(view.companion)
+		showRows(frame, view.battlegrounds)
+		frame.Release:Show()
+		frame.Release.Label:SetText(Sheet.ReleaseLabel(ns.Get and ns.Get("qol.autoReleasePvP")))
 	else
+		frame.Area:SetText("QUEST")
 		frame.Step:SetText(composed.step or "")
 		frame.Head:SetText(composed.title or "")
 		frame.Next:SetText(composed.next or "")
-		frame.More:SetText(table.concat(composed.more or {}, "\n"))
-		frame.TimerBtn:Hide()
-		frame.CatchBtn:Hide()
-		frame.FishBtn.Label:SetText("Fish")
+		local more = table.concat(composed.more or {}, "\n")
+		local sleep = Sheet.Open(headers, Sheet.SLEEP_ID)
+		if sleep.ok then
+			more = (more ~= "" and (more .. "\n") or "") .. "Cozy Sleeping Bag is a separate guide. It does not replace this route."
+			frame.Sleep:Show()
+		end
+		frame.More:SetText(more)
 	end
 end
 
 function Now.Refresh()
 	if not f or not f:IsShown() then return end
-	if mode == "fish" then
-		local rank, maxRank = Fish.Rank()
-		Now.Apply(nil, Fish.Lines(rank, maxRank, Fish.Elapsed(), Fish.caught or 0))
-		return
-	end
 	local E = ns.Engine
+	if E and E.GetGuide then
+		Now.levelId = Sheet.NoteLevel(Now.levelId, E.GetGuide())
+	end
 	local view
 	if E and E.GetStepIndex and E.GetStepView then
 		local i = E.GetStepIndex()
@@ -373,10 +567,10 @@ if ns.RegisterCommand then
 	ns.RegisterCommand("fish", function()
 		ns.Set("ui.journal", true)
 		ns.Set("ui.shown", true)
-		mode = "fish"
+		area = "trade"
 		sync()
 		Fish.OpenGuide()
-	end, "Fishing notes, and open the fishing guide")
+	end, "Open the fishing guide from the trade list")
 end
 
 ns.OnLogin(function()

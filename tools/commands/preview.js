@@ -1011,7 +1011,7 @@ const SCENES = [
 	},
 	{
 		file: 'journal.svg',
-		title: 'Offline render of the step list, not an in-game capture. Camp Narache next action; fishing notes with no client skill.',
+		title: 'Offline render of the route sheet, not an in-game capture. Quest, class quests, professions, and PvP. No client skill was reported.',
 		panels: [
 			{
 				roots: ['NorthstarNow'],
@@ -1020,16 +1020,43 @@ const SCENES = [
 						return { index = 4, title = "Camp Narache", current = 1, goals = {
 							{ status = "current", text = "Accept The Hunt Begins", t = "accept" },
 							{ status = "current", text = "Collect Plainstrider Meat", t = "collect" },
-							{ status = "done", text = "Already done", t = "turnin" },
 						} }
 					end
+					Northstar.UI.Sheet.headers = {
+						{ id = "forever/horde/01-mulgore", title = "Mulgore", category = "Leveling" },
+						{ id = "forever/miscellaneous/cozy-sleeping-bag", title = "Cozy Sleeping Bag", category = "Miscellaneous" },
+					}
 					Northstar.UI.Now.Show()`,
 			},
 			{
 				roots: ['NorthstarNow'],
-				script: `Northstar.UI.Now.Show()
-					local fish = Northstar.UI.Now.frame.FishBtn
-					if fish.Label:GetText() == "Fish" then fish:Click() end`,
+				script: `Northstar.UI.Sheet.player = { class = "DRUID", race = "Tauren" }
+					Northstar.UI.Sheet.headers = {
+						{ id = "forever/class/druid/bear-form", title = "Bear Form and Moonglade", category = "Class", classes = { "DRUID" } },
+						{ id = "forever/class/druid/cat-form", title = "Cat Form", category = "Class", classes = { "DRUID" } },
+						{ id = "forever/class/mage/atiesh", title = "Atiesh", category = "Class", classes = { "MAGE" } },
+					}
+					Northstar.UI.Now.Show()
+					Northstar.UI.Now.frame.Areas.class:Click()`,
+			},
+			{
+				roots: ['NorthstarNow'],
+				script: `Northstar.UI.Sheet.headers = {
+						{ id = "forever/professions/alchemy", title = "Alchemy 1-300", category = "Professions" },
+						{ id = "forever/professions/fishing", title = "Fishing 1-300", category = "Professions" },
+						{ id = "forever/professions/herbalism", title = "Herbalism 1-300", category = "Professions" },
+					}
+					Northstar.UI.Now.Show()
+					Northstar.UI.Now.frame.Areas.trade:Click()`,
+			},
+			{
+				roots: ['NorthstarNow'],
+				script: `Northstar.UI.Sheet.headers = {
+						{ id = "forever/reputation/warsong-gulch", title = "Warsong Gulch Reputation", folder = "Reputation · Battlegrounds" },
+						{ id = "forever/reputation/alterac-valley", title = "Alterac Valley Reputation", folder = "Reputation · Battlegrounds" },
+					}
+					Northstar.UI.Now.Show()
+					Northstar.UI.Now.frame.Areas.pvp:Click()`,
 			},
 		],
 	},
