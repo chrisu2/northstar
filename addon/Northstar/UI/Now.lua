@@ -1197,25 +1197,41 @@ function Now.ApplyBlizzardTracker()
 	end
 	local qol = ns.QoL and ns.QoL.On and ns.QoL.On("hideQuestTracker")
 	local hide = qol or (Now.ViewerShown() and ns.Get("ui.hideBlizzardTracker") ~= false)
-	if hide then
-		blizzardHidden = true
-		for i = 1, #frames do
-			local frame = frames[i]
-			if not blizzardHooked[frame] and frame.HookScript then
-				blizzardHooked[frame] = true
-				frame:HookScript("OnShow", function()
-					if blizzardHidden then Now.ApplyBlizzardTracker() end
-				end)
+	local function blocked(frame)
+		return frame.IsProtected and frame:IsProtected() and InCombatLockdown and InCombatLockdown()
+	end
+	local function apply()
+		if hide then
+			blizzardHidden = true
+			for i = 1, #frames do
+				local frame = frames[i]
+				if not blizzardHooked[frame] and frame.HookScript then
+					blizzardHooked[frame] = true
+					frame:HookScript("OnShow", function()
+						if blizzardHidden then Now.ApplyBlizzardTracker() end
+					end)
+				end
+				if blocked(frame) then
+					if ns.QoL and ns.QoL.Secure then ns.QoL.Secure("hideQuestTracker", Now.ApplyBlizzardTracker) end
+				elseif frame.IsShown and frame:IsShown() then
+					frame:Hide()
+				end
 			end
-			if frame.IsShown and frame:IsShown() then frame:Hide() end
-		end
-	elseif blizzardHidden then
-		blizzardHidden = false
-		for i = 1, #frames do
-			local frame = frames[i]
-			if frame.Update then frame:Update() else frame:Show() end
+		elseif blizzardHidden then
+			blizzardHidden = false
+			for i = 1, #frames do
+				local frame = frames[i]
+				if blocked(frame) then
+					if ns.QoL and ns.QoL.Secure then ns.QoL.Secure("hideQuestTracker", Now.ApplyBlizzardTracker) end
+				elseif frame.Update then
+					frame:Update()
+				else
+					frame:Show()
+				end
+			end
 		end
 	end
+	apply()
 end
 
 function Now.SyncBlizzardTracker()
