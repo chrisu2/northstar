@@ -733,6 +733,7 @@ local function buildAbout(view)
 	local whatsNew = W.Button(view, L["What's new"], function() ns.Fire("SHOW_WHATSNEW") end)
 	view.WhatsNew = whatsNew
 	local credH, credText = block(L["Credits"], L["Inter typeface by The Inter Project Authors, SIL Open Font License 1.1."] .. "\n"
+		.. L["The open book, scroll, letter and wax seal are by MELLE (Melissa Krautheim), CC0, from OpenGameArt."] .. "\n"
 		.. L["Wordmark set in Cinzel by The Cinzel Project Authors, SIL Open Font License 1.1."] .. "\n"
 		.. L["Quest and map data includes pfQuest by shagu (MIT License)."] .. "\n"
 		.. L["Discord and its logo are trademarks of Discord Inc.; the logo marks the link to the Polestar Discord."] .. "\n"

@@ -567,7 +567,8 @@ fn every_texture_the_ui_shows_and_every_goal_verb_icon_exists_as_a_valid_tga() {
 	}
 	let mut missing: Vec<&str> = Vec::new();
 	for n in &ours {
-		let file = addons_dir().join("Northstar").join("Media").join("UI").join(format!("{n}.tga"));
+		let rel = n.replace('\\', "/");
+		let file = addons_dir().join("Northstar").join("Media").join("UI").join(format!("{rel}.tga"));
 		if !file.exists() {
 			missing.push(n);
 			continue;
