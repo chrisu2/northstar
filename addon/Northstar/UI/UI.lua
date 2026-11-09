@@ -23,6 +23,9 @@ ns.RegisterDefaults("ui", {
 	trackerLocked = false, -- the closed note moves only when this is off
 	trackerSteps = 3, -- upcoming steps under the current one, 2..4
 	trackerCollapsed = false,
+	trackerWidth = 280,
+	trackerHeight = 0, -- 0: the list sets the height; a corner drag stores a number
+	hideBlizzardTracker = true, -- while the guide viewer is up, hide the game's objective list
 	wideGuide = false, -- the old wide guide window, off unless turned on in saved settings
 	locked = false,
 	lockHud = false, -- the arrow, the action buttons and the timers move only on a Shift-drag (ns.DragLocked)

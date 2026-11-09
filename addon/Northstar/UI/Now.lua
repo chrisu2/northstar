@@ -1010,16 +1010,19 @@ function Now.PlaceSlip()
 	end
 end
 
--- Original marks, not borrowed guide-addon art. Friz draws these.
+-- Original pictograms in Media/UI/Journal. Not Zygor, RestedXP, Polestar, or Blizzard files.
+local ICON = "Interface\\AddOns\\Northstar\\Media\\UI\\Journal\\journal-icon-"
 function Now.StepIcon(t)
-	if t == "accept" then return "!" end
-	if t == "turnin" or t == "complete" then return "?" end
-	if t == "kill" then return "/" end
-	if t == "collect" then return "o" end
-	if t == "fly" or t == "getfp" or t == "goto" then return ">" end
-	if t == "hearth" or t == "sethome" then return "H" end
-	if t == "train" or t == "learn" then return "B" end
-	return "·"
+	local name = "accept"
+	if t == "turnin" or t == "complete" then name = "turnin"
+	elseif t == "kill" then name = "kill"
+	elseif t == "collect" then name = "collect"
+	elseif t == "fly" or t == "getfp" or t == "goto" then name = "travel"
+	elseif t == "hearth" or t == "sethome" then name = "hearth"
+	elseif t == "train" or t == "learn" then name = "train"
+	elseif t == "done" or t == "check" then name = "check"
+	end
+	return ICON .. name
 end
 
 local function slipLine(parent)
@@ -1101,14 +1104,17 @@ function Now.ShowSlip()
 			row.Band:Hide()
 			row.Num = slipLine(row)
 			row.Num:SetPoint("LEFT", 2, 0)
-			row.Icon = slipLine(row)
-			row.Icon:SetPoint("LEFT", 22, 0)
+			row.Icon = row:CreateTexture(nil, "ARTWORK")
+			row.Icon:SetSize(14, 14)
+			row.Icon:SetPoint("LEFT", 20, 0)
+			row.Icon:SetTexture(Now.StepIcon("accept"))
 			row.Text = slipLine(row)
-			row.Text:SetPoint("LEFT", 36, 0)
-			row.Text:SetPoint("RIGHT", -16, 0)
-			row.Tick = slipLine(row)
+			row.Text:SetPoint("LEFT", 38, 0)
+			row.Text:SetPoint("RIGHT", -18, 0)
+			row.Tick = row:CreateTexture(nil, "OVERLAY")
+			row.Tick:SetSize(12, 12)
 			row.Tick:SetPoint("RIGHT", -2, 0)
-			row.Tick:SetText("v")
+			row.Tick:SetTexture(Now.StepIcon("check"))
 			row.Tick:Hide()
 			row:SetScript("OnClick", function(_, button)
 				local E = ns.Engine
@@ -1131,6 +1137,32 @@ function Now.ShowSlip()
 		slip.Fill = slip:CreateTexture(nil, "ARTWORK")
 		slip.Fill:SetColorTexture(0.72, 0.58, 0.22, 1)
 		slip.Fill:SetHeight(4)
+		slip:SetResizable(true)
+		if slip.SetResizeBounds then slip:SetResizeBounds(220, 80, 520, 640)
+		elseif slip.SetMinResize then slip:SetMinResize(220, 80); slip:SetMaxResize(520, 640) end
+		slip.Grip = CreateFrame("Button", nil, slip)
+		slip.Grip:SetSize(14, 14)
+		slip.Grip:SetPoint("BOTTOMRIGHT", -1, 1)
+		slip.Grip:EnableMouse(true)
+		local g1 = slip.Grip:CreateTexture(nil, "ARTWORK")
+		g1:SetColorTexture(0.72, 0.62, 0.38, 1)
+		g1:SetSize(10, 2)
+		g1:SetPoint("BOTTOMRIGHT", -2, 3)
+		local g2 = slip.Grip:CreateTexture(nil, "ARTWORK")
+		g2:SetColorTexture(0.72, 0.62, 0.38, 1)
+		g2:SetSize(2, 10)
+		g2:SetPoint("BOTTOMRIGHT", -3, 2)
+		slip.Grip:SetScript("OnMouseDown", function()
+			if ns.Get and ns.Get("ui.trackerLocked") then return end
+			slip:StartSizing("BOTTOMRIGHT")
+		end)
+		slip.Grip:SetScript("OnMouseUp", function()
+			slip:StopMovingOrSizing()
+			if ns.Set then
+				ns.Set("ui.trackerWidth", slip:GetWidth())
+				ns.Set("ui.trackerHeight", slip:GetHeight())
+			end
+		end)
 		slip:SetScript("OnDragStart", function(self)
 			if ns.Get and ns.Get("ui.trackerLocked") then return end
 			self:StartMoving()
@@ -1145,6 +1177,49 @@ function Now.ShowSlip()
 	Now.PlaceSlip()
 	slip:Show()
 	Now.PaintSlip()
+	Now.SyncBlizzardTracker()
+end
+
+function Now.ViewerShown()
+	return slip and slip:IsShown() or false
+end
+
+local blizzardHidden = false
+local blizzardHooked = {}
+
+function Now.ApplyBlizzardTracker()
+	if ns.GamepadUI and ns.GamepadUI() then return end
+	local names = { "ObjectiveTrackerFrame", "WatchFrame", "QuestWatchFrame" }
+	local frames = {}
+	for i = 1, #names do
+		local frame = _G[names[i]]
+		if type(frame) == "table" and frame.Hide and frame.Show then frames[#frames + 1] = frame end
+	end
+	local qol = ns.QoL and ns.QoL.On and ns.QoL.On("hideQuestTracker")
+	local hide = qol or (Now.ViewerShown() and ns.Get("ui.hideBlizzardTracker") ~= false)
+	if hide then
+		blizzardHidden = true
+		for i = 1, #frames do
+			local frame = frames[i]
+			if not blizzardHooked[frame] and frame.HookScript then
+				blizzardHooked[frame] = true
+				frame:HookScript("OnShow", function()
+					if blizzardHidden then Now.ApplyBlizzardTracker() end
+				end)
+			end
+			if frame.IsShown and frame:IsShown() then frame:Hide() end
+		end
+	elseif blizzardHidden then
+		blizzardHidden = false
+		for i = 1, #frames do
+			local frame = frames[i]
+			if frame.Update then frame:Update() else frame:Show() end
+		end
+	end
+end
+
+function Now.SyncBlizzardTracker()
+	Now.ApplyBlizzardTracker()
 end
 
 function Now.ShowArrow()
@@ -1197,11 +1272,13 @@ function Now.PaintSlip()
 	if not slip or not slip:IsShown() then return end
 	local scale = slipNumber("ui.trackerScale", 1, 0.8, 1.5)
 	local opacity = slipNumber("ui.trackerOpacity", 0.6, 0, 1)
+	local savedW = slipNumber("ui.trackerWidth", SLIP_W, 220, 520)
+	slip:SetWidth(savedW)
 	slip.Bg:SetAlpha(opacity)
 	if way and way.Bg then way.Bg:SetAlpha(opacity) end
 	local titleSize = math.floor(13 * scale + 0.5)
 	local bodySize = math.floor(12 * scale + 0.5)
-	local width = SLIP_W - SLIP_PAD * 2
+	local width = slip:GetWidth() - SLIP_PAD * 2
 	local E = ns.Engine
 	local guide = E and E.GetGuide and E.GetGuide()
 	local here = E and E.GetStepIndex and E.GetStepIndex() or nil
@@ -1275,14 +1352,13 @@ function Now.PaintSlip()
 				local current = index == here
 				row.Band:SetShown(current)
 				style(row.Num, bodySize, current and 1 or 0.85, current and 0.86 or 0.8, current and 0.45 or 0.7)
-				style(row.Icon, bodySize, 0.9, 0.78, 0.4)
 				style(row.Text, bodySize, 1, 1, 1)
 				row.Num:SetText(tostring(index))
-				row.Icon:SetText(Now.StepIcon(stepVerb(view)))
+				row.Icon:SetTexture(Now.StepIcon(stepVerb(view)))
+				row.Icon:SetSize(14, 14)
 				row.Text:SetText(view.title or "")
 				local flash = slip.flash == index
 				row.Tick:SetShown(flash)
-				if flash then style(row.Tick, bodySize, 0.24, 0.8, 0.43) end
 				row:ClearAllPoints()
 				row:SetPoint("TOPLEFT", 4, -y)
 				row:SetPoint("TOPRIGHT", -4, -y)
@@ -1344,9 +1420,13 @@ function Now.PaintSlip()
 		slip.Fill:Show()
 		y = y + 8
 	end
-	local cap = 420
-	if y + SLIP_PAD > cap then y = cap - SLIP_PAD end
-	slip:SetHeight(y + SLIP_PAD)
+	local cap = 520
+	local h = y + SLIP_PAD
+	local savedH = ns.Get and ns.Get("ui.trackerHeight")
+	if type(savedH) == "number" and savedH >= 80 then h = savedH end
+	if h > cap then h = cap end
+	if h < 48 then h = 48 end
+	slip:SetHeight(h)
 	if way and way:IsShown() then
 		local size = math.floor(12 * scale + 0.5)
 		style(way.Mark, titleSize, 1, 0.82, 0.25)
@@ -1377,6 +1457,7 @@ function Now.Show()
 	build()
 	if slip then slip:Hide() end
 	if way then way:Hide() end
+	Now.SyncBlizzardTracker()
 	f:Show()
 	Now.Refresh()
 end
@@ -1408,9 +1489,12 @@ ns.On("TOGGLE_JOURNAL", function()
 end)
 ns.On("SETTING_CHANGED", function(path)
 	if path == "ui.journal" or path == "ui.shown" then sync()
-	elseif path == "ui.trackerOpacity" or path == "ui.trackerScale" or path == "ui.trackerPos" then
+	elseif path == "ui.trackerOpacity" or path == "ui.trackerScale" or path == "ui.trackerPos"
+		or path == "ui.trackerWidth" or path == "ui.trackerHeight" or path == "ui.trackerSteps" then
 		if slip and slip:IsShown() then Now.PaintSlip() end
 		if path == "ui.trackerPos" then Now.PlaceSlip() end
+	elseif path == "ui.hideBlizzardTracker" then
+		Now.SyncBlizzardTracker()
 	end
 end)
 ns.On("GUIDE_CHANGED", function() Now.Refresh() end)
@@ -1423,10 +1507,35 @@ ns.On("WAYPOINT_CHANGED", function() Now.Refresh() end)
 if ns.RegisterCommand then
 	ns.RegisterCommand("journal", function() ns.Fire("TOGGLE_JOURNAL") end, "Show or hide the step list")
 	ns.RegisterCommand("hidetracker", function()
-		local on = ns.Get("qol.hideQuestTracker")
-		ns.Set("qol.hideQuestTracker", not on)
-		if ns.Print then ns.Print(ns.Get("qol.hideQuestTracker") and "Quest tracker hidden." or "Quest tracker left to the game.") end
-	end, "Hide or show the game's objective tracker while Northstar is up.")
+		local hide = ns.Get("ui.hideBlizzardTracker") ~= false
+		ns.Set("ui.hideBlizzardTracker", not hide)
+		if ns.Print then ns.Print(ns.Get("ui.hideBlizzardTracker") ~= false and "Quest tracker hidden while the viewer is up." or "Quest tracker left to the game.") end
+	end, "Hide or show the game's objective list while the guide viewer is up.")
+	ns.RegisterCommand("scale", function(rest)
+		local n = tonumber(rest)
+		if not n or n < 80 or n > 150 then
+			if ns.Print then ns.Print("Usage: /ns scale 80-150") end
+			return
+		end
+		ns.Set("ui.trackerScale", n / 100)
+	end, "Closed tracker text size, 80 to 150 percent.")
+	ns.RegisterCommand("steps", function(rest)
+		local n = tonumber(rest)
+		if not n or n < 2 or n > 4 then
+			if ns.Print then ns.Print("Usage: /ns steps 2-4") end
+			return
+		end
+		ns.Set("ui.trackerSteps", n)
+	end, "How many steps after the current one the viewer lists.")
+	ns.RegisterCommand("resettracker", function()
+		ns.Set("ui.trackerPos", nil)
+		ns.Set("ui.trackerArrowPos", nil)
+		ns.Set("ui.trackerWidth", nil)
+		ns.Set("ui.trackerHeight", nil)
+		Now.PlaceSlip()
+		if way then way:ClearAllPoints(); way:SetPoint("TOP", UIParent, "TOP", 0, -36) end
+		if slip and slip:IsShown() then Now.PaintSlip() end
+	end, "Put the guide viewer and the waypoint tag back to their default places and size.")
 	ns.RegisterCommand("opacity", function(rest)
 		local n = tonumber(rest)
 		if not n or n < 0 or n > 100 then

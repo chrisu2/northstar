@@ -211,7 +211,9 @@ test('closed tracker opacity and text scale are saved', () => {
 });
 
 test('the guide viewer lists icons, collapses, skips, and remembers the tracker hide', () => {
-	const [icon, num, title, collapsed, skip, hidden, stored] = load(`
+	const [icon, num, title, collapsed, skip, hidden, stored, width] = load(`
+		ObjectiveTrackerFrame = CreateFrame("Frame", "ObjectiveTrackerFrame")
+		ObjectiveTrackerFrame:Show()
 		Northstar.Set("ui.journal", false)
 		local skipped = false
 		Northstar.Engine.GetGuide = function()
@@ -227,7 +229,7 @@ test('the guide viewer lists icons, collapses, skips, and remembers the tracker 
 		Northstar.Engine.Skip = function() skipped = true end
 		Northstar.UI.Now.PaintSlip()
 		local row = NorthstarNowSlip.Steps[1]
-		emit(row.Icon:GetText())
+		emit(row.Icon:GetTexture())
 		emit(row.Num:GetText())
 		emit(row.Text:GetText())
 		NorthstarNowSlip.Min:Click()
@@ -235,14 +237,18 @@ test('the guide viewer lists icons, collapses, skips, and remembers the tracker 
 		NorthstarNowSlip.Steps[1]:Click("RightButton")
 		emit(skipped)
 		Northstar.RunCommand("hidetracker")
-		emit(Northstar.Get("qol.hideQuestTracker"))
-		emit(NorthstarDB.settings.qol and NorthstarDB.settings.qol.hideQuestTracker)
+		emit(Northstar.Get("ui.hideBlizzardTracker"))
+		emit(NorthstarDB.settings.ui.hideBlizzardTracker)
+		Northstar.Set("ui.trackerWidth", 340)
+		Northstar.UI.Now.PaintSlip()
+		emit(NorthstarNowSlip:GetWidth())
 	`);
-	assert.equal(icon, '/');
+	assert.match(icon, /journal-icon-kill/);
 	assert.equal(num, '2');
 	assert.equal(title, 'Step 2');
 	assert.equal(collapsed, false);
 	assert.equal(skip, true);
-	assert.equal(hidden, true);
-	assert.equal(stored, true);
+	assert.equal(hidden, false);
+	assert.equal(stored, false);
+	assert.equal(width, 340);
 });

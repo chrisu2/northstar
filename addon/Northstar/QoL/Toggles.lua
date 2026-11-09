@@ -193,36 +193,80 @@ end)
 -- The game's quest tracker
 ---------------------------------------------------------------------------
 
-local trackerHidden, trackerHooked = false, false
+-- Forever 1.60 may name the objective list any of these. A missing global is skipped.
+local TRACKER_NAMES = { "ObjectiveTrackerFrame", "WatchFrame", "QuestWatchFrame" }
+local trackerHidden = false
+local trackerHooked = {}
+
+local function trackerFrames()
+	local out = {}
+	for i = 1, #TRACKER_NAMES do
+		local f = _G[TRACKER_NAMES[i]]
+		if type(f) == "table" and f.Hide and f.Show then out[#out + 1] = f end
+	end
+	return out
+end
+
+local function viewerWantsHidden()
+	if ns.GamepadUI and ns.GamepadUI() then return false end
+	if ns.Get("ui.hideBlizzardTracker") == false then return false end
+	local now = ns.UI and ns.UI.Now
+	return now and now.ViewerShown and now.ViewerShown() and true or false
+end
+
+local function shouldHide()
+	if ns.GamepadUI and ns.GamepadUI() then return false end
+	if QoL.On("hideQuestTracker") then return true end
+	return viewerWantsHidden()
+end
+
+local function hookFrame(f)
+	if trackerHooked[f] or not f.HookScript then return end
+	trackerHooked[f] = true
+	f:HookScript("OnShow", function()
+		if trackerHidden then Toggles.ApplyTracker() end
+	end)
+end
 
 local function applyTracker()
-	local f = ObjectiveTrackerFrame
-	if not (f and f.Hide) then return end
-	-- Not with the gamepad interface (ns.GamepadUI): its HUD navigation starts
-	-- at the tracker (Blizzard_Gamepad GamepadHudMode.lua).
-	if QoL.On("hideQuestTracker") and not ns.GamepadUI() then
-		if not trackerHooked then
-			trackerHooked = true
-			f:HookScript("OnShow", function() if trackerHidden then Toggles.ApplyTracker() end end)
-		end
+	local frames = trackerFrames()
+	if shouldHide() then
 		trackerHidden = true
-		if f:IsShown() then f:Hide() end
+		for i = 1, #frames do
+			local f = frames[i]
+			hookFrame(f)
+			if f.IsShown and f:IsShown() then f:Hide() end
+		end
 	elseif trackerHidden then
 		trackerHidden = false
-		if f.Update then f:Update() else f:Show() end
+		for i = 1, #frames do
+			local f = frames[i]
+			if f.Update then f:Update() else f:Show() end
+		end
 	end
 end
 
 function Toggles.ApplyTracker()
-	local f = ObjectiveTrackerFrame
-	if f and f.IsProtected and f:IsProtected() then
-		QoL.Secure("hideQuestTracker", applyTracker)
-	else
-		applyTracker()
+	local now = ns.UI and ns.UI.Now
+	if now and now.ApplyBlizzardTracker then
+		now.ApplyBlizzardTracker()
+		return
 	end
+	applyTracker()
 end
+
+local trackerEvents = CreateFrame("Frame")
+if trackerEvents.RegisterEvent then
+	trackerEvents:RegisterEvent("PLAYER_ENTERING_WORLD")
+	trackerEvents:RegisterEvent("QUEST_LOG_UPDATE")
+	trackerEvents:RegisterEvent("QUEST_WATCH_UPDATE")
+	trackerEvents:RegisterEvent("QUEST_WATCH_LIST_CHANGED")
+end
+trackerEvents:SetScript("OnEvent", function() Toggles.ApplyTracker() end)
 
 ns.OnLogin(Toggles.ApplyTracker)
 ns.On("SETTING_CHANGED", function(path)
-	if path == "qol.hideQuestTracker" or path == "qol" or path == "" then Toggles.ApplyTracker() end
+	if path == "qol.hideQuestTracker" or path == "ui.hideBlizzardTracker" or path == "qol" or path == "ui" or path == "" then
+		Toggles.ApplyTracker()
+	end
 end)

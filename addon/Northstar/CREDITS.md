@@ -6,3 +6,5 @@ The route sheet is MELLE's paintings, not generated art.
 - Letter, ribbon and wax seal: [FANTASY-parchment-set](https://opengameart.org/content/fantasy-parchment-set) by MELLE (Melissa Krautheim), CC0.
 
 Sliced into `Media/UI/Journal/` by `tools/media/journal/slice.py`. The same notice is on the About page.
+
+The step marks (accept, turn-in, kill, collect, travel, hearth, train, check) are original drawings in that script. They are not Zygor, RestedXP, Polestar, or Blizzard files.

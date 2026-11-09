@@ -50,6 +50,58 @@ def write_tga(path, image):
 	path.write_bytes(bytes(header) + bgra)
 
 
+def write_icons():
+	"""Original 32x32 step marks. Not Zygor, RestedXP, Polestar, or Blizzard art."""
+	INK = (236, 224, 196, 255)
+	GOLD = (226, 192, 86, 255)
+	GREEN = (90, 190, 110, 255)
+
+	def canvas():
+		return Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+
+	def save(name, im):
+		write_tga(OUT / f"journal-icon-{name}.tga", im)
+
+	im = canvas(); d = ImageDraw.Draw(im)
+	d.rectangle((14, 4, 18, 20), fill=GOLD)
+	d.rectangle((14, 24, 18, 28), fill=GOLD)
+	save("accept", im)
+
+	im = canvas(); d = ImageDraw.Draw(im)
+	d.arc((6, 2, 26, 20), 200, 60, fill=INK, width=3)
+	d.rectangle((14, 22, 18, 26), fill=INK)
+	save("turnin", im)
+
+	im = canvas(); d = ImageDraw.Draw(im)
+	d.polygon([(8, 26), (22, 6), (26, 8), (12, 28)], fill=INK)
+	d.polygon([(6, 28), (12, 22), (16, 26), (10, 30)], fill=GOLD)
+	save("kill", im)
+
+	im = canvas(); d = ImageDraw.Draw(im)
+	d.rounded_rectangle((6, 12, 26, 28), radius=3, outline=INK, width=2)
+	d.arc((8, 6, 24, 18), 200, 340, fill=INK, width=2)
+	save("collect", im)
+
+	im = canvas(); d = ImageDraw.Draw(im)
+	d.polygon([(6, 20), (16, 8), (20, 12), (12, 22)], fill=INK)
+	d.ellipse((14, 16, 26, 28), outline=INK, width=2)
+	save("travel", im)
+
+	im = canvas(); d = ImageDraw.Draw(im)
+	d.polygon([(16, 4), (28, 16), (22, 16), (22, 28), (10, 28), (10, 16), (4, 16)], fill=INK)
+	save("hearth", im)
+
+	im = canvas(); d = ImageDraw.Draw(im)
+	d.polygon([(6, 8), (16, 4), (26, 8), (26, 26), (16, 30), (6, 26)], outline=GOLD, width=2)
+	d.line((16, 6, 16, 28), fill=GOLD, width=1)
+	save("train", im)
+
+	im = canvas(); d = ImageDraw.Draw(im)
+	d.line((6, 16, 13, 24), fill=GREEN, width=3)
+	d.line((13, 24, 26, 8), fill=GREEN, width=3)
+	save("check", im)
+
+
 def natural_parchment(image):
 	"""Cut the cyan rim and the black corner. Leave the warm painted face."""
 	im = image.convert("RGBA")
@@ -88,6 +140,7 @@ def main():
 	book = Image.open(SRC / "book.png").convert("RGBA")
 	sheet = Image.open(SRC / "parchment-set.png").convert("RGBA")
 	OUT.mkdir(parents=True, exist_ok=True)
+	write_icons()
 
 	bw, bh = book.size
 	s = BOOK_SCALE_H / bh
