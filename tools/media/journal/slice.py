@@ -246,6 +246,30 @@ def preview(book, letter, ribbon, seal, uv):
 	print("preview", ART / "northstar-tome.png", "uv", uv)
 
 
+def hide_quest_list(shot):
+	"""Paint out the objective list with the grass beside it.
+
+	The list is light text on the world, not a solid panel, so covering the
+	column is what makes it look hidden. Minimap and the side buttons stay.
+	"""
+	im = shot.convert("RGBA")
+	x0, x1 = 830, 1046
+	y0, y1 = 132, 552
+	patch = shot.crop((755, y0, 835, y1)).convert("RGBA")
+	patch = patch.resize((x1 - x0, y1 - y0), Image.Resampling.LANCZOS)
+	mask = Image.new("L", patch.size, 255)
+	mp = mask.load()
+	pw, ph = patch.size
+	for y in range(ph):
+		top = min(1.0, y / 12)
+		bot = min(1.0, (ph - 1 - y) / 12)
+		for x in range(pw):
+			left = min(1.0, x / 16)
+			mp[x, y] = int(255 * left * top * bot)
+	im.paste(patch, (x0, y0), mask)
+	return im
+
+
 def ingame(frame, letter):
 	"""Lay the real window on Chris's Forever shot.
 
@@ -301,12 +325,12 @@ def ingame(frame, letter):
 	vtext((8, 6), "Mulgore 1-12", (255, 209, 64, 255))
 	vtext((168, 6), "<  >  B  *  _", (230, 210, 140, 255))
 	vd.rectangle((6, 28, 274, 48), fill=(184, 148, 56, 90))
-	vtext((8, 30), "2  /  Kill Plainstriders", (255, 255, 255, 255))
-	vtext((18, 52), "Plainstrider Meat", (200, 200, 200, 255))
-	vtext((150, 52), "(1/7)", (226, 192, 86, 255))
-	vtext((8, 74), "3  !  The Battleboars", (220, 220, 220, 255))
-	vtext((8, 96), "4  ?  Return to Grull", (220, 220, 220, 255))
-	vtext((8, 118), "5  >  Ride to Bloodhoof", (220, 220, 220, 255))
+	vtext((28, 30), "2   Kill Plainstriders", (255, 255, 255, 255))
+	vtext((28, 52), "Plainstrider Meat", (200, 200, 200, 255))
+	vtext((160, 52), "(1/7)", (226, 192, 86, 255))
+	vtext((28, 74), "3   The Battleboars", (220, 220, 220, 255))
+	vtext((28, 96), "4   Return to Grull", (220, 220, 220, 255))
+	vtext((28, 118), "5   Ride to Bloodhoof", (220, 220, 220, 255))
 	vd.rectangle((8, 200, 272, 214), fill=(64, 56, 40, 255))
 	vd.rectangle((8, 200, 70, 214), fill=(184, 148, 56, 255))
 	vtext((8, 176), "2/10   20%", (217, 204, 158, 255))
@@ -314,10 +338,26 @@ def ingame(frame, letter):
 	ad = ImageDraw.Draw(arrow)
 	ad.rectangle((0, 0, 167, 35), fill=(158, 138, 82, 255))
 	ad.rectangle((1, 1, 166, 34), fill=(13, 10, 8, int(255 * 0.6)))
-	ad.text((9, 5), ">", font=small, fill=(255, 209, 64, 255))
-	ad.text((24, 4), "Plainstrider", font=small, fill=(255, 255, 255, 255))
+	ad.text((26, 4), "Plainstrider", font=small, fill=(255, 255, 255, 255))
 	ad.text((24, 18), "Ahead, 120 yd", font=small, fill=(230, 220, 180, 255))
-	shot2 = shot.copy()
+	# Step marks are the same 32x32 drawings the addon ships.
+	def icon(name):
+		im = Image.open(OUT / f"journal-icon-{name}.tga").convert("RGBA")
+		return im.resize((16, 16), Image.Resampling.NEAREST)
+
+	viewer.alpha_composite(icon("kill"), (8, 30))
+	viewer.alpha_composite(icon("accept"), (8, 74))
+	viewer.alpha_composite(icon("turnin"), (8, 96))
+	viewer.alpha_composite(icon("travel"), (8, 118))
+	vd.line((262, 216, 272, 216), fill=(226, 192, 86, 255), width=2)
+	vd.line((272, 206, 272, 216), fill=(226, 192, 86, 255), width=2)
+	arrow.alpha_composite(icon("travel"), (6, 10))
+
+	# The game's objective list is light text on the world, so a translucent
+	# panel would still show it. Cover that column with the grass just left
+	# of the list before the viewer is laid on. The minimap and the button
+	# column stay.
+	shot2 = hide_quest_list(shot)
 	shot2.alpha_composite(viewer, (sw - 12 - 280, 190))
 	shot2.alpha_composite(arrow, ((sw - 168) // 2, 36))
 	shot2.convert("RGB").save(ART / "northstar-ingame-viewer.png")
