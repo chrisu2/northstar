@@ -1,4 +1,4 @@
-//! The journey panel (addon/Polestar/UI/JourneyPanel.lua) in the guide window, against the real Core + Theme + UI
+//! The journey panel (addon/Northstar/UI/JourneyPanel.lua) in the guide window, against the real Core + Theme + UI
 //! manifests, the fake Engine of tests/lua/stub_ui.lua and a fake route: Nav.GetRoute, Nav.travel (Active,
 //! Progress), Nav.prompts (the skip menu) and ns.Transit (departures). Ids in test names are the rows of
 //! docs/NAV_QA.md.
@@ -11,8 +11,8 @@ const FILES: [&str; 3] = ["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"];
 
 // SPF's own example: 36:48 and 8.0k yd over a walk to the Great Lift, the lift, and the walk to Silithus.
 const ROUTE: &str = r#"
-local Nav = Polestar.Nav
-Polestar.RegisterDefaults("nav", { distanceUnit = "yards", journeySteps = true, journeyOpen = true })
+local Nav = Northstar.Nav
+Northstar.RegisterDefaults("nav", { distanceUnit = "yards", journeySteps = true, journeyOpen = true })
 R = { ci = 1, ps = 670, py = 3000, timed = false, wait = 15, ride = 10, active = true }
 R.legs = {
 	{ kind = "walk", step = "lift", label = "Walk to The Great Lift, Top", seconds = 670, yards = 3000, to = { name = "The Great Lift, Top" } },
@@ -26,13 +26,13 @@ Nav.travel = {
 function Nav.GetRoute() return R.legs, R.legs and R.ci end
 MENU = 0
 Nav.prompts = { MenuItems = function() return { { text = "Mark this leg done" } } end, OpenMenu = function() MENU = MENU + 1 end }
-Polestar.Transit = {
+Northstar.Transit = {
 	Now = function() return 1000 + GetTime() end,
 	NextDeparture = function(kind, id, at, side) DEP = { kind, id, side }; return R.wait, R.ride, R.timed end,
 }
 uistub.target = { label = "Silithus" }
-JP = Polestar.UI.JourneyPanel
-GF = Polestar.UI.GuideFrame
+JP = Northstar.UI.JourneyPanel
+GF = Northstar.UI.GuideFrame
 LAYOUTS = 0
 local layout = GF.Layout
 GF.Layout = function(...) LAYOUTS = LAYOUTS + 1; return layout(...) end
@@ -54,8 +54,8 @@ end
 fn run(script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", &FILES)],
-		script: ["uistub.install()", "stub.login()", ROUTE, "uistub.setGuide(uistub.elwynn, 3)", r#"Polestar.Fire("ROUTE_CHANGED", R.legs)"#, script].join("\n"),
+		addons: vec![Addon::files("Northstar", &FILES)],
+		script: ["uistub.install()", "stub.login()", ROUTE, "uistub.setGuide(uistub.elwynn, 3)", r#"Northstar.Fire("ROUTE_CHANGED", R.legs)"#, script].join("\n"),
 		..Default::default()
 	})
 }
@@ -105,7 +105,7 @@ fn times_read_0_15_11_10_1_02_03_nothing_unreadable_reaches_the_screen() {
 
 #[test]
 fn t_16_distances_follow_nav_distanceunit_8_0k_yd_or_7_3_km_in_metres() {
-	let out = run(r#"Polestar.Set("nav.distanceUnit", "metres"); emit(shot())"#);
+	let out = run(r#"Northstar.Set("nav.distanceUnit", "metres"); emit(shot())"#);
 	assert_eq!(out[0]["dist"], "7.3 km");
 }
 
@@ -123,13 +123,13 @@ fn countdown_the_current_step_and_the_total_tick_down_once_a_second_from_travel_
 
 #[test]
 fn countdown_without_travel_progress_the_planned_time_less_the_time_since_the_step_began() {
-	let out = run(r#"Polestar.Nav.travel.Progress = nil; R.legs = { R.legs[1], R.legs[2], R.legs[3] }; Polestar.Fire("ROUTE_CHANGED", R.legs); stub.advance(3); emit(shot())"#);
+	let out = run(r#"Northstar.Nav.travel.Progress = nil; R.legs = { R.legs[1], R.legs[2], R.legs[3] }; Northstar.Fire("ROUTE_CHANGED", R.legs); stub.advance(3); emit(shot())"#);
 	assert_eq!(out[0]["rows"][0]["time"], "11:07");
 }
 
 #[test]
 fn the_current_step_advances_the_finished_step_drops_off_numbers_keep_their_place_in_the_route() {
-	let out = run(r#"R.ci = 2; R.ps = 25; Polestar.Fire("ROUTE_ADVANCED", R.legs, 2); emit(shot())"#);
+	let out = run(r#"R.ci = 2; R.ps = 25; Northstar.Fire("ROUTE_ADVANCED", R.legs, 2); emit(shot())"#);
 	let s = &out[0];
 	assert_eq!(pick(s, &["num", "text", "bar"]), json!([["2", "Ride the elevator down", true], ["3", "Walk to Silithus", false]]));
 	assert_eq!(s["time"], "25:38");
@@ -138,12 +138,12 @@ fn the_current_step_advances_the_finished_step_drops_off_numbers_keep_their_plac
 #[test]
 fn t_5_hidden_with_no_route_a_lone_walk_the_setting_off_or_compact_mode_back_when_the_route_returns() {
 	let out = run(r#"
-		R.legs = { R.legs[3] }; R.ci = 1; Polestar.Fire("ROUTE_CHANGED", R.legs); emit(shot())
-		R.legs = nil; Polestar.Fire("ROUTE_CHANGED", nil); emit(shot())
-		R.legs = { { kind = "walk", label = "a", seconds = 5 }, { kind = "walk", label = "b", seconds = 5 } }; Polestar.Fire("ROUTE_CHANGED", R.legs); emit(shot())
-		Polestar.Set("nav.journeySteps", false); emit(shot())
-		Polestar.Set("nav.journeySteps", true); Polestar.Set("ui.compact", true); emit(shot())
-		Polestar.Set("ui.compact", false); emit(shot())"#);
+		R.legs = { R.legs[3] }; R.ci = 1; Northstar.Fire("ROUTE_CHANGED", R.legs); emit(shot())
+		R.legs = nil; Northstar.Fire("ROUTE_CHANGED", nil); emit(shot())
+		R.legs = { { kind = "walk", label = "a", seconds = 5 }, { kind = "walk", label = "b", seconds = 5 } }; Northstar.Fire("ROUTE_CHANGED", R.legs); emit(shot())
+		Northstar.Set("nav.journeySteps", false); emit(shot())
+		Northstar.Set("nav.journeySteps", true); Northstar.Set("ui.compact", true); emit(shot())
+		Northstar.Set("ui.compact", false); emit(shot())"#);
 	let got: Vec<Value> = out.iter().map(|s| json!([s["has"], s["shown"]])).collect();
 	assert_eq!(json!(got), json!([[false, false], [false, false], [true, true], [false, false], [true, false], [true, true]]));
 }
@@ -172,7 +172,7 @@ fn more_than_eight_steps_eight_rows_and_a_count_of_the_rest() {
 	let out = run(r#"
 		local legs = {}
 		for i = 1, 11 do legs[i] = { kind = "walk", label = "Step " .. i, seconds = 10, yards = 10 } end
-		R.legs = legs; R.ps = 10; R.py = 10; Polestar.Fire("ROUTE_CHANGED", legs); emit(shot())"#);
+		R.legs = legs; R.ps = 10; R.py = 10; Northstar.Fire("ROUTE_CHANGED", legs); emit(shot())"#);
 	let s = &out[0];
 	assert_eq!(rows(s).len(), 8);
 	assert_eq!(s["more"], "3 more steps");
@@ -187,7 +187,7 @@ fn k1_c9_a_step_without_a_caption_reads_its_kind_and_place_never_unknown() {
 			{ kind = "tram", seconds = 60, transport = { id = 3 }, to = { map = 1451 } },
 			{ kind = "fly", seconds = 90, to = { name = "Ironforge" } },
 		}
-		Polestar.Fire("ROUTE_CHANGED", R.legs); emit(shot())"#);
+		Northstar.Fire("ROUTE_CHANGED", R.legs); emit(shot())"#);
 	let s = &out[0];
 	let texts: Vec<&Value> = rows(s).iter().map(|r| &r["text"]).collect();
 	for t in &texts {
@@ -202,8 +202,8 @@ fn k1_c9_a_step_without_a_caption_reads_its_kind_and_place_never_unknown() {
 #[test]
 fn k3_a_lift_gives_its_average_wait_until_timed_then_leaves_in_walks_gates_and_bridges_carry_no_wait() {
 	let out = run(r#"
-		R.legs[1].step = "gate"; R.legs[3].step = "bridge"; Polestar.Fire("ROUTE_CHANGED", R.legs); emit(shot())
-		R.timed = true; Polestar.Fire("NAV_TRANSIT"); emit(shot())"#);
+		R.legs[1].step = "gate"; R.legs[3].step = "bridge"; Northstar.Fire("ROUTE_CHANGED", R.legs); emit(shot())
+		R.timed = true; Northstar.Fire("NAV_TRANSIT"); emit(shot())"#);
 	let (about, timed) = (&out[0], &out[1]);
 	assert_eq!(about["rows"][1]["sub"], "average wait 0:15 \u{b7} ride 0:10");
 	assert_eq!(timed["rows"][1]["sub"], "leaves in 0:15 \u{b7} ride 0:10");
@@ -240,7 +240,7 @@ fn t_1_k7_zero_yard_zero_second_and_nan_legs_keep_every_time_and_distance_finite
 			{ kind = "walk", label = "c", seconds = math.huge, yards = -5 },
 		}
 		R.ps, R.py = 0/0, 0/0
-		Polestar.Fire("ROUTE_CHANGED", R.legs); stub.advance(1); emit(shot())"#);
+		Northstar.Fire("ROUTE_CHANGED", R.legs); stub.advance(1); emit(shot())"#);
 	let s = &out[0];
 	assert_eq!(s["time"], "0:00");
 	assert_eq!(s["dist"], false);
@@ -252,15 +252,15 @@ fn t_1_k7_zero_yard_zero_second_and_nan_legs_keep_every_time_and_distance_finite
 #[test]
 fn the_countdown_stops_while_the_guide_window_is_hidden_and_resumes_with_it() {
 	let out = run(r#"
-		PolestarGuideFrame:Hide(); stub.advance(2); emit(JP.Ticking())
-		PolestarGuideFrame:Show(); stub.advance(1); emit(JP.Ticking())"#);
+		NorthstarGuideFrame:Hide(); stub.advance(2); emit(JP.Ticking())
+		NorthstarGuideFrame:Show(); stub.advance(1); emit(JP.Ticking())"#);
 	assert_eq!(out[0], false);
 	assert_eq!(out[1], true);
 }
 
 #[test]
 fn t_6_the_panel_makes_no_protected_calls_no_secure_templates_supertrack_or_gamepad_focus() {
-	let src = std::fs::read_to_string(addons_dir().join("Polestar").join("UI").join("JourneyPanel.lua")).unwrap();
+	let src = std::fs::read_to_string(addons_dir().join("Northstar").join("UI").join("JourneyPanel.lua")).unwrap();
 	assert!(!is_match(&src, r"Secure|C_SuperTrack|Gamepad|SetBinding|InCombatLockdown"));
 }
 
@@ -270,9 +270,9 @@ fn review_p2_4_the_current_flight_counts_down_and_the_header_with_it_even_when_t
 		R.legs = { { kind = "fly", label = "Fly to Ironforge", seconds = 300, yards = 2000, to = { name = "Ironforge" } },
 			{ kind = "walk", label = "Walk to the bank", seconds = 100, yards = 300 } }
 		R.ci = 1; R.ps, R.py = 300, 2000 -- a Progress that never moves for non-walk legs
-		Polestar.Fire("ROUTE_CHANGED", R.legs); emit(shot())
+		Northstar.Fire("ROUTE_CHANGED", R.legs); emit(shot())
 		stub.advance(5); emit(shot())
-		PolestarGuideFrame:Hide(); stub.advance(10); PolestarGuideFrame:Show(); stub.advance(0.05); emit(shot())"#);
+		NorthstarGuideFrame:Hide(); stub.advance(10); NorthstarGuideFrame:Show(); stub.advance(0.05); emit(shot())"#);
 	let (a, b, c) = (&out[0], &out[1], &out[2]);
 	assert_eq!(a["rows"][0]["time"], "5:00");
 	assert_eq!(a["time"], "6:40");
@@ -283,7 +283,7 @@ fn review_p2_4_the_current_flight_counts_down_and_the_header_with_it_even_when_t
 
 #[test]
 fn review_p3_11_no_empty_second_line_when_the_departure_is_unknown() {
-	let out = run(r#"R.wait = nil; Polestar.Fire("NAV_TRANSIT"); emit(shot())"#);
+	let out = run(r#"R.wait = nil; Northstar.Fire("NAV_TRANSIT"); emit(shot())"#);
 	let s = &out[0];
 	assert_eq!(s["rows"][1]["sub"], false);
 	assert_eq!(s["rows"][1]["h"], s["rows"][0]["h"]);
@@ -297,11 +297,11 @@ fn review_p3_11_at_the_dock_a_boat_leaving_within_the_boarding_window_shows_its_
 				from = { c = 0, wx = 100, wy = 200 }, to = { name = "Auberdine" } },
 			{ kind = "walk", label = "Walk to the inn", seconds = 60, yards = 200 } }
 		R.ci = 1; R.timed = true; R.wait = 600; R.ride = 120
-		Polestar.Transit.NextArrival = function() return 0, 8, true end
+		Northstar.Transit.NextArrival = function() return 0, 8, true end
 		local here = { 0, 110, 205 }
-		Polestar.Compat.GetPlayerWorldPosition = function() return here[1], here[2], here[3] end
-		Polestar.Fire("ROUTE_CHANGED", R.legs); emit(shot())
-		here = { 0, 400, 205 }; Polestar.Fire("NAV_TRANSIT"); emit(shot())"#);
+		Northstar.Compat.GetPlayerWorldPosition = function() return here[1], here[2], here[3] end
+		Northstar.Fire("ROUTE_CHANGED", R.legs); emit(shot())
+		here = { 0, 400, 205 }; Northstar.Fire("NAV_TRANSIT"); emit(shot())"#);
 	let (docked, away) = (&out[0], &out[1]);
 	assert_eq!(docked["rows"][0]["sub"], "leaves in 0:08 \u{b7} ride 2:00");
 	assert_eq!(docked["rows"][0]["time"], "2:08");
@@ -312,14 +312,14 @@ fn review_p3_11_at_the_dock_a_boat_leaving_within_the_boarding_window_shows_its_
 fn a_walk_that_enters_a_hostile_town_says_so_under_its_step_hostile_town_southshore() {
 	let out = run(r#"
 		-- Travel.HubText's wording (the panel asks Nav.travel for it).
-		Polestar.Nav.travel.HubText = function(leg)
+		Northstar.Nav.travel.HubText = function(leg)
 			local names = {}
 			for _, h in ipairs(leg.hubs or {}) do names[#names + 1] = h.name end
 			return #names > 0 and ("Hostile town: " .. table.concat(names, ", ")) or nil
 		end
 		R.legs[3].hubs = { { id = 12, name = "Southshore" } }
 		R.legs[1].hubs = { { id = 13, name = "Tarren Mill" }, { id = 14, name = "Hammerfall" } }
-		Polestar.Fire("ROUTE_CHANGED", R.legs)
+		Northstar.Fire("ROUTE_CHANGED", R.legs)
 		emit(shot())"#);
 	let s = &out[0];
 	assert_eq!(s["rows"][2]["sub"], "Hostile town: Southshore");

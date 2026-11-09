@@ -1,6 +1,6 @@
 //! `forge data itemdb` (port of tools/lib/itemdb/{build,stats}.js): the Classic Era client's item
-//! tables -> the load-on-demand data addon addon/Polestar_ItemDB (Items.lua + TOC) that
-//! Polestar.Gear scores items from. Same inputs give byte-identical output.
+//! tables -> the load-on-demand data addon addon/Northstar_ItemDB (Items.lua + TOC) that
+//! Northstar.Gear scores items from. Same inputs give byte-identical output.
 //!
 //! Columns read (wow_classic_era 1.15.9.70003):
 //!   ItemSparse   ID, Display_lang, ItemLevel, RequiredLevel, InventoryType, OverallQualityID,
@@ -25,7 +25,7 @@ use crate::gear::leveling::{encode, Rec};
 use crate::jsv::{col_str, Row, Rows};
 
 pub const TABLES: [&str; 4] = ["ItemSparse", "Item", "ItemEffect", "SpellEffect"];
-pub const ADDON: &str = "Polestar_ItemDB";
+pub const ADDON: &str = "Northstar_ItemDB";
 pub const SCHEMA: u32 = 1;
 /// The data addon is loaded on demand into every player's client: keep it small.
 pub const SIZE_BUDGET: usize = 1024 * 1024;
@@ -172,13 +172,14 @@ fn skip_name() -> regex::Regex {
 	regex::Regex::new(r"(?i)^Monster - |\bdeprecated\b|^(QA)?test\b|\[PH\]|\bunused\b|\bDEBUG\b").unwrap()
 }
 
-fn extract_item(row: &Row, index: &Index, skip: &regex::Regex) -> Result<Rec, &'static str> {
+fn extract_item(row: &Row, index: &Index, skip: &regex::Regex, drop_season: bool) -> Result<Rec, &'static str> {
 	let id = int(row, "ID");
 	let inv = int(row, "InventoryType");
 	if !EQUIPPABLE.contains(&inv) {
 		return Err("slot");
 	}
-	if id >= SOD_ITEM_MIN {
+	// 190000 is Season of Discovery on Classic Era. Forever 1.60 item ids sit in that range too.
+	if drop_season && id >= SOD_ITEM_MIN {
 		return Err("season");
 	}
 	if skip.is_match(col_str(row, "Display_lang")) {
@@ -223,13 +224,14 @@ fn extract_item(row: &Row, index: &Index, skip: &regex::Regex) -> Result<Rec, &'
 }
 
 /// ItemSparse, Item, ItemEffect, SpellEffect rows -> (records by id, left out: reason -> count).
-pub fn extract_items(sparse: &Rows, item: &Rows, item_effect: &Rows, spell_effect: &Rows) -> (Vec<Rec>, BTreeMap<&'static str, usize>) {
+/// `drop_season` applies the Classic Era Season of Discovery id cutoff. A Forever build leaves it off.
+pub fn extract_items(sparse: &Rows, item: &Rows, item_effect: &Rows, spell_effect: &Rows, drop_season: bool) -> (Vec<Rec>, BTreeMap<&'static str, usize>) {
 	let index = index_tables(item, item_effect, spell_effect);
 	let skip = skip_name();
 	let mut items = Vec::new();
 	let mut skipped = BTreeMap::new();
 	for row in sparse {
-		match extract_item(row, &index, &skip) {
+		match extract_item(row, &index, &skip, drop_season) {
 			Ok(r) => items.push(r),
 			Err(why) => *skipped.entry(why).or_default() += 1,
 		}
@@ -243,15 +245,26 @@ fn lua_str(s: &str) -> String {
 }
 
 /// Items.lua: one Register call.
+pub fn product_label(build: &str) -> &'static str {
+	if crate::tables::FOREVER.in_family(build) {
+		"Forever"
+	} else if crate::tables::ERA.in_family(build) {
+		"Classic Era"
+	} else {
+		"client"
+	}
+}
+
 pub fn emit_lua(items: &[Rec], build: &str) -> String {
+	let label = product_label(build);
 	let mut l = vec![
-		forge_guide::emit::header("lua", COMMAND, "the Blizzard Classic Era client tables"),
-		format!("-- Blizzard Classic Era client tables (wago.tools build {build}): ItemSparse, Item,"),
+		forge_guide::emit::header("lua", COMMAND, &format!("the Blizzard {label} client tables")),
+		format!("-- Blizzard {label} client tables (wago.tools build {build}): ItemSparse, Item,"),
 		"-- ItemEffect, SpellEffect. Game data (c) Blizzard Entertainment, used as facts.".into(),
 		"-- Entry: \"<inventoryType> <itemLevel> <requiredLevel> <quality> <classID> <subclassID>".into(),
 		"-- [<stat><n> ...] [dmin<n> dmax<n> speed<ms>] [cls<classMask>] [uniq1]\"; mpr = mp5, hpr = hp5.".into(),
 		String::new(),
-		"local DB = Polestar and Polestar.ItemDB".into(),
+		"local DB = Northstar and Northstar.ItemDB".into(),
 		"if not (DB and DB.Register) then return end".into(),
 		String::new(),
 		format!("DB.Register({{ schema = {SCHEMA}, build = {}, count = {} }}, {{", lua_str(build), items.len()),
@@ -289,9 +302,11 @@ pub struct Output {
 
 /// Builds and writes Items.lua and the TOC into `o.out`.
 pub fn build(o: &Options, log: &dyn Fn(&str)) -> Result<Output, String> {
-	let (build, tables, warnings) = crate::sources::client_tables(&o.sources, &crate::tables::ERA, o.build.as_deref(), &TABLES, o.offline, log)?;
+	let product = if o.build.as_deref().is_some_and(|b| crate::tables::FOREVER.in_family(b)) { &crate::tables::FOREVER } else { &crate::tables::ERA };
+	let (build, tables, warnings) = crate::sources::client_tables(&o.sources, product, o.build.as_deref(), &TABLES, o.offline, log)?;
 	let t = |n: &str| &tables.iter().find(|(k, _)| k == n).unwrap().1;
-	let (items, skipped) = extract_items(t("ItemSparse"), t("Item"), t("ItemEffect"), t("SpellEffect"));
+	let drop_season = crate::tables::ERA.in_family(&build);
+	let (items, skipped) = extract_items(t("ItemSparse"), t("Item"), t("ItemEffect"), t("SpellEffect"), drop_season);
 	if items.is_empty() {
 		return Err(format!("build {build}: no equippable items found (wrong tables?)"));
 	}
@@ -345,7 +360,7 @@ mod tests {
 			row(&[("SpellID", "500"), ("Effect", "6"), ("EffectAura", "124"), ("EffectBasePoints", "9"), ("EffectDieSides", "1"), ("EffectIndex", "2")]),
 			row(&[("SpellID", "500"), ("Effect", "6"), ("EffectAura", "85"), ("EffectBasePoints", "3"), ("EffectDieSides", "1"), ("EffectMiscValue_0", "0"), ("EffectIndex", "3")]),
 		];
-		let (items, skipped) = extract_items(&sparse, &item, &effect, &spell);
+		let (items, skipped) = extract_items(&sparse, &item, &effect, &spell, true);
 		let enc: Vec<String> = items.iter().map(encode).collect();
 		assert_eq!(enc, vec!["13 20 15 2 2 7 str3 dmin10 dmax20 speed2000 uniq1", "20 0 0 0 4 1 armor40 ap10 sp7 mpr4 cls16"]);
 		assert_eq!(skipped.into_iter().collect::<Vec<_>>(), vec![("name", 1), ("no-item-row", 1), ("season", 1), ("slot", 1)]);

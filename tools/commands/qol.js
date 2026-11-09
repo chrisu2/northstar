@@ -7,7 +7,7 @@
 // of every flight master (recognising a flight master's gossip without
 // reading its localized option text), and the NPC IDs of every reagent
 // vendor (a vendor whose subtitle names reagents; Nav/Nearby.lua's
-// `/polestar near reagents`). Writes addon/Polestar/QoL/Data.lua.
+// `/northstar near reagents`). Writes addon/Northstar/QoL/Data.lua.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -23,7 +23,7 @@ const MERGE_YARDS = 25; // two spawn points this close are one healer
 const usage = `usage: node tools/polestar.js qol build [--data <dir>] [--lua <file>]
 
   --data <dir>   data/forever (npcs.json, map-frames.json)
-  --lua <file>   output (default: addon/Polestar/QoL/Data.lua)`;
+  --lua <file>   output (default: addon/Northstar/QoL/Data.lua)`;
 
 const round = (v, d) => {
 	const k = 10 ** d;
@@ -123,7 +123,7 @@ module.exports = {
 		const npcs = JSON.parse(fs.readFileSync(path.join(dataDir, 'npcs.json'), 'utf8'));
 		const frames = JSON.parse(fs.readFileSync(path.join(dataDir, 'map-frames.json'), 'utf8'));
 		const data = buildQolData({ npcs, frames });
-		const out = path.resolve(values.lua || path.join(ROOT, 'addon', 'Polestar', 'QoL', 'Data.lua'));
+		const out = path.resolve(values.lua || path.join(ROOT, 'addon', 'Northstar', 'QoL', 'Data.lua'));
 		fs.mkdirSync(path.dirname(out), { recursive: true });
 		fs.writeFileSync(out, toLua(data));
 		console.log(`qol: ${data.healers.length} spirit healer(s), ${data.flightMasters.length} flight master(s), ${data.reagentVendors.length} reagent vendor(s) -> ${path.relative(ROOT, out)}`);

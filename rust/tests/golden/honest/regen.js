@@ -65,7 +65,7 @@ fs.writeFileSync(path.join(HERE, 'drop.json'), `${JSON.stringify({ lines: sorted
 
 for (const [name, filter] of CASES) {
 	const out = path.join(tmp, `${name}.json`);
-	execFileSync('node', [REF, PACK, filter, out, '--data', DATA], { env: { ...process.env, POLESTAR_HONEST_JS: JS }, stdio: 'inherit' });
+	execFileSync('node', [REF, PACK, filter, out, '--data', DATA], { env: { ...process.env, NORTHSTAR_HONEST_JS: JS }, stdio: 'inherit' });
 	const text = fs.readFileSync(out, 'utf8');
 	if (text.includes(tmp)) throw new Error(`${name}: the reference holds the temp path`);
 	fs.writeFileSync(path.join(HERE, `${name}.json`), text);

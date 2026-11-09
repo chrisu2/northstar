@@ -1,9 +1,9 @@
 //! `travel-parity <checkout> <js-dir> [--out DIR] [--grid DIR|none] [--recordings DIR] [--sources DIR]`: builds `travel build`'s files
 //! from a checkout (offline, the command's defaults) and compares each with the JS reference's in
-//! <js-dir> (travel.json, TravelData.lua, FlightPaths.lua, Polestar_Travel/*), as written by
+//! <js-dir> (travel.json, TravelData.lua, FlightPaths.lua, Northstar_Travel/*), as written by
 //! `node tools/polestar.js travel build --offline --json <js-dir>/travel.json --lua
 //! <js-dir>/TravelData.lua --flight-lua <js-dir>/FlightPaths.lua --travel-addon
-//! <js-dir>/Polestar_Travel`. --out also writes the Rust files there. Exit 1 on any difference.
+//! <js-dir>/Northstar_Travel`. --out also writes the Rust files there. Exit 1 on any difference.
 
 use std::path::PathBuf;
 use std::time::Instant;
@@ -63,10 +63,10 @@ fn run() -> Result<bool, String> {
 	let mut ok = true;
 	let mut names: Vec<(String, &str)> = out.files();
 	// A JS reference with a local addon the Rust build lacks.
-	let addon = js.join("Polestar_Travel");
+	let addon = js.join("Northstar_Travel");
 	if out.travel_addon.is_none() && addon.is_dir() {
 		for e in std::fs::read_dir(&addon).map_err(|e| e.to_string())?.flatten() {
-			names.push((format!("Polestar_Travel/{}", e.file_name().to_string_lossy()), ""));
+			names.push((format!("Northstar_Travel/{}", e.file_name().to_string_lossy()), ""));
 		}
 	}
 	for (name, text) in &names {

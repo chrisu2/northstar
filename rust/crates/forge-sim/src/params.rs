@@ -77,7 +77,7 @@ pub const PRIORS: &[(&str, f64)] = &[
 	// where it starts and go on from the graveyard the game resurrects at (eval DEATHSKIP_GAIN_SEC).
 	// deathskipSec: being killed, releasing and the Spirit Healer, an estimate (~30 s pulling mobs to
 	// die to, ~30 s the healer). deathskipLevel: the highest level a route deathskips at, Forever's
-	// last without resurrection sickness (Polestar's death helper, QoL/Death.lua: none through 10,
+	// last without resurrection sickness (Northstar's death helper, QoL/Death.lua: none through 10,
 	// then 600 s); above it each second of sickness costs sicknessSlow seconds (the debuff slows
 	// kills; walking, flights and talks lose nothing).
 	("deathskips", 0.0),

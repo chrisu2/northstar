@@ -1,10 +1,10 @@
 //! The route fixes: `data/route-fixes.json` in the checkout, read at run time (never built into
 //! the binary, so a prebuilt `forge` applies the checkout's fixes). `deliberate` holds v1's
 //! deliberate orders (player-report fixes every cut keeps), `overrides` the maintainer's include,
-//! skip, revert and pairs. `$POLESTAR_ROUTE_FIXES` names another file.
+//! skip, revert and pairs. `$NORTHSTAR_ROUTE_FIXES` names another file.
 //!
 //! A program loads the file once ([`load`], or [`set`] for a caller with no file system); every
-//! later [`get`] returns it. Without either, [`get`] looks for `$POLESTAR_ROUTE_FIXES`, then for
+//! later [`get`] returns it. Without either, [`get`] looks for `$NORTHSTAR_ROUTE_FIXES`, then for
 //! `data/route-fixes.json` in the folders above the current one.
 
 use std::path::{Path, PathBuf};
@@ -15,7 +15,7 @@ use serde_json::Value;
 /// The file's place in a checkout.
 pub const FILE: &str = "data/route-fixes.json";
 /// The environment variable that names another file.
-pub const ENV: &str = "POLESTAR_ROUTE_FIXES";
+pub const ENV: &str = "NORTHSTAR_ROUTE_FIXES";
 
 static DOC: RwLock<Option<(Arc<Value>, PathBuf)>> = RwLock::new(None);
 
@@ -41,7 +41,7 @@ pub fn set(doc: Value) {
 	*DOC.write().unwrap_or_else(|e| e.into_inner()) = Some((Arc::new(doc), PathBuf::from("(given)")));
 }
 
-/// The file a program uses when it names none: `$POLESTAR_ROUTE_FIXES`, else `<root>/data/route-fixes.json`
+/// The file a program uses when it names none: `$NORTHSTAR_ROUTE_FIXES`, else `<root>/data/route-fixes.json`
 /// for each of `roots` that has one, else the nearest `data/route-fixes.json` above the current folder.
 pub fn find(roots: &[&Path]) -> Option<PathBuf> {
 	if let Some(p) = std::env::var_os(ENV) {

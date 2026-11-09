@@ -1,8 +1,8 @@
-![Polestar: leveling guides for World of Warcraft: Forever](https://raw.githubusercontent.com/fitzforge/polestar/main/docs/curseforge/images/banner.png)
+![Northstar: leveling guides for World of Warcraft: Forever](https://raw.githubusercontent.com/fitzforge/polestar/main/docs/curseforge/images/banner.png)
 
 # Routes that make sense.
 
-**Polestar is a free, open-source guide addon for World of Warcraft: Forever.** Every race, 1 to 60, with a guide window that keeps up with you and an arrow that walks real paths. Every step is the one you'd pick yourself, with nothing pointless in between.
+**Northstar is a free, open-source guide addon for World of Warcraft: Forever.** Every race, 1 to 60, with a guide window that keeps up with you and an arrow that walks real paths. Every step is the one you'd pick yourself, with nothing pointless in between.
 
 **New in 0.3.0:** the leveling routes are rebuilt from the ground up, every guide has been rebuilt or reviewed for Forever, and the new [Polestar Client](https://polestar.guide/client) installs and updates everything for you.
 
@@ -24,7 +24,7 @@
 
 *   **Steps tick off when the game confirms them:** quests taken and handed in, kills, loot, places reached, trainers visited. Your place is worked out from your quest log, so it survives a lost save.
 *   **One person at a time.** In a quest hub the window shows who to talk to now ("Person 2 of 8") while the arrow points at them.
-*   **Your way through a route.** Skip a single quest (with undo), look ahead without losing your place, pin quests "along the way", answer group quests once, and let Polestar pick the chat option, goods, training or flight the step asks for.
+*   **Your way through a route.** Skip a single quest (with undo), look ahead without losing your place, pin quests "along the way", answer group quests once, and let Northstar pick the chat option, goods, training or flight the step asks for.
 *   **It looks after you.** A full quest log helper, items a later step needs kept safe from selling, a hearth helper, a trainer reminder that knows your route, and warnings before ambushes and linked pulls.
 *   **Class quests in their own tab,** with a heads-up when one opens at your level.
 *   **Tabs and gamepad.** Up to six guides open at once, and every window answers a gamepad.
@@ -41,7 +41,7 @@
 
 ## Every guide in one place
 
-![The Polestar hub on its Guides section: the guides by category, with a leveling guide's zone, steps and quests](https://raw.githubusercontent.com/fitzforge/polestar/main/docs/assets/screenshots/hub.webp)
+![The Northstar hub on its Guides section: the guides by category, with a leveling guide's zone, steps and quests](https://raw.githubusercontent.com/fitzforge/polestar/main/docs/assets/screenshots/hub.webp)
 
 *   **Leveling** for every race and both factions, 1 to 60.
 *   **Class quests** for every class: spells, pets, totems, forms, class items and class mounts.
@@ -71,7 +71,7 @@
 
 ## Your look
 
-Skins (Polestar's own, Halo, Hearth, WoW Forever, Blizzard and Classic), colour schemes with your own accent or class colour, standard, compact or transparent windows, text size, and EllesmereUI's accent and font when it's installed.
+Skins (Northstar's own, Halo, Hearth, WoW Forever, Blizzard and Classic), colour schemes with your own accent or class colour, standard, compact or transparent windows, text size, and EllesmereUI's accent and font when it's installed.
 
 **Every language:** English, German, French, Spanish (Spain and Latin America), Brazilian Portuguese, Russian, Korean and Chinese (Simplified and Traditional), with every NPC, place, item and quest named as your game names it.
 
@@ -81,45 +81,45 @@ Skins (Polestar's own, Halo, Hearth, WoW Forever, Blizzard and Classic), colour 
 
 ![The Polestar Client: installed community guides with their authors and versions, and an Update button](https://raw.githubusercontent.com/fitzforge/polestar/main/docs/assets/screenshots/client.webp)
 
-![The guide library on polestar.guide: every guide that ships inside Polestar, searchable](https://raw.githubusercontent.com/fitzforge/polestar/main/docs/assets/screenshots/site-library.webp)
+![The guide library on polestar.guide: every guide that ships inside Northstar, searchable](https://raw.githubusercontent.com/fitzforge/polestar/main/docs/assets/screenshots/site-library.webp)
 
-*   **[Polestar Client](https://polestar.guide/client)** is a small app for Windows, macOS and Linux that finds WoW: Forever, installs and updates Polestar for you, and installs community guides in one click.
+*   **[Polestar Client](https://polestar.guide/client)** is a small app for Windows, macOS and Linux that finds WoW: Forever, installs and updates Northstar for you, and installs community guides in one click.
 *   **[polestar.guide](https://polestar.guide)** has every guide readable step by step, the community guides, and the docs.
-*   **Help improve the routes:** the optional Polestar Recorder makes small, anonymous recordings, sent only with your consent through the Client.
+*   **Help improve the routes:** the optional Northstar Recorder makes small, anonymous recordings, sent only with your consent through the Client.
 
 ## Install
 
-**With Polestar Client or the CurseForge app:** install Polestar, then restart the game completely.
+**With Polestar Client or the CurseForge app:** install Northstar, then restart the game completely.
 
-**By hand:** download the zip from the Files tab and unzip it into `World of Warcraft/_forever_/Interface/AddOns/`, so the Polestar folders sit directly inside it. Restart the game completely (a `/reload` doesn't load new addons). To update, delete the old Polestar folders first.
+**By hand:** download the zip from the Files tab and unzip it into `World of Warcraft/_forever_/Interface/AddOns/`, so the Northstar folders sit directly inside it. Restart the game completely (a `/reload` doesn't load new addons). To update, delete the old Northstar folders first.
 
-**Coming from 0.2.6?** Delete the old `Polestar_Guides_<language>` and `Polestar_Names_<language>` folders; Polestar reminds you once.
+**Coming from 0.2.6?** Delete the old `Northstar_Guides_<language>` and `Northstar_Names_<language>` folders; Northstar reminds you once.
 
 ## Getting started
 
-*   A short **welcome** opens on each new character with the guide Polestar suggests (`/polestar welcome` shows it again).
-*   **`/polestar guides`** opens the hub, **`/polestar`** shows the guide window, **`/polestar options`** holds every setting, **`/polestar help`** lists every command.
+*   A short **welcome** opens on each new character with the guide Northstar suggests (`/northstar welcome` shows it again).
+*   **`/northstar guides`** opens the hub, **`/northstar`** shows the guide window, **`/northstar options`** holds every setting, **`/northstar help`** lists every command.
 
 ## Beta
 
-Polestar is in beta and grows with your reports. A step in the wrong order, or a quest that isn't where the guide says? Tell us on the [Polestar Discord](https://discord.gg/vMbee6F2e9) or [open an issue on GitHub](https://github.com/fitzforge/polestar/issues), with the guide, the step and what you saw. Every report becomes a fix the next build keeps.
+Northstar is in beta and grows with your reports. A step in the wrong order, or a quest that isn't where the guide says? Tell us on the [Polestar Discord](https://discord.gg/vMbee6F2e9) or [open an issue on GitHub](https://github.com/fitzforge/polestar/issues), with the guide, the step and what you saw. Every report becomes a fix the next build keeps.
 
 ***
 
 ## Links
 
-*   **Discord:** [Polestar | Leveling Guides](https://discord.gg/vMbee6F2e9)
+*   **Discord:** [Northstar | Leveling Guides](https://discord.gg/vMbee6F2e9)
 *   **Website:** [polestar.guide](https://polestar.guide)
 *   **Source code:** [github.com/fitzforge/polestar](https://github.com/fitzforge/polestar)
 *   **Changelog:** [what's new](https://github.com/fitzforge/polestar/blob/main/CHANGELOG.md)
 *   **Write your own guides:** [community guides explained](https://github.com/fitzforge/polestar/blob/main/docs/GUIDE_PACKS.md)
 
-## Support Polestar
+## Support Northstar
 
-Polestar is free and stays free, with no ads and nothing locked. If it saves you some hours on the way to 60, you can [buy me a coffee on Ko-fi](https://ko-fi.com/0xfitz). Reports, guides and translations help just as much.
+Northstar is free and stays free, with no ads and nothing locked. If it saves you some hours on the way to 60, you can [buy me a coffee on Ko-fi](https://ko-fi.com/0xfitz). Reports, guides and translations help just as much.
 
 ## Licence and credits
 
-Free and open source under the [GNU GPL, version 3](https://github.com/fitzforge/polestar/blob/main/LICENSE). The walking paths use Leffe's navigation maps and Polestar's own, with a router that started from Cillian Berragan's [Shortest Path Forever](https://github.com/cjber/shortest-path-forever), used with his kind permission. Every data source is credited with its licence in [THIRD\_PARTY.md](https://github.com/fitzforge/polestar/blob/main/THIRD_PARTY.md). No game art ships with Polestar; the screenshots show the game (© Blizzard Entertainment).
+Free and open source under the [GNU GPL, version 3](https://github.com/fitzforge/polestar/blob/main/LICENSE). The walking paths use Leffe's navigation maps and Northstar's own, with a router that started from Cillian Berragan's [Shortest Path Forever](https://github.com/cjber/shortest-path-forever), used with his kind permission. Every data source is credited with its licence in [THIRD\_PARTY.md](https://github.com/fitzforge/polestar/blob/main/THIRD_PARTY.md). No game art ships with Northstar; the screenshots show the game (© Blizzard Entertainment).
 
-_World of Warcraft is a trademark of Blizzard Entertainment. Polestar is a community project, not affiliated with or endorsed by Blizzard._
+_World of Warcraft is a trademark of Blizzard Entertainment. Northstar is a community project, not affiliated with or endorsed by Blizzard._

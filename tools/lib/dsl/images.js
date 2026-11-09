@@ -123,7 +123,7 @@ function checkImages(guides, packDir, diag) {
 			hidden(step, '_imageFile', { abs, rel });
 			const size = imageSize(abs);
 			if (!size) {
-				if (step.image.w === undefined) diag.warn(file, spec.line, `image ${rel} is not a TGA or BLP picture Polestar can read the size of`, 'save it as a .tga file, or give its size: `image <path> <width>x<height>`');
+				if (step.image.w === undefined) diag.warn(file, spec.line, `image ${rel} is not a TGA or BLP picture Northstar can read the size of`, 'save it as a .tga file, or give its size: `image <path> <width>x<height>`');
 				continue;
 			}
 			if (!powerOfTwo(size.w) || !powerOfTwo(size.h)) {

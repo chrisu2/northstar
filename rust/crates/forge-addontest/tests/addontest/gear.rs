@@ -1,4 +1,4 @@
-//! Polestar.Gear (addon/Polestar/Gear): item stats from ItemDB and the client, leveling weights, scoring and
+//! Northstar.Gear (addon/Northstar/Gear): item stats from ItemDB and the client, leveling weights, scoring and
 //! comparison across slot types, spec detection, the tooltip line (also on quest reward choices) and the
 //! options page.
 
@@ -26,6 +26,11 @@ const FIXTURE: &str = r#"{
 	[9033] = "13 22 17 2 2 7 agi3 dmin12 dmax22 speed1800",
 	[9040] = "16 20 15 2 4 1 sta3",
 	[9050] = "7 76 60 4 4 1 sta16 int21 spi21 armor101 heal46 mpr7 cls16",
+	[9060] = "17 25 0 3 2 10 sta14 spFire34 spShadow34 dmin36 dmax55 speed2900 cls256",
+	[9061] = "17 33 28 3 2 10 sta14 sp36 heal36 dmin59 dmax90 speed3600",
+	[9062] = "16 30 25 2 4 1 spFire10 spFrost10",
+	[9063] = "16 30 25 2 4 1 sp10",
+	[9064] = "16 30 25 2 4 1 spShadow20",
 }"#;
 
 // Troll by default: a race with no gear trait (racials have their own tests).
@@ -54,9 +59,9 @@ fn run(script: &str, o: Opts) -> Vec<Value> {
 		before: format!(
 			"w = stub.world; g = stub.gear\nw.class, w.className, w.classID, w.level = \"{cls}\", \"{class_name}\", {class_id}, {level}\nw.race, w.raceName, w.raceID, w.faction = \"{race}\", \"{race}\", {race_id}, \"{faction}\"\n{before}"
 		),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Gear/Gear.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Gear/Gear.xml"])],
 		login,
-		script: ["G = Polestar.Gear\nPolestar.ItemDB.Register({ schema = 1, build = \"test\" }, ", FIXTURE, ")\n", script].concat(),
+		script: ["G = Northstar.Gear\nNorthstar.ItemDB.Register({ schema = 1, build = \"test\" }, ", FIXTURE, ")\n", script].concat(),
 		..Default::default()
 	})
 }
@@ -69,7 +74,7 @@ fn r1(v: &Value) -> f64 {
 fn itemdb_parses_entries_header_fields_stat_tokens_weapon_dps_class_mask_unique_mp5_alias() {
 	let out = run(
 		r#"
-		emit(Polestar.ItemDB.Get(9032)); emit(Polestar.ItemDB.Get(9050)); emit(Polestar.ItemDB.Get(9013)); emit(Polestar.ItemDB.Get(1) == nil)
+		emit(Northstar.ItemDB.Get(9032)); emit(Northstar.ItemDB.Get(9050)); emit(Northstar.ItemDB.Get(9013)); emit(Northstar.ItemDB.Get(1) == nil)
 	"#,
 		Opts::default(),
 	);
@@ -218,7 +223,7 @@ fn a_two_hander_is_weighed_against_main_hand_off_hand_and_a_one_hander_against_a
 fn dual_wielders_try_a_one_hander_in_the_off_hand_at_half_weapon_dps() {
 	let out = run(
 		r#"
-		Polestar.Set("gear.spec.WARRIOR", "fury")
+		Northstar.Set("gear.spec.WARRIOR", "fury")
 		g.equip(16, "item:9030")
 		emit(G.CompareToEquipped("item:9033"))
 		w.level = 12; w.setLevel(12)
@@ -297,9 +302,9 @@ fn spec_automatic_from_the_talent_spread_the_chosen_primary_tree_the_class_defau
 		g.setSpecs({ { "Arms", 5 }, { "Fury", 21 }, { "Protection", 0 } })
 		g.primary = 1
 		emit({ G.GetSpec() })
-		Polestar.Set("gear.spec.WARRIOR", "protection")
+		Northstar.Set("gear.spec.WARRIOR", "protection")
 		emit({ G.GetSpec() })
-		Polestar.Set("gear.spec.WARRIOR", "auto")
+		Northstar.Set("gear.spec.WARRIOR", "auto")
 		emit({ G.GetSpec() })
 	"#,
 		Opts::default(),
@@ -309,6 +314,101 @@ fn spec_automatic_from_the_talent_spread_the_chosen_primary_tree_the_class_defau
 	assert_eq!(out[2], json!(["fury", "Fury", "talents"]));
 	assert_eq!(out[3], json!(["protection", "Protection (tank)", "setting"]));
 	assert_eq!(out[4], json!(["fury", "Fury", "talents"]));
+}
+
+fn druid(level: i32) -> Opts {
+	Opts { cls: "DRUID", class_name: "Druid", class_id: 11, level, ..Default::default() }
+}
+
+// Forever keeps talents in a C_Traits tree; its talent-tab API (GetSpecializationInfo) gives no points, so a
+// Restoration Druid fell to the class default, Feral. The columns' points come from the tree's groups, the way
+// Forever's talent frame heads them.
+#[test]
+fn spec_automatic_on_forever_reads_the_talent_columns_points_a_restoration_druid_is_restoration_in_any_language() {
+	let out = run(
+		r#"
+		g.setSpecs({ { "Balance", 0 }, { "Feral Combat", 0 }, { "Restoration", 0 } })
+		g.setColumns({ { "Balance", 0 }, { "Feral Combat", 0 }, { "Restoration", 0 } })
+		emit({ G.GetSpec() })
+		g.setColumns({ { "Balance", 0 }, { "Feral Combat", 0 }, { "Restoration", 11 } })
+		emit({ G.GetSpec() })
+		g.setColumns({ { "Gleichgewicht", 2 }, { "Wilder Kampf", 0 }, { "Wiederherstellung", 9 } })
+		emit({ G.GetSpec() })
+		g.setColumns({ { "Balance", 0 }, { "Feral Combat", 8 }, { "Restoration", 5 } })
+		emit({ G.GetSpec() })
+		g.setColumns(nil)
+		g.setSpecs({ { "Balance", 0 }, { "Feral Combat", 0 }, { "Restoration", 12 } })
+		emit({ G.GetSpec() })
+	"#,
+		druid(20),
+	);
+	assert_eq!(out[0], json!(["feral", "Feral", "default"]), "no points yet: the levelling default");
+	assert_eq!(out[1], json!(["restoration", "Restoration (healer)", "talents"]), "most points in Restoration");
+	assert_eq!(out[2], json!(["restoration", "Restoration (healer)", "talents"]), "a German client: by column");
+	assert_eq!(out[3], json!(["feral", "Feral", "talents"]), "a hybrid with more Feral points");
+	assert_eq!(out[4], json!(["restoration", "Restoration (healer)", "talents"]), "no trait tree: the talent tabs");
+}
+
+// A player set Stat weights to Restoration and saw Feral come back. The chosen spec holds over a reload, a level,
+// talent points in Feral and Cat Form, on every surface: the spec, the weights, the tooltip line and reward picks.
+#[test]
+fn a_chosen_spec_holds_over_reload_level_up_talent_points_and_cat_form_on_every_gear_surface() {
+	let out = emitted(&RunAddon {
+		stubs: vec!["stub_world.lua", "stub_gear.lua"],
+		before: [
+			"w = stub.world; g = stub.gear\n",
+			"w.class, w.className, w.classID, w.level = \"DRUID\", \"Druid\", 11, 20\n",
+			"w.race, w.raceName, w.raceID, w.faction = \"Troll\", \"Troll\", 8, \"Horde\"\n",
+			"g.columns = { { \"Balance\", 0 }, { \"Feral Combat\", 11 }, { \"Restoration\", 0 } }\n",
+		]
+		.concat(),
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Gear/Gear.xml"])],
+		saved: vec![("Northstar".into(), "NorthstarDB = { schema = 1, settings = { gear = { spec = { DRUID = \"restoration\" } } } }".into())],
+		login: true,
+		script: [
+			"G = Northstar.Gear\nNorthstar.ItemDB.Register({ schema = 1, build = \"test\" }, ",
+			FIXTURE,
+			r#")
+		g.defineItem("item:8001", { equipLoc = "INVTYPE_CHEST", classID = 4, subclassID = 2, minLevel = 15,
+			stats = { ITEM_MOD_AGILITY_SHORT = 8, ITEM_MOD_STRENGTH_SHORT = 6, ITEM_MOD_STAMINA_SHORT = 4, RESISTANCE0_NAME = 80 } })
+		g.defineItem("item:8002", { equipLoc = "INVTYPE_CHEST", classID = 4, subclassID = 2, minLevel = 15,
+			stats = { ITEM_MOD_INTELLECT_SHORT = 8, ITEM_MOD_SPIRIT_SHORT = 6, ITEM_MOD_STAMINA_SHORT = 4, RESISTANCE0_NAME = 80 } })
+		g.defineItem("item:8003", { equipLoc = "INVTYPE_CHEST", classID = 4, subclassID = 2, minLevel = 1,
+			stats = { ITEM_MOD_STAMINA_SHORT = 1, RESISTANCE0_NAME = 40 } })
+		g.equip(5, "item:8003")
+		local function surfaces(when)
+			local key, label, source = G.GetSpec()
+			local _, pick = G.RankChoices({ "item:8001", "item:8002" })
+			local line = g.showTooltip(GameTooltip, "item:8002")[1]
+			emit({ when = when, key = key, label = label, source = source, heal = G.GetWeights().heal or false,
+				pick = pick, line = line, saved = NorthstarDB.settings.gear.spec.DRUID })
+		end
+		surfaces("login")
+		w.setLevel(21)
+		surfaces("level")
+		g.setColumns({ { "Balance", 0 }, { "Feral Combat", 12 }, { "Restoration", 0 } })
+		g.setSpecs({ { "Balance", 0 }, { "Feral Combat", 12 }, { "Restoration", 0 } })
+		surfaces("talent")
+		stub.fire("UPDATE_SHAPESHIFT_FORM")
+		stub.fire("ACTIVE_TALENT_GROUP_CHANGED")
+		surfaces("cat form")
+		Northstar.Set("gear.spec.DRUID", "auto")
+		surfaces("automatic")
+	"#,
+		]
+		.concat(),
+	});
+	for o in &out[..4] {
+		let when = text(&o["when"]);
+		assert_eq!(o["key"], "restoration", "{when}: {o}");
+		assert_eq!(o["source"], "setting", "{when}: {o}");
+		assert_eq!(o["saved"], "restoration", "{when}: the setting is still saved");
+		assert!(o["heal"].as_f64().unwrap() > 0.0, "{when}: Restoration weights");
+		assert_eq!(o["pick"], 2, "{when}: the Intellect/Spirit chest over the Agility one");
+		assert!(is_match(text(&o["line"]), r"^Northstar · Restoration \(healer\) \| "), "{when}: {}", o["line"]);
+	}
+	assert_eq!(out[4]["key"], "feral", "Automatic follows the Feral points again");
+	assert_eq!(out[4]["pick"], 1);
 }
 
 #[test]
@@ -324,9 +424,9 @@ fn tooltip_line_upgrade_and_downgrade_percentages_empty_slot_later_level_skipped
 		emit(g.showTooltip(GameTooltip, "item:9002"))
 		g.secret["item:9002"] = nil
 		emit(g.showTooltip(ShoppingTooltip1, "item:9002"))
-		Polestar.Set("gear.tooltip", false)
+		Northstar.Set("gear.tooltip", false)
 		emit(g.showTooltip(GameTooltip, "item:9002"))
-		Polestar.Set("gear.tooltip", true)
+		Northstar.Set("gear.tooltip", true)
 		g.showTooltip(GameTooltip, "item:9002")
 		local up = GameTooltip.colors[1]
 		g.showTooltip(GameTooltip, "item:9004")
@@ -335,10 +435,10 @@ fn tooltip_line_upgrade_and_downgrade_percentages_empty_slot_later_level_skipped
 		Opts::default(),
 	);
 	// The slot it replaces follows the gain; an empty slot needs no name.
-	assert_eq!(out[0], json!(["Polestar · Arms | +62% upgrade · Head"]));
-	assert_eq!(out[1], json!(["Polestar · Arms | -88% downgrade · Head"]));
-	assert_eq!(out[2], json!(["Polestar · Arms | upgrade (empty slot)"]));
-	assert_eq!(out[3], json!(["Polestar · Arms | +89% upgrade at level 40 · Head"]));
+	assert_eq!(out[0], json!(["Northstar · Arms | +62% upgrade · Head"]));
+	assert_eq!(out[1], json!(["Northstar · Arms | -88% downgrade · Head"]));
+	assert_eq!(out[2], json!(["Northstar · Arms | upgrade (empty slot)"]));
+	assert_eq!(out[3], json!(["Northstar · Arms | +89% upgrade at level 40 · Head"]));
 	assert_eq!(out[4], json!({}));
 	assert_eq!(out[5], json!({}));
 	assert_eq!(out[6], json!({}));
@@ -352,7 +452,7 @@ fn tooltip_line_upgrade_and_downgrade_percentages_empty_slot_later_level_skipped
 fn tooltip_line_the_slot_is_the_client_s_own_word_backslot_chestslot_apart_from_the_back_button_and_the_boss_chest() {
 	let out = run(
 		r#"
-		Polestar.ItemDB.Register(nil, { [9041] = "16 25 20 2 4 1 sta8", [9060] = "5 20 15 2 4 3 str5 sta3 armor200", [9061] = "5 25 20 2 4 3 str10 sta4 armor260" })
+		Northstar.ItemDB.Register(nil, { [9041] = "16 25 20 2 4 1 sta8", [9060] = "5 20 15 2 4 3 str5 sta3 armor200", [9061] = "5 25 20 2 4 3 str10 sta4 armor260" })
 		g.equip(15, "item:9040")
 		g.equip(5, "item:9060")
 		emit(g.showTooltip(GameTooltip, "item:9041"))
@@ -360,8 +460,8 @@ fn tooltip_line_the_slot_is_the_client_s_own_word_backslot_chestslot_apart_from_
 	"#,
 		Opts { before: format!("{}\nBACKSLOT, CHESTSLOT = \"Espalda\", \"Pecho\"", fake_locale("itIT", &[("Back", "Atrás"), ("Chest", "Cofre"), ("boss: Chest", "Arca")])), ..Default::default() },
 	);
-	assert!(is_match(text(&out[0][0]), r"^Polestar · Arms \| .*upgrade · Espalda$"));
-	assert!(is_match(text(&out[1][0]), r"^Polestar · Arms \| .*upgrade · Pecho$"));
+	assert!(is_match(text(&out[0][0]), r"^Northstar · Arms \| .*upgrade · Espalda$"));
+	assert!(is_match(text(&out[1][0]), r"^Northstar · Arms \| .*upgrade · Pecho$"));
 }
 
 #[test]
@@ -374,14 +474,14 @@ fn quest_reward_tooltips_hovering_a_choice_setquestitem_setquestlogitem_shows_th
 		emit(GameTooltip:SetQuestLogItem("choice", 2))
 		g.rewards({ "item:9004", "item:9002" }, { uncached = true })
 		emit(GameTooltip:SetQuestItem("choice", 2))
-		Polestar.Set("gear.tooltip", false)
+		Northstar.Set("gear.tooltip", false)
 		emit(GameTooltip:SetQuestItem("choice", 2))
 	"#,
 		Opts::default(),
 	);
-	assert_eq!(out[0], json!([["Polestar · Arms | -88% downgrade · Head"], ["Polestar · Arms | +62% upgrade · Head"]]));
-	assert_eq!(out[1], json!(["Polestar · Arms | +62% upgrade · Head"]));
-	assert_eq!(out[2], json!(["Polestar · Arms | +62% upgrade · Head"]));
+	assert_eq!(out[0], json!([["Northstar · Arms | -88% downgrade · Head"], ["Northstar · Arms | +62% upgrade · Head"]]));
+	assert_eq!(out[1], json!(["Northstar · Arms | +62% upgrade · Head"]));
+	assert_eq!(out[2], json!(["Northstar · Arms | +62% upgrade · Head"]));
 	assert_eq!(out[3], json!({}));
 }
 
@@ -390,7 +490,7 @@ fn options_the_gear_advice_on_questing_with_the_class_spec_dropdown_registered_o
 	let out = run(
 		r#"
 		local seen = {}
-		Polestar.RegisterOptions = function(def) seen[#seen + 1] = def end
+		Northstar.RegisterOptions = function(def) seen[#seen + 1] = def end
 		stub.login()
 		local out = {}
 		for _, def in ipairs(seen) do
@@ -427,7 +527,7 @@ fn options_the_gear_advice_on_questing_with_the_class_spec_dropdown_registered_o
 fn gains_read_in_whole_percents_and_in_words_past_doubling() {
 	let out = run(
 		r#"
-		local G = Polestar.Gear
+		local G = Northstar.Gear
 		local function t(p) local s, big = G.GainText(p); return { s, big } end
 		emit({ t(62.14), t(-88.4), t(0.2), t(-0.3), t(99.4), t(100), t(625) })"#,
 		Opts::default(),
@@ -443,7 +543,7 @@ fn staff(id: i32, dps: f64) -> String {
 fn specs_with_no_melee_weapon_dps_weight_get_a_small_one_a_harder_hitting_staff_counts_for_a_druid_and_a_priest_a_warrior_keeps_its_own() {
 	let probe = |cls: &'static str, class_name: &'static str, class_id: i32, spec: &str| {
 		let script = format!(
-			"\n\t\t{}\n\t\t{}\n\t\tg.equip(16, \"item:7001\")\n\t\tPolestar.Set(\"gear.spec.{cls}\", \"{spec}\")\n\t\tlocal up, delta, pct = G.IsUpgrade(\"item:7002\")\n\t\temit({{ up = up, delta = delta, w = G.GetWeights().dps }})\n\t",
+			"\n\t\t{}\n\t\t{}\n\t\tg.equip(16, \"item:7001\")\n\t\tNorthstar.Set(\"gear.spec.{cls}\", \"{spec}\")\n\t\tlocal up, delta, pct = G.IsUpgrade(\"item:7002\")\n\t\temit({{ up = up, delta = delta, w = G.GetWeights().dps }})\n\t",
 			staff(7001, 1.2),
 			staff(7002, 2.6)
 		);
@@ -494,7 +594,7 @@ fn the_melee_dps_weight_is_only_a_tiebreaker_a_stat_on_the_item_outweighs_any_we
 		g.defineItem("item:7202", { equipLoc = "INVTYPE_2HWEAPON", classID = 2, subclassID = 10, minLevel = 1, stats = { ITEM_MOD_DAMAGE_PER_SECOND_SHORT = 2, ITEM_MOD_INTELLECT_SHORT = 1 } })
 		g.defineItem("item:7203", { equipLoc = "INVTYPE_2HWEAPON", classID = 2, subclassID = 10, minLevel = 1, stats = { ITEM_MOD_DAMAGE_PER_SECOND_SHORT = 2.6 } })
 		g.defineItem("item:7204", { equipLoc = "INVTYPE_2HWEAPON", classID = 2, subclassID = 10, minLevel = 1, stats = { ITEM_MOD_DAMAGE_PER_SECOND_SHORT = 1.3 } })
-		Polestar.Set("gear.spec.PRIEST", "shadow")
+		Northstar.Set("gear.spec.PRIEST", "shadow")
 		g.equip(16, "item:7201")
 		local intWins = { G.IsUpgrade("item:7202") }
 		g.equip(16, "item:7204")
@@ -512,7 +612,7 @@ fn the_melee_dps_weight_is_only_a_tiebreaker_a_stat_on_the_item_outweighs_any_we
 fn feral_weighs_weapon_dps_at_14_attack_power_before_and_after_bear_form_balance_keeps_the_tiebreaker() {
 	// In Forever, Cat, Bear and Dire Bear Form hit with the equipped weapon's DPS (#731).
 	let w = |spec: &str, level: i32| {
-		let script = format!("\n\t\tPolestar.Set(\"gear.spec.DRUID\", \"{spec}\")\n\t\tlocal w = G.GetWeights()\n\t\temit({{ dps = w.dps or false, ap = w.ap or false }})\n\t");
+		let script = format!("\n\t\tNorthstar.Set(\"gear.spec.DRUID\", \"{spec}\")\n\t\tlocal w = G.GetWeights()\n\t\temit({{ dps = w.dps or false, ap = w.ap or false }})\n\t");
 		run(&script, Opts { cls: "DRUID", class_name: "Druid", class_id: 11, level, ..Default::default() }).remove(0)
 	};
 	assert_eq!(w("feral", 9)["dps"], 7, "before any form the Druid fights with the weapon");
@@ -535,7 +635,7 @@ fn a_feral_druid_takes_the_harder_hitting_mace_over_a_caster_staff_with_more_sta
 		g.defineItem("item:7202", { equipLoc = "INVTYPE_2HWEAPON", classID = 2, subclassID = 5, minLevel = 1,
 			stats = { ITEM_MOD_DAMAGE_PER_SECOND_SHORT = 20.4 } })
 		g.equip(16, "item:7201")
-		Polestar.Set("gear.spec.DRUID", "feral")
+		Northstar.Set("gear.spec.DRUID", "feral")
 		emit({ up = G.IsUpgrade("item:7202") })
 	"#;
 	let out = run(script, Opts { cls: "DRUID", class_name: "Druid", class_id: 11, level: 20, ..Default::default() }).remove(0);
@@ -545,9 +645,9 @@ fn a_feral_druid_takes_the_harder_hitting_mace_over_a_caster_staff_with_more_sta
 // #833: an Orc Hunter at 13 with Rusty Hatchet (2.9 DPS, no stats) was told Jagged Dagger (6.0 DPS, +1 Strength)
 // is a big downgrade. Axe Specialization's 1% crit was worth the Hunter's whole crit weight (10, the bow's) on the
 // axe, against 0.5 per melee DPS: the axe scored 11.45, the dagger 3.1. A melee weapon's racial crit now counts
-// by the spec's melee share (0.5 of 6.5); an Orc Warrior's axe keeps it whole. The items are Polestar_ItemDB's.
+// by the spec's melee share (0.5 of 6.5); an Orc Warrior's axe keeps it whole. The items are Northstar_ItemDB's.
 const AXE_AND_DAGGER: &str = r#"
-		Polestar.ItemDB.Register(nil, {
+		Northstar.ItemDB.Register(nil, {
 			[1416] = "21 9 4 0 2 0 dmin4 dmax8 speed2100",
 			[4947] = "13 11 0 2 2 15 str1 dmin6 dmax12 speed1500",
 		})
@@ -568,7 +668,7 @@ fn an_orc_hunters_axe_specialization_counts_by_how_much_a_hunter_fights_in_melee
 	let hunter = run(AXE_AND_DAGGER, orc("HUNTER", "Hunter", 3));
 	// 2.9 x 0.5 + 10 x 1% x (0.5 / 6.5); 6.0 x 0.5 + 0.1.
 	assert_eq!(hunter[0], json!({ "axe": 2.22, "dagger": 3.1 }));
-	assert_eq!(hunter[1], json!(["Polestar · Beast Mastery | +40% upgrade · Main Hand"]));
+	assert_eq!(hunter[1], json!(["Northstar · Beast Mastery | +40% upgrade · Main Hand"]));
 	// A Warrior fights with the axe: Axe Specialization counts whole (the dagger's double DPS still wins).
 	let warrior = run(AXE_AND_DAGGER, orc("WARRIOR", "Warrior", 1));
 	let (axe, dagger) = (warrior[0]["axe"].as_f64().unwrap(), warrior[0]["dagger"].as_f64().unwrap());
@@ -576,4 +676,81 @@ fn an_orc_hunters_axe_specialization_counts_by_how_much_a_hunter_fights_in_melee
 	let (dps_w, crit_w) = (w[0]["dps"].as_f64().unwrap(), w[0]["crit"].as_f64().unwrap());
 	assert!((axe - (2.9 * dps_w + crit_w)).abs() < 0.01, "the Warrior's axe keeps the whole crit: {axe} vs {dps_w} {crit_w}");
 	assert!(dagger > axe, "{dagger} > {axe}");
+}
+
+// #1304: an Orc Rogue at 2 with the Worn Dagger was told to equip a Skinning Knife (0.3 DPS more). The client lists
+// it as a Miscellaneous weapon (subclass 14), like the Mining Pick, Blacksmith Hammer, Arclight Spanner and Frying
+// Pan: profession tools and novelties, never a weapon pick. No upgrade, no score, no gear line on its tooltip.
+#[test]
+fn a_miscellaneous_weapon_is_a_profession_tool_never_an_upgrade_even_with_more_dps() {
+	let out = run(
+		r#"
+		Northstar.ItemDB.Register(nil, {
+			[2092] = "13 2 1 1 2 15 dmin1 dmax3 speed1600",
+			[7005] = "13 4 1 1 2 14 dmin2 dmax4 speed1600",
+		})
+		g.defineItem("item:2092", { equipLoc = "INVTYPE_WEAPON", classID = 2, subclassID = 15, minLevel = 1 })
+		g.defineItem("item:7005", { equipLoc = "INVTYPE_WEAPON", classID = 2, subclassID = 14, minLevel = 1 })
+		g.equip(16, "item:2092")
+		local r = G.CompareToEquipped("item:7005")
+		emit({ up = G.IsUpgrade("item:7005"), usable = r.usable, reason = r.reason, scored = G.ScoreItem("item:7005") ~= nil })
+		emit(g.showTooltip(GameTooltip, "item:7005"))
+	"#,
+		Opts { cls: "ROGUE", class_name: "Rogue", class_id: 4, level: 2, race: "Orc", race_id: 2, ..Default::default() },
+	);
+	assert_eq!(out[0], json!({ "up": false, "usable": false, "scored": false }));
+	assert!(!out[1].to_string().contains("Northstar"), "no gear line on a tool's tooltip: {}", out[1]);
+}
+
+// #1324: Staff of Soran'ruk (+34 Fire, +34 Shadow) against Spine of the Devourer (+36 Spell Power).
+#[test]
+fn bonus_damage_to_several_schools_is_worth_no_more_than_its_largest_bonus_as_spell_power_soranruk_is_no_upgrade_over_spine_of_the_devourer() {
+	let out = run(
+		r#"
+		g.equip(16, "item:9061")
+		local res = {}
+		for _, spec in ipairs({ "affliction", "demonology", "destruction" }) do
+			Northstar.Set("gear.spec.WARLOCK", spec)
+			local up, _, pct = G.IsUpgrade("item:9060")
+			res[spec] = { up = up, pct = pct }
+		end
+		emit(res)
+	"#,
+		Opts { cls: "WARLOCK", class_name: "Warlock", class_id: 9, level: 30, ..Default::default() },
+	);
+	for spec in ["affliction", "demonology", "destruction"] {
+		let r = &out[0][spec];
+		assert_eq!(r["up"], false, "{spec}: {r}");
+		assert!(r["pct"].as_f64().unwrap() < 0.0, "{spec}: {r}");
+	}
+}
+
+#[test]
+fn a_fire_mage_values_fire_and_frost_damage_together_no_higher_than_the_same_spell_power() {
+	let out = run(
+		r#"
+		Northstar.Set("gear.spec.MAGE", "fire")
+		emit({ G.ScoreItem("item:9062"), G.ScoreItem("item:9063") })
+	"#,
+		Opts { cls: "MAGE", class_name: "Mage", class_id: 8, level: 30, ..Default::default() },
+	);
+	let (schools, sp) = (out[0][0].as_f64().unwrap(), out[0][1].as_f64().unwrap());
+	assert!(schools <= sp + 1e-9, "Fire 10 + Frost 10 scores {schools}, Spell Power 10 {sp}");
+}
+
+#[test]
+fn a_custom_scale_with_school_weights_only_keeps_their_value_and_two_schools_count_as_the_larger_bonus() {
+	let out = run(
+		r#"
+		local _, one = G.Scales.Import('( Pawn: v1: "Shadow": ShadowSpellDamage=1 )', "WARLOCK")
+		local _, two = G.Scales.Import('( Pawn: v1: "Both": ShadowSpellDamage=1, FireSpellDamage=1 )', "WARLOCK")
+		Northstar.Set("gear.spec.WARLOCK", "custom:" .. one.scale.id)
+		emit({ G.ScoreItem("item:9064"), G.ScoreItem("item:9060") })
+		Northstar.Set("gear.spec.WARLOCK", "custom:" .. two.scale.id)
+		emit({ G.ScoreItem("item:9064"), G.ScoreItem("item:9060") })
+	"#,
+		Opts { cls: "WARLOCK", class_name: "Warlock", class_id: 9, level: 30, ..Default::default() },
+	);
+	assert_eq!(out[0], json!([20, 34]), "Shadow only: +20 Shadow is 20, +34 Fire +34 Shadow is 34");
+	assert_eq!(out[1], json!([20, 34]), "Shadow and Fire: the two bonuses count as the larger one");
 }

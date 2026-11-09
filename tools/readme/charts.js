@@ -65,7 +65,7 @@ function load(o) {
 	return { label: o.label || 'These guides', baseLabel: o['base-label'] || 'Earlier guides', factions };
 }
 
-// A card in Polestar's world: the window ground under a starlit band, the
+// A card in Northstar's world: the window ground under a starlit band, the
 // title and subtitle at 32/32, a hairline where the content begins.
 function card(o, { W, Hh, title, subtitle, body, legend = '' }) {
 	// Outline the header first: defs() lists only the glyphs placed so far.

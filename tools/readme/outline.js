@@ -2,8 +2,8 @@
 // Text as outlines for the README's SVG assets. GitHub serves SVGs as images,
 // which never load web fonts, so every word is drawn from the font's own
 // glyph outlines: each glyph once under <defs>, then placed with <use>.
-// Inter (addon/Polestar/Media/Fonts) for text, Cinzel (tools/media/fonts) for
-// the POLESTAR wordmark, as in the addon, and Marcellus (tools/media/fonts), a
+// Inter (addon/Northstar/Media/Fonts) for text, Cinzel (tools/media/fonts) for
+// the NORTHSTAR wordmark, as in the addon, and Marcellus (tools/media/fonts), a
 // free typeface close to the game's own, for the banner's lines under it.
 
 const path = require('node:path');
@@ -11,9 +11,9 @@ const { Font } = require('../preview/font');
 
 const { ROOT } = require('../lib/paths');
 const FILES = {
-	regular: path.join(ROOT, 'addon', 'Polestar', 'Media', 'Fonts', 'Inter-Regular.ttf'),
-	medium: path.join(ROOT, 'addon', 'Polestar', 'Media', 'Fonts', 'Inter-Medium.ttf'),
-	semibold: path.join(ROOT, 'addon', 'Polestar', 'Media', 'Fonts', 'Inter-SemiBold.ttf'),
+	regular: path.join(ROOT, 'addon', 'Northstar', 'Media', 'Fonts', 'Inter-Regular.ttf'),
+	medium: path.join(ROOT, 'addon', 'Northstar', 'Media', 'Fonts', 'Inter-Medium.ttf'),
+	semibold: path.join(ROOT, 'addon', 'Northstar', 'Media', 'Fonts', 'Inter-SemiBold.ttf'),
 	cinzel: path.join(ROOT, 'tools', 'media', 'fonts', 'Cinzel-Variable.ttf'),
 	marcellus: path.join(ROOT, 'tools', 'media', 'fonts', 'Marcellus-Regular.ttf'),
 };

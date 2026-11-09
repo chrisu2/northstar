@@ -1,7 +1,7 @@
 'use strict';
 // `maps overlays`: every world map overlay (the explored-area paintings the
 // world map lays over a zone's base art) of every zone map, from the client's
-// DB2 tables -> addon/Polestar/UI/ZoneArtOverlays.lua, so the zone art can
+// DB2 tables -> addon/Northstar/UI/ZoneArtOverlays.lua, so the zone art can
 // show a map whole, without fog of war. The client itself only lists the
 // overlays this character has explored (C_MapExplorationInfo.
 // GetExploredMapTextures); no API returns them all.

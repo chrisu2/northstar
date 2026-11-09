@@ -7,7 +7,7 @@
 // - guides: the guide golden's slice (../guide/slice/forever);
 // - data/codex/*.json: the checkout's own (input/root/data/codex holds copies for the Rust);
 // - version 0.2.6, no pack memory measure (lua5.1), no parity build to compare with.
-// expected/: codex/*.json, Polestar_Codex/*, warnings.txt; files over 64 KiB gzipped (<name>.gz).
+// expected/: codex/*.json, Northstar_Codex/*, warnings.txt; files over 64 KiB gzipped (<name>.gz).
 'use strict';
 const fs = require('node:fs');
 const os = require('node:os');
@@ -39,7 +39,7 @@ for (const f of fs.readdirSync(path.join(here, 'input/root/data/codex'))) {
 		sourcesDir: path.join(here, 'input/sources'),
 		guidesDir: guides,
 		outDir: path.join(out, 'codex'),
-		packDir: path.join(out, 'Polestar_Codex'),
+		packDir: path.join(out, 'Northstar_Codex'),
 		measure: false,
 		version: '0.2.6',
 		parityAgainst: path.join(tmp, 'no-extras'),
@@ -48,7 +48,7 @@ for (const f of fs.readdirSync(path.join(here, 'input/root/data/codex'))) {
 	fs.writeFileSync(path.join(out, 'warnings.txt'), res.warnings.map((w) => `warning: ${w}\n`).join(''));
 	fs.rmSync(tmp, { recursive: true, force: true });
 	const zlib = require('node:zlib');
-	for (const d of ['codex', 'Polestar_Codex']) {
+	for (const d of ['codex', 'Northstar_Codex']) {
 		for (const f of fs.readdirSync(path.join(out, d))) {
 			const p = path.join(out, d, f);
 			const b = fs.readFileSync(p);

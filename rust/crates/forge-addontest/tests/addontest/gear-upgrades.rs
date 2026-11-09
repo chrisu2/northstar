@@ -1,4 +1,4 @@
-//! Polestar.Gear upgrade advice (addon/Polestar/Gear): the tooltip upgrade line's decisions (usable or not,
+//! Northstar.Gear upgrade advice (addon/Northstar/Gear): the tooltip upgrade line's decisions (usable or not,
 //! two-hand vs one-hand, rings and trinkets against the weaker one, unique items, empty slots), the reward pick
 //! on quest choices and its tooltip line, racials, every spec's shipped weights, laziness (no ItemDB load at
 //! login) and the cost of one tooltip show.
@@ -33,7 +33,7 @@ const LEVELING: &str = r#"{
 	npcs = {}, zones = { [12] = "Elwynn Forest" },
 }"#;
 
-const LINE: &str = r#"local function line(link) for _, l in ipairs(g.showTooltip(GameTooltip, link)) do if l:find("^Polestar") then return l end end return false end"#;
+const LINE: &str = r#"local function line(link) for _, l in ipairs(g.showTooltip(GameTooltip, link)) do if l:find("^Northstar") then return l end end return false end"#;
 
 struct Opts {
 	cls: &'static str,
@@ -59,16 +59,16 @@ fn run_with(script: &str, o: Opts) -> Vec<Value> {
 		o.cls, o.class_name, o.class_id, o.level, o.race, o.race, o.race_id, o.faction, o.locale
 	);
 	let register = if o.register {
-		[r#"Polestar.ItemDB.Register({ schema = 1, build = "test" }, "#, ITEMS, ")\n", r#"Polestar.ItemDB.RegisterLeveling({ source = "test" }, "#, LEVELING, ")"].concat()
+		[r#"Northstar.ItemDB.Register({ schema = 1, build = "test" }, "#, ITEMS, ")\n", r#"Northstar.ItemDB.RegisterLeveling({ source = "test" }, "#, LEVELING, ")"].concat()
 	} else {
 		String::new()
 	};
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_gear.lua"],
 		before,
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Gear/Gear.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Gear/Gear.xml"])],
 		login: true,
-		script: format!("G = Polestar.Gear\n{register}\nG.RefreshPlayer()\n{LINE}\n{script}"),
+		script: format!("G = Northstar.Gear\n{register}\nG.RefreshPlayer()\n{LINE}\n{script}"),
 		..Default::default()
 	})
 }
@@ -118,8 +118,8 @@ fn upgrade_line_unusable_items_say_why_class_restricted_the_downgrade_in_red_equ
 	let cls_only = run(r#"emit(line("item:9150"))"#).remove(0);
 	let worn = run(r#"g.equip(1, "item:9101"); emit(line("item:9101"))"#).remove(0);
 	assert_eq!(mail, false, "the worn helm itself");
-	assert_eq!(mage_line, "Polestar · Frost | armor you cannot wear");
-	assert_eq!(cls_only, "Polestar · Arms | not for your class");
+	assert_eq!(mage_line, "Northstar · Frost | armor you cannot wear");
+	assert_eq!(cls_only, "Northstar · Arms | not for your class");
 	assert_eq!(worn, false);
 }
 
@@ -128,8 +128,8 @@ fn upgrade_line_why_an_item_is_unusable_is_in_the_client_language() {
 	let es = fake_locale("itIT", &[("armor you cannot wear", "armadura que no puedes llevar"), ("not for your class", "no es para tu clase")]);
 	let mage_line = run_with(r#"emit(line("item:9101"))"#, Opts { locale: es.clone(), ..mage() }).remove(0);
 	let cls = run_with(r#"emit(line("item:9150"))"#, Opts { locale: es, ..Default::default() }).remove(0);
-	assert_eq!(mage_line, "Polestar · Frost | armadura que no puedes llevar");
-	assert_eq!(cls, "Polestar · Arms | no es para tu clase");
+	assert_eq!(mage_line, "Northstar · Frost | armadura que no puedes llevar");
+	assert_eq!(cls, "Northstar · Arms | no es para tu clase");
 }
 
 #[test]
@@ -143,9 +143,9 @@ fn two_hand_vs_one_hand_a_two_hander_against_main_off_hand_a_one_hander_against_
 	"#);
 	let (two_hand, one_hand, main_hand) = (text(&out[0]), text(&out[1]), text(&out[2]));
 	// The slot is the client's word for it (MAINHANDSLOT).
-	assert!(is_match(two_hand, r"^Polestar · Arms \| \+[\d.]+% upgrade · "));
+	assert!(is_match(two_hand, r"^Northstar · Arms \| \+[\d.]+% upgrade · "));
 	assert!(two_hand.ends_with(&format!(" · {main_hand}")), "{two_hand}");
-	assert!(is_match(one_hand, r"^Polestar · Arms \| -[\d.]+% downgrade · "));
+	assert!(is_match(one_hand, r"^Northstar · Arms \| -[\d.]+% downgrade · "));
 	assert!(one_hand.ends_with(&format!(" · {main_hand}")), "{one_hand}");
 }
 
@@ -161,10 +161,10 @@ fn rings_and_trinkets_against_the_weaker_equipped_one_a_unique_ring_only_against
 		emit(line("item:9131"))
 	"#);
 	// 9122 (str 2) against the weaker ring 9120 (str 4): -50%
-	assert_eq!(out[0], "Polestar · Arms | -50% downgrade · Finger");
-	assert_eq!(out[1], "Polestar · Arms | +50% upgrade · Finger");
-	assert_eq!(out[2], "Polestar · Arms | big upgrade · Trinket");
-	assert_eq!(out[3], "Polestar · Arms | upgrade (empty slot)");
+	assert_eq!(out[0], "Northstar · Arms | -50% downgrade · Finger");
+	assert_eq!(out[1], "Northstar · Arms | +50% upgrade · Finger");
+	assert_eq!(out[2], "Northstar · Arms | big upgrade · Trinket");
+	assert_eq!(out[3], "Northstar · Arms | upgrade (empty slot)");
 }
 
 #[test]
@@ -197,7 +197,7 @@ fn reward_item_tooltips_best_pick_on_an_upgrade_pick_reward_pick_naming_it_on_th
 		emit(g.showTooltip(GameTooltip, "item:9101"))
 		g.equip(1, "item:9102")
 		G.Invalidate("equipment")
-		Polestar.Set("gear.pickTooltip", false)
+		Northstar.Set("gear.pickTooltip", false)
 		emit(g.showTooltip(GameTooltip, "item:9101"))
 	"#);
 	let (best, other, none, off) = (&out[0], &out[1], &out[2], &out[3]);
@@ -236,7 +236,7 @@ fn lazy_login_loads_no_item_data_and_reads_no_bags_the_first_tooltip_loads_poles
 		local slots = C_Container.GetContainerItemLink
 		C_Container.GetContainerItemLink = function(...) bagReads = bagReads + 1; return slots(...) end
 		stub.login()
-		local atLogin = { calls, bagReads, Polestar.ItemDB.IsLoaded() }
+		local atLogin = { calls, bagReads, Northstar.ItemDB.IsLoaded() }
 		g.showTooltip(GameTooltip, "item:9101")
 		emit({ atLogin = atLogin, after = calls })
 	"#,

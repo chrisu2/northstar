@@ -1,8 +1,8 @@
 'use strict';
-// The client's share flag (addon/Polestar_Recorder/Recorder.lua, docs/RECORDING.md
-// "Ack file"): Polestar Client writes PolestarRecorderShare into Ack.lua while
+// The client's share flag (addon/Northstar_Recorder/Recorder.lua, docs/RECORDING.md
+// "Ack file"): Polestar Client writes NorthstarRecorderShare into Ack.lua while
 // sharing (on by default there). true turns recording on at login (once, with
-// a message) unless the player typed /psrec off; false turns it off; nil (no
+// a message) unless the player typed /nsrec off; false turns it off; nil (no
 // client) leaves the player's choice, so a Recorder on its own stays off.
 
 const { test } = require('node:test');
@@ -12,24 +12,24 @@ const { runAddon } = require('./helpers/lua');
 function run(share, saved) {
 	const [out] = runAddon({
 		stubs: ['stub_recorder.lua'],
-		before: share === undefined ? '' : `PolestarRecorderShare = ${share}`,
-		addons: ['Polestar_Recorder'],
-		saved: saved ? { Polestar_Recorder: saved } : undefined,
+		before: share === undefined ? '' : `NorthstarRecorderShare = ${share}`,
+		addons: ['Northstar_Recorder'],
+		saved: saved ? { Northstar_Recorder: saved } : undefined,
 		login: true,
-		script: 'emit({ on = PolestarRecorderDB.enabled == true, optout = PolestarRecorderDB.optout == true, said = table.concat(stub.messages, "\\n") })',
+		script: 'emit({ on = NorthstarRecorderDB.enabled == true, optout = NorthstarRecorderDB.optout == true, said = table.concat(stub.messages, "\\n") })',
 	}).emitted;
 	return out;
 }
 
-const OFF = 'PolestarRecorderDB = { schema = 2, enabled = false }';
-const ON = 'PolestarRecorderDB = { schema = 2, enabled = true }';
+const OFF = 'NorthstarRecorderDB = { schema = 2, enabled = false }';
+const ON = 'NorthstarRecorderDB = { schema = 2, enabled = true }';
 // A first login: no SavedVariables at all.
-const NONE = 'PolestarRecorderDB = nil';
+const NONE = 'NorthstarRecorderDB = nil';
 
 test('the client sharing turns recording on, once, and says so', () => {
 	const out = run('true', OFF);
 	assert.equal(out.on, true);
-	assert.match(out.said, /on, because sharing is on in Polestar Client\. \/psrec off to stop\./);
+	assert.match(out.said, /on, because sharing is on in Polestar Client\. \/nsrec off to stop\./);
 	// Already on: nothing to say.
 	assert.doesNotMatch(run('true', ON).said, /because sharing is on/);
 	assert.equal(run('true', NONE).on, true);
@@ -41,27 +41,27 @@ test('the client not sharing turns recording off without an opt-out', () => {
 	assert.equal(out.optout, false);
 });
 
-test('/psrec off beats the client; /psrec on clears it', () => {
-	const out = run('true', 'PolestarRecorderDB = { schema = 2, enabled = false, optout = true }');
+test('/nsrec off beats the client; /nsrec on clears it', () => {
+	const out = run('true', 'NorthstarRecorderDB = { schema = 2, enabled = false, optout = true }');
 	assert.equal(out.on, false);
 	assert.equal(out.optout, true);
 	const [after] = runAddon({
 		stubs: ['stub_recorder.lua'],
-		before: 'PolestarRecorderShare = true',
-		addons: ['Polestar_Recorder'],
-		saved: { Polestar_Recorder: ON },
+		before: 'NorthstarRecorderShare = true',
+		addons: ['Northstar_Recorder'],
+		saved: { Northstar_Recorder: ON },
 		login: true,
 		script: `
-		local cmd = SlashCmdList.POLESTARREC
+		local cmd = SlashCmdList.NORTHSTARREC
 		cmd("off")
-		local off = { on = PolestarRecorderDB.enabled, optout = PolestarRecorderDB.optout }
+		local off = { on = NorthstarRecorderDB.enabled, optout = NorthstarRecorderDB.optout }
 		cmd("on")
-		emit({ off = off, on = PolestarRecorderDB.enabled, optout = PolestarRecorderDB.optout or false })`,
+		emit({ off = off, on = NorthstarRecorderDB.enabled, optout = NorthstarRecorderDB.optout or false })`,
 	}).emitted;
 	assert.deepEqual(after, { off: { on: false, optout: true }, on: true, optout: false });
 });
 
-test('without the client (no flag) the old behaviour holds: off unless /psrec on', () => {
+test('without the client (no flag) the old behaviour holds: off unless /nsrec on', () => {
 	assert.equal(run(undefined, OFF).on, false);
 	assert.equal(run(undefined, ON).on, true);
 	assert.equal(run(undefined, NONE).on, false);

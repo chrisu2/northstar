@@ -1,7 +1,7 @@
 //! `loop` steps (docs/GUIDE_FORMAT.md, "Spawn areas"): in a step with a `loop` line, the `goto` points (in
 //! order) are the places to search. Each kill, collect or interact goal of the step without its own `@x,y`
 //! gets them as its spawn areas (`spots`, searched one after another: `spread`), its point at the first; the
-//! gotos leave the step. The runtime keys are ones every Polestar reads, so a loop changes no pack format.
+//! gotos leave the step. The runtime keys are ones every Northstar reads, so a loop changes no pack format.
 //! (The addon accepting a loop step is an addon test.)
 
 use crate::common;

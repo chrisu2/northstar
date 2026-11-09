@@ -14,7 +14,7 @@ const { importString, LIMITS } = require('../lib/pack/importstring');
 const usage = `usage: node tools/polestar.js export <file.guide> [options]
 
 Prints the import string of the one guide in <file.guide>: a line of text a
-player pastes into Polestar's Import page (/polestar import) to get the
+player pastes into Northstar's Import page (/northstar import) to get the
 guide without installing anything (docs/GUIDE_PACKS.md, "Import strings").
 The guide belongs to a community pack: the nearest folder above the file
 holding a pack.json, whose id is the guide id's prefix and whose license the
@@ -65,7 +65,7 @@ async function run(argv) {
 		return 1;
 	}
 	if (pack.official) {
-		console.error("export failed: that is one of Polestar's own guides, which ship with Polestar; an import string carries a community pack's guide");
+		console.error("export failed: that is one of Northstar's own guides, which ship with Northstar; an import string carries a community pack's guide");
 		return 1;
 	}
 	const dataDir = resolvePath(opts.data, 'data/forever', ROOT);
@@ -100,7 +100,7 @@ async function run(argv) {
 		console.error(`export failed: ${r.error}`);
 		return 1;
 	}
-	// `next` and route choices reach Polestar's guides or guides imported
+	// `next` and route choices reach Northstar's guides or guides imported
 	// before this one (Core/Import.lua): say which must come first.
 	const ahead = [guide.next, ...(guide.nextChoices || [])].filter((id) => id && !String(id).startsWith('forever/'));
 	if (ahead.length && !opts.quiet) console.error(`note: ${guide.id} leads on to ${ahead.join(', ')}: players import ${ahead.length === 1 ? 'that guide' : 'those guides'} first`);

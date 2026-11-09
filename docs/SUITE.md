@@ -1,8 +1,8 @@
-# Polestar suite
+# Northstar suite
 
 The goal: every inch of WoW: Forever covered by guides, and anything a
 player sees in the world (a mount, an item, an NPC, a quest) answerable from
-inside Polestar with "how do I get that?". This document sets what each
+inside Northstar with "how do I get that?". This document sets what each
 module covers, what is out of scope and the rules for the inputs; the
 contracts between the modules are in [docs/ARCHITECTURE.md](ARCHITECTURE.md).
 
@@ -11,7 +11,7 @@ contracts between the modules are in [docs/ARCHITECTURE.md](ARCHITECTURE.md).
 | Module | What it does |
 |---|---|
 | Guides (core) | Leveling 1-60 (proven routes, `docs/SIMULATION.md`; class quests as class-only steps inside them), professions, reputations, exploration, Legacy, collectibles (one guide per mount/pet) |
-| Navigation (core) | Arrow, travel planner, waypoints; `/polestar way <x> <y> [label]` (or `/pole way`) points the arrow at a spot on the current map; Shift-click a map to go there; `/polestar near <service>` for the quickest trainer, vendor, inn, bank...; other addons' TomTom waypoints and `/way` without TomTom; `Polestar.Nav.API` for addon authors |
+| Navigation (core) | Arrow, travel planner, waypoints; `/northstar way <x> <y> [label]` (or `/ns way`) points the arrow at a spot on the current map; Shift-click a map to go there; `/northstar near <service>` for the quickest trainer, vendor, inn, bank...; other addons' TomTom waypoints and `/way` without TomTom; `Northstar.Nav.API` for addon authors |
 | Quests | Map and minimap pins for available quests, objective areas, quest givers (off by default, Map options); tooltip lines on mobs and items that a quest needs; quest levels in the log; a quest icon beside the health bar of nameplates of mobs a quest needs (replacement nameplates included) |
 | Lookup (Codex) | One search over guides and entities (items, mounts, pets, recipes, tabards, quests, NPCs, rares, treasures, dungeons, zones). "How to get" for any item, mount or pet: sources ranked for this character, one click to a guide (curated when one exists, otherwise built on the spot). Tooltip source lines; Alt-click an item link to guide; target or mouse over a player to see their mount and how to get it. Search only: no browse-everything lists |
 | Dungeons | A journal page per dungeon: every quest with where to get it, its objective, its chain and its rewards (item choices, XP, money, reputation), plus bosses and the entrance on the map, with "guide me" to givers and the entrance; attunements and keys (Molten Core, Onyxia's Lair, Blackwing Lair, Naxxramas, Scholomance, Blackrock Depths, the City of Dalaran...) with this character's progress and a guide through what is left. No loot tables |
@@ -22,9 +22,9 @@ contracts between the modules are in [docs/ARCHITECTURE.md](ARCHITECTURE.md).
 | Characters | An account-wide page of every character you have played: level, class, zone, hearth, gold, professions, the guide it follows and an XP bar with rested XP worked out to now. Each is as of its last logout; sorts by last played, most rested or level |
 | Talents (planned) | Where your next talent points go, level by level, on the talent panel, per class and spec. The trees are read from the client; the builds are written by contributors |
 
-Out of scope: a full UI suite (Polestar integrates with EllesmereUI through its
+Out of scope: a full UI suite (Northstar integrates with EllesmereUI through its
 public skinning API), boss and combat warnings, aura tracking, best-in-slot
-lists and loot browsing. Polestar keeps the dungeon quest journal and the
+lists and loot browsing. Northstar keeps the dungeon quest journal and the
 upgrade indicator on tooltips.
 
 Every module can be switched off in options, and none costs memory until it is
@@ -38,13 +38,13 @@ Inputs are read from the installed copies under
 `<client>/_classic_beta_/Interface/AddOns/`, from the client's own files
 (CASC/DB2), and from public sites (the Forever web databases: the Forever client's quest cache, Forever's quest
 chain data, and a web quest database's pages as cached in
-`data/sources/web/`). Polestar itself is GPL-3.0; each input keeps its own licence,
+`data/sources/web/`). Northstar itself is GPL-3.0; each input keeps its own licence,
 and the rules follow it:
 
 | Input | What may enter the repository and the releases |
 |---|---|
 | MIT (pfQuest, ForeverLevelingBiS, wowsims) | Derived data, with attribution (THIRD_PARTY.md) |
-| QuestieDB (no licence file; its maintainers ask that it be treated as all rights reserved) | Facts only, credited, in the shipped packs (the compiled guides, `Polestar_QuestDB`, `Polestar_Codex`); `data build --no-questie` builds without them if the maintainers ask |
+| QuestieDB (no licence file; its maintainers ask that it be treated as all rights reserved) | Facts only, credited, in the shipped packs (the compiled guides, `Northstar_QuestDB`, `Northstar_Codex`); `data build --no-questie` builds without them if the maintainers ask |
 | Web sources (Forever's quest data, warcraft.wiki.gg, the Forever databases) | Facts only, each with its source: corrections, `entrances.json`, `repgates.json`, `attunements.json`, `journal-quests.json`, the web caches in `data/sources/web/` (incl. its dungeon and raid quest lists) |
 | GPL-2.0, no licence or All Rights Reserved addons (AtlasLoot, DungeonJournal, RareScanner, Attune) | Nothing: the importer code only, read by `forge data codex --local-extras` for the parity comparison (Attune: by `codex attune`, the local comparison of dungeon quests and attunements); its output stays local and `pack` refuses it |
 
@@ -61,7 +61,7 @@ their versions in its `meta`.
   cached under `data/sources/` and only fetched when asked.
 - `forge data codex` merges `data/forever/*.json`, the Forever client's
   tables, the recorded item sources (`data/codex/recorded.json`) and our guides into
-  `data/forever/codex/*.json` and the `Polestar_Codex` pack, which ships in
+  `data/forever/codex/*.json` and the `Northstar_Codex` pack, which ships in
   every release (release-safe inputs only; ARCHITECTURE, "Codex"). With
   `--local-extras` it also merges AtlasLoot, RareScanner and DungeonJournal:
   a local-only build that `pack` refuses.
@@ -74,13 +74,13 @@ their versions in its `meta`.
 
 | Pack | Built from | Committed | Loaded |
 |---|---|---|---|
-| `Polestar` | the core | yes | always |
-| `Polestar_Guides` | `guides/**` | yes | always |
-| `Polestar_ItemDB` | client item tables | yes | on demand |
-| `Polestar_QuestDB` | `data/forever` (includes QuestieDB) | no (local) | on demand |
-| `Polestar_Codex` | `data/forever/codex` (release-safe inputs) | no (generated); in every release zip | on demand (first search, tooltip or lookup) |
-| `Polestar_Travel` | a local crossings file (`travel build`) | no (local) | always, when built |
-| community addons (`PolestarPack_*` by default) | a pack's `.guide` files, by its author (`docs/PACKS.md`) | in the author's repository | always, when installed |
+| `Northstar` | the core | yes | always |
+| `Northstar_Guides` | `guides/**` | yes | always |
+| `Northstar_ItemDB` | client item tables | yes | on demand |
+| `Northstar_QuestDB` | `data/forever` (includes QuestieDB) | no (local) | on demand |
+| `Northstar_Codex` | `data/forever/codex` (release-safe inputs) | no (generated); in every release zip | on demand (first search, tooltip or lookup) |
+| `Northstar_Travel` | a local crossings file (`travel build`) | no (local) | always, when built |
+| community addons (`NorthstarPack_*` by default) | a pack's `.guide` files, by its author (`docs/PACKS.md`) | in the author's repository | always, when installed |
 
 Local packs are generated into gitignored folders and installed by
 `node tools/polestar.js install` like the rest. Without them the core still
@@ -120,14 +120,14 @@ Search" and "Lookup"; in short:
 
 One hub, grown from the guide menu: Guides, Lookup, Dungeons, Rares, Talents and
 Characters as top-level sections, Options at the rail's foot, all in
-Polestar's world ([`docs/DESIGN.md`](DESIGN.md)). New surfaces extend that
+Northstar's world ([`docs/DESIGN.md`](DESIGN.md)). New surfaces extend that
 world; they never introduce another look.
 
 Small windows outside the hub share its look: the guide window, the route
 choice, the welcome for new characters (`UI/Welcome.lua`), the copy window
-(`UI/Copy.lua`, `PolestarCopy`: text to copy, such as `/polestar where`'s
-lines), the report window (`UI/Report.lua`, `PolestarReport`: the guide
-window's bug writes a report on the step on screen to paste on the Polestar
+(`UI/Copy.lua`, `NorthstarCopy`: text to copy, such as `/northstar where`'s
+lines), the report window (`UI/Report.lua`, `NorthstarReport`: the guide
+window's bug writes a report on the step on screen to paste on the Northstar
 Discord) and the rare alert. Options carries a Community guides page
 (`UI/Packs.lua`) and a Gamepad page (`UI/GamepadGuide.lua`); every window
 answers a gamepad while it is open (`UI/Gamepad.lua`, ported from Ding! by

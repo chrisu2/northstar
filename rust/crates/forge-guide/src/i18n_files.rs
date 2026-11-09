@@ -1,13 +1,14 @@
 //! Port of tools/lib/i18n/files.js (with the parts of tools/lib/i18n/keys.js
 //! it uses: tokenize, unescapeLua; and of tools/lib/lua.js: luaToJson).
 //!
-//! The interface's translation files, addon/Polestar/Locales/<locale>.lua, in
-//! the layout their translators write:
+//! The interface's translation files, Interface.lua in each language folder
+//! addon/Northstar_<locale> (the Recorder's: addon/Northstar_Recorder/Locales/<locale>.lua),
+//! in the layout their translators write:
 //!
 //!   -- German (deDE). ...                <- the file's own header comments
 //!
-//!   local _, ns = ...
-//!   if not (GetLocale and GetLocale() == "deDE") then return end
+//!   local ns = Polestar                  <- the Recorder's: local _, ns = ...
+//!   if not (ns and GetLocale and GetLocale() == "deDE") then return end
 //!   local L = ns.L
 //!
 //!   -- Core/Commands.lua                  <- a group: the file that first uses its keys
@@ -52,8 +53,14 @@ pub fn lua_string(s: &str) -> String {
 	out
 }
 
+/// The translation file of `locale` for the addon at `addon_dir`: Polestar's is Interface.lua in the
+/// language folder Polestar_<locale> beside it (Core/Locale.lua loads that folder on its client only,
+/// docs/ARCHITECTURE.md "Localisation"); another addon's (the Recorder's) is its own Locales/<locale>.lua.
 #[cfg(feature = "native")]
 pub fn locale_file(addon_dir: &std::path::Path, locale: &str) -> std::path::PathBuf {
+	if addon_dir.file_name().is_some_and(|n| n == "Northstar") {
+		return addon_dir.with_file_name(crate::toc::language_addon(locale)).join(crate::toc::INTERFACE_FILE);
+	}
 	addon_dir.join("Locales").join(format!("{locale}.lua"))
 }
 
@@ -208,9 +215,13 @@ fn lua_to_json(expr: &str) -> Result<V, String> {
 	lua_to_json_within(expr, LUA_TIME, LUA_MEMORY)
 }
 
-/// The longest one read of translation files may run, and the most memory it may hold.
+/// The longest one batch of translation files may run. This is the standalone `lua5.1` limit the
+/// JavaScript tools used (120s), not a shorter budget. `read_locale_files` loads the pack in
+/// batches so one run does not have to parse every locale file before the deadline.
 #[cfg(feature = "native")]
-const LUA_TIME: std::time::Duration = std::time::Duration::from_secs(10);
+const LUA_TIME: std::time::Duration = std::time::Duration::from_secs(120);
+#[cfg(feature = "native")]
+const LOCALE_BATCH: usize = 40;
 #[cfg(feature = "native")]
 const LUA_MEMORY: usize = 256 << 20;
 
@@ -250,7 +261,7 @@ pub struct LocaleFile {
 }
 
 /// Loads translation files in one Lua run, each with GetLocale() answering its
-/// locale and ns = { L, locale, AddTranslations }. Reads Polestar's layout
+/// locale and ns = { L, locale, AddTranslations }. Reads Northstar's layout
 /// (assignments to ns.L), Ding!'s (ns.AddTranslations(locale, t)) and a file
 /// that returns a table. entries: (file, locale). -> one LocaleFile per entry, in order.
 #[cfg(feature = "native")]
@@ -258,6 +269,15 @@ pub fn read_locale_files(entries: &[(String, String)]) -> Result<Vec<LocaleFile>
 	if entries.is_empty() {
 		return Ok(Vec::new());
 	}
+	let mut out = Vec::with_capacity(entries.len());
+	for batch in entries.chunks(LOCALE_BATCH) {
+		out.extend(read_locale_batch(batch)?);
+	}
+	Ok(out)
+}
+
+#[cfg(feature = "native")]
+fn read_locale_batch(entries: &[(String, String)]) -> Result<Vec<LocaleFile>, String> {
 	let list = entries.iter().map(|(file, locale)| format!("{{ path = {}, locale = {} }}", lua_string(file), lua_string(locale))).collect::<Vec<_>>().join(",\n");
 	let expr = format!(
 		r#"
@@ -277,7 +297,8 @@ for i, e in ipairs(list) do
 	}})
 	local ns = {{ L = L, locale = e.locale }}
 	function ns.AddTranslations(locale, t) got = t end
-	local ok, ret = __polestar_loaddata(e.path, "Polestar", ns)
+	Northstar = ns
+	local ok, ret = __polestar_loaddata(e.path, "Northstar", ns)
 	local r = {{ ok = ok }}
 	if not ok then
 		r.error = tostring(ret)
@@ -796,20 +817,24 @@ pub fn update_locale_text(text: &str, file: &str, keys: &[(String, Vec<String>)]
 
 /// A new locale file: its header, then every key grouped under the file that
 /// first uses it in load order, translated from `fill` or commented out.
-/// `title`: the JS default is "Polestar's interface strings".
-pub fn new_locale_text(locale: &str, keys: &[(String, Vec<String>)], fill: &V, retire: &V, title: &str) -> Result<LocaleUpdate, String> {
+/// `title`: the JS default is "Northstar's interface strings". `language_folder`: the file is
+/// Interface.lua in Northstar_<locale>, an addon of its own, so it reaches Northstar's namespace through
+/// the global `Northstar` rather than `...`.
+pub fn new_locale_text(locale: &str, keys: &[(String, Vec<String>)], fill: &V, retire: &V, title: &str, language_folder: bool) -> Result<LocaleUpdate, String> {
 	let language = locales::locale(locale).map_or(locale, |m| m.language);
+	let (ns, guard) = if language_folder { ("local ns = Northstar", "ns and ") } else { ("local _, ns = ...", "") };
 	let head = [
 		format!("-- {language} ({locale}): {title}."),
 		"-- Keys are the English strings exactly as the code writes them; a key".into(),
 		"-- missing here, or commented out, shows in English. Grouped by the file that".into(),
 		"-- first uses each key. docs/TRANSLATING.md explains the rest.".into(),
 		String::new(),
-		"local _, ns = ...".into(),
-		format!("if not (GetLocale and GetLocale() == {}) then return end", lua_string(locale)),
+		ns.into(),
+		format!("if not ({guard}GetLocale and GetLocale() == {}) then return end", lua_string(locale)),
 		BODY_START.into(),
 	];
-	update_locale_text(&format!("{}\n", head.join("\n")), &format!("Locales/{locale}.lua"), keys, fill, retire)
+	let file = if language_folder { format!("{}/{}", crate::toc::language_addon(locale), crate::toc::INTERFACE_FILE) } else { format!("Locales/{locale}.lua") };
+	update_locale_text(&format!("{}\n", head.join("\n")), &file, keys, fill, retire)
 }
 
 #[cfg(all(test, feature = "native"))]
@@ -838,6 +863,26 @@ mod tests {
 			Ok(r) => r,
 			Err(e) => (false, e),
 		}
+	}
+
+	#[test]
+	fn the_locale_read_budget_is_the_standalone_interpreters_and_files_are_batched() {
+		assert_eq!(LUA_TIME, std::time::Duration::from_secs(120));
+		assert!(LOCALE_BATCH < 100);
+		let dir = std::env::temp_dir().join(format!("forge-i18n-batch-{}", std::process::id()));
+		std::fs::create_dir_all(&dir).unwrap();
+		let n = LOCALE_BATCH + 1;
+		let mut entries = Vec::new();
+		for i in 0..n {
+			let file = dir.join(format!("{i}.lua"));
+			std::fs::write(&file, format!("local _, ns = ...\nns.L[\"k{i}\"] = \"v{i}\"\n")).unwrap();
+			entries.push((file.to_string_lossy().into_owned(), "deDE".into()));
+		}
+		let got = read_locale_files(&entries).unwrap();
+		assert_eq!(got.len(), n);
+		assert!(got.iter().all(|r| r.ok), "{}", got.iter().find(|r| !r.ok).map(|r| r.error.clone().unwrap_or_default()).unwrap_or_default());
+		assert_eq!(got[n - 1].strings.get(&format!("k{}", n - 1)).to_js_string(), format!("v{}", n - 1));
+		let _ = std::fs::remove_dir_all(&dir);
 	}
 
 	#[test]

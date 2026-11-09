@@ -1,4 +1,4 @@
-//! The guide menu (addon/Polestar/UI/Picker.lua): three panes in the Polestar shell, against the fake Engine and
+//! The guide menu (addon/Northstar/UI/Picker.lua): three panes in the Northstar shell, against the fake Engine and
 //! sample guides of tests/lua/stub_ui.lua. Rows mark a finished guide with a check and an open one with a muted
 //! "Tab N" note; the tab row always has an active tab (Browse for a category or a search); the details end in a
 //! facts block.
@@ -19,7 +19,7 @@ end
 local function rows()
 	local out = {}
 	for _, f in ipairs(stub.frames) do
-		if f.psGuide and rawget(f, "Range") and f:IsShown() and f:GetParent() == PolestarPicker.Scroll.Child then out[#out + 1] = f end
+		if f.psGuide and rawget(f, "Range") and f:IsShown() and f:GetParent() == NorthstarPicker.Scroll.Child then out[#out + 1] = f end
 	end
 	table.sort(out, function(a, b) return select(5, a:GetPoint(1)) > select(5, b:GetPoint(1)) end)
 	return out
@@ -36,7 +36,7 @@ end
 local function folders()
 	local out = {}
 	for _, f in ipairs(stub.frames) do
-		if rawget(f, "Count") and rawget(f, "Rule") and not rawget(f, "Range") and f:IsShown() and f:GetParent() == PolestarPicker.Scroll.Child then out[#out + 1] = f end
+		if rawget(f, "Count") and rawget(f, "Rule") and not rawget(f, "Range") and f:IsShown() and f:GetParent() == NorthstarPicker.Scroll.Child then out[#out + 1] = f end
 	end
 	table.sort(out, function(a, b) return select(5, a:GetPoint(1)) > select(5, b:GetPoint(1)) end)
 	for i, f in ipairs(out) do out[i] = f.Text:GetText() .. " " .. f.Count:GetText() end
@@ -49,10 +49,10 @@ local function lastCall(name)
 	for i = #uistub.calls, 1, -1 do if uistub.calls[i][1] == name then return uistub.calls[i] end end
 end
 local function tab(key)
-	for _, t in ipairs(PolestarPicker.tabButtons) do if t.psKey == key and t:IsShown() then return t end end
+	for _, t in ipairs(NorthstarPicker.tabButtons) do if t.psKey == key and t:IsShown() then return t end end
 end
 local function nav(key)
-	for _, b in ipairs(PolestarPicker.navButtons) do if b.psKey == key and b:IsShown() then return b end end
+	for _, b in ipairs(NorthstarPicker.navButtons) do if b.psKey == key and b:IsShown() then return b end end
 end
 local D = function() return P.details end
 local TABS = { { uistub.elwynn, 3 }, { uistub.tailoring, 2 }, { uistub.stormwindRep, 2 } }
@@ -74,8 +74,8 @@ westfall.pitch, westfall.pros, westfall.cons = "Farms and bandits.", { "Compact"
 fn run_all(script: &str, install: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", &FILES)],
-		script: format!("uistub.install({install})\nstub.login()\nlocal UI, P = Polestar.UI, Polestar.UI.Picker\n{HELPERS}\n{script}"),
+		addons: vec![Addon::files("Northstar", &FILES)],
+		script: format!("uistub.install({install})\nstub.login()\nlocal UI, P = Northstar.UI, Northstar.UI.Picker\n{HELPERS}\n{script}"),
 		..Default::default()
 	})
 }
@@ -193,8 +193,8 @@ fn search_covers_titles_zones_categories_and_player_facing_race_names_typing_sel
 		end
 		P.SetView("current")
 		P.SetQuery("elwynn")
-		local r = { view = P.View(), shown = lines(), selected = P.Selected(), title = PolestarPicker.Title:GetText(),
-			subtitle = PolestarPicker.Subtitle:GetText(), browseOn = tab("browse").psSelected }
+		local r = { view = P.View(), shown = lines(), selected = P.Selected(), title = NorthstarPicker.Title:GetText(),
+			subtitle = NorthstarPicker.Subtitle:GetText(), browseOn = tab("browse").psSelected }
 		emit({ r = r, multi = guides("elwynn riding"), reputation = guides("reputation"), upper = guides("PROFESSIONS"),
 			undead = guides("undead"), nightelf = guides("night elf"), profInLeveling = #guides("tailoring", "Leveling") })"#);
 	assert_eq!(out["multi"], json!(["Horse"]), "every word must match: the zone and a keyword");
@@ -217,26 +217,26 @@ fn left_pane_the_rail_holds_the_sections_and_options_the_sidebar_holds_the_categ
 	let out = run(r#"
 		UI.ShowPicker()
 		local labels, rail = {}, {}
-		for _, b in ipairs(PolestarPicker.navButtons) do
+		for _, b in ipairs(NorthstarPicker.navButtons) do
 			if b:IsShown() then labels[#labels + 1] = b.Label:GetText() .. " " .. b.Count:GetText() end
 		end
-		for _, b in ipairs(PolestarPicker.railButtons) do
+		for _, b in ipairs(NorthstarPicker.railButtons) do
 			if b:IsShown() then rail[#rail + 1] = b.Label:GetText() .. (b.Bar:IsShown() and "*" or "") end
 		end
 		local icon = nav("Favorites").Icon:GetTexture()
 		nav("Professions"):Click()
-		local r = { view = P.View(), category = P.Category(), title = PolestarPicker.Title:GetText(), folders = folders(), lines = lines(),
+		local r = { view = P.View(), category = P.Category(), title = NorthstarPicker.Title:GetText(), folders = folders(), lines = lines(),
 			navOn = nav("Professions").Bar:IsShown(), tabOn = tab("home").psSelected or false, browseOn = tab("browse").psSelected,
-			tabs = {}, footer = PolestarPicker.Footer:IsShown(), subtitle = PolestarPicker.Subtitle:GetText() }
-		for _, t in ipairs(PolestarPicker.tabButtons) do if t:IsShown() then r.tabs[#r.tabs + 1] = t.Label:GetText() end end
+			tabs = {}, footer = NorthstarPicker.Footer:IsShown(), subtitle = NorthstarPicker.Subtitle:GetText() }
+		for _, t in ipairs(NorthstarPicker.tabButtons) do if t:IsShown() then r.tabs[#r.tabs + 1] = t.Label:GetText() end end
 		tab("home"):Click()
 		r.home = { view = P.View(), homeOn = tab("home").psSelected }
 		tab("browse"):Click()
 		r.back = { view = P.View(), category = P.Category(), browseOn = tab("browse").psSelected }
-		for _, b in ipairs(PolestarPicker.railButtons) do if b:IsShown() and b.psKey == "Options" then b:Click() end end
+		for _, b in ipairs(NorthstarPicker.railButtons) do if b:IsShown() and b.psKey == "Options" then b:Click() end end
 		local sections = {}
 		for i, s in ipairs(P.Sections()) do sections[i] = s.label or s.key end
-		emit({ cats = P.categories, labels = labels, rail = rail, sections = sections, icon = icon, r = r, options = PolestarOptions:IsShown(), picker = PolestarPicker:IsShown() })"#);
+		emit({ cats = P.categories, labels = labels, rail = rail, sections = sections, icon = icon, r = r, options = NorthstarOptions:IsShown(), picker = NorthstarPicker:IsShown() })"#);
 	assert_eq!(out["cats"], json!(["All", "Leveling", "Professions", "Reputation", "Exploration", "Legacy", "Collectibles", "Favorites"]), "dungeons have their own section, not a category");
 	// Sections (Guides built in, then the registered ones by order) are on the rail, Options at its foot.
 	assert_eq!(out["sections"][0], "Guides");
@@ -269,7 +269,7 @@ fn is_match_icon(s: &str) -> bool {
 fn the_sidebar_is_one_compact_block_on_one_edge_the_lockup_wordmark_tagline_under_it_the_search_with_its_foot_on_the_band_line_navigation_12px_under_that_the_version_on_the_rail_s_foot_line() {
 	let out = run(r#"
 		UI.ShowPicker()
-		local F = PolestarPicker
+		local F = NorthstarPicker
 		local function pt(r, i) local p, _, _, x, y = r:GetPoint(i or 1); return { p, x, y } end
 		local opt
 		for _, b in ipairs(F.railButtons) do if b:IsShown() and b.psKey == "Options" then opt = b end end
@@ -277,11 +277,12 @@ fn the_sidebar_is_one_compact_block_on_one_edge_the_lockup_wordmark_tagline_unde
 		local _, _, _, _, labelY = opt.Label:GetPoint(1)
 		local _, _, _, _, iconY = opt.Icon:GetPoint(1)
 		local navFirst = F.navButtons[1]
-		emit({ wordmark = pt(F.Wordmark), tagline = pt(F.Tagline), search = pt(F.Search), navTop = F.psNavTop, navX = select(4, navFirst.Icon:GetPoint(1)),
+		emit({ wordmark = pt(F.Wordmark), word = F.Wordmark:GetText(), tagline = pt(F.Tagline), search = pt(F.Search), navTop = F.psNavTop, navX = select(4, navFirst.Icon:GetPoint(1)),
 			status = pt(F.Status), optLabelBottom = optY + opt:GetHeight() + iconY - opt.Icon:GetHeight() + labelY - opt.Label:GetStringHeight(),
 			emblem = pt(F.Emblem), firstRail = (function() for _, b in ipairs(F.railButtons) do if b:IsShown() and b.psKey == "Guides" then local _, _, _, _, y = b:GetPoint(1); return -y end end end)() })"#);
 	let edge = 24;
-	assert_eq!(out["wordmark"], json!(["TOPLEFT", edge - 2, -22]), "the wordmark's ink (2px into its box) sits on the sidebar edge");
+	assert_eq!(out["wordmark"], json!(["TOPLEFT", edge, -22]), "the text wordmark sits on the sidebar edge");
+	assert_eq!(out["word"], "Northstar");
 	assert_eq!(out["tagline"], json!(["TOPLEFT", edge, -52]), "the tagline under the wordmark, on the same edge");
 	assert_eq!(out["search"], json!(["TOPLEFT", edge, -(112 - 30)]), "the search ends on the header band's 112 line");
 	assert_eq!(out["navTop"], 112 + 12, "navigation 12px under the search");
@@ -296,7 +297,7 @@ fn the_sidebar_is_one_compact_block_on_one_edge_the_lockup_wordmark_tagline_unde
 fn the_search_placeholder_is_the_first_wording_that_fits_the_box_refitted_on_resize_the_last_is_cut_when_none_fits() {
 	let out = run(r#"
 		UI.ShowPicker()
-		local box = PolestarPicker.Search
+		local box = NorthstarPicker.Search
 		local ph = box.Placeholder
 		local function at(w)
 			box:SetWidth(w)
@@ -329,13 +330,13 @@ fn the_hub_fits_every_section_on_the_rail_above_the_foot_import_options_every_ca
 		for k, s in ipairs(P.RailItems()) do all[k] = s.key end
 		UI.ShowPicker()
 		P.SetCategory("All")
-		local H = PolestarPicker:GetHeight()
+		local H = NorthstarPicker:GetHeight()
 		local function bottomOf(b) local _, _, _, _, y = b:GetPoint(1); return -y + b:GetHeight() end
 		local function topOfFoot(b) local _, _, _, _, y = b:GetPoint(1); return H - 2 - (y + b:GetHeight()) end
 		local foot = {}
 		for _, item in ipairs(P.FootItems()) do foot[item.key] = true end
 		local railBottom, options, keys = 0, nil, {}
-		for _, b in ipairs(PolestarPicker.railButtons) do
+		for _, b in ipairs(NorthstarPicker.railButtons) do
 			if b:IsShown() then
 				if foot[b.psKey] then options = math.min(options or math.huge, topOfFoot(b)) else
 					railBottom = math.max(railBottom, bottomOf(b))
@@ -343,17 +344,17 @@ fn the_hub_fits_every_section_on_the_rail_above_the_foot_import_options_every_ca
 				end
 			end
 		end
-		local navBottom, navTop = 0, PolestarPicker.psNavTop
-		for _, b in ipairs(PolestarPicker.navButtons) do
+		local navBottom, navTop = 0, NorthstarPicker.psNavTop
+		for _, b in ipairs(NorthstarPicker.navButtons) do
 			if b:IsShown() then local _, _, _, _, y = b:GetPoint(1); navBottom = math.max(navBottom, navTop - y + b:GetHeight()) end
 		end
-		local _, _, _, _, statusY = PolestarPicker.Status:GetPoint(1)
+		local _, _, _, _, statusY = NorthstarPicker.Status:GetPoint(1)
 		P.ShowSection("Rares")
 		local sectionNav = {}
-		for _, b in ipairs(PolestarPicker.navButtons) do if b:IsShown() then sectionNav[#sectionNav + 1] = b.psKey end end
+		for _, b in ipairs(NorthstarPicker.navButtons) do if b:IsShown() then sectionNav[#sectionNav + 1] = b.psKey end end
 		emit({ keys = keys, all = all, railBottom = railBottom, options = options, navBottom = navBottom, statusTop = H - 2 - statusY - 14,
-			sectionNav = sectionNav, railOn = (function() for _, b in ipairs(PolestarPicker.railButtons) do if b:IsShown() and b.Bar:IsShown() then return b.psKey end end end)(),
-			details = P.details:IsShown(), list = PolestarPicker.Content:IsShown() })"#);
+			sectionNav = sectionNav, railOn = (function() for _, b in ipairs(NorthstarPicker.railButtons) do if b:IsShown() and b.Bar:IsShown() then return b.psKey end end end)(),
+			details = P.details:IsShown(), list = NorthstarPicker.Content:IsShown() })"#);
 	assert_eq!(out["all"].as_array().unwrap().len(), 7);
 	assert_eq!(out["keys"], out["all"], "seven sections fit the rail above its foot of two");
 	assert!(out["railBottom"].as_f64().unwrap() <= out["options"].as_f64().unwrap(), "rail ends at {}, Options starts at {}", out["railBottom"], out["options"]);
@@ -373,7 +374,7 @@ fn categories_left_out_without_a_guide_for_any_faction_faded_with_a_tip_when_emp
 			if g and g.category == "Legacy" then table.remove(uistub.order, i) end
 		end
 		uistub.openTabs(TABS, 1)
-		Polestar.Set("ui.pickerFaction", "Horde")
+		Northstar.Set("ui.pickerFaction", "Horde")
 		UI.ShowPicker()
 		P.SetCategory("All")
 		local collectibles = nav("Collectibles")
@@ -401,7 +402,7 @@ fn selecting_a_guide_shows_its_details_and_loads_nothing_the_selection_is_rememb
 		local r = { title = d.Title:GetText(), eyebrow = rawget(d, "Category") ~= nil, track = d.Prog:IsShown(), chips = chips, facts = P.detail.facts,
 			progress = d.ProgLabel:GetText(), pitch = d.Pitch:GetText(), pros = pros, cons = d.Cons[1].Text:GetText(),
 			load = d.Load.Label:GetText(), newTab = d.NewTab:IsShown() and d.NewTab:IsEnabled(), selectedRow = rowFor("Westfall").Selected:IsShown(),
-			calls = #uistub.calls - before, open = PolestarPicker:IsShown(), tip = rowFor("Westfall").psTip }
+			calls = #uistub.calls - before, open = NorthstarPicker:IsShown(), tip = rowFor("Westfall").psTip }
 		-- A route choice next.
 		westfall.nextChoices = { "forever/alliance/30-40/02-desolace", "forever/alliance/40-50/03-feralas" }
 		P.Render()
@@ -411,8 +412,8 @@ fn selecting_a_guide_shows_its_details_and_loads_nothing_the_selection_is_rememb
 		rowFor("Elwynn Forest"):Click()
 		r.open1 = { progress = d.ProgLabel:GetText(), pct = d.ProgPct:GetText(), track = d.Prog:IsShown(), load = d.Load.Label:GetText(), newTab = d.NewTab:IsShown(),
 			loadWidth = d.Load.psFixedWidth, facts = P.detail.facts }
-		PolestarPicker:Hide()
-		r.saved = Polestar.CharState().ui.pickerSelected
+		NorthstarPicker:Hide()
+		r.saved = Northstar.CharState().ui.pickerSelected
 		UI.ShowPicker()
 		r.again = d.Title:GetText()
 		emit(r)"#);
@@ -433,6 +434,33 @@ fn selecting_a_guide_shows_its_details_and_loads_nothing_the_selection_is_rememb
 }
 
 #[test]
+fn a_class_guide_s_details_carry_the_class_quest_heads_up_after_why() {
+	let out = run_all(
+		r#"
+		local id = "forever/class/paladin/test"
+		uistub.guides[id] = { id = id, pack = "guides", title = "Storm", category = "Class", folder = "Paladin", minLevel = 22, maxLevel = 30,
+			zone = 1439, zoneName = "Darkshore", why = "A cloak.",
+			steps = { { title = "One", goals = { { t = "note", text = "One", status = "pending" } } } } }
+		table.insert(uistub.order, id)
+		local asked
+		Northstar.QoL = Northstar.QoL or {}
+		Northstar.QoL.ClassQuests = {
+			Heads = function(g) asked = g.id; return { quests = 6 } end,
+			HeadsLine = function(h) return h.quests == 6 and "Long chain: 6 quests across 4 zones" or nil end,
+		}
+		Northstar.Set("ui.pickerFaction", "All")
+		UI.ShowPicker()
+		P.Select(id)
+		emit({ asked = asked, facts = { P.detail.facts[1], P.detail.facts[2] } })
+		P.Select("forever/alliance/02-westfall")
+		emit(P.detail.facts[1][1])"#,
+		"",
+	);
+	assert_eq!(out[0], json!({ "asked": "forever/class/paladin/test", "facts": [["Why", "A cloak."], ["Heads-up", "Long chain: 6 quests across 4 zones"]] }));
+	assert_eq!(out[1], "Steps", "a leveling guide has none");
+}
+
+#[test]
 fn a_class_guide_s_details_lead_with_its_reward_item_and_spell_icons_quality_colour_the_game_s_tooltip_on_hover_and_why() {
 	let out = run_all(
 		r#"
@@ -445,12 +473,12 @@ fn a_class_guide_s_details_lead_with_its_reward_item_and_spell_icons_quality_col
 			steps = { { title = "One", goals = { { t = "note", text = "One", status = "pending" } } } } }
 		table.insert(uistub.order, id)
 		ITEM_QUALITY_COLORS = { [3] = { r = 0, g = 0.44, b = 0.87 } }
-		Polestar.Compat.ItemIcon = function(item) return item == 20536 and 135139 or nil end
-		Polestar.Compat.SpellIcon = function(spell) return spell == 23161 and 132238 or nil end
+		Northstar.Compat.ItemIcon = function(item) return item == 20536 and 135139 or nil end
+		Northstar.Compat.SpellIcon = function(spell) return spell == 23161 and 132238 or nil end
 		local tips = {}
 		GameTooltip.SetHyperlink = function(_, link) tips[#tips + 1] = link end
 		GameTooltip.SetSpellByID = function(_, spell) tips[#tips + 1] = "spell:" .. spell end
-		Polestar.Set("ui.pickerFaction", "All")
+		Northstar.Set("ui.pickerFaction", "All")
 		UI.ShowPicker()
 		P.Select(id)
 		local d = D()
@@ -500,7 +528,7 @@ fn reward_tiles_an_uncached_item_s_tooltip_fills_in_when_the_item_arrives_the_pa
 		local cached, requested, spellsRequested = {}, {}, {}
 		local names = { [20536] = "Soul Harvester", [20534] = "Abyss Shard" }
 		local function link(item) return "|cff0070dd|Hitem:" .. item .. "::::::::50:::::|h[" .. names[item] .. "]|h|r" end
-		local C = Polestar.Compat
+		local C = Northstar.Compat
 		C.RequestItem = function(item) if cached[item] then return true end requested[#requested + 1] = item; return false end
 		C.ItemLink = function(item) return cached[item] and link(item) or nil end
 		C.RequestSpell = function(spell) spellsRequested[#spellsRequested + 1] = spell; return false end
@@ -525,8 +553,8 @@ fn reward_tiles_an_uncached_item_s_tooltip_fills_in_when_the_item_arrives_the_pa
 			if IsModifiedClick("DRESSUP") then return DressUpItemLink(l) end
 			return false
 		end
-		Polestar.Hooks.ItemClick("test", function(_, item) if IsAltKeyDown() then calls[#calls + 1] = "guide " .. item end end)
-		Polestar.Set("ui.pickerFaction", "All")
+		Northstar.Hooks.ItemClick("test", function(_, item) if IsAltKeyDown() then calls[#calls + 1] = "guide " .. item end end)
+		Northstar.Set("ui.pickerFaction", "All")
 		UI.ShowPicker()
 		P.Select(id)
 		local d = D()
@@ -578,20 +606,20 @@ fn reward_tiles_an_uncached_item_s_tooltip_fills_in_when_the_item_arrives_the_pa
 fn load_guide_replaces_the_current_tab_open_in_new_tab_adds_one_double_click_and_enter_load() {
 	let out = run(r#"
 		uistub.openTabs(TABS, 1)
-		Polestar.Set("ui.shown", false)
+		Northstar.Set("ui.shown", false)
 		local r = {}
 		UI.ShowPicker(); P.SetCategory("Leveling"); P.Select("forever/alliance/02-westfall")
 		D().Load:Click()
-		r.load = { lastCall("SetGuide"), Polestar.Get("ui.shown"), PolestarPicker:IsShown() }
+		r.load = { lastCall("SetGuide"), Northstar.Get("ui.shown"), NorthstarPicker:IsShown() }
 		UI.ShowPicker(); P.Select("forever/alliance/dwarf-gnome/01-dun-morogh")
 		D().NewTab:Click()
-		r.newTab = { lastCall("OpenTab"), PolestarPicker:IsShown() }
+		r.newTab = { lastCall("OpenTab"), NorthstarPicker:IsShown() }
 		UI.ShowPicker(); P.SetCategory("Professions")
 		stub.RunScript(rowFor("Cooking 1-300"), "OnDoubleClick", "LeftButton")
-		r.double = { lastCall("SetGuide"), PolestarPicker:IsShown() }
+		r.double = { lastCall("SetGuide"), NorthstarPicker:IsShown() }
 		UI.ShowPicker(); P.SetQuery("darkshore")
-		stub.RunScript(PolestarPicker.Search, "OnEnterPressed")
-		r.enter = { lastCall("SetGuide"), PolestarPicker:IsShown() }
+		stub.RunScript(NorthstarPicker.Search, "OnEnterPressed")
+		r.enter = { lastCall("SetGuide"), NorthstarPicker:IsShown() }
 		emit(r)"#);
 	assert_eq!(out["load"], json!([["SetGuide", "forever/alliance/02-westfall"], true, false]));
 	assert_eq!(out["newTab"], json!([["OpenTab", "forever/alliance/dwarf-gnome/01-dun-morogh"], false]));
@@ -604,16 +632,16 @@ fn from_the_guide_window_s_loading_opens_a_new_tab_faction_buttons_write_the_fil
 	let out = run(r#"
 		uistub.openTabs(TABS, 1)
 		UI.ShowPicker({ newTab = true })
-		local r = { subtitle = PolestarPicker.Subtitle:GetText(), newTabMode = P.IsNewTabMode() }
-		for _, b in ipairs(PolestarPicker.factionButtons) do if b.psKey == "Horde" then b:Click() end end
-		r.filter = Polestar.Get("ui.pickerFaction")
+		local r = { subtitle = NorthstarPicker.Subtitle:GetText(), newTabMode = P.IsNewTabMode() }
+		for _, b in ipairs(NorthstarPicker.factionButtons) do if b.psKey == "Horde" then b:Click() end end
+		r.filter = Northstar.Get("ui.pickerFaction")
 		P.SetCategory("Leveling")
 		P.Select("forever/horde/orc-troll/01-durotar")
 		r.primary = { load = D().Load.psPrimary or false, newTab = D().NewTab.psPrimary or false }
 		r.tip = rowFor("Durotar").psTip
 		stub.RunScript(rowFor("Durotar"), "OnDoubleClick", "LeftButton")
 		r.call = lastCall("OpenTab")
-		r.tabs = #select(1, Polestar.Engine.GetTabs())
+		r.tabs = #select(1, Northstar.Engine.GetTabs())
 		emit(r)"#);
 	assert_eq!(
 		out,
@@ -641,16 +669,16 @@ fn home_continue_cards_for_the_open_tabs_and_the_suggested_guides_a_card_selects
 		UI.ShowPicker()
 		local cards = {}
 		for _, f in ipairs(stub.frames) do
-			if f.psIndex and rawget(f, "Pct") and f:IsShown() and f:GetParent() == PolestarPicker.Scroll.Child then cards[#cards + 1] = f end
+			if f.psIndex and rawget(f, "Pct") and f:IsShown() and f:GetParent() == NorthstarPicker.Scroll.Child then cards[#cards + 1] = f end
 		end
 		table.sort(cards, function(a, b) return a.psIndex < b.psIndex end)
 		local info = {}
 		for i, c in ipairs(cards) do info[i] = { c.Title:GetText(), c.Step:GetText(), c.Pct:GetText(), c.Note:GetText() } end
 		local r = { view = P.View(), homeOn = tab("home").psSelected, folders = folders(), suggested = lines(), info = info, shown = P.shown.cards }
 		cards[2]:Click()
-		r.selected = { P.Selected(), D().Title:GetText(), PolestarPicker:IsShown() }
+		r.selected = { P.Selected(), D().Title:GetText(), NorthstarPicker:IsShown() }
 		stub.RunScript(cards[2], "OnDoubleClick", "LeftButton")
-		r.continued = { lastCall("SetGuide"), select(2, Polestar.Engine.GetTabs()), PolestarPicker:IsShown() }
+		r.continued = { lastCall("SetGuide"), select(2, Northstar.Engine.GetTabs()), NorthstarPicker:IsShown() }
 		emit(r)"#);
 	assert_eq!(out["view"], "home");
 	assert_eq!(out["homeOn"], true);
@@ -670,7 +698,7 @@ const CARDS: &str = r#"
 local function cards()
 	local out = {}
 	for _, f in ipairs(stub.frames) do
-		if f.psIndex and rawget(f, "Pct") and f:IsShown() and f:GetParent() == PolestarPicker.Scroll.Child then out[#out + 1] = f end
+		if f.psIndex and rawget(f, "Pct") and f:IsShown() and f:GetParent() == NorthstarPicker.Scroll.Child then out[#out + 1] = f end
 	end
 	table.sort(out, function(a, b)
 		local _, _, _, ax, ay = a:GetPoint(1)
@@ -685,7 +713,7 @@ local function cardTitles()
 	for i, c in ipairs(cards()) do out[i] = c.Title:GetText() .. " | " .. c.Note:GetText() end
 	return out
 end
-local function more() return PolestarPicker.CardsMore:IsShown() and PolestarPicker.CardsMore.Label:GetText() or false end
+local function more() return NorthstarPicker.CardsMore:IsShown() and NorthstarPicker.CardsMore.Label:GetText() or false end
 local SIX = {}
 for i = 1, 6 do SIX[i] = { uistub.order[i], 1 } end
 "#;
@@ -712,12 +740,12 @@ fn a_continue_card_closes_its_tab_from_its_close_button_or_its_right_click_menu_
 		-- Right-click: the tab's options, as on the guide window's tab strip.
 		stub.RunScript(cards()[1], "OnClick", "RightButton")
 		local items = {}
-		for _, m in ipairs(PolestarMenu.rows) do if m:IsShown() then items[#items + 1] = m.Text:GetText() end end
+		for _, m in ipairs(NorthstarMenu.rows) do if m:IsShown() then items[#items + 1] = m.Text:GetText() end end
 		r.items = items
-		for _, m in ipairs(PolestarMenu.rows) do if m:IsShown() and m.Text:GetText() == "Move right" then m:Click() end end
+		for _, m in ipairs(NorthstarMenu.rows) do if m:IsShown() and m.Text:GetText() == "Move right" then m:Click() end end
 		r.moved = lastCall("MoveTab")
 		stub.RunScript(cards()[1], "OnClick", "RightButton")
-		for _, m in ipairs(PolestarMenu.rows) do if m:IsShown() and m.Text:GetText() == "Close tab" then m:Click() end end
+		for _, m in ipairs(NorthstarMenu.rows) do if m:IsShown() and m.Text:GetText() == "Close tab" then m:Click() end end
 		r.menuClosed = { lastCall("CloseTab"), cardTitles() }
 		emit(r)"#
 	));
@@ -741,18 +769,18 @@ fn continue_shows_one_row_active_tab_then_most_recent_show_all_expands_and_is_re
 		"{CARDS}{}",
 		r#"
 		uistub.openTabs(SIX, 1)
-		Polestar.Fire("GUIDE_CHANGED", SIX[5][1])
-		Polestar.Fire("GUIDE_CHANGED", SIX[3][1])
-		Polestar.Fire("GUIDE_CHANGED", SIX[1][1])
+		Northstar.Fire("GUIDE_CHANGED", SIX[5][1])
+		Northstar.Fire("GUIDE_CHANGED", SIX[3][1])
+		Northstar.Fire("GUIDE_CHANGED", SIX[1][1])
 		UI.ShowPicker()
 		local r = { folder = folders()[1], row = cardTitles(), more = more() }
-		PolestarPicker.CardsMore:Click()
+		NorthstarPicker.CardsMore:Click()
 		r.all = cardTitles()
 		r.less = more()
-		PolestarPicker:Hide()
+		NorthstarPicker:Hide()
 		UI.ShowPicker()
 		r.again = #cards()
-		PolestarPicker.CardsMore:Click()
+		NorthstarPicker.CardsMore:Click()
 		r.back = { #cards(), more() }
 		emit(r)"#
 	));
@@ -776,8 +804,8 @@ fn a_wider_guide_menu_fits_more_cards_in_the_continue_row() {
 	let out = run(&format!(
 		"{CARDS}{}",
 		r#"
-		local metric = Polestar.Theme.Metric
-		Polestar.Theme.Metric = function(key, default, ...)
+		local metric = Northstar.Theme.Metric
+		Northstar.Theme.Metric = function(key, default, ...)
 			if key == "pickerW" then return 1500 end
 			return metric(key, default, ...)
 		end
@@ -811,14 +839,14 @@ fn current_lists_the_open_tabs_tab_and_progress_check_when_finished_recent_keeps
 		local r = { view = P.View(), current = lines() }
 		tab("recent"):Click()
 		r.recent = lines()
-		r.stored = Polestar.CharState().ui.recentGuides[1]
+		r.stored = Northstar.CharState().ui.recentGuides[1]
 		-- Every guide that becomes the loaded one goes to the front, once.
 		local ids = {}
 		for _, id in ipairs(uistub.order) do ids[#ids + 1] = id end
-		for i = 1, 12 do Polestar.Fire("GUIDE_CHANGED", ids[i]) end
-		Polestar.Fire("GUIDE_CHANGED", ids[5])
-		Polestar.Fire("GUIDE_CHANGED", nil)
-		local list = Polestar.CharState().ui.recentGuides
+		for i = 1, 12 do Northstar.Fire("GUIDE_CHANGED", ids[i]) end
+		Northstar.Fire("GUIDE_CHANGED", ids[5])
+		Northstar.Fire("GUIDE_CHANGED", nil)
+		local list = Northstar.CharState().ui.recentGuides
 		r.count, r.first, r.second, r.unique = #list, list[1], list[2], true
 		local seen = {}
 		for _, id in ipairs(list) do if seen[id] then r.unique = false end; seen[id] = true end
@@ -846,12 +874,12 @@ fn favorites_the_star_in_the_details_toggles_a_guide_in_charstate_ui_favoritegui
 		local star = D().Star
 		local r = { before = star.psActive or false }
 		star:Click()
-		r.after = { star.psActive, star.psTip, Polestar.CharState().ui.favoriteGuides["forever/alliance/02-westfall"], nav("Favorites").Count:GetText() }
+		r.after = { star.psActive, star.psTip, Northstar.CharState().ui.favoriteGuides["forever/alliance/02-westfall"], nav("Favorites").Count:GetText() }
 		nav("Favorites"):Click()
 		r.list = lines()
 		r.folders = folders()
 		star:Click()
-		r.removed = { Polestar.CharState().ui.favoriteGuides["forever/alliance/02-westfall"] or false, #rows(), PolestarPicker.Empty:IsShown() }
+		r.removed = { Northstar.CharState().ui.favoriteGuides["forever/alliance/02-westfall"] or false, #rows(), NorthstarPicker.Empty:IsShown() }
 		emit(r)"#);
 	assert_eq!(
 		out,
@@ -874,7 +902,7 @@ fn the_details_art_the_zone_s_painting_from_the_client_around_the_guide_s_focus_
 		end
 		C_Map.GetMapArtLayerTextures = function() local t = {}; for i = 1, 12 do t[i] = 200000 + i end; return t end
 		uistub.guides["forever/alliance/02-westfall"].zone = 1436
-		Polestar.Engine.GuideFocus = function(id) if id == "forever/alliance/02-westfall" then return 56, 47 end end
+		Northstar.Engine.GuideFocus = function(id) if id == "forever/alliance/02-westfall" then return 56, 47 end end
 		UI.ShowPicker()
 		P.Select("forever/alliance/02-westfall")
 		local a = D().Art
@@ -886,9 +914,9 @@ fn the_details_art_the_zone_s_painting_from_the_client_around_the_guide_s_focus_
 		local shown = 0
 		for _, t in ipairs(a.Tiles) do if t:IsShown() then shown = shown + 1 end end
 		r.other = { painted = P.detail.art, band = a.Band:IsShown(), tiles = shown }
-		Polestar.CharState().ui.pickerSelected = "gone"
-		PolestarPicker:Hide()
-		Polestar.Engine.SetGuide(nil)
+		Northstar.CharState().ui.pickerSelected = "gone"
+		NorthstarPicker:Hide()
+		Northstar.Engine.SetGuide(nil)
 		uistub.suggest = nil
 		UI.ShowPicker()
 		r.none = { P.detail == nil, D().EmptyTitle:IsShown(), a.Band:IsShown(), D().Load:IsShown() }
@@ -915,7 +943,7 @@ fn the_next_fact_and_the_suggested_follow_ups_list_only_the_options_offered_now(
 		uistub.openTabs(TABS, 1)
 		local desolace, feralas = "forever/alliance/30-40/02-desolace", "forever/alliance/40-50/03-feralas"
 		local offered = {}
-		Polestar.Engine.RouteOffered = function(from, id) return offered[id] ~= false end
+		Northstar.Engine.RouteOffered = function(from, id) return offered[id] ~= false end
 		UI.ShowPicker()
 		local r = { suggested = lines() }
 		offered["forever/alliance/02-westfall"] = false
@@ -939,4 +967,85 @@ fn the_next_fact_and_the_suggested_follow_ups_list_only_the_options_offered_now(
 	assert_eq!(out["both"], json!(["Next", "Your choice: Desolace or Feralas"]));
 	assert_eq!(out["one"], json!(["Next", "Desolace (31\u{2013}34)"]));
 	assert_ne!(out["none"], "Next");
+}
+
+// Fitz, 0.3.5 preview (EllesmereUI's font, menu scale 90 %): on a fresh client start the hub's rail labels drew
+// blank, one or two excepted, and stayed blank on every return from Options; a /reload brought them back. The
+// client lays a window's first strings out blank and draws them only once their text is set again in a later frame
+// (setting the same text changes nothing). The stub models that: a label set in the frame its window shows is
+// blank until set in a later one. Every rail label must show, at 80, 90 and 100 %, in English and German.
+fn rail_labels(before: &str) -> Value {
+	emitted(&RunAddon {
+		stubs: vec!["stub_ui.lua"],
+		before: before.into(),
+		addons: vec![Addon::files("Northstar", &FILES)],
+		script: format!(
+			"uistub.install()\nstub.login()\nlocal UI, P = Northstar.UI, Northstar.UI.Picker\n{}",
+			r#"
+		local hooked = {}
+		local function shown(f)
+			for _, b in ipairs(f.railButtons) do
+				local l = b.Label
+				if not hooked[l] then
+					hooked[l] = true
+					local set = l.SetText
+					l.SetText = function(self, ...)
+						if GetTime() > self.psShownAt then self.psBlank = nil end
+						return set(self, ...)
+					end
+				end
+				l.psBlank, l.psShownAt = true, GetTime()
+			end
+		end
+		local function labels(f)
+			local out = {}
+			for _, b in ipairs(f.railButtons) do
+				if b:IsShown() then out[#out + 1] = b.Label.psBlank and "" or (b.Label:GetText() or "") end
+			end
+			return out
+		end
+		local out = {}
+		for _, scale in ipairs({ 0.8, 0.9, 1 }) do
+			Northstar.Set("ui.menuScale", scale)
+			if NorthstarPicker then NorthstarPicker:Hide() end
+			if NorthstarOptions then NorthstarOptions:Hide() end
+			UI.ShowPicker()
+			shown(NorthstarPicker)
+			stub.advance(0.1)
+			local first = labels(NorthstarPicker)
+			UI.ShowOptions()
+			shown(NorthstarOptions)
+			stub.advance(0.1)
+			local options = labels(NorthstarOptions)
+			UI.ShowPicker()
+			shown(NorthstarPicker)
+			stub.advance(0.1)
+			local want = {}
+			for _, item in ipairs(P.FootItems()) do want[#want + 1] = item.label end
+			for _, item in ipairs(P.RailItems()) do want[#want + 1] = item.label end
+			out[#out + 1] = { scale = NorthstarPicker:GetScale(), want = want, first = first, options = options, back = labels(NorthstarPicker) }
+		end
+		emit(out)"#
+		),
+		..Default::default()
+	})
+	.remove(0)
+}
+
+#[test]
+fn every_rail_label_shows_on_the_hub_s_first_show_and_on_the_way_back_from_options_at_80_90_and_100_percent_in_english_and_german() {
+	let german = format!("function GetLocale() return \"deDE\" end\n{}", forge_addontest::shipped_strings("deDE"));
+	for (locale, before, lookup) in [("enUS", "", "Lookup"), ("deDE", german.as_str(), "Nachschlagen")] {
+		let out = rail_labels(before);
+		let runs = out.as_array().unwrap();
+		assert_eq!(runs.len(), 3);
+		for (run, scale) in runs.iter().zip([0.8, 0.9, 1.0]) {
+			assert_eq!(run["scale"].as_f64().unwrap(), scale, "{locale}");
+			let want = &run["want"];
+			assert!(want.as_array().unwrap().iter().any(|l| l.as_str() == Some(lookup)), "{locale}: {want}");
+			assert_eq!(&run["first"], want, "{locale} {scale}: the hub's first show");
+			assert_eq!(&run["options"], want, "{locale} {scale}: the settings' rail");
+			assert_eq!(&run["back"], want, "{locale} {scale}: back from the settings");
+		}
+	}
 }

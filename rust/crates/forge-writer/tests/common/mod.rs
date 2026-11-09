@@ -1,6 +1,6 @@
 //! The reference data the writer tests play on. By default the committed goldens: the shared data slice
 //! (rust/tests/golden/world/root/data/forever) with the writer golden's synthetic overlays and mechanics
-//! and its public travel.json (rust/tests/golden/writer, README there). With $POLESTAR_V1 set to a
+//! and its public travel.json (rust/tests/golden/writer, README there). With $NORTHSTAR_V1 set to a
 //! checkout with built data/forever (and data/local/mechanics), that checkout's full data instead.
 #![allow(dead_code)]
 
@@ -25,14 +25,14 @@ fn mechanics(dir: &Path) -> (Option<serde_json::Value>, Option<serde_json::Value
 	(read("quest-mechanics.json"), read("quest-steps.json"))
 }
 
-/// The full data of $POLESTAR_V1 (optional local mode), when set and built.
+/// The full data of $NORTHSTAR_V1 (optional local mode), when set and built.
 fn full() -> Option<Ref> {
-	let root = PathBuf::from(std::env::var_os("POLESTAR_V1")?);
+	let root = PathBuf::from(std::env::var_os("NORTHSTAR_V1")?);
 	if !root.join("data/forever/quests.json").exists() {
-		eprintln!("POLESTAR_V1 has no data/forever/quests.json: reading the goldens");
+		eprintln!("NORTHSTAR_V1 has no data/forever/quests.json: reading the goldens");
 		return None;
 	}
-	let data = forge_guide::data::load_data(&root.join("data/forever")).expect("POLESTAR_V1 data/forever");
+	let data = forge_guide::data::load_data(&root.join("data/forever")).expect("NORTHSTAR_V1 data/forever");
 	let (mech, steps) = mechanics(&root.join("data/local/mechanics"));
 	Some(Ref { data, mech, steps })
 }
@@ -74,12 +74,12 @@ fn slice(travel: Option<&str>) -> Ref {
 	Ref { data, mech, steps }
 }
 
-/// The data the engine tests play on ($POLESTAR_V1's, else the golden slice with its own travel).
+/// The data the engine tests play on ($NORTHSTAR_V1's, else the golden slice with its own travel).
 pub fn engine_ref() -> Ref {
 	full().unwrap_or_else(|| slice(None))
 }
 
-/// The data the travel repair plays on ($POLESTAR_V1's, else the golden slice with the writer
+/// The data the travel repair plays on ($NORTHSTAR_V1's, else the golden slice with the writer
 /// golden's whole-world travel.json: the repair crosses zones and seas the slice does not hold).
 pub fn travel_ref() -> Ref {
 	full().unwrap_or_else(|| slice(Some("travel.json")))

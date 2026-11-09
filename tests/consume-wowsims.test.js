@@ -32,7 +32,7 @@ test('parseSimTs reads epWeights stats, pseudo-stats and the reference stat', ()
 	assert.equal(ws.parseSimTs('no weights here'), null);
 });
 
-test('mapWeights maps wowsims stats to Polestar keys and drops the rest', () => {
+test('mapWeights maps wowsims stats to Northstar keys and drops the rest', () => {
 	const raw = {
 		StatStrength: 2, StatAttackPower: 1, StatRangedAttackPower: 1, StatMeleeHit: 20, StatSpellHit: 10,
 		StatMeleeCrit: 15, StatSpellCrit: 12, StatDefense: 4, StatBlockValue: 1, StatMP5: 2, StatFirePower: 0.5,
@@ -45,7 +45,7 @@ test('mapWeights maps wowsims stats to Polestar keys and drops the rest', () => 
 		mp5: 2, spFire: 0.5, sp: 1, dps: 8, rdps: 5,
 	});
 	assert.deepEqual(dps.dropped, { StatSpellDamage: 1, StatBonusArmor: 0.2, StatMeleeHaste: 9, PseudoStatOffHandDps: 3 });
-	// Healers: wowsims spell power (damage+healing) is Polestar heal.
+	// Healers: wowsims spell power (damage+healing) is Northstar heal.
 	const heal = ws.mapWeights({ StatSpellPower: 1, StatIntellect: 0.5 }, { healer: true });
 	assert.deepEqual(heal.weights, { heal: 1, int: 0.5 });
 });

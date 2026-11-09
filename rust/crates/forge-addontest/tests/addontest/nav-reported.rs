@@ -1,5 +1,5 @@
 //! Walking paths players reported as impossible, each on the real engine and the shipped maps
-//! (addon/Polestar_Nav): the player's spot and the target as the bug report gave them (Era map coordinates),
+//! (addon/Northstar_Nav): the player's spot and the target as the bug report gave them (Era map coordinates),
 //! the path the engine draws, and the ground it must not cross. A report stays here once fixed, so the next
 //! re-pack cannot bring it back.
 
@@ -29,7 +29,7 @@ fn world(map: i64, x: f64, y: f64) -> Pt {
 }
 
 const WALK: &str = r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local frames = {}
 Path.after = function(fn) frames[#frames + 1] = fn end
 local got = false
@@ -53,7 +53,7 @@ fn walk(from: Pt, to: Pt, profile: Option<&str>) -> Value {
 	};
 	let profile = profile.map(|p| format!(", {{ profile = \"{p}\" }}")).unwrap_or_default();
 	let script = WALK.replace("@C", &from.c.to_string()).replace("@FROM", &pt(from)).replace("@TO", &pt(to)).replace("@PROFILE", &profile);
-	emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], addons: vec![Addon::name("Polestar_Nav")], script, ..Default::default() }).into_iter().next().unwrap_or(Value::Null)
+	emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], addons: vec![Addon::name("Northstar_Nav")], script, ..Default::default() }).into_iter().next().unwrap_or(Value::Null)
 }
 
 /// The points of a walk the engine found.
@@ -188,9 +188,9 @@ fn stormwind_the_walk_to_the_deeprun_tram_ends_at_its_entrance_not_on_the_roof_a
 	forge_addontest::needs!("map-frames.json");
 	let tram = emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])],
 		script: r#"
-			for _, t in ipairs(Polestar.Nav.GetTravelData().transports) do
+			for _, t in ipairs(Northstar.Nav.GetTravelData().transports) do
 				if t.id == "tram-stormwind-ironforge" then emit({ c = t.a.c, x = t.a.wx, y = t.a.wy, z = t.a.z or false }) end
 			end"#
 			.into(),

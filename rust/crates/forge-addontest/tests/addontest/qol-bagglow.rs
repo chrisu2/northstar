@@ -1,4 +1,4 @@
-//! The step's item in the bags (addon/Polestar/QoL/BagGlow.lua): the bag slot holding the current step's `use`
+//! The step's item in the bags (addon/Northstar/QoL/BagGlow.lua): the bag slot holding the current step's `use`
 //! item, or a quest item it collects, glows (the action button border, pulsing, in the theme accent), in the
 //! client's bags; the glow moves with the step and goes with qol.bagGlow off.
 
@@ -6,7 +6,7 @@ use forge_addontest::{emitted, Addon, RunAddon, TEST_PACK, TEST_SOURCE};
 use serde_json::{json, Value};
 
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/glow", pack = "test", title = "Glow", minLevel = 1, maxLevel = 30,
 	steps = {
 		{ title = "Use the carcass", goals = {
@@ -44,8 +44,8 @@ fn run(script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_gear.lua"],
 		before: BEFORE.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "QoL/QoL.xml"])],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/glow" }"#.into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "QoL/QoL.xml"])],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/glow" }"#.into())],
 		login: false,
 		script: [TEST_PACK, TEST_SOURCE, GUIDE, HELPERS, "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 	})
@@ -65,9 +65,9 @@ fn the_step_s_use_item_glows_in_the_bags_the_next_step_s_quest_item_takes_over_o
 		g.bag(0, 2, "item:10338"); g.bag(0, 5, "item:5101"); g.bag(0, 7, "item:2589")
 		g.openBag(0); stub.advance(0.1)
 		emit(glowing(0))
-		Polestar.Engine.Goto(2); stub.advance(0.1); g.openBag(0)
+		Northstar.Engine.Goto(2); stub.advance(0.1); g.openBag(0)
 		emit(glowing(0))
-		Polestar.Set("qol.bagGlow", false); stub.advance(0.1); g.openBag(0)
+		Northstar.Set("qol.bagGlow", false); stub.advance(0.1); g.openBag(0)
 		emit(glowing(0))
 	"#);
 	assert_eq!(out[0], json!([2]), "the carcass, not the fang or the cloth");

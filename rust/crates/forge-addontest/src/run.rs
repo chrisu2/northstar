@@ -94,7 +94,7 @@ pub fn join(dir: &Path, rel: &str) -> PathBuf {
 	out
 }
 
-/// Files an XML manifest loads, in order. Only `<Script file>` and `<Include file>` are used by Polestar's
+/// Files an XML manifest loads, in order. Only `<Script file>` and `<Include file>` are used by Northstar's
 /// manifests.
 pub fn xml_files(xml: &Path) -> Result<Vec<PathBuf>, String> {
 	static COMMENT: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?s)<!--.*?-->").unwrap());
@@ -186,7 +186,7 @@ pub fn build_program(opts: &RunAddon) -> Result<String, String> {
 end"
 		.into(),
 	);
-	// The walking maps' part addons (Polestar_Nav_EK, _Kalimdor: load on demand, Routing/PathGrid.lua asks for
+	// The walking maps' part addons (Northstar_Nav_EK, _Kalimdor: load on demand, Routing/PathGrid.lua asks for
 	// one the first time it searches its continent), loaded as the client loads them, when asked (a test's own
 	// stub.packs entry for one, stub_packs.lua, wins).
 	let mut parts = Vec::new();
@@ -226,6 +226,31 @@ end",
 		let saved = opts.saved.iter().find(|(n, _)| n == name).map_or_else(|| "nil".to_string(), |(_, lua)| format!("function() {lua} end"));
 		let list: Vec<String> = files.iter().map(|f| path_str(f)).collect();
 		lines.push(format!("__load({}, {{ {} }}, {saved})", lua_string(name), list.join(", ")));
+	}
+	// Northstar leaves the wide guide and the floating arrow off. These tests
+	// exercise that window and that arrow, so every login turns both on after
+	// the saved-variable migration (which runs inside stub.login and would
+	// otherwise tuck the window away). A test that wants the product defaults
+	// sets them again after it logs in. The guide frame only renders while it
+	// is shown, so render once the window is back.
+	if opts.addons.iter().any(|a| a.addon_name() == "Northstar") {
+		lines.push(
+			"if Northstar and Northstar.Set then
+  local login = stub.login
+  function stub.login(...)
+    login(...)
+    Northstar.Set(\"ui.wideGuide\", true)
+    Northstar.Set(\"ui.journal\", false)
+    Northstar.Set(\"nav.arrow\", true)
+    local GF = Northstar.UI and Northstar.UI.GuideFrame
+    if GF and GF.ApplyVisibility then GF.ApplyVisibility() end
+    if GF and GF.Render then GF.Render() end
+    local arrow = Northstar.Nav and Northstar.Nav.arrow
+    if arrow and arrow.Refresh then arrow:Refresh() end
+  end
+end"
+			.into(),
+		);
 	}
 	if opts.login {
 		lines.push("stub.login()".into());

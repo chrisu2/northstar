@@ -6,35 +6,35 @@ use std::path::{Path, PathBuf};
 use forge_guide::js::{cmp_utf16, Obj, V};
 
 const HELPERS: &str = r#"
-local function POLESTAR_cmp(a, b)
+local function NORTHSTAR_cmp(a, b)
   local ta, tb = type(a), type(b)
   if ta ~= tb then return ta < tb end
   if ta == "number" or ta == "string" then return a < b end
   return tostring(a) < tostring(b)
 end
-function POLESTAR_pairs(t)
+function NORTHSTAR_pairs(t)
   local out = {}
   if type(t) ~= "table" then return out end
   local keys = {}
   for k in pairs(t) do keys[#keys + 1] = k end
-  table.sort(keys, POLESTAR_cmp)
+  table.sort(keys, NORTHSTAR_cmp)
   for i, k in ipairs(keys) do out[i] = { k, t[k] } end
   return out
 end
 local __stubmt = {}
-POLESTAR_STUB = setmetatable({}, __stubmt)
-__stubmt.__index = function() return POLESTAR_STUB end
-__stubmt.__call = function() return POLESTAR_STUB end
+NORTHSTAR_STUB = setmetatable({}, __stubmt)
+__stubmt.__index = function() return NORTHSTAR_STUB end
+__stubmt.__call = function() return NORTHSTAR_STUB end
 __stubmt.__concat = function(a, b)
-  local function s(v) if v == POLESTAR_STUB then return "" end return tostring(v) end
+  local function s(v) if v == NORTHSTAR_STUB then return "" end return tostring(v) end
   return s(a) .. s(b)
 end
 __stubmt.__tostring = function() return "" end
-POLESTAR_G = setmetatable({}, {
+NORTHSTAR_G = setmetatable({}, {
   __index = function(_, k) return rawget(_G, k) end,
   __newindex = function(_, k, v) rawset(_G, k, v) end,
 })
-POLESTAR_NS = {}
+NORTHSTAR_NS = {}
 "#;
 
 /// Version line of an addon's TOC (the first TOC by name holding one).
@@ -82,7 +82,7 @@ fn temp_dir() -> Result<TempDir, String> {
 }
 
 /// -> the value of `expr`. Files load in order, sandboxed, each called with `...` = addonName and
-/// the shared namespace POLESTAR_NS; `getfenv(0)`/`getfenv()` read as POLESTAR_G.
+/// the shared namespace NORTHSTAR_NS; `getfenv(0)`/`getfenv()` read as NORTHSTAR_G.
 pub fn read_addon_lua(files: &[PathBuf], addon_name: &str, prelude: &str, expr: &str) -> Result<V, String> {
 	read_addon_lua_with(files, addon_name, prelude, expr, &|src, _| src)
 }
@@ -99,12 +99,12 @@ pub fn read_addon_lua_with(files: &[PathBuf], addon_name: &str, prelude: &str, e
 			return Err(format!("{}: precompiled Lua is not accepted", file.display()));
 		}
 		let src = src.strip_prefix(b"\xEF\xBB\xBF").unwrap_or(&src);
-		let src = rewrite(getfenv.replace_all(src, &b"POLESTAR_G"[..]).into_owned(), file);
+		let src = rewrite(getfenv.replace_all(src, &b"NORTHSTAR_G"[..]).into_owned(), file);
 		let name = file.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
 		let copy = tmp.0.join(format!("{i:04}-{name}"));
 		std::fs::write(&copy, &src).map_err(|e| format!("{}: {e}", copy.display()))?;
 		loads.push(format!(
-			"do\n  local ok, err = __polestar_loaddata({}, {}, POLESTAR_NS)\n  if not ok then error({} .. \": \" .. tostring(err), 0) end\nend",
+			"do\n  local ok, err = __polestar_loaddata({}, {}, NORTHSTAR_NS)\n  if not ok then error({} .. \": \" .. tostring(err), 0) end\nend",
 			lua_quote(&copy.to_string_lossy()),
 			lua_quote(addon_name),
 			lua_quote(&file.to_string_lossy())
@@ -113,7 +113,7 @@ pub fn read_addon_lua_with(files: &[PathBuf], addon_name: &str, prelude: &str, e
 	crate::lua::lua_to_value(&[], &format!("{HELPERS}\n{prelude}\n{}", loads.join("\n")), expr)
 }
 
-/// [[k, v], ...] (from POLESTAR_pairs) -> { k: v }.
+/// [[k, v], ...] (from NORTHSTAR_pairs) -> { k: v }.
 pub fn pairs_to_object(list: &V) -> Obj {
 	let out = Obj::new();
 	for p in list.items() {

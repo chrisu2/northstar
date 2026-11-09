@@ -10,7 +10,7 @@ when it names the JS command as its generator.
   `data/map-frames.json` (Era frames of the zones), `aids.json` (approach chains and zone crossings in map
   percent on the continent's frame: a building mouth, a cave, a pass, a lift chain left out, a bridge, a
   tunnel, a lift crossing left out, a pass). No client file, no game data.
-- **Outputs (the JS's):** `Polestar_Nav/` (`--cells 128`) and `Polestar_Nav-32/` (`--cells 32`): `Nav/Nav0.lua`,
+- **Outputs (the JS's):** `Northstar_Nav/` (`--cells 128`) and `Northstar_Nav-32/` (`--cells 32`): `Nav/Nav0.lua`,
   its parts, `Nav/Chokepoints.lua`, `Nav/Nav.xml`, `PACK.json`; dated 2026-10-23.
 - **JS:** tools/lib/nav/pack.js and chokepoints.js of baked-legs at 73e0ebbc8 (maps format 3's area field, the
   cave and building mouths that are doorways), the last JS writer, composed as its tools/commands/nav.js

@@ -89,20 +89,20 @@ const base: Snapshot = {
 		products: [
 			{
 				id: 'polestar',
-				name: 'Polestar',
+				name: 'Northstar',
 				blurb: 'Leveling guides, the arrow, Lookup, Dungeons and Rares',
 				installed: '0.2.6',
-				latest: { version: '0.2.7', tag: 'v0.2.7', title: 'Polestar 0.2.7', pageUrl: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.7', publishedAt: new Date(now - 2 * 86_400_000).toISOString(), prerelease: false },
+				latest: { version: '0.2.7', tag: 'v0.2.7', title: 'Northstar 0.2.7', pageUrl: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.7', publishedAt: new Date(now - 2 * 86_400_000).toISOString(), prerelease: false },
 				status: 'update',
 				busy: null,
 				progress: null,
 			},
 			{
 				id: 'recorder',
-				name: 'Polestar Recorder',
+				name: 'Northstar Recorder',
 				blurb: 'Records your play for the recording program (off until you turn it on)',
 				installed: '0.3.0',
-				latest: { version: '0.3.0', tag: 'v0.2.7', title: 'Polestar 0.2.7', pageUrl: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.7', publishedAt: new Date(now - 2 * 86_400_000).toISOString(), prerelease: false },
+				latest: { version: '0.3.0', tag: 'v0.2.7', title: 'Northstar 0.2.7', pageUrl: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.7', publishedAt: new Date(now - 2 * 86_400_000).toISOString(), prerelease: false },
 				status: 'upToDate',
 				busy: null,
 				progress: null,
@@ -148,7 +148,7 @@ function mockPacks(): Pack[] {
 		status: 'install',
 		blocked: null,
 		size,
-		folders: [`PolestarPack_${id}`],
+		folders: [`NorthstarPack_${id}`],
 		homepage: null,
 		changelog: 'First release.',
 		official: false,
@@ -163,13 +163,13 @@ function mockPacks(): Pack[] {
 	});
 	return [
 		pack('lightforge', 'Lightforge Leveling', 'Brannis', '1.2.0', 9671, { installed: '1.1.0', status: 'update', reviewed: true, changelog: '## 1.2.0\n\n- Westfall: the Defias loop now ends at Sentinel Hill.\n- Fewer runs back to Goldshire.' }),
-		pack('wayfarer', "Wayfarer's Atlas", 'Odile', '1.0.0', 7330, { installed: '1.0.0', status: 'upToDate', homepage: 'https://example.org/wayfarer', folders: ['PolestarPack_wayfarer', 'PolestarPack_wayfarer_deDE'] }),
+		pack('wayfarer', "Wayfarer's Atlas", 'Odile', '1.0.0', 7330, { installed: '1.0.0', status: 'upToDate', homepage: 'https://example.org/wayfarer', folders: ['NorthstarPack_wayfarer', 'NorthstarPack_wayfarer_deDE'] }),
 		pack('stonetalon', 'Stonetalon Shortcuts', 'Rhea', '2.0.0', 8120, {
 			installed: '1.4.0',
 			status: 'update',
 			publisher: 'rhea-guides',
-			folders: ['PolestarPack_stonetalon', 'PolestarPack_stonetalon_maps'],
-			changes: { replaced: false, publisher: { from: 'Rhea', to: 'rhea-guides' }, added: ['PolestarPack_stonetalon_maps'], removed: [] },
+			folders: ['NorthstarPack_stonetalon', 'NorthstarPack_stonetalon_maps'],
+			changes: { replaced: false, publisher: { from: 'Rhea', to: 'rhea-guides' }, added: ['NorthstarPack_stonetalon_maps'], removed: [] },
 		}),
 		pack('barrens-run', 'Barrens Run', 'Quill', '3.0.0', 11_040, {
 			installed: '1.3.2',
@@ -191,7 +191,7 @@ function mockPacks(): Pack[] {
 		}),
 		pack('durotar-dash', 'Durotar Dash', 'Tester', '1.0.0', 10_311),
 		pack('emberway', 'Emberway Routes', 'Ashka', '1.0.0', 10_251, { official: true, reviewed: true }),
-		pack('hearthside', 'Hearthside Professions', 'Mira', '1.0.0', 12_169, { blocked: 'Needs Polestar 0.2.8 or newer; you have 0.2.6. Update it on the Addons page.' }),
+		pack('hearthside', 'Hearthside Professions', 'Mira', '1.0.0', 12_169, { blocked: 'Needs Northstar 0.2.8 or newer; you have 0.2.6. Update it on the Addons page.' }),
 		pack('ironvault', 'Ironvault Dungeons', 'Kel', '1.0.0', 6958),
 	];
 }
@@ -208,7 +208,7 @@ function initial(): Snapshot {
 		case 'optin':
 			s.consent = false;
 			s.setupDone = scene === 'optin';
-			s.status = { ...s.status, kind: 'off', title: 'Sharing is off', detail: "Nothing is sent. Start sharing under Recording to help improve Polestar's guides.", lastUpload: null };
+			s.status = { ...s.status, kind: 'off', title: 'Sharing is off', detail: "Nothing is sent. Start sharing under Recording to help improve Northstar's guides.", lastUpload: null };
 			s.week = null;
 			if (scene === 'optin') {
 				s.addons.products[1] = { ...s.addons.products[1], installed: null, status: 'install' };
@@ -237,7 +237,7 @@ function initial(): Snapshot {
 			s.pending = 12;
 			break;
 		case 'registering':
-			s.status = { ...s.status, kind: 'uploading', title: 'Setting up', detail: 'Setting up this PC with the Polestar server. It takes a few seconds, once.', lastUpload: null };
+			s.status = { ...s.status, kind: 'uploading', title: 'Setting up', detail: 'Setting up this PC with the Northstar server. It takes a few seconds, once.', lastUpload: null };
 			s.week = null;
 			s.pending = 12;
 			break;
@@ -265,7 +265,7 @@ function initial(): Snapshot {
 			break;
 		case 'recorder-next':
 			s.game.addon = { installed: true, version: '0.2.6', latest: '0.2.6', updateAvailable: false };
-			s.status = { ...s.status, kind: 'attention', title: 'The Recorder is out of date', detail: 'It records in an older format the server no longer reads. The new Recorder comes with the next Polestar update.', action: null };
+			s.status = { ...s.status, kind: 'attention', title: 'The Recorder is out of date', detail: 'It records in an older format the server no longer reads. The new Recorder comes with the next Northstar update.', action: null };
 			break;
 		case 'empty':
 			s.week = null;
@@ -296,8 +296,8 @@ const activity: ActivityEntry[] =
 				{ kind: 'upload', at: now - 4 * MIN, account: 'WOW1', chunks: 9, records: 1043, bytes: 61_420, accepted: [31, 32, 33, 34, 35, 36, 37, 38, 39], duplicate: [], rejected: [], message: null },
 				{ kind: 'upload', at: now - 3 * 60 * MIN, account: 'WOW1', chunks: 6, records: 702, bytes: 40_210, accepted: [25, 26, 27, 28, 29], duplicate: [], rejected: [{ seq: 30, reason: 'record 14 (loot): items is not a list of itemId:count' }], message: null },
 				{ kind: 'failed', at: now - 3 * 60 * MIN - 9 * MIN, account: 'WOW1', chunks: 6, records: 702, bytes: 40_210, accepted: [], duplicate: [], rejected: [], message: 'Can\'t reach the recording server. Check your internet connection.' },
-				{ kind: 'update', at: now - 20 * 60 * MIN, account: '', chunks: 0, records: 0, bytes: 0, accepted: [], duplicate: [], rejected: [], message: null, product: 'Polestar Recorder', version: '0.3.0' },
-				{ kind: 'install', at: now - 22 * 60 * MIN, account: '', chunks: 0, records: 0, bytes: 0, accepted: [], duplicate: [], rejected: [], message: 'Downloading Polestar-0.2.7.zip failed: connection reset by peer', product: 'Polestar', version: '0.2.7' },
+				{ kind: 'update', at: now - 20 * 60 * MIN, account: '', chunks: 0, records: 0, bytes: 0, accepted: [], duplicate: [], rejected: [], message: null, product: 'Northstar Recorder', version: '0.3.0' },
+				{ kind: 'install', at: now - 22 * 60 * MIN, account: '', chunks: 0, records: 0, bytes: 0, accepted: [], duplicate: [], rejected: [], message: 'Downloading Northstar-0.2.7.zip failed: connection reset by peer', product: 'Northstar', version: '0.2.7' },
 				{ kind: 'disabled', at: now - 2 * 60 * MIN, account: '', chunks: 0, records: 0, bytes: 0, accepted: [], duplicate: [], rejected: [], message: 'This version sends players into an unwinnable escort loop.', product: 'Moonrise Questing', version: '0.9.0' },
 				{ kind: 'restored', at: now - 2 * 60 * MIN + 30_000, account: '', chunks: 0, records: 0, bytes: 0, accepted: [], duplicate: [], rejected: [], message: 'Moonrise Questing 0.9.0 is still turned off by polestar.guide, so it stays off.', product: 'Moonrise Questing', version: '0.9.0' },
 				{ kind: 'removed', at: now - 26 * 60 * MIN + 60_000, account: '', chunks: 0, records: 0, bytes: 0, accepted: [], duplicate: [], rejected: [], message: 'Taken down: it copied another guide without permission.', product: 'Ashfall Dailies', version: '1.0.0' },
@@ -465,11 +465,11 @@ const commands: Record<string, (args: Record<string, unknown>) => unknown> = {
 	},
 	changelog: (a) => ({
 		name: snapshot.addons.products.find((x) => x.id === a.id)!.name,
-		title: 'Polestar 0.2.7',
+		title: 'Northstar 0.2.7',
 		version: '0.2.7',
 		publishedAt: new Date(now - 2 * 86_400_000).toISOString(),
 		pageUrl: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.7',
-		body: "## For players\n\n- The Barrens: **Lost in Battle** now waits for Mankrik's wife, so the route no longer walks past her.\n- The arrow takes the Crossroads flight when it saves more than a minute.\n- Lookup shows each rare's respawn window (thanks Tom).\n\n## Install\n\nDownload `Polestar-0.2.7.zip` below, or let [Polestar Client](https://github.com/fitzforge/polestar/tree/next/apps/client) do it.\n\n<script>alert(1)</script>",
+		body: "## For players\n\n- The Barrens: **Lost in Battle** now waits for Mankrik's wife, so the route no longer walks past her.\n- The arrow takes the Crossroads flight when it saves more than a minute.\n- Lookup shows each rare's respawn window (thanks Tom).\n\n## Install\n\nDownload `Northstar-0.2.7.zip` below, or let [Polestar Client](https://github.com/fitzforge/polestar/tree/next/apps/client) do it.\n\n<script>alert(1)</script>",
 	}),
 	set_addon_prefs: (a) => {
 		Object.assign(snapshot.addons, Object.fromEntries(Object.entries(a).filter(([, v]) => v !== undefined)));

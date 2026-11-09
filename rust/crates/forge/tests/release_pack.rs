@@ -1,6 +1,6 @@
 //! `forge release pack` on the compiler's fixtures (tests/fixtures/dsl, tests/fixtures/packs) and fake addon
 //! folders: our release's two zips and SHA256SUMS, reproducible, with the GPL and the players' README in
-//! Polestar/, the built data addons in and the others named, the Codex refused unless release-safe; another
+//! Northstar/, the built data addons in and the others named, the Codex refused unless release-safe; another
 //! pack's zip with exactly its built files; the missing-data, invalid-pack and foreign-folder refusals.
 
 use forge_release::zip::read_zip;
@@ -40,7 +40,7 @@ fn forge(cwd: &Path, args: &[&str]) -> Run {
 }
 
 const VERSION: &str = "0.1.0";
-const RELEASE: [&str; 5] = ["Polestar", "Polestar_Guides", "Polestar_Nav", "Polestar_Recorder", "Polestar_Codex"];
+const RELEASE: [&str; 5] = ["Northstar", "Northstar_Guides", "Northstar_Nav", "Northstar_Recorder", "Northstar_Codex"];
 
 /// Addon folders as the release reads them (tests/helpers/cli.js fakeAddons): a TOC with the version, a
 /// Main.lua, a hidden file never shipped, and a release-safe Codex.
@@ -48,16 +48,16 @@ fn fake_addons(dir: &Path, names: &[&str]) {
 	for n in names {
 		let d = dir.join(n);
 		std::fs::create_dir_all(&d).unwrap();
-		let files = if *n == "Polestar_Guides" { format!("{}\n\nPack.lua\nMapFrames.lua\nGuides.lua", forge_guide::format::toc_marker()) } else { "\nMain.lua".into() };
+		let files = if *n == "Northstar_Guides" { format!("{}\n\nPack.lua\nMapFrames.lua\nGuides.lua", forge_guide::format::toc_marker()) } else { "\nMain.lua".into() };
 		std::fs::write(d.join(format!("{n}.toc")), format!("## Interface: 16001\n## Title: {n}\n## Version: {VERSION}\n{files}\n")).unwrap();
-		if *n != "Polestar_Guides" {
+		if *n != "Northstar_Guides" {
 			std::fs::write(d.join("Main.lua"), format!("local ADDON, ns = ...\n-- {n}\n")).unwrap();
 		}
-		if *n == "Polestar_Codex" {
+		if *n == "Northstar_Codex" {
 			std::fs::write(d.join("Meta.lua"), "C.Register(\"meta\", {\n\tlocalExtras = false,\n\tsources = {\n\t\t{\n\t\t\tname = \"pfQuest\",\n\t\t},\n\t},\n})\n").unwrap();
-			std::fs::write(d.join("LICENSE-DATA.txt"), "Polestar Codex: third-party notices\n").unwrap();
+			std::fs::write(d.join("LICENSE-DATA.txt"), "Northstar Codex: third-party notices\n").unwrap();
 		}
-		if *n == "Polestar_QuestDB" || *n == "Polestar_ItemDB" || forge_guide::locales::LOCALE_CODES.iter().any(|l| *n == forge_guide::toc::language_addon(l)) {
+		if *n == "Northstar_QuestDB" || *n == "Northstar_ItemDB" || forge_guide::locales::LOCALE_CODES.iter().any(|l| *n == forge_guide::toc::language_addon(l)) {
 			std::fs::write(d.join("LICENSE-DATA.txt"), format!("{n}: third-party notices\n")).unwrap();
 		}
 		std::fs::write(d.join(".hidden"), "not shipped\n").unwrap();
@@ -69,7 +69,7 @@ fn checkout(name: &str, addons: &[&str]) -> PathBuf {
 	let root = tmp(name);
 	std::fs::write(root.join("package.json"), format!("{{\n  \"name\": \"polestar\",\n  \"version\": \"{VERSION}\",\n  \"private\": true\n}}\n")).unwrap();
 	std::fs::create_dir_all(root.join("guides")).unwrap();
-	std::fs::write(root.join("guides/pack.json"), format!("{{\n\t\"id\": \"guides\",\n\t\"title\": \"Polestar Guides\",\n\t\"author\": \"Polestar\",\n\t\"version\": \"{VERSION}\",\n\t\"license\": \"GPL-3.0-only\",\n\t\"folder\": \"Polestar_Guides\"\n}}\n")).unwrap();
+	std::fs::write(root.join("guides/pack.json"), format!("{{\n\t\"id\": \"guides\",\n\t\"title\": \"Northstar Guides\",\n\t\"author\": \"Northstar\",\n\t\"version\": \"{VERSION}\",\n\t\"license\": \"GPL-3.0-only\",\n\t\"folder\": \"Northstar_Guides\"\n}}\n")).unwrap();
 	std::fs::copy(repo().join("LICENSE"), root.join("LICENSE")).unwrap();
 	fake_addons(&root.join("addon"), addons);
 	root
@@ -102,44 +102,44 @@ fn pack_zips_polestar_guides_nav_and_codex_and_the_recorder_separately_reproduci
 	for d in &dists {
 		let r = pack_ours(&root, d);
 		assert_eq!(r.status, 0, "{}", r.out());
-		assert_eq!(list(d), [format!("Polestar-{VERSION}.zip"), format!("Polestar_Recorder-{VERSION}.zip"), "SHA256SUMS".into()]);
+		assert_eq!(list(d), [format!("Northstar-{VERSION}.zip"), format!("Northstar_Recorder-{VERSION}.zip"), "SHA256SUMS".into()]);
 	}
-	for f in [format!("Polestar-{VERSION}.zip"), format!("Polestar_Recorder-{VERSION}.zip"), "SHA256SUMS".into()] {
+	for f in [format!("Northstar-{VERSION}.zip"), format!("Northstar_Recorder-{VERSION}.zip"), "SHA256SUMS".into()] {
 		assert_eq!(std::fs::read(dists[0].join(&f)).unwrap(), std::fs::read(dists[1].join(&f)).unwrap(), "{f} differs between runs");
 	}
-	let zip = dists[0].join(format!("Polestar-{VERSION}.zip"));
+	let zip = dists[0].join(format!("Northstar-{VERSION}.zip"));
 	assert_eq!(
 		names(&zip),
 		[
-			"Polestar/",
-			"Polestar/LICENSE",
-			"Polestar/README.txt",
-			"Polestar/Main.lua",
-			"Polestar/Polestar.toc",
-			"Polestar_Guides/",
-			"Polestar_Guides/Guides.lua",
-			"Polestar_Guides/LICENSE-DATA.txt",
-			"Polestar_Guides/MapFrames.lua",
-			"Polestar_Guides/Pack.lua",
-			"Polestar_Guides/Polestar_Guides.toc",
-			"Polestar_Nav/",
-			"Polestar_Nav/Main.lua",
-			"Polestar_Nav/Polestar_Nav.toc",
+			"Northstar/",
+			"Northstar/LICENSE",
+			"Northstar/README.txt",
+			"Northstar/Main.lua",
+			"Northstar/Northstar.toc",
+			"Northstar_Guides/",
+			"Northstar_Guides/Guides.lua",
+			"Northstar_Guides/LICENSE-DATA.txt",
+			"Northstar_Guides/MapFrames.lua",
+			"Northstar_Guides/Northstar_Guides.toc",
+			"Northstar_Guides/Pack.lua",
+			"Northstar_Nav/",
+			"Northstar_Nav/Main.lua",
+			"Northstar_Nav/Northstar_Nav.toc",
 			// The fixture guides are Alliance guides: our pack's Alliance part, built by the pack (format 8).
-			"Polestar_Guides_Alliance/",
-			"Polestar_Guides_Alliance/Guides.lua",
-			"Polestar_Guides_Alliance/LICENSE-DATA.txt",
-			"Polestar_Guides_Alliance/Polestar_Guides_Alliance.toc",
-			"Polestar_Codex/",
-			"Polestar_Codex/LICENSE-DATA.txt",
-			"Polestar_Codex/Main.lua",
-			"Polestar_Codex/Meta.lua",
-			"Polestar_Codex/Polestar_Codex.toc",
+			"Northstar_Guides_Alliance/",
+			"Northstar_Guides_Alliance/Guides.lua",
+			"Northstar_Guides_Alliance/LICENSE-DATA.txt",
+			"Northstar_Guides_Alliance/Northstar_Guides_Alliance.toc",
+			"Northstar_Codex/",
+			"Northstar_Codex/LICENSE-DATA.txt",
+			"Northstar_Codex/Main.lua",
+			"Northstar_Codex/Meta.lua",
+			"Northstar_Codex/Northstar_Codex.toc",
 		]
 	);
 	assert_eq!(
-		names(&dists[0].join(format!("Polestar_Recorder-{VERSION}.zip"))),
-		["Polestar_Recorder/", "Polestar_Recorder/LICENSE", "Polestar_Recorder/Main.lua", "Polestar_Recorder/Polestar_Recorder.toc"]
+		names(&dists[0].join(format!("Northstar_Recorder-{VERSION}.zip"))),
+		["Northstar_Recorder/", "Northstar_Recorder/LICENSE", "Northstar_Recorder/Main.lua", "Northstar_Recorder/Northstar_Recorder.toc"]
 	);
 	// Another implementation reads them too, when there is one.
 	if python_ok(&["--help"]).is_some() {
@@ -150,21 +150,21 @@ fn pack_zips_polestar_guides_nav_and_codex_and_the_recorder_separately_reproduci
 #[test]
 fn the_polestar_folder_carries_the_gpl_and_install_steps_naming_every_folder_shipped() {
 	let mut addons = RELEASE.to_vec();
-	addons.extend(["Polestar_QuestDB", "Polestar_ItemDB"]);
+	addons.extend(["Northstar_QuestDB", "Northstar_ItemDB"]);
 	let root = checkout("readme", &addons);
 	let r = pack_ours(&root, &root.join("dist"));
 	assert_eq!(r.status, 0, "{}", r.out());
-	let files = read_zip(&std::fs::read(root.join(format!("dist/Polestar-{VERSION}.zip"))).unwrap(), u64::MAX).unwrap();
+	let files = read_zip(&std::fs::read(root.join(format!("dist/Northstar-{VERSION}.zip"))).unwrap(), u64::MAX).unwrap();
 	let get = |n: &str| files.iter().find(|e| e.name == n).unwrap().data.clone();
-	assert_eq!(get("Polestar/LICENSE"), std::fs::read(repo().join("LICENSE")).unwrap());
-	let readme = String::from_utf8(get("Polestar/README.txt")).unwrap();
-	assert!(readme.starts_with(&format!("Polestar {VERSION}\r\n")));
-	for n in ["Polestar", "Polestar_Guides", "Polestar_Nav", "Polestar_QuestDB", "Polestar_ItemDB", "Polestar_Codex"] {
+	assert_eq!(get("Northstar/LICENSE"), std::fs::read(repo().join("LICENSE")).unwrap());
+	let readme = String::from_utf8(get("Northstar/README.txt")).unwrap();
+	assert!(readme.starts_with(&format!("Northstar {VERSION}\r\n")));
+	for n in ["Northstar", "Northstar_Guides", "Northstar_Nav", "Northstar_QuestDB", "Northstar_ItemDB", "Northstar_Codex"] {
 		assert!(readme.contains(&format!("\r\n     {n}\r\n")), "{n}");
 	}
-	assert!(!readme.contains("     Polestar_Recorder\r\n"));
-	// The adapted GPL-3.0-or-later code inside Polestar/ is named where it ships.
-	assert!(String::from_utf8(get("Polestar/LICENSE")).unwrap().contains("\nPortions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever,\n"));
+	assert!(!readme.contains("     Northstar_Recorder\r\n"));
+	// The adapted GPL-3.0-or-later code inside Northstar/ is named where it ships.
+	assert!(String::from_utf8(get("Northstar/LICENSE")).unwrap().contains("\nPortions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever,\n"));
 }
 
 #[test]
@@ -172,7 +172,7 @@ fn pack_writes_sha256sums_for_the_zips_it_wrote() {
 	let root = checkout("sums", &RELEASE);
 	let dist = root.join("dist");
 	assert_eq!(pack_ours(&root, &dist).status, 0);
-	let want: String = [format!("Polestar-{VERSION}.zip"), format!("Polestar_Recorder-{VERSION}.zip")]
+	let want: String = [format!("Northstar-{VERSION}.zip"), format!("Northstar_Recorder-{VERSION}.zip")]
 		.iter()
 		.map(|f| format!("{}  {f}\n", forge_release::pack::sha256_hex(&std::fs::read(dist.join(f)).unwrap())))
 		.collect();
@@ -185,12 +185,12 @@ fn pack_writes_sha256sums_for_the_zips_it_wrote() {
 #[test]
 fn the_release_zip_includes_the_built_data_addons_and_leaves_out_ones_not_built() {
 	let mut addons = RELEASE.to_vec();
-	addons.push("Polestar_QuestDB");
+	addons.push("Northstar_QuestDB");
 	let root = checkout("data-addons", &addons);
 	let dist = root.join("dist");
 	let r = pack_ours(&root, &dist);
 	assert_eq!(r.status, 0, "{}", r.out());
-	assert!(r.stdout.contains("note: Polestar_ItemDB not built"), "{}", r.out());
+	assert!(r.stdout.contains("note: Northstar_ItemDB not built"), "{}", r.out());
 	let tops = |zip: &Path| {
 		let mut t: Vec<String> = Vec::new();
 		for n in names(zip) {
@@ -201,35 +201,35 @@ fn the_release_zip_includes_the_built_data_addons_and_leaves_out_ones_not_built(
 		}
 		t
 	};
-	let zip = dist.join(format!("Polestar-{VERSION}.zip"));
-	assert_eq!(tops(&zip), ["Polestar", "Polestar_Guides", "Polestar_Nav", "Polestar_Guides_Alliance", "Polestar_QuestDB", "Polestar_Codex"]);
-	fake_addons(&root.join("addon"), &["Polestar_ItemDB"]);
+	let zip = dist.join(format!("Northstar-{VERSION}.zip"));
+	assert_eq!(tops(&zip), ["Northstar", "Northstar_Guides", "Northstar_Nav", "Northstar_Guides_Alliance", "Northstar_QuestDB", "Northstar_Codex"]);
+	fake_addons(&root.join("addon"), &["Northstar_ItemDB"]);
 	assert_eq!(pack_ours(&root, &dist).status, 0);
-	assert_eq!(tops(&zip), ["Polestar", "Polestar_Guides", "Polestar_Nav", "Polestar_Guides_Alliance", "Polestar_QuestDB", "Polestar_ItemDB", "Polestar_Codex"]);
+	assert_eq!(tops(&zip), ["Northstar", "Northstar_Guides", "Northstar_Nav", "Northstar_Guides_Alliance", "Northstar_QuestDB", "Northstar_ItemDB", "Northstar_Codex"]);
 	// The language folders last; the folders they replaced are named, never shipped.
-	fake_addons(&root.join("addon"), &["Polestar_frFR", "Polestar_Guides_deDE", "Polestar_Names_deDE"]);
+	fake_addons(&root.join("addon"), &["Northstar_frFR", "Northstar_Guides_deDE", "Northstar_Names_deDE"]);
 	let r = pack_ours(&root, &dist);
 	assert_eq!(r.status, 0, "{}", r.out());
-	assert_eq!(tops(&zip), ["Polestar", "Polestar_Guides", "Polestar_Nav", "Polestar_Guides_Alliance", "Polestar_QuestDB", "Polestar_ItemDB", "Polestar_Codex", "Polestar_frFR"]);
-	for old in ["Polestar_Guides_deDE", "Polestar_Names_deDE"] {
+	assert_eq!(tops(&zip), ["Northstar", "Northstar_Guides", "Northstar_Nav", "Northstar_Guides_Alliance", "Northstar_QuestDB", "Northstar_ItemDB", "Northstar_Codex", "Northstar_frFR"]);
+	for old in ["Northstar_Guides_deDE", "Northstar_Names_deDE"] {
 		assert!(r.stdout.contains(&format!("note: {old} is left from before 0.3.0")), "{}", r.out());
 	}
 }
 
 #[test]
 fn pack_refuses_a_release_without_the_codex_or_with_a_local_one_and_writes_no_zip() {
-	let none = checkout("no-codex", &["Polestar", "Polestar_Nav", "Polestar_Recorder"]);
+	let none = checkout("no-codex", &["Northstar", "Northstar_Nav", "Northstar_Recorder"]);
 	let r = pack_ours(&none, &none.join("dist"));
 	assert_eq!(r.status, 1, "{}", r.out());
-	assert!(r.stderr.contains("forge release pack: Polestar_Codex not built (run `forge data codex`)"), "{}", r.out());
+	assert!(r.stderr.contains("forge release pack: Northstar_Codex not built (run `forge data codex`)"), "{}", r.out());
 	assert!(!none.join("dist").exists());
 
 	let local = checkout("local-codex", &RELEASE);
-	let meta = local.join("addon/Polestar_Codex/Meta.lua");
+	let meta = local.join("addon/Northstar_Codex/Meta.lua");
 	std::fs::write(&meta, std::fs::read_to_string(&meta).unwrap().replace("localExtras = false", "localExtras = true")).unwrap();
 	let r = pack_ours(&local, &local.join("dist"));
 	assert_eq!(r.status, 1);
-	assert!(r.stderr.contains("Polestar_Codex it is a --local-extras build"), "{}", r.out());
+	assert!(r.stderr.contains("Northstar_Codex it is a --local-extras build"), "{}", r.out());
 	assert!(!local.join("dist").exists());
 }
 
@@ -241,12 +241,12 @@ fn inside_a_pack_pack_writes_its_zip_with_exactly_its_five_files_reproducibly() 
 	let run = || forge(&dir.join("guides"), &["--root", &repo().to_string_lossy(), "--data", &d, "--context", &c, "--context-data", &d]);
 	let first = run();
 	assert_eq!(first.status, 0, "{}", first.out());
-	assert_eq!(list(&dir.join("dist")), ["PolestarPack_MiniPack-0.3.0.zip"]);
-	let zip = dir.join("dist/PolestarPack_MiniPack-0.3.0.zip");
+	assert_eq!(list(&dir.join("dist")), ["NorthstarPack_MiniPack-0.3.0.zip"]);
+	let zip = dir.join("dist/NorthstarPack_MiniPack-0.3.0.zip");
 	let bytes = std::fs::read(&zip).unwrap();
 	let entries = read_zip(&bytes, u64::MAX).unwrap();
-	let want: Vec<String> = std::iter::once("PolestarPack_MiniPack/".to_string())
-		.chain(["Guides.lua", "LICENSE-DATA.txt", "MapFrames.lua", "Pack.lua", "PolestarPack_MiniPack.toc"].iter().map(|f| format!("PolestarPack_MiniPack/{f}")))
+	let want: Vec<String> = std::iter::once("NorthstarPack_MiniPack/".to_string())
+		.chain(["Guides.lua", "LICENSE-DATA.txt", "MapFrames.lua", "NorthstarPack_MiniPack.toc", "Pack.lua"].iter().map(|f| format!("NorthstarPack_MiniPack/{f}")))
 		.collect();
 	assert_eq!(entries.iter().map(|e| e.name.clone()).collect::<Vec<_>>(), want);
 	assert!(String::from_utf8_lossy(&entries.iter().find(|e| e.name.ends_with(".toc")).unwrap().data).contains("## Version: 0.3.0"));
@@ -263,8 +263,8 @@ fn a_packs_license_ships_as_license_txt_byte_for_byte() {
 	let (d, c) = (fixture("tests/fixtures/dsl/data"), fixture("tests/fixtures/packs/context"));
 	let r = forge(&repo(), &["--pack", &dir.to_string_lossy(), "--data", &d, "--context", &c, "--context-data", &d]);
 	assert_eq!(r.status, 0, "{}", r.out());
-	let entries = read_zip(&std::fs::read(dir.join("dist/PolestarPack_MiniPack-0.3.0.zip")).unwrap(), u64::MAX).unwrap();
-	assert_eq!(entries.iter().find(|e| e.name == "PolestarPack_MiniPack/LICENSE.txt").unwrap().data, text.as_bytes());
+	let entries = read_zip(&std::fs::read(dir.join("dist/NorthstarPack_MiniPack-0.3.0.zip")).unwrap(), u64::MAX).unwrap();
+	assert_eq!(entries.iter().find(|e| e.name == "NorthstarPack_MiniPack/LICENSE.txt").unwrap().data, text.as_bytes());
 }
 
 #[test]
@@ -298,28 +298,28 @@ fn pack_without_reference_data_stops_with_one_error_and_no_data_is_for_a_pack_on
 
 #[test]
 fn our_guide_folder_is_generated_before_its_toc_is_checked_and_a_foreign_one_is_refused() {
-	let root = checkout("generated", &["Polestar", "Polestar_Nav", "Polestar_Recorder", "Polestar_Codex"]);
+	let root = checkout("generated", &["Northstar", "Northstar_Nav", "Northstar_Recorder", "Northstar_Codex"]);
 	let ok = pack_ours(&root, &root.join("dist"));
 	assert_eq!(ok.status, 0, "{}", ok.out());
-	assert!(!ok.stderr.contains("Polestar_Guides.toc says version"));
-	assert!(root.join("addon/Polestar_Guides/Polestar_Guides.toc").exists());
+	assert!(!ok.stderr.contains("Northstar_Guides.toc says version"));
+	assert!(root.join("addon/Northstar_Guides/Northstar_Guides.toc").exists());
 
-	let foreign = checkout("foreign", &["Polestar", "Polestar_Nav", "Polestar_Recorder", "Polestar_Codex"]);
-	std::fs::create_dir_all(foreign.join("addon/Polestar_Guides")).unwrap();
-	std::fs::write(foreign.join("addon/Polestar_Guides/mine.txt"), "mine\n").unwrap();
+	let foreign = checkout("foreign", &["Northstar", "Northstar_Nav", "Northstar_Recorder", "Northstar_Codex"]);
+	std::fs::create_dir_all(foreign.join("addon/Northstar_Guides")).unwrap();
+	std::fs::write(foreign.join("addon/Northstar_Guides/mine.txt"), "mine\n").unwrap();
 	let bad = pack_ours(&foreign, &foreign.join("dist"));
 	assert_eq!(bad.status, 1, "{}", bad.out());
-	assert!(bad.stderr.contains("forge release pack: refusing to write into ") && bad.stderr.contains("Polestar_Guides"), "{}", bad.out());
+	assert!(bad.stderr.contains("forge release pack: refusing to write into ") && bad.stderr.contains("Northstar_Guides"), "{}", bad.out());
 	assert!(!foreign.join("dist").exists());
 }
 
 #[test]
 fn a_polestar_toc_without_an_interface_line_is_a_clear_error() {
-	let root = checkout("no-interface", &["Polestar", "Polestar_Nav", "Polestar_Recorder", "Polestar_Codex"]);
-	std::fs::write(root.join("addon/Polestar/Polestar.toc"), "## Title: Polestar\n## Version: 0.1.0\nMain.lua\n").unwrap();
+	let root = checkout("no-interface", &["Northstar", "Northstar_Nav", "Northstar_Recorder", "Northstar_Codex"]);
+	std::fs::write(root.join("addon/Northstar/Northstar.toc"), "## Title: Northstar\n## Version: 0.1.0\nMain.lua\n").unwrap();
 	let r = pack_ours(&root, &root.join("dist"));
 	assert_eq!(r.status, 1, "{}", r.out());
-	assert!(r.stderr.lines().any(|l| l.starts_with("forge release pack: ") && l.ends_with("Polestar.toc has no ## Interface line")), "{}", r.out());
+	assert!(r.stderr.lines().any(|l| l.starts_with("forge release pack: ") && l.ends_with("Northstar.toc has no ## Interface line")), "{}", r.out());
 }
 
 #[test]
@@ -348,7 +348,7 @@ fn pack_takes_the_pack_folder_as_its_one_argument_and_two_folders_exit_2() {
 	let (p, o, e) = (dir.to_string_lossy().into_owned(), other.to_string_lossy().into_owned(), elsewhere.to_string_lossy().into_owned());
 	let ok = with(&[&p]);
 	assert_eq!(ok.status, 0, "{}", ok.out());
-	assert_eq!(list(&dir.join("dist")), ["PolestarPack_Joe-1.2.0.zip"]);
+	assert_eq!(list(&dir.join("dist")), ["NorthstarPack_Joe-1.2.0.zip"]);
 	// Our own release folder and the working directory are left alone.
 	assert_eq!(std::fs::read_dir(repo().join("dist")).map(|r| r.count()).ok(), dist_before);
 	assert!(list(&elsewhere).is_empty());

@@ -185,7 +185,7 @@ async function run(argv, env = process.env) {
 			console.error(`dev: the playground could not start: ${e.message}${e.code === 'EADDRINUSE' ? ` (port ${port} is taken; pass --port <n>, 0 picks a free one)` : ''}`);
 			return 1;
 		}
-		console.log(`Polestar playground: ${play.url}${art ? `  (art from ${art})` : '  (no client art)'}`);
+		console.log(`Northstar playground: ${play.url}${art ? `  (art from ${art})` : '  (no client art)'}`);
 	}
 	let timer = null;
 	const watcher = fs.watch(packDir, { recursive: true }, (_event, name) => {

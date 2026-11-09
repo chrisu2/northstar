@@ -1,8 +1,8 @@
 {
 	"class": "DRUID",
-	"source": "ForeverDB through level 30, Polestar after",
+	"source": "ForeverDB through level 30, Northstar after",
 	"sourceUrl": "https://foreverdb.net/class/Druid/talents",
-	"credit": "Plans follow ForeverDB's Druid leveling builds (https://foreverdb.net/class/Druid/talents) through level 30 and were extended to 60 for Polestar. Notes rewritten for Polestar.",
+	"credit": "Plans follow ForeverDB's Druid leveling builds (https://foreverdb.net/class/Druid/talents) through level 30 and were extended to 60 for Northstar. Notes rewritten for Northstar.",
 	"checkedOn": "WoW: Forever beta 1.60.1.70450",
 	"summary": "Level as Feral Combat: Cat Form for quick kills, Bear Form for tough pulls, and no drinking. Balance kills from range with roots and Starfire; Restoration heals any dungeon and quests slowly with Wrath.",
 	"order": [

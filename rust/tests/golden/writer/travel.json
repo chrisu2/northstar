@@ -93,7 +93,7 @@
 		},
 		{
 			"name": "Carbonite (github.com/IrcDirk/Carbonite-Classic, GPL-3.0)",
-			"source": "Carbonite (github.com/IrcDirk/Carbonite-Classic, GPL-3.0) at 4d062800ae0c77c3f52ecf436b175bf06dcced4a: Carbonite/Data/classic/ZoneConnections.lua, the walks between zones; open borders (open): from Polestar's navigation grid (nav aids)",
+			"source": "Carbonite (github.com/IrcDirk/Carbonite-Classic, GPL-3.0) at 4d062800ae0c77c3f52ecf436b175bf06dcced4a: Carbonite/Data/classic/ZoneConnections.lua, the walks between zones; open borders (open): from Northstar's navigation grid (nav aids)",
 			"use": "zone crossings (tools/lib/travel/crossings.json)"
 		}
 	],
@@ -5387,7 +5387,7 @@
 			],
 			"chains": []
 		},
-		"shippedSource": "Carbonite (github.com/IrcDirk/Carbonite-Classic, GPL-3.0) at 4d062800ae0c77c3f52ecf436b175bf06dcced4a: Carbonite/Data/classic/ZoneConnections.lua, the walks between zones; open borders (open): from Polestar's navigation grid (nav aids)"
+		"shippedSource": "Carbonite (github.com/IrcDirk/Carbonite-Classic, GPL-3.0) at 4d062800ae0c77c3f52ecf436b175bf06dcced4a: Carbonite/Data/classic/ZoneConnections.lua, the walks between zones; open borders (open): from Northstar's navigation grid (nav aids)"
 	},
 	"transit": {
 		"routes": {

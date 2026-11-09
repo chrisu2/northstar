@@ -1,7 +1,7 @@
 # Data addons built on the developer's machine from local reference data.
-addon/Polestar_Codex/
-addon/Polestar_QuestDB/
-addon/Polestar_Travel/
+addon/Northstar_Codex/
+addon/Northstar_QuestDB/
+addon/Northstar_Travel/
 
 # Local data: game client tables, downloaded sources and their builds.
 data/sources/
@@ -19,7 +19,8 @@ guides/drafts/
 *.log
 
 # Tooling.
-node_modules/
+# No trailing slash: a node_modules symlink (a worktree borrowing the clone's) is ignored too.
+node_modules
 .ref/
 
 # The bug bot's secrets on the server.

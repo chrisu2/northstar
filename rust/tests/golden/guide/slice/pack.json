@@ -1,9 +1,9 @@
 {
 	"id": "guides",
-	"title": "Polestar Guides",
-	"author": "Polestar",
+	"title": "Northstar Guides",
+	"author": "Northstar",
 	"version": "0.2.6",
 	"license": "GPL-3.0-only",
-	"notes": "Leveling, profession, reputation and collectible guides for Polestar.",
-	"folder": "Polestar_Guides"
+	"notes": "Leveling, profession, reputation and collectible guides for Northstar.",
+	"folder": "Northstar_Guides"
 }

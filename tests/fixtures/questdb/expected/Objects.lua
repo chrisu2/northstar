@@ -2,7 +2,7 @@
 -- name, then per map: uiMapID, frame (0 Era, 1 live), cluster count, x, y, radius (yd) per cluster
 -- One record a line, "<id>\t<fields>" (forge-data questdb.rs payload), read on demand.
 
-local Q = Polestar and Polestar.QuestDB
+local Q = Northstar and Northstar.QuestDB
 if not (Q and Q.AddChunk) then return end
 local R = Q.AddChunk
 R("objects", 31, 77, [[

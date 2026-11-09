@@ -1,7 +1,7 @@
-//! Polestar's recording library (docs/RECORDING.md): shared by the Polestar Client desktop app,
+//! Northstar's recording library (docs/RECORDING.md): shared by the Polestar Client desktop app,
 //! the ingest server and forge.
 //!
-//! - [`sv`]: reads the Recorder's SavedVariables file (`PolestarRecorderDB`).
+//! - [`sv`]: reads the Recorder's SavedVariables file (`NorthstarRecorderDB`).
 //! - [`record`]: decodes and validates chunks and records.
 //! - [`summary`]: what a set of chunks holds, for people to read.
 //! - [`scrub`]: replaces character names in text.

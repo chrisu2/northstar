@@ -1,4 +1,4 @@
-//! Pawn scale import (addon/Polestar/Gear/Pawn.lua, PawnStats.lua): the string parser, the stat mapping, the
+//! Pawn scale import (addon/Northstar/Gear/Pawn.lua, PawnStats.lua): the string parser, the stat mapping, the
 //! saved scales and how a chosen scale scores.
 
 use forge_addontest::{emitted, is_match, text, Addon, RunAddon};
@@ -15,9 +15,9 @@ fn run(script: &str) -> Vec<Value> {
 w.class, w.className, w.classID, w.level = "WARRIOR", "Warrior", 1, 30
 w.race, w.raceName, w.raceID, w.faction = "Troll", "Troll", 8, "Horde""#
 			.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Gear/Gear.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Gear/Gear.xml"])],
 		login: true,
-		script: ["G = Polestar.Gear\nPolestar.ItemDB.Register({ schema = 1, build = \"test\" }, ", FIXTURE, ")\n", script].concat(),
+		script: ["G = Northstar.Gear\nNorthstar.ItemDB.Register({ schema = 1, build = \"test\" }, ", FIXTURE, ")\n", script].concat(),
 		..Default::default()
 	})
 }
@@ -274,12 +274,12 @@ fn a_chosen_custom_scale_replaces_the_built_in_weights_and_reports_source_custom
 		r#"
 		emit({ G.GetSpec() })
 		local _, r = G.Scales.Import('( Pawn: v1: "Mine": Strength=10, Stamina=1 )', "WARRIOR")
-		Polestar.Set("gear.spec.WARRIOR", "custom:" .. r.scale.id)
+		Northstar.Set("gear.spec.WARRIOR", "custom:" .. r.scale.id)
 		emit({ G.GetSpec() })
 		emit({ G.ScoreItem("item:9001"), G.GetWeightsInfo().source, G.GetWeights().str })
-		Polestar.Set("gear.spec.WARRIOR", "arms")
+		Northstar.Set("gear.spec.WARRIOR", "arms")
 		emit(G.ScoreItem("item:9001") ~= 53)
-		Polestar.Set("gear.spec.WARRIOR", "custom:" .. r.scale.id)
+		Northstar.Set("gear.spec.WARRIOR", "custom:" .. r.scale.id)
 		G.Scales.Delete("WARRIOR", r.scale.id)
 		emit({ G.GetSpec() })
 	"#,
@@ -303,7 +303,7 @@ fn a_scale_in_another_size_scores_in_proportion_so_upgrade_percents_match() {
 		r#"
 		local function score(str)
 			local _, r = G.Scales.Import(str, "WARRIOR")
-			Polestar.Set("gear.spec.WARRIOR", "custom:" .. r.scale.id)
+			Northstar.Set("gear.spec.WARRIOR", "custom:" .. r.scale.id)
 			return G.CompareToEquipped("item:9001").score
 		end
 		emit(score('( Pawn: v1: "A": Strength=1, Stamina=0.5 )') * 10)
@@ -317,7 +317,7 @@ fn a_scale_in_another_size_scores_in_proportion_so_upgrade_percents_match() {
 #[test]
 fn polestar_gear_import_string_imports_for_your_class() {
 	let out = run(r#"
-		SlashCmdList.POLESTAR('gear import ( Pawn: v1: "Cmd": Strength=1 )')
+		SlashCmdList.NORTHSTAR('gear import ( Pawn: v1: "Cmd": Strength=1 )')
 		emit(#G.Scales.List("WARRIOR"))
 	"#);
 	assert_eq!(out[0], 1);
@@ -328,7 +328,7 @@ fn run_ui(script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua", "stub_world.lua", "stub_gear.lua"],
 		before: r#"w = stub.world; w.class, w.className, w.classID, w.level = "WARRIOR", "Warrior", 1, 30"#.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Gear/Gear.xml", "UI/UI.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Gear/Gear.xml", "UI/UI.xml"])],
 		login: true,
 		script: script.into(),
 		..Default::default()
@@ -339,10 +339,10 @@ fn run_ui(script: &str) -> Vec<Value> {
 fn rename_import_and_delete_refresh_the_options_rows_so_the_dropdown_shows_the_new_name_at_once() {
 	let out = run_ui(
 		r#"
-		local G = Polestar.Gear
+		local G = Northstar.Gear
 		local n = 0
-		local real = Polestar.Widgets.RefreshAll
-		Polestar.Widgets.RefreshAll = function() n = n + 1; return real() end
+		local real = Northstar.Widgets.RefreshAll
+		Northstar.Widgets.RefreshAll = function() n = n + 1; return real() end
 		local _, r = G.Scales.Import('( Pawn: v1: "A": Strength=1 )', "WARRIOR")
 		local afterImport = n
 		G.Scales.Rename("WARRIOR", r.scale.id, "B")
@@ -358,7 +358,7 @@ fn rename_import_and_delete_refresh_the_options_rows_so_the_dropdown_shows_the_n
 const ROWS: &str = r#"
 local function shown()
 	local out = {}
-	for _, row in ipairs(Polestar.UI.ScalesView.rows) do
+	for _, row in ipairs(Northstar.UI.ScalesView.rows) do
 		if row:IsShown() then
 			out[#out + 1] = { title = row.Title:GetText(), meta = row.Meta:GetText(), tag = row.Tag:GetText(),
 				use = row.Use:IsShown() and row.Use.Label:GetText() or false, body = row.Body:IsShown() and row.Body:GetText() or false,
@@ -375,7 +375,7 @@ end"#;
 fn scales_keep_the_pawn_stats_they_left_out_and_all_lists_every_class_the_player_s_first() {
 	let out = run_ui(
 		r#"
-		local G = Polestar.Gear
+		local G = Northstar.Gear
 		G.Scales.Import('( Pawn: v1: "M": Class=Mage, SpellDamage=1, FireResist=1 )')
 		G.Scales.Import('( Pawn: v1: "Z": Class=Warrior, Strength=1 )')
 		G.Scales.Import('( Pawn: v1: "A": Class=Warrior, Strength=1, Speed=2 )')
@@ -395,7 +395,7 @@ fn the_manager_window_import_chooses_the_scale_and_lists_it_a_bad_string_says_wh
 		&[
 			ROWS,
 			r#"
-		local UI, G = Polestar.UI, Polestar.Gear
+		local UI, G = Northstar.UI, Northstar.Gear
 		UI.ShowScales()
 		local V = UI.ScalesView.frame
 		V.Paste:SetText("not a pawn string")
@@ -426,7 +426,7 @@ fn the_manager_window_lists_every_class_use_is_only_for_your_class_and_a_scale_f
 		&[
 			ROWS,
 			r#"
-		local UI, G = Polestar.UI, Polestar.Gear
+		local UI, G = Northstar.UI, Northstar.Gear
 		G.Scales.Import('( Pawn: v1: "Mine": Class=Warrior, Strength=1 )')
 		G.Scales.Import('( Pawn: v1: "Theirs": Class=Druid, Agility=1 )')
 		UI.ShowScales()
@@ -455,7 +455,7 @@ fn the_manager_window_use_and_stop_using_switch_the_weights_details_shows_what_t
 		&[
 			ROWS,
 			r#"
-		local UI, G = Polestar.UI, Polestar.Gear
+		local UI, G = Northstar.UI, Northstar.Gear
 		G.Scales.Import('( Pawn: v1: "Tank": Class=Warrior, Strength=2, Stamina=0.5, FireResist=1, Dps=3 )')
 		UI.ShowScales()
 		local row = UI.ScalesView.rows[1]
@@ -485,7 +485,7 @@ fn the_manager_window_rename_takes_the_name_through_the_box_refuses_an_empty_one
 		&[
 			ROWS,
 			r#"
-		local UI, G = Polestar.UI, Polestar.Gear
+		local UI, G = Northstar.UI, Northstar.Gear
 		G.Scales.Import('( Pawn: v1: "Old": Class=Warrior, Strength=1 )')
 		UI.ShowScales()
 		local V = UI.ScalesView.frame
@@ -512,20 +512,20 @@ fn the_manager_window_rename_takes_the_name_through_the_box_refuses_an_empty_one
 fn polestar_gear_import_and_gear_scales_open_the_manager() {
 	let out = run_ui(
 		r#"
-		SlashCmdList.POLESTAR("gear scales")
-		local first = PolestarScales:IsShown()
-		PolestarScales:Hide()
-		SlashCmdList.POLESTAR("gear import")
-		emit({ first, PolestarScales:IsShown() })
+		SlashCmdList.NORTHSTAR("gear scales")
+		local first = NorthstarScales:IsShown()
+		NorthstarScales:Hide()
+		SlashCmdList.NORTHSTAR("gear import")
+		emit({ first, NorthstarScales:IsShown() })
 	"#,
 	);
 	assert_eq!(out[0], json!([true, true]));
 }
 
 const OPEN: &str = r#"
-local UI, G = Polestar.UI, Polestar.Gear
+local UI, G = Northstar.UI, Northstar.Gear
 local _, r = G.Scales.Import('( Pawn: v1: "Tank": Class=Warrior, Strength=2, Stamina=0.5, FireResist=1 )')
-Polestar.Set("gear.spec.WARRIOR", "custom:" .. r.scale.id)
+Northstar.Set("gear.spec.WARRIOR", "custom:" .. r.scale.id)
 UI.ShowScales()
 local row = UI.ScalesView.rows[1]
 row.Details:Click()
@@ -595,7 +595,7 @@ fn editing_text_that_is_not_a_number_puts_the_old_value_back_removing_a_weight_d
 fn setweight_refuses_a_stat_polestar_does_not_score_and_a_value_that_is_not_a_number_a_string_number_is_read_as_one() {
 	let out = run_ui(
 		r#"
-		local G = Polestar.Gear
+		local G = Northstar.Gear
 		local _, r = G.Scales.Import('( Pawn: v1: "T": Class=Warrior, Strength=2 )')
 		local id = r.scale.id
 		emit({ G.Scales.SetWeight("WARRIOR", id, "nonsense", 1) })
@@ -707,7 +707,7 @@ fn copy_a_built_in_spec_a_new_scale_holds_that_spec_s_weights_at_your_level_name
 		&[
 			ROWS,
 			r#"
-		local UI, G = Polestar.UI, Polestar.Gear
+		local UI, G = Northstar.UI, Northstar.Gear
 		UI.ShowScales()
 		local ok, res = G.Scales.CopyBuiltin("WARRIOR", "arms")
 		local builtin = G.WeightsFor("WARRIOR", "arms", G.GetPlayer().level)
@@ -735,10 +735,10 @@ fn the_copy_a_built_in_spec_button_lists_your_class_s_specs_and_opens_the_new_sc
 		&[
 			ROWS,
 			r#"
-		local UI, G = Polestar.UI, Polestar.Gear
+		local UI, G = Northstar.UI, Northstar.Gear
 		UI.ShowScales()
 		local items
-		Polestar.Widgets.ShowMenu = function(anchor, list) items = list end
+		Northstar.Widgets.ShowMenu = function(anchor, list) items = list end
 		UI.ScalesView.frame.Copy:Click()
 		local names = {}
 		for _, it in ipairs(items) do names[#names + 1] = it.text end
@@ -761,7 +761,7 @@ fn the_window_can_be_resized_by_its_grip_bounds_the_corner_anchor_kept_the_list_
 		&[
 			ROWS,
 			r#"
-		local UI, G = Polestar.UI, Polestar.Gear
+		local UI, G = Northstar.UI, Northstar.Gear
 		G.Scales.Import('( Pawn: v1: "Tank": Class=Warrior, Strength=2 )')
 		UI.ShowScales()
 		local V = UI.ScalesView.frame
@@ -773,7 +773,7 @@ fn the_window_can_be_resized_by_its_grip_bounds_the_corner_anchor_kept_the_list_
 		V.Grip:GetScript("OnMouseUp")(V.Grip)
 		local row = UI.ScalesView.rows[1]
 		emit({ resizable = V:IsResizable(), bounds = V.resizeBounds, sizing = sizing, stopped = V.sizing == false, before = before,
-			after = { V:GetWidth(), V:GetHeight(), row:GetWidth() }, saved = Polestar.DB().gearScalesWindow })
+			after = { V:GetWidth(), V:GetHeight(), row:GetWidth() }, saved = Northstar.DB().gearScalesWindow })
 	"#,
 		]
 		.concat(),
@@ -791,7 +791,7 @@ fn the_window_can_be_resized_by_its_grip_bounds_the_corner_anchor_kept_the_list_
 #[test]
 fn the_window_opens_at_the_size_it_was_left_at_inside_the_limits() {
 	let sizes = |saved: &str| {
-		run_ui(&["\n\t\tlocal UI = Polestar.UI\n\t\tPolestar.DB().gearScalesWindow = ", saved, "\n\t\tUI.ShowScales()\n\t\temit({ UI.ScalesView.frame:GetSize() })\n\t"].concat()).remove(0)
+		run_ui(&["\n\t\tlocal UI = Northstar.UI\n\t\tNorthstar.DB().gearScalesWindow = ", saved, "\n\t\tUI.ShowScales()\n\t\temit({ UI.ScalesView.frame:GetSize() })\n\t"].concat()).remove(0)
 	};
 	assert_eq!(sizes("{ w = 700, h = 600 }"), json!([700, 600]));
 	assert_eq!(sizes("{ w = 100, h = 100 }"), json!([480, 460]), "never smaller than the least");
@@ -805,7 +805,7 @@ fn the_input_area_keeps_its_height_while_a_scale_is_renamed_so_the_list_stays_wh
 		&[
 			ROWS,
 			r#"
-		local UI, G = Polestar.UI, Polestar.Gear
+		local UI, G = Northstar.UI, Northstar.Gear
 		G.Scales.Import('( Pawn: v1: "Old": Class=Warrior, Strength=1 )')
 		UI.ShowScales()
 		local V = UI.ScalesView.frame

@@ -7,7 +7,7 @@
 -- 1.60.1.70450), CMaNGOS classic-db 22b5146 (spawns, areatrigger_teleport,
 -- spell_target_position, sniffed transport periods) and the CMaNGOS transport model, after
 -- Shortest Path Forever by Cillian Berragan (GPL-3.0-or-later, used with permission).
--- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15.
+-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.
 
 local ADDON, ns = ...
 local N = ns.Nav
@@ -522,7 +522,7 @@ if ns.Transit and ns.Transit.Register then
 		},
 	})
 end
--- zone crossings: Carbonite (github.com/IrcDirk/Carbonite-Classic, GPL-3.0) at 4d062800ae0c77c3f52ecf436b175bf06dcced4a: Carbonite/Data/classic/ZoneConnections.lua, the walks between zones; open borders (open): from Polestar's navigation grid (nav aids)
+-- zone crossings: Carbonite (github.com/IrcDirk/Carbonite-Classic, GPL-3.0) at 4d062800ae0c77c3f52ecf436b175bf06dcced4a: Carbonite/Data/classic/ZoneConnections.lua, the walks between zones; open borders (open): from Northstar's navigation grid (nav aids)
 N.RegisterCrossings({
 	-- the continents this set covers walk between zones only through it
 	complete = true,

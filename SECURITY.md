@@ -23,7 +23,7 @@ not be named) go in the changelog once it ships.
   and its data folders.
 - **The project's automation**: the GitHub workflows, the Discord bot and
   its tokens.
-- **A fake Polestar**: a download that claims to be Polestar or one of its
+- **A fake Northstar**: a download that claims to be Northstar or one of its
   addons but is not from this repository's releases or its CurseForge
   project.
 

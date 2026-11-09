@@ -1,7 +1,7 @@
-# Polestar guide format, compact
+# Northstar guide format, compact
 
 Every line a `.guide` file can hold. The full rules and every lint check are
-in Polestar's `docs/GUIDE_FORMAT.md`.
+in Northstar's `docs/GUIDE_FORMAT.md`.
 
 ## Layout
 
@@ -27,7 +27,7 @@ Before the first `step`. `guide`, `title`, `levels` and `zone` are required.
 | `faction <Faction>` | `Alliance` or `Horde`: only that side is offered the guide |
 | `race <Race>, ...` | Only these races (Conditions) |
 | `class <Class>, ...` | Only these classes |
-| `next <id>, ...` | The guide that follows. Several ids: the player chooses, the first is the default; each must suit this guide's characters (`polestar find <zone> --kind guide --race <Race>`). Repeatable; `next <id> when <predicate>` (one guide per line, a predicate as for `when`) offers that guide only while the predicate holds when this guide ends: one option left, Polestar goes on to it; none, the guide ends there |
+| `next <id>, ...` | The guide that follows. Several ids: the player chooses, the first is the default; each must suit this guide's characters (`polestar find <zone> --kind guide --race <Race>`). Repeatable; `next <id> when <predicate>` (one guide per line, a predicate as for `when`) offers that guide only while the predicate holds when this guide ends: one option left, Northstar goes on to it; none, the guide ends there |
 | `category <Category>` | `Leveling` (default), `Class`, `Professions`, `Reputation`, `Legacy`, `Exploration`, `Collectibles`, `Miscellaneous`, `Dungeons` |
 | `folder <text>` | The guide menu folder to list it under |
 | `keywords <word>, ...` | Extra words the guide menu search matches |
@@ -70,8 +70,8 @@ otherwise, the place modifiers `@x,y`, `map`, `r`, `era` / `live`.
 | `accept <quest> ["Title"]` | Take a quest; giver, title and place from the data | `npc`, `object`, `item`, `lvl` |
 | `turnin <quest> ["Title"]` | Hand a quest in | `npc`, `object`, `choose`, `reward`, `xp`, `money`, `direct` |
 | `complete <quest> ["Title"]` | Finish every objective of a quest with nothing more specific to track | |
-| `abandon <quest> ["Title"]` | Drop a quest from the log; done once it is out, the quest's `accept` stays done (Polestar 0.3.0) | no place modifiers, no `group` |
-| `destroy <item> ["Name"]` | Delete an item from the bags; done once the bags hold none (Polestar 0.3.0) | no place modifiers, no `group` |
+| `abandon <quest> ["Title"]` | Drop a quest from the log; done once it is out, the quest's `accept` stays done (Northstar 0.3.0) | no place modifiers, no `group` |
+| `destroy <item> ["Name"]` | Delete an item from the bags; done once the bags hold none (Northstar 0.3.0) | no place modifiers, no `group` |
 | `kill <npc>` / `kill "<Name>"` | Kill a mob; with `quest Q.O` the quest log counts it, without it the player ticks it | `npc`, `quest`, `xN` |
 | `collect <item> ["Name"]` | Loot or gather items; without `quest`, counted in the bags | `npc`, `quest`, `xN`, `nearest` |
 | `goto <x>,<y> ["Label"]` | Walk there; for travel and places the data has no target for | `map`, `r`, `era` / `live` only |
@@ -80,25 +80,25 @@ otherwise, the place modifiers `@x,y`, `map`, `r`, `era` / `live`.
 | `use <item> ["Name"]` | Use an item | `quest` |
 | `sethome "<Location>"` / `sethome nearest` | Bind the hearthstone at an inn (`polestar find --kind inn`) | `npc` |
 | `hearth "<Location>"` | Use the hearthstone; done on landing there | no place modifiers |
-| `die "<Graveyard>" @x,y` | A deathskip: die and take the resurrection at that graveyard's Spirit Healer (the coordinates); done back alive there. The pack then needs Polestar 0.3.0 | `@x,y` required |
-| `enter "<Place>"` | Be in that zone or area (the zone or subzone text; Polestar 0.3.0) | `@x,y` only points the arrow |
+| `die "<Graveyard>" @x,y` | A deathskip: die and take the resurrection at that graveyard's Spirit Healer (the coordinates); done back alive there. The pack then needs Northstar 0.3.0 | `@x,y` required |
+| `enter "<Place>"` | Be in that zone or area (the zone or subzone text; Northstar 0.3.0) | `@x,y` only points the arrow |
 | `getfp "<Flight point>"` | Learn a flight path (`polestar find --kind flight`) | `npc` |
 | `fly "<Town>"` | Take a flight; done on landing | no place modifiers |
 | `train class` / `train <npc>` / `train <Profession> [Rank]` | Visit a trainer: the nearest of the player's class, that one, or the nearest of a profession | `npc`, `gossip` |
 | `buy <item> ["Name"]` | Buy an item; `nearest` picks the closest vendor selling it | `npc`, `xN`, `nearest` |
-| `vendor nearest` / `vendor <npc>` | Sell and repair | `npc`, `gossip` |
-| `level <N>` | Reach level N, grinding if need be; `level 12.5` is halfway through 12, `level 12+2500` 2500 XP into it (whole percent; the pack then needs Polestar 0.2.6) | no place modifiers |
-| `money <amount>` | Hold that much money (`1g50s`, `7s`, `25c` or copper); stays done for the rest of the step (Polestar 0.3.0) | no place modifiers, no `group` |
-| `task "<text>"` | Something Polestar cannot see; the player ticks it, and it holds the step until then unless `optional` (Polestar 0.3.0). With modifiers, quote the text | no `"text"`, no `group` |
+| `vendor nearest` / `vendor <npc>` | Sell and repair; done when the merchant's window opens in the step. Beside other goals it never holds the step (Northstar 0.3.5); alone in a step it waits for the window | `npc`, `gossip` |
+| `level <N>` | Reach level N, grinding if need be; `level 12.5` is halfway through 12, `level 12+2500` 2500 XP into it (whole percent; the pack then needs Northstar 0.2.6) | `grind`, no place modifiers |
+| `money <amount>` | Hold that much money (`1g50s`, `7s`, `25c` or copper); stays done for the rest of the step (Northstar 0.3.0) | no place modifiers, no `group` |
+| `task "<text>"` | Something Northstar cannot see; the player ticks it, and it holds the step until then unless `optional` (Northstar 0.3.0). With modifiers, quote the text | no `"text"`, no `group` |
 | `note <text>` | A line of information; never holds the step. With `only`, quote the text | no `"text"`, no `group` |
 | `skill <Profession> <N>` | Reach skill N (`"First Aid"` quoted) | |
 | `learn <spell> ["Name"]` | Learn a recipe or spell | `npc`, `item`, `nearest` |
-| `cast <spellId> ["Name"]` | Cast that spell while the goal is open (Polestar 0.3.0); name it unless it is a recipe in the data | coordinates |
+| `cast <spellId> ["Name"]` | Cast that spell while the goal is open (Northstar 0.3.0); name it unless it is a recipe in the data | coordinates |
 | `craft <spell> ["Name"]` | Craft a recipe | `xN`, `until` |
 | `rep <Faction> <Standing>` | Reach a standing, `Hated` to `Exalted`, with a faction by name or id | |
 | `explore <x>,<y> ["Area"]` | Discover the map area there | `map`, `r`, `era` / `live` only |
 | `achieve <id> "Name"` | Complete an achievement or Legacy Challenge; the name is required | `criteria` |
-| `wait <seconds> ["text"]` | A countdown (1 to 3600 seconds) that starts once the goals before it in the step are done: a boat, an event or a speech to sit through (Polestar 0.3.0) | no place modifiers, no `group` |
+| `wait <seconds> ["text"]` | A countdown (1 to 3600 seconds) that starts once the goals before it in the step are done: a boat, an event or a speech to sit through (Northstar 0.3.0) | no place modifiers, no `group` |
 
 `nearest`, `train class` and `train <Profession>` pick the NPC or place when
 the step comes up, by the player's faction and position; they take no
@@ -125,11 +125,12 @@ After the arguments, in any order.
 | `only <condition>, ...` | The goal is only for matching characters |
 | `nearest` | The closest vendor, trainer or drop place, picked in game |
 | `until <N>` | On `craft`: until the profession reaches N |
+| `grind <npc>` | On `level`: the mob the level is reached on; the arrow leads to its nearest spawn area, the step's goto only when the data has none (Polestar 0.3.7) |
 | `criteria <n>` | On `achieve`: one criterion |
 | `choose <item> ...` / `reward <item> ...` | On `turnin`: the rewards to pick from, the ones given outright |
 | `xp <N>` / `money <amount>` | On `turnin`: what it pays (`money 1g50s`) |
 | `direct` | On `turnin`: handed in from the giver's window with no `accept`, so it needs none. The quest never enters the log: get what it asks for with a plain `buy` or `collect` |
-| `gossip <id>` | On `talk`, `vendor` and `train`: the gossip option (the client's `gossipOptionID`) Polestar picks at that NPC on this step |
+| `gossip <id>` | On `talk`, `vendor` and `train`: the gossip option (the client's `gossipOptionID`) Northstar picks at that NPC on this step |
 
 ## Conditions
 
@@ -146,7 +147,7 @@ Warrior or Paladin).
 `when` checks the character's state instead, one predicate per line:
 `level<N` (also `<=`, `>`, `>=`; N may be `12.5` or `12+2500`), `money>=1s` (also `<`, `<=`, `>`), `onquest <quest>, ...`, `complete <quest>`,
 `turnedin <quest>`, `available <quest>`, `has <item> [xN]`, `upgrade <item>`
-(Polestar's gear advice rates the item an upgrade now), `zone "<Name>"`,
+(Northstar's gear advice rates the item an upgrade now), `zone "<Name>"`,
 `subzone "<Name>"`, `bound "<Location>"`, `dungeon "<Name>"` (the player
 chose to run that dungeon in Options, Discovery, Dungeons; all are off at
 first, so `!dungeon "<Name>"` is the solo route), `done <label>` (the labelled
@@ -159,9 +160,9 @@ way; not on `next` or `skipto`), `knows <spell>` (the character knows the
 spell; `!knows` for the step that trains it); `!` in front of any but
 `level` and `money` turns it around. Once the route has passed the step, the
 outcome stays. A pack with `when` (on a step or a `next` line), `along` or
-`label` needs Polestar 0.2.6; with `money`, `task`, `enter`, `cast`, `abandon`, `destroy` or `die` goals, a `when money`,
+`label` needs Northstar 0.2.6; with `money`, `task`, `enter`, `cast`, `abandon`, `destroy` or `die` goals, a `when money`,
 `when dungeon`, `when upgrade`, `when done`, `when skill`, `when cooldown`,
-`when group` or `when knows` predicate, or `skipto`, needs Polestar 0.3.0.
+`when group` or `when knows` predicate, or `skipto`, needs Northstar 0.3.0.
 
 ## Lint errors that come up most
 

@@ -1,10 +1,10 @@
 ---
 name: polestar-triage
-description: Checks a Polestar bug report (a GitHub issue, a Discord post or an in-game /polestar report) against the guides, the reference data and the addon before anyone agrees it is a bug, then drafts a verdict and a reply. Use when asked to look at, triage, reproduce, answer or start on a Polestar issue or wrong-step report, before any fix.
-compatibility: A Polestar clone. Reproducing in the data needs data/forever built (forge data build, or the public data pack), Node 24 or newer, and Lua 5.1 or LuaJIT for playtest and play.
+description: Checks a Northstar bug report (a GitHub issue, a Discord post or an in-game /polestar report) against the guides, the reference data and the addon before anyone agrees it is a bug, then drafts a verdict and a reply. Use when asked to look at, triage, reproduce, answer or start on a Northstar issue or wrong-step report, before any fix.
+compatibility: A Northstar clone. Reproducing in the data needs data/forever built (forge data build, or the public data pack), Node 24 or newer, and Lua 5.1 or LuaJIT for playtest and play.
 ---
 
-# Triaging a Polestar report
+# Triaging a Northstar report
 
 A report is a lead, not a verdict. Players are often wrong, and so are the
 agents they used to write the report. Your job is to find out what is true.
@@ -29,7 +29,7 @@ cause:
   them);
 - what the step says, and what they say they found in the game;
 - their race, class and level;
-- the Polestar version. On an in-game report it is in the first line;
+- the Northstar version. On an in-game report it is in the first line;
   otherwise ask for it;
 - when it was reported. A version string can name a build from before
   that version's tag, so the date is what you compare fixes against;
@@ -49,10 +49,10 @@ and note what you found:
 |---|---|
 | Already reported | `gh issue list --state all --search "<quest id>"`, then the quest's name and the guide's title. Leave the issue you are triaging out of the results. Link an earlier issue; a duplicate is closed in favour of it. |
 | Already being fixed | `gh pr list --state open --search "<issue number>"`, then the quest id and the guide's name, and the issue's "Pull requests for this issue" comment (label `has-pr`). Read the open pull request's diff: when it fixes the report, the verdict still stands but no second fix is started; say in your answer which pull request covers it. |
-| Already fixed | `git log --oneline -S "<quest id>" -- guides/`, CHANGELOG.md since their version, and `changes/` (fixes merged but not released yet). Compare the fix commit's date with the report's, and check which release carries it with `git tag --contains <commit>` (plain `vX.Y.Z` tags only; `-rc` and `-test` tags are candidates). An unreleased fix on `next` still counts as fixed. A data fix only counts once it reaches the files players load: the compiled guides, `Polestar_QuestDB`, or the Codex (`addon/Polestar_Codex`, whose `Meta.lua` says when it was built; a release can carry an older one). Lookup's pick-up guides read quest chains from the Codex alone. |
-| Old or mixed install | A version older than the latest release; addon folders from two versions; `Polestar_Guides` missing. |
+| Already fixed | `git log --oneline -S "<quest id>" -- guides/`, CHANGELOG.md since their version, and `changes/` (fixes merged but not released yet). Compare the fix commit's date with the report's, and check which release carries it with `git tag --contains <commit>` (plain `vX.Y.Z` tags only; `-rc` and `-test` tags are candidates). An unreleased fix on `next` still counts as fixed. A data fix only counts once it reaches the files players load: the compiled guides, `Northstar_QuestDB`, or the Codex (`addon/Northstar_Codex`, whose `Meta.lua` says when it was built; a release can carry an older one). Lookup's pick-up guides read quest chains from the Codex alone. |
+| Old or mixed install | A version older than the latest release; addon folders from two versions; `Northstar_Guides` missing. |
 | The step was misread | Read the step on the version they run: `git show v<version>:<guide file>`. |
-| Another addon | Quest arrows, waypoints or objective text that Polestar does not draw (Questie, TomTom, other guide addons). The report's "Other addons" field lists them; an issue the bot filed from Discord has them in its "**Addons:**" line, under the player's words. |
+| Another addon | Quest arrows, waypoints or objective text that Northstar does not draw (Questie, TomTom, other guide addons). The report's "Other addons" field lists them; an issue the bot filed from Discord has them in its "**Addons:**" line, under the player's words. |
 | Classic, not Forever | Forever moved givers, changed prerequisites and levels, and added quests. What a quest does on Classic proves nothing here. |
 | Character state | A quest skipped earlier, an abandoned chain, a race or class the step is not for (`only` lines), a step the guide skipped or is looking ahead to. |
 | The world, not the guide | An NPC that was dead, despawned or busy in an event, or a mob camp cleared by other players, while the data puts it where the guide says. The data's spawn and the reporter's `/polestar where` line settle where; only the game settles when. |
@@ -68,7 +68,7 @@ claim:
 
 - the guide source and the comments at the top of the guide, which explain
   the route's choices;
-- the compiled step in `addon/Polestar_Guides/Guides.lua` (what the addon
+- the compiled step in `addon/Northstar_Guides/Guides.lua` (what the addon
   actually shows);
 - `forge guide lint`, and `polestar playtest --filter <guide> --class <Class>`,
   which plays the guide to the end in the real addon for that class;
@@ -84,7 +84,7 @@ run.
 ## 4. Check the sources and give a verdict
 
 Sources that count: the game's own data (`data/forever/*.json`, built from
-the client and pfQuest), Forever's quest data, Polestar Recorder
+the client and pfQuest), Forever's quest data, Northstar Recorder
 recordings, and what a maintainer saw in the game. Sources that don't
 count: the classic quest data, Classic guides, memory, and your own training data.
 
@@ -93,7 +93,7 @@ Give one verdict:
 - **Confirmed bug**: the guide, data or addon is wrong, with the evidence.
 - **Already fixed**: it was a bug in their version, and a release or the
   coming one has the fix; name the commit and where it ships.
-- **Reporter mistaken**: what Polestar does is right, with the evidence.
+- **Reporter mistaken**: what Northstar does is right, with the evidence.
 - **Partly right**: which claims hold and which don't.
 - **Unclear**: what you checked, and the one piece of evidence that would
   settle it. When the data supports the guide but only the game can settle
@@ -115,10 +115,10 @@ as a maintainer. Keep it plain, warm and short, evidence first:
 - Thank them, and say what you checked. When they wrote in another
   language, reply in that language.
 - The verdict in one sentence, then the evidence (step, quest id, file).
-- When Polestar is right: say so politely and ask for whatever would change
+- When Northstar is right: say so politely and ask for whatever would change
   the verdict, such as a `/polestar where` line at the right spot, a
   screenshot, their version, or a Recorder file
-  (`WTF/Account/<account>/SavedVariables/Polestar_Recorder.lua`).
+  (`WTF/Account/<account>/SavedVariables/Northstar_Recorder.lua`).
 - When it is a bug: say it is confirmed. Don't promise a release or a date.
   Name a release only when CHANGELOG.md lists the fix under it, or
   `git tag --contains` shows a released tag that has it.

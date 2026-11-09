@@ -31,7 +31,7 @@ const zoneAt = (c, x, y) => {
 	const dir = path.join(P, '..', 'nav-grid', 'nav4');
 	const places = { aids: readJson(path.join(P, 'aids.json')), lifts: readJson(path.join(dir, 'lifts.json')), geo: new Geo(mapFrames, zonesJson), areas: areaNames(areaTable) };
 	const layers = readLayers({ dir: path.join(P, 'nav-layers'), areaTable, zoneAt, zones: zonesJson });
-	for (const [cells, name] of [[128, 'Polestar_Nav'], [32, 'Polestar_Nav-32']]) {
+	for (const [cells, name] of [[128, 'Northstar_Nav'], [32, 'Northstar_Nav-32']]) {
 		const files = await packNav({ dir, cells, continents: [0], places, layers, date: '2026-10-23', log: () => {} });
 		shipPack(files, path.join(P, name));
 	}

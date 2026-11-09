@@ -1,5 +1,5 @@
 'use strict';
-// The map and minimap marks (Polestar.Pins): one family of glyphs on a
+// The map and minimap marks (Northstar.Pins): one family of glyphs on a
 // 24-unit grid, from the map icons design handoff (direction "1a",
 // geometric: filled silhouettes cut out by 1.5-unit gaps, a 3-unit stroke for
 // the linear parts), and the kit every mark is built from: a bevelled

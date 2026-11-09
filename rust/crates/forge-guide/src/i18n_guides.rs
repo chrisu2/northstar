@@ -320,8 +320,8 @@ pub fn pack_locales(pack_dir: &str) -> Vec<String> {
 	out
 }
 
-/// The object ids Polestar's names addon of `locale`
-/// (addon/Polestar_<locale>/Names.lua, `forge data names`) names, or None
+/// The object ids Northstar's names addon of `locale`
+/// (addon/Northstar_<locale>/Names.lua, `forge data names`) names, or None
 /// when it has none, cached. The addon folder is the repository's (as the
 /// JS finds it from its own file), located from this crate's source path.
 #[cfg(feature = "native")]

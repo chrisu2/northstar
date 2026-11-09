@@ -26,13 +26,13 @@ fn forge(args: &[&str]) -> Run {
 fn fake_root(name: &str) -> PathBuf {
 	let root = tmp(name);
 	std::fs::write(root.join("package.json"), "{\n  \"name\": \"polestar\",\n  \"version\": \"0.1.0\",\n  \"private\": true\n}\n").unwrap();
-	for n in ["Polestar", "Polestar_Guides", "Polestar_Recorder"] {
+	for n in ["Northstar", "Northstar_Guides", "Northstar_Recorder"] {
 		std::fs::create_dir_all(root.join("addon").join(n)).unwrap();
 		std::fs::write(root.join(format!("addon/{n}/{n}.toc")), format!("## Interface: 16001\n## Title: {n}\n## Version: 0.1.0\n\nMain.lua\n")).unwrap();
 	}
 	std::fs::create_dir_all(root.join("addon/.hidden")).unwrap();
 	std::fs::create_dir_all(root.join("guides")).unwrap();
-	std::fs::write(root.join("guides/pack.json"), "{\n\t\"id\": \"guides\",\n\t\"title\": \"Polestar Guides\",\n\t\"version\": \"0.1.0\",\n\t\"folder\": \"Polestar_Guides\"\n}\n").unwrap();
+	std::fs::write(root.join("guides/pack.json"), "{\n\t\"id\": \"guides\",\n\t\"title\": \"Northstar Guides\",\n\t\"version\": \"0.1.0\",\n\t\"folder\": \"Northstar_Guides\"\n}\n").unwrap();
 	root
 }
 
@@ -44,14 +44,14 @@ fn read(root: &Path, rel: &str) -> String {
 fn version_sets_package_json_the_manifest_and_every_toc_leaving_the_rest_as_it_was() {
 	let root = fake_root("set");
 	let r = root.to_string_lossy().into_owned();
-	let (pkg, man, toc) = (read(&root, "package.json"), read(&root, "guides/pack.json"), read(&root, "addon/Polestar/Polestar.toc"));
+	let (pkg, man, toc) = (read(&root, "package.json"), read(&root, "guides/pack.json"), read(&root, "addon/Northstar/Northstar.toc"));
 	let set = forge(&["0.2.0-beta.1", "--root", &r]);
 	assert_eq!(set.status, 0, "{}", set.stderr);
 	assert!(set.stdout.contains("version 0.2.0-beta.1: package.json, guides/pack.json and 3 addon TOCs"), "{}", set.stdout);
 	assert_eq!(read(&root, "package.json"), pkg.replace("\"0.1.0\"", "\"0.2.0-beta.1\""));
 	assert_eq!(read(&root, "guides/pack.json"), man.replace("\"0.1.0\"", "\"0.2.0-beta.1\""));
-	assert_eq!(read(&root, "addon/Polestar/Polestar.toc"), toc.replace("## Version: 0.1.0", "## Version: 0.2.0-beta.1"));
-	for n in ["Polestar_Guides", "Polestar_Recorder"] {
+	assert_eq!(read(&root, "addon/Northstar/Northstar.toc"), toc.replace("## Version: 0.1.0", "## Version: 0.2.0-beta.1"));
+	for n in ["Northstar_Guides", "Northstar_Recorder"] {
 		assert!(read(&root, &format!("addon/{n}/{n}.toc")).contains("\n## Version: 0.2.0-beta.1\n"));
 	}
 	let shown = forge(&["--root", &r]);
@@ -63,19 +63,19 @@ fn version_sets_package_json_the_manifest_and_every_toc_leaving_the_rest_as_it_w
 fn version_names_a_toc_that_disagrees_and_a_bad_version_or_a_toc_without_the_line_changes_nothing() {
 	let root = fake_root("toc");
 	let r = root.to_string_lossy().into_owned();
-	let recorder = root.join("addon/Polestar_Recorder/Polestar_Recorder.toc");
-	std::fs::write(&recorder, read(&root, "addon/Polestar_Recorder/Polestar_Recorder.toc").replace("0.1.0", "0.0.9")).unwrap();
+	let recorder = root.join("addon/Northstar_Recorder/Northstar_Recorder.toc");
+	std::fs::write(&recorder, read(&root, "addon/Northstar_Recorder/Northstar_Recorder.toc").replace("0.1.0", "0.0.9")).unwrap();
 	let shown = forge(&["--root", &r]);
 	assert_eq!(shown.status, 1);
-	assert!(shown.stderr.contains("Polestar_Recorder.toc: version 0.0.9"), "{}", shown.stderr);
+	assert!(shown.stderr.contains("Northstar_Recorder.toc: version 0.0.9"), "{}", shown.stderr);
 	assert_eq!(forge(&["1.0", "--root", &r]).status, 2);
 	assert_eq!(forge(&["1.0.0", "2.0.0", "--root", &r]).status, 2);
 	std::fs::write(&recorder, "## Interface: 16001\n\nMain.lua\n").unwrap();
 	let refused = forge(&["1.0.0", "--root", &r]);
 	assert_eq!(refused.status, 1);
-	assert!(refused.stderr.contains("Polestar_Recorder.toc: no ## Version line"), "{}", refused.stderr);
+	assert!(refused.stderr.contains("Northstar_Recorder.toc: no ## Version line"), "{}", refused.stderr);
 	assert!(read(&root, "package.json").contains("\"version\": \"0.1.0\""));
-	assert!(read(&root, "addon/Polestar/Polestar.toc").contains("\n## Version: 0.1.0\n"));
+	assert!(read(&root, "addon/Northstar/Northstar.toc").contains("\n## Version: 0.1.0\n"));
 }
 
 #[test]
@@ -92,11 +92,11 @@ fn version_names_a_manifest_that_disagrees_and_refuses_one_without_a_version() {
 	assert_eq!(refused.status, 1);
 	assert!(refused.stderr.contains("guides/pack.json: no \"version\" field"), "{}", refused.stderr);
 	assert!(read(&root, "package.json").contains("\"version\": \"0.1.0\""));
-	assert!(read(&root, "addon/Polestar/Polestar.toc").contains("\n## Version: 0.1.0\n"));
+	assert!(read(&root, "addon/Northstar/Northstar.toc").contains("\n## Version: 0.1.0\n"));
 }
 
 /// The checkout: every addon TOC and guides/pack.json (compile writes its version into
-/// Polestar_Guides.toc) carry package.json's version.
+/// Northstar_Guides.toc) carry package.json's version.
 #[test]
 fn the_checkout_carries_one_version_everywhere() {
 	let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..").canonicalize().unwrap();

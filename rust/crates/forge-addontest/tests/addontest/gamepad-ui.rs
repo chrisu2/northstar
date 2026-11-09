@@ -2,13 +2,13 @@
 //! focuses the game's windows, popups, menus and chat box from Blizzard's code and makes protected calls in the
 //! same execution. Addon code running in that flow gets them blocked, and the "AddOn blocked" popup's own gamepad
 //! handling blocks the next one until the client freezes (Blizzard forum threads 2367777 and 2370253). With it
-//! on, Polestar keeps to its own windows: Core/Init.lua's ns.GamepadUI() is read once as the addon loads, and
+//! on, Northstar keeps to its own windows: Core/Init.lua's ns.GamepadUI() is read once as the addon loads, and
 //! every reach into the game's UI asks it first.
 //!
 //! Two checks:
-//!   * loaded with each style, Polestar registers its slash commands, its tracking menu entries and its
-//!     Escape-closable windows only with the keyboard and mouse, opens the world map only then, and with the
-//!     gamepad shows the minimap button by default (its way in);
+//!   * loaded with each style, Northstar registers its slash commands, its tracking menu entries and its
+//!     Escape-closable windows only with the keyboard and mouse, opens the world map only then, and shows the
+//!     minimap button by default with either (with the gamepad, its way in);
 //!   * every line of addon code that reaches into the game's UI (REACHES) is in a file listed in ALLOWED with
 //!     its count and reason. A new one fails here: guard it with ns.GamepadUI() (or keep it out of the game's
 //!     UI), then list it.
@@ -21,25 +21,25 @@ use forge_addontest::{emitted, is_match, Addon, RunAddon};
 use serde_json::{json, Value};
 
 const SCRIPT: &str = r#"
-Polestar.Set("nav.answerTomTom", true)              -- /way, when nothing else owns it
-Polestar.Fire("TOGGLE_FRAME")
-Polestar.UI.ShowOptions()
+Northstar.Set("nav.answerTomTom", true)              -- /way, when nothing else owns it
+Northstar.Fire("TOGGLE_FRAME")
+Northstar.UI.ShowOptions()
 stub.advance(0.5)
 local special = {}
 for _, name in ipairs(UISpecialFrames) do
-	if type(name) == "string" and name:find("^Polestar") then special[#special + 1] = name end
+	if type(name) == "string" and name:find("^Northstar") then special[#special + 1] = name end
 end
 emit({
-	gamepad = Polestar.GamepadUI(),
-	padActive = Polestar.Gamepad.IsActive(),
-	slash = SlashCmdList.POLESTAR ~= nil and SLASH_POLESTAR1 ~= nil,
-	way = SLASH_POLESTARWAY1 ~= nil,
-	recorderSlash = SlashCmdList.POLESTARREC ~= nil,
-	recorderCommand = type(PolestarRecorder_Command),
+	gamepad = Northstar.GamepadUI(),
+	padActive = Northstar.Gamepad.IsActive(),
+	slash = SlashCmdList.NORTHSTAR ~= nil and SLASH_NORTHSTAR1 ~= nil,
+	way = SLASH_NORTHSTARWAY1 ~= nil,
+	recorderSlash = SlashCmdList.NORTHSTARREC ~= nil,
+	recorderCommand = type(NorthstarRecorder_Command),
 	menus = #__menus,
 	special = #special,
-	openMap = Polestar.Compat.CanOpenWorldMap(),
-	minimapButton = Polestar.Get("maps.minimapButton"),
+	openMap = Northstar.Compat.CanOpenWorldMap(),
+	minimapButton = Northstar.Get("maps.minimapButton"),
 })
 "#;
 
@@ -60,7 +60,7 @@ fn load(gamepad: bool, cvar: Option<&str>) -> Value {
 		+ " end }\n"
 		+ &cvar_lua
 		+ "\n__menus = {}\nMenu = { ModifyMenu = function(tag) __menus[#__menus + 1] = tag end }\nC_Map.OpenWorldMap = function() end\n";
-	emitted(&RunAddon { stubs: vec!["stub_world.lua"], before, addons: vec![Addon::name("Polestar"), Addon::name("Polestar_Recorder")], login: true, script: SCRIPT.into(), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_world.lua"], before, addons: vec![Addon::name("Northstar"), Addon::name("Northstar_Recorder")], login: true, script: SCRIPT.into(), ..Default::default() })
 		.remove(0)
 }
 
@@ -70,7 +70,7 @@ fn with_the_keyboard_and_mouse_polestar_registers_its_slash_commands_menu_entrie
 	assert_eq!(r["gamepad"], false);
 	assert_eq!(
 		json!({ "slash": r["slash"], "way": r["way"], "recorderSlash": r["recorderSlash"], "recorderCommand": r["recorderCommand"], "openMap": r["openMap"], "minimapButton": r["minimapButton"] }),
-		json!({ "slash": true, "way": true, "recorderSlash": true, "recorderCommand": "function", "openMap": true, "minimapButton": false })
+		json!({ "slash": true, "way": true, "recorderSlash": true, "recorderCommand": "function", "openMap": true, "minimapButton": true })
 	);
 	assert_eq!(r["menus"], 7, "nearby and service filters on the world map and minimap, two quest menus, and the quest log's pin entry");
 	assert!(r["special"].as_f64().unwrap() > 0.0, "its windows close with Escape");
@@ -83,7 +83,7 @@ fn the_keyboard_and_mouse_interface_wins_over_a_style_cvar_left_at_gamepad() {
 	let r = load(false, Some("1"));
 	assert_eq!(
 		json!({ "gamepad": r["gamepad"], "padActive": r["padActive"], "slash": r["slash"], "recorderSlash": r["recorderSlash"], "minimapButton": r["minimapButton"] }),
-		json!({ "gamepad": false, "padActive": false, "slash": true, "recorderSlash": true, "minimapButton": false })
+		json!({ "gamepad": false, "padActive": false, "slash": true, "recorderSlash": true, "minimapButton": true })
 	);
 }
 
@@ -96,7 +96,7 @@ fn with_the_gamepad_interface_polestar_keeps_to_its_own_windows_and_its_minimap_
 		json!({ "slash": false, "way": false, "recorderSlash": false, "menus": 0, "special": 0, "openMap": false }),
 		"no slash command, menu entry, UISpecialFrames entry or world map opened from addon code"
 	);
-	assert_eq!(r["recorderCommand"], "function", "the Recorder's page in Polestar's options still runs its commands");
+	assert_eq!(r["recorderCommand"], "function", "the Recorder's page in Northstar's options still runs its commands");
 	assert_eq!(r["minimapButton"], true, "the minimap button, on by default");
 }
 
@@ -132,23 +132,23 @@ const REACHES: &[&str] = &[
 
 // file -> lines that reach, why it is safe with the gamepad interface
 const ALLOWED: &[(&str, usize, &str)] = &[
-	("Polestar/Core/Init.lua", 5, "ns.CloseOnEscape and the /polestar registration, neither with the gamepad interface"),
-	("Polestar/Core/Compat.lua", 4, "Compat.OpenWorldMap opens nothing with the gamepad interface; Compat.AskAbandonQuest shows the game's abandon dialog only without it"),
-	("Polestar/Dungeons/Dungeons.lua", 1, "through Compat.OpenWorldMap"),
-	("Polestar/Nav/Journey.lua", 6, "the map's canvas click handler and /way, neither with the gamepad interface; wayTaken only reads"),
-	("Polestar/Nav/Nearby.lua", 3, "the tracking menus, not with the gamepad interface"),
-	("Polestar/Maps/Services.lua", 3, "the service tracking menus, not with the gamepad interface"),
-	("Polestar/UI/QuestLinks.lua", 3, "the quest menus, not with the gamepad interface"),
-	("Polestar/UI/GuideFrame.lua", 2, "the quest log menu's pin entry, not with the gamepad interface"),
-	("Polestar/QoL/QoL.lua", 2, "dialogs closed for the player (QoL.ClosePopup), never with the gamepad interface (its focus owns them)"),
-	("Polestar/Quests/DeleteWarning.lua", 2, "a line added to the delete dialog, never with the gamepad interface (its focus owns the dialogs)"),
-	("Polestar/Quests/SellWarning.lua", 4, "the buyback question, never with the gamepad interface (its focus owns the dialogs)"),
-	("Polestar/QoL/Toggles.lua", 3, "the error-message setting, which does nothing with the gamepad interface"),
-	("Polestar/UI/Options.lua", 2, "closing the game's Settings panel, never with the gamepad interface or in combat"),
-	("Polestar/UI/Gamepad.lua", 3, "a window's override bindings, only with the keyboard and mouse interface; the gamepad interface's focused window only read (a field, never a call)"),
-	("Polestar/QoL/Buttons.lua", 3, "the step key's interact stage binds its keys over, never with the gamepad interface"),
-	("Polestar_Recorder/Commands.lua", 3, "/psrec, not with the gamepad interface"),
-	("Polestar_Recorder/Panel.lua", 1, "the Recorder window's Escape entry, not with the gamepad interface"),
+	("Northstar/Core/Init.lua", 5, "ns.CloseOnEscape and the /northstar registration, neither with the gamepad interface"),
+	("Northstar/Core/Compat.lua", 4, "Compat.OpenWorldMap opens nothing with the gamepad interface; Compat.AskAbandonQuest shows the game's abandon dialog only without it"),
+	("Northstar/Dungeons/Dungeons.lua", 1, "through Compat.OpenWorldMap"),
+	("Northstar/Nav/Journey.lua", 6, "the map's canvas click handler and /way, neither with the gamepad interface; wayTaken only reads"),
+	("Northstar/Nav/Nearby.lua", 3, "the tracking menus, not with the gamepad interface"),
+	("Northstar/Maps/Services.lua", 3, "the service tracking menus, not with the gamepad interface"),
+	("Northstar/UI/QuestLinks.lua", 3, "the quest menus, not with the gamepad interface"),
+	("Northstar/UI/GuideFrame.lua", 2, "the quest log menu's pin entry, not with the gamepad interface"),
+	("Northstar/QoL/QoL.lua", 2, "dialogs closed for the player (QoL.ClosePopup), never with the gamepad interface (its focus owns them)"),
+	("Northstar/Quests/DeleteWarning.lua", 2, "a line added to the delete dialog, never with the gamepad interface (its focus owns the dialogs)"),
+	("Northstar/Quests/SellWarning.lua", 4, "the buyback question, never with the gamepad interface (its focus owns the dialogs)"),
+	("Northstar/QoL/Toggles.lua", 3, "the error-message setting, which does nothing with the gamepad interface"),
+	("Northstar/UI/Options.lua", 2, "closing the game's Settings panel, never with the gamepad interface or in combat"),
+	("Northstar/UI/Gamepad.lua", 3, "a window's override bindings, only with the keyboard and mouse interface; the gamepad interface's focused window only read (a field, never a call)"),
+	("Northstar/QoL/Buttons.lua", 3, "the step key's interact stage binds its keys over, never with the gamepad interface"),
+	("Northstar_Recorder/Commands.lua", 3, "/nsrec, not with the gamepad interface"),
+	("Northstar_Recorder/Panel.lua", 1, "the Recorder window's Escape entry, not with the gamepad interface"),
 ];
 
 fn lua_files(dir: &Path) -> Vec<PathBuf> {
@@ -172,12 +172,12 @@ fn lua_files(dir: &Path) -> Vec<PathBuf> {
 fn every_reach_into_the_game_s_ui_is_guarded_for_the_gamepad_interface_and_listed() {
 	let reaches = regex::Regex::new(&format!(r"\b({})\b", REACHES.join("|"))).unwrap();
 	let comment = regex::Regex::new(r"(^|\s)--.*$").unwrap();
-	let skip = regex::Regex::new(r"^Polestar_(Names_|Guides)").unwrap();
+	let skip = regex::Regex::new(r"^Northstar_(Names_|Guides)").unwrap();
 	let addons = addons_dir();
 	let mut found: BTreeMap<String, usize> = BTreeMap::new();
 	for entry in std::fs::read_dir(&addons).unwrap() {
 		let name = entry.unwrap().file_name().to_string_lossy().into_owned();
-		if !name.starts_with("Polestar") || skip.is_match(&name) {
+		if !name.starts_with("Northstar") || skip.is_match(&name) {
 			continue;
 		}
 		for file in lua_files(&addons.join(&name)) {

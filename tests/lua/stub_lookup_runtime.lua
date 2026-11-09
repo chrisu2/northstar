@@ -110,7 +110,7 @@ end
 function GetMouseButtonClicked() return lookuprt.button end
 
 -- The client's handler: Shift (chat link) and Ctrl (dress up) do their own
--- thing; everything is post-hooked by Polestar.Hooks.
+-- thing; everything is post-hooked by Northstar.Hooks.
 function HandleModifiedItemClick(link)
 	table.insert(lookuprt.clicks, link)
 	return false

@@ -155,7 +155,7 @@
 
 <svelte:window onclick={() => (menu = null)} onkeydown={menuKeys} />
 
-<PageHeader title="Community Guides" subtitle="Guides players publish on {community.site}, installed beside Polestar and kept up to date.">
+<PageHeader title="Community Guides" subtitle="Guides players publish on {community.site}, installed beside Northstar and kept up to date.">
 	{#snippet aside()}
 		{#if community.available}
 			<button class="btn" onclick={() => check()} disabled={spinning}>
@@ -297,7 +297,7 @@
 									{#if p.status === 'disabled'}
 										<button role="menuitem" class="danger" onclick={() => confirm(`${p.id}:discard`, () => act(p, 'discard'))}>
 											<Glyph name="close" size={14} color="var(--danger)" /><span>{armed === `${p.id}:discard` ? 'Click again to delete' : 'Delete the kept copy'}</span>
-											<span class="small muted hint">Deletes the turned-off files Polestar kept</span>
+											<span class="small muted hint">Deletes the turned-off files Northstar kept</span>
 										</button>
 									{:else if p.status !== 'removed'}
 										<button role="menuitem" class="danger" onclick={() => confirm(`${p.id}:uninstall`, () => act(p, 'uninstall'))}>
@@ -358,7 +358,7 @@
 				{/if}
 			{/if}
 
-			<p class="small muted foot">Guides are made by players, not by Polestar. Each one is checked against {community.site}'s signed list before anything in your AddOns folder changes, and a guide only ever writes its own PolestarPack folders.</p>
+			<p class="small muted foot">Guides are made by players, not by Northstar. Each one is checked against {community.site}'s signed list before anything in your AddOns folder changes, and a guide only ever writes its own NorthstarPack folders.</p>
 		{/if}
 	</div>
 </div>

@@ -43,9 +43,9 @@ fn errors(r: &Compiled) -> Vec<String> {
 
 /// Runs `script` (its `${loads}` replaced by the Lua loading the pack's `scripts`) on the full addon.
 fn run_pack(scripts: &[PathBuf], script: &str) -> Vec<Value> {
-	let lines: Vec<String> = scripts.iter().map(|f| format!("assert(loadfile({}))(\"Polestar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
+	let lines: Vec<String> = scripts.iter().map(|f| format!("assert(loadfile({}))(\"Northstar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
 	let loads = format!("do local ns = {{}}\n{}\nend", lines.join("\n"));
-	emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: BEFORE.into(), addons: vec![Addon::name("Polestar")], script: script.replace("${loads}", &loads), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: BEFORE.into(), addons: vec![Addon::name("Northstar")], script: script.replace("${loads}", &loads), ..Default::default() })
 }
 
 const FLOW: &str = r#"
@@ -53,7 +53,7 @@ const FLOW: &str = r#"
 				stub.login()
 				stub.advance(0.5)
 				local w = stub.world
-				local GF = Polestar.UI.GuideFrame
+				local GF = Northstar.UI.GuideFrame
 				local function snap(label)
 					local rows = {}
 					for i, r in ipairs(GF.rows) do
@@ -62,18 +62,18 @@ const FLOW: &str = r#"
 							rows[#rows + 1] = { text = plain, progress = plain:match("(%d+/%d+)$") or "" }
 						end
 					end
-					local t = Polestar.Nav.GetTarget()
+					local t = Northstar.Nav.GetTarget()
 					emit({
 						label = label,
-						guide = Polestar.Engine.GetGuide() and Polestar.Engine.GetGuide().id,
-						step = Polestar.Engine.GetStepIndex(),
+						guide = Northstar.Engine.GetGuide() and Northstar.Engine.GetGuide().id,
+						step = Northstar.Engine.GetStepIndex(),
 						card = GF.parts.person.Name:GetText(),
 						cardShown = GF.parts.card:IsShown(),
 						emptyTitle = GF.parts.empty:IsShown() and GF.parts.empty.Title:GetText() or nil,
 						rows = rows,
 						target = t and { x = t.x, y = t.y, label = t.label } or false,
-						arrow = PolestarNavArrow:IsShown(),
-						distance = Polestar.Nav.GetDistance() and math.floor(Polestar.Nav.GetDistance() + 0.5) or false,
+						arrow = NorthstarNavArrow:IsShown(),
+						distance = Northstar.Nav.GetDistance() and math.floor(Northstar.Nav.GetDistance() + 0.5) or false,
 					})
 				end
 				snap("login")
@@ -165,8 +165,8 @@ const GROUP_SCRIPT: &str = r#"
 				${loads}
 				stub.login()
 				stub.advance(0.5)
-				local w, GF = stub.world, Polestar.UI.GuideFrame
-				local DUNGEON = "|c" .. Polestar.Theme.Hex("dungeon")
+				local w, GF = stub.world, Northstar.UI.GuideFrame
+				local DUNGEON = "|c" .. Northstar.Theme.Hex("dungeon")
 				local function subs()
 					local out = {}
 					for _, r in ipairs(GF.rows) do
@@ -177,23 +177,23 @@ const GROUP_SCRIPT: &str = r#"
 					end
 					return out
 				end
-				Polestar.Engine.SetGuide("forever/class/hollow")
+				Northstar.Engine.SetGuide("forever/class/hollow")
 				stub.advance(0.5)
 				local accepts = subs()
 				for _, q in ipairs({ 9600, 9603, 9601, 9602 }) do w.accept(q, {}) end
 				stub.advance(0.5)
 				local kills = subs()
-				Polestar.UI.ShowPicker()
-				Polestar.UI.Picker.SetCategory("All")
+				Northstar.UI.ShowPicker()
+				Northstar.UI.Picker.SetCategory("All")
 				local chips = {}
 				for _, f in ipairs(stub.frames) do
 					if f.psGuide and rawget(f, "Range") and f:IsShown() then
 						chips[f.psGuide.id] = f.Group:IsShown() and f.Group.Text:GetText() or false
 					end
 				end
-				Polestar.UI.Picker.Select("forever/class/hollow")
+				Northstar.UI.Picker.Select("forever/class/hollow")
 				local details = {}
-				for _, c in ipairs(Polestar.UI.Picker.details.Chips) do if c:IsShown() then details[#details + 1] = c.Text:GetText() end end
+				for _, c in ipairs(Northstar.UI.Picker.details.Chips) do if c:IsShown() then details[#details + 1] = c.Text:GetText() end end
 				emit({ accepts = accepts, kills = kills, chips = chips, details = details })"#;
 
 #[test]
@@ -238,8 +238,8 @@ const ESCORT_SCRIPT: &str = r#"
 				${loads}
 				stub.login()
 				stub.advance(0.5)
-				local w, GF = stub.world, Polestar.UI.GuideFrame
-				local DUNGEON = "|c" .. Polestar.Theme.Hex("dungeon")
+				local w, GF = stub.world, Northstar.UI.GuideFrame
+				local DUNGEON = "|c" .. Northstar.Theme.Hex("dungeon")
 				local function subs()
 					local out = {}
 					for _, r in ipairs(GF.rows) do
@@ -250,7 +250,7 @@ const ESCORT_SCRIPT: &str = r#"
 					end
 					return out
 				end
-				Polestar.Engine.SetGuide("forever/class/escort")
+				Northstar.Engine.SetGuide("forever/class/escort")
 				stub.advance(0.5)
 				local before = subs()
 				w.accept(9700, { { text = "Escort Brother Danil to the vineyard", required = 1 }, { text = "Kobold Vermin slain: 0/3", required = 3 } }, "The Vineyard Walk")
@@ -293,11 +293,11 @@ fn compiled_escort_quests_say_once_per_card_under_the_accepts_and_then_the_compl
 fn the_map_page_gathers_every_map_setting_from_its_modules_into_the_declared_tabs_and_sections() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
-		addons: vec![Addon::name("Polestar")],
+		addons: vec![Addon::name("Northstar")],
 		script: r#"
 			stub.login()
-			local O = Polestar.UI.Options
-			Polestar.UI.ShowOptions("map")
+			local O = Northstar.UI.Options
+			Northstar.UI.ShowOptions("map")
 			local tabs = {}
 			for _, p in ipairs(O.Pages()) do if p.key == "map" then tabs = p.tabs end end
 			local out = { tabs = tabs, sections = {}, keys = {} }
@@ -329,6 +329,7 @@ fn the_map_page_gathers_every_map_setting_from_its_modules_into_the_declared_tab
 		json!([
 			"maps.minimapButton",
 			"nav.minimapPins",
+			"nav.minimapRoute",
 			"nav.trailDots",
 			"nav.upcomingPins",
 			"nav.worldPins",

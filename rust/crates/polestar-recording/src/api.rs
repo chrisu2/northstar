@@ -78,7 +78,7 @@ pub fn pow_solve(challenge: &str, difficulty: u32) -> u64 {
 pub struct UploadRequest {
 	/// The uploader's version.
 	pub uploader: String,
-	/// The addon install id (`PolestarRecorderDB.install`).
+	/// The addon install id (`NorthstarRecorderDB.install`).
 	pub install: String,
 	pub chunks: Vec<UploadChunk>,
 }
@@ -122,6 +122,19 @@ pub struct Stats {
 	pub quests: u64,
 	/// The last 30 days, oldest first.
 	pub last30: Vec<StatsDay>,
+	/// Chunks the server turned away in the last 30 days, by day (oldest first) and reason class:
+	/// the validator's message without the offending value (`turnin: field money: bad value`), so a
+	/// rule that refuses real game values shows up within minutes.
+	#[serde(default)]
+	pub rejects: Vec<StatsReject>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct StatsReject {
+	/// `YYYY-MM-DD` (UTC).
+	pub day: String,
+	pub reason: String,
+	pub chunks: u64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

@@ -8,7 +8,7 @@ const { luaToJson } = require('../lua');
 const { Frames } = require('./geo');
 
 const { ROOT, DATA } = require('../paths');
-const NAV = path.join(ROOT, 'addon', 'Polestar', 'Nav');
+const NAV = path.join(ROOT, 'addon', 'Northstar', 'Nav');
 
 function luaLiteral(v) {
 	if (v === null || v === undefined) return 'nil';
@@ -57,7 +57,7 @@ function resolveKnown(travel, known, faction) {
 }
 
 // The Lua that loads the addon planner into `ns` (Nav/Travel.lua, a
-// TravelData.lua and optionally Polestar_Travel's Crossings.lua), stubbing
+// TravelData.lua and optionally Northstar_Travel's Crossings.lua), stubbing
 // the addon core; ns.Nav.PlanRoute is ready after it. Shared with batched
 // runs (tools/lib/nav/arrow.js).
 function plannerLua({ travelLua = path.join(NAV, 'TravelData.lua'), crossingsLua } = {}) {
@@ -66,13 +66,13 @@ local ns = { L = setmetatable({}, { __index = function(_, k) return k end }), Na
 ns.RegisterDefaults, ns.On, ns.Fire, ns.RegisterEvent, ns.OnInit, ns.OnLogin, ns.RegisterCommand, ns.Print = noop, noop, noop, noop, noop, noop, noop, noop
 ns.Get = function() return true end
 ns.CharState = function() return { flags = {} } end
-Polestar = ns
-assert(loadfile(${luaLiteral(path.join(NAV, 'Travel.lua'))}))("Polestar", ns)
-assert(loadfile(${luaLiteral(travelLua)}))("Polestar", ns)
-${crossingsLua ? `assert(loadfile(${luaLiteral(crossingsLua)}))("Polestar_Travel", {})` : ''}`;
+Northstar = ns
+assert(loadfile(${luaLiteral(path.join(NAV, 'Travel.lua'))}))("Northstar", ns)
+assert(loadfile(${luaLiteral(travelLua)}))("Northstar", ns)
+${crossingsLua ? `assert(loadfile(${luaLiteral(crossingsLua)}))("Northstar_Travel", {})` : ''}`;
 }
 
-// crossingsLua: Polestar_Travel's Crossings.lua (the local crossings), loaded after TravelData.lua.
+// crossingsLua: Northstar_Travel's Crossings.lua (the local crossings), loaded after TravelData.lua.
 function planRoute({ from, to, faction = 'Alliance', known = [], speed, hearth, dataDir = DATA, travelLua = path.join(NAV, 'TravelData.lua'), crossingsLua }) {
 	const read = (f) => JSON.parse(fs.readFileSync(path.join(dataDir, f), 'utf8'));
 	const frames = new Frames(read('map-frames.json').era, read('zones.json'));

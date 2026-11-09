@@ -1,4 +1,4 @@
-//! `along` steps at runtime (addon/Polestar/Core/Engine.lua; docs/GUIDE_FORMAT.md, "Along the way"): the route
+//! `along` steps at runtime (addon/Northstar/Core/Engine.lua; docs/GUIDE_FORMAT.md, "Along the way"): the route
 //! passes over an along step at once; while the live step is past it, Engine.GetAlong lists its open goals,
 //! until they are done or, with `along = "<label>"`, until the live step reaches the step so labelled; a quest
 //! with work still open keeps its own goals listed past the label until that work is done (#797, #809).
@@ -21,7 +21,7 @@ const ALONG2: &str = r#"along = "back""#;
 const ALONG3: &str = "along = true";
 
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/along", pack = "test", title = "Along", minLevel = 1, maxLevel = 6,
 	steps = {
 		{ title = "McBride", goals = { { t = "accept", quest = 7, title = "Kobold Camp Cleanup", npc = 197, npcName = "Marshal McBride", map = 1429, x = 48.9, y = 41.6 } } },
@@ -38,7 +38,7 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 -- "<step>:<goal>[:<progress>]" for each goal Engine.GetAlong lists.
 function along()
@@ -61,8 +61,8 @@ fn run_with(script: &str, along2: &str, along3: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/along" }"#.into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/along" }"#.into())],
 		script: [TEST_PACK, TEST_SOURCE, &guide, HELPERS, "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 		..Default::default()
 	})
@@ -136,7 +136,7 @@ fn an_along_step_that_does_not_apply_when_only_or_that_the_player_skipped_is_not
 	// A skip saved before #942: the window no longer pages to an along step, so it is not skipped from there.
 	let skipped = run(r#"
 		stub.world.accept(7, { 10 }); flush()
-		Polestar.CharState().skipped["test/along"] = { [3] = true }
+		Northstar.CharState().skipped["test/along"] = { [3] = true }
 		emit({ E.GetLiveStep(), along() })
 	"#);
 	assert_eq!(skipped, vec![json!([4, "2:1:0 2:2:0"])]);
@@ -196,13 +196,13 @@ fn guides_validate_refuses_a_bad_label_or_along() {
 	let out = run(r#"
 		local function def(steps) return { id = "test/x", pack = "test", title = "X", steps = steps } end
 		local G = { { t = "level", level = 2 } }
-		emit(Polestar.Guides.Validate(def({ { along = "b", goals = G }, { label = "b", goals = G } })) == nil)
-		emit(Polestar.Guides.Validate(def({ { along = true, goals = G } })) == nil)
-		emit(Polestar.Guides.Validate(def({ { label = 5, goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { label = "a", goals = G }, { label = "a", goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { along = "nowhere", goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { label = "b", goals = G }, { along = "b", goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { along = 3, goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { along = "b", goals = G }, { label = "b", goals = G } })) == nil)
+		emit(Northstar.Guides.Validate(def({ { along = true, goals = G } })) == nil)
+		emit(Northstar.Guides.Validate(def({ { label = 5, goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { label = "a", goals = G }, { label = "a", goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { along = "nowhere", goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { label = "b", goals = G }, { along = "b", goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { along = 3, goals = G } })))
 	"#);
 	assert_eq!(out, vec![json!(true), json!(true), json!("step 1: bad label"), json!("step 2: duplicate label a"), json!("step 1: bad along"), json!("step 2: bad along"), json!("step 1: bad along")]);
 }
@@ -226,7 +226,7 @@ fn mulgore_the_battleboars_half_done_at_camp_narache_the_arrow_leads_to_the_boar
 	let text = std::fs::read_to_string(root().join(file)).unwrap();
 	let compiled = compile_with(&[(file, &text)], &data, None);
 	let pack = write_test_pack(&compiled.guides, &data, &our_manifest());
-	let loads: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Polestar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
+	let loads: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Northstar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
 	let f = data.map_frames.get("forever").get("1412");
 	let before = format!(
 		r#"local w = stub.world
@@ -257,7 +257,7 @@ emit({{ E.GetLiveStep(), wp() }})
 "#,
 		loads.join("\n")
 	);
-	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], before, addons: vec![Addon::name("Polestar")], script, ..Default::default() });
+	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], before, addons: vec![Addon::name("Northstar")], script, ..Default::default() });
 	assert_eq!(out, vec![json!([9, "9:2"])], "the flanks still to get (step 9 goal 2), not Grull Hawkwind's turn-in (11:1)");
 }
 
@@ -302,8 +302,8 @@ fn a_saved_view_of_an_along_step_opens_on_the_next_step() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/along", pins = { ["test/along"] = { step = 3, done = false } } }"#.into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/along", pins = { ["test/along"] = { step = 3, done = false } } }"#.into())],
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,

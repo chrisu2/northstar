@@ -175,12 +175,12 @@ test('travel chain prints a candidate entry, and with it the planner enters the 
 	const crossingsFile = path.join(dir, 'crossings.json');
 	fs.writeFileSync(crossingsFile, JSON.stringify({ schema: 1, frame: 'e', chains: [chain] }));
 	const result = await buildTravel({ dataDir: path.join(FIX, 'data'), recordingsDir: path.join(FIX, 'recordings'), sourcesDir: path.join(FIX, 'sources'), offline: true, shippedFile: null, crossingsFile });
-	writeTravel(result, { jsonOut: path.join(dir, 'travel.json'), luaOut: path.join(dir, 'TravelData.lua'), travelAddonDir: path.join(dir, 'Polestar_Travel') });
+	writeTravel(result, { jsonOut: path.join(dir, 'travel.json'), luaOut: path.join(dir, 'TravelData.lua'), travelAddonDir: path.join(dir, 'Northstar_Travel') });
 	for (const f of ['map-frames.json', 'zones.json']) fs.copyFileSync(path.join(FIX, 'data', f), path.join(dir, f));
 	const south = frames.toMap(MAP, O.c, world([0, -400]).wx, world([0, -400]).wy);
 	const common = { dataDir: dir, travelLua: path.join(dir, 'TravelData.lua'), from: { map: MAP, x: south.x, y: south.y }, to: T };
 	assert.equal(planRoute(common).length, 1, 'without the chain the arrow points straight at the target');
-	const legs = planRoute({ ...common, crossingsLua: path.join(dir, 'Polestar_Travel', 'Crossings.lua') });
+	const legs = planRoute({ ...common, crossingsLua: path.join(dir, 'Northstar_Travel', 'Crossings.lua') });
 	assert.equal(legs[0].label, 'Go to Test Mine');
 	assert.ok(Math.hypot(legs[0].to.wx - world(MOUTH).wx, legs[0].to.wy - world(MOUTH).wy) <= 20, 'the first leg ends at the mouth');
 	assert.equal(legs[legs.length - 1].label, 'Westfall 50, 50');

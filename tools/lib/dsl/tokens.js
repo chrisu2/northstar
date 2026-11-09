@@ -2,7 +2,7 @@
 // Name tokens (docs/GUIDE_FORMAT.md, "Names in texts"; docs/TRANSLATING.md,
 // "Guide texts"): the game's names inside a guide's prose, written as
 // {kind:id}, so the addon shows each in the client's language
-// (Core/GuideTexts.lua, through Polestar.Names and the client) and a
+// (Core/GuideTexts.lua, through Northstar.Names and the client) and a
 // translator writes the words around them, never the names.
 //
 //   "{npc:234} and {npc:821} stand at the top of the stone tower."

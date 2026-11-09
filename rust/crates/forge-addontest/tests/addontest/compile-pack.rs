@@ -35,8 +35,8 @@ fn the_built_folder_loads_through_its_toc_and_registers_both_guides() {
 	let (manifest, pack) = build();
 	let folder = manifest.get("folder").to_js_string();
 	let out = emitted(&RunAddon {
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"]), Addon::dir(&folder, &pack.dir)],
-		script: r#"emit({ a = Polestar.Guides.Get("mini/a") ~= nil, b = Polestar.Guides.Get("mini/b") ~= nil, next = Polestar.Guides.Get("mini/a").next })"#.into(),
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"]), Addon::dir(&folder, &pack.dir)],
+		script: r#"emit({ a = Northstar.Guides.Get("mini/a") ~= nil, b = Northstar.Guides.Get("mini/b") ~= nil, next = Northstar.Guides.Get("mini/a").next })"#.into(),
 		..Default::default()
 	});
 	assert_eq!(out[0], json!({ "a": true, "b": true, "next": "mini/b" }));

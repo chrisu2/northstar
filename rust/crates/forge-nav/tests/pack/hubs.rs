@@ -4,7 +4,7 @@
 
 use super::golden_dir;
 use forge_nav::grid::{cell_of, Grid};
-use forge_nav::hubs::{build_hubs, csv_rows, guard_name, hubs_doc, role_of, Hostility, HubsIn};
+use forge_nav::hubs::{build_hubs, csv_rows, guard_name, hubs_doc, npcs_to_hub_tables, role_of, Hostility, HubsIn};
 use forge_nav::pack::layers::Frames;
 use serde_json::{json, Value};
 
@@ -34,6 +34,42 @@ fn hubs_layer_matches_the_js() {
 	assert_eq!(doc, read(&g.join("nav-layers/hubs.json")));
 }
 
+#[test]
+fn forever_npcs_are_hubs_without_classic_db_or_faction_template() {
+	let npcs = json!({
+		"1": { "name": "Stormwind Guard", "level": 55, "faction": "A", "spawns": { "1453": { "f": "e", "pts": [[50, 50]] } } },
+		"2": { "name": "Innkeeper Gryshka", "level": 30, "faction": "H", "roles": ["innkeeper"], "spawns": { "1454": { "f": "e", "pts": [[10, 20]] } } }
+	});
+	let frames = json!({
+		"era": {
+			"1453": { "c": 0, "left": 0, "right": 1000, "top": 1000, "bottom": 0 },
+			"1454": { "c": 1, "left": 0, "right": 1000, "top": 1000, "bottom": 0 }
+		}
+	});
+	let (spawns, templates) = npcs_to_hub_tables(&npcs, &frames);
+	assert_eq!(templates["1"]["side"], "Alliance");
+	assert_eq!(spawns["1"][0][0], 0.0);
+	assert_eq!(spawns["1"][0][1], 500.0);
+	assert_eq!(spawns["1"][0][2], 500.0);
+	assert_eq!(spawns["2"][0][0], 1.0);
+	let areas = csv_rows("ID,AreaName_lang,ParentAreaID,Flags_0\n1519,Stormwind,0,256\n1637,Orgrimmar,0,256\n");
+	let area_at = |c: u32, _x, _y| if c == 0 { 1519 } else { 1637 };
+	let out = build_hubs(&HubsIn {
+		spawns: &spawns,
+		templates: &templates,
+		faction_templates: &[],
+		area_table: &areas,
+		area_at: &area_at,
+		zone_at: None,
+		maps: &[0, 1],
+	})
+	.unwrap();
+	let stormwind = out.iter().find(|h| h.0 == 0).unwrap();
+	assert!(stormwind.1.iter().any(|h| h["name"] == "Stormwind" && h["side"] == "Alliance"), "{stormwind:?}");
+	assert_eq!(templates["2"]["side"], "Horde");
+	assert_eq!(spawns["2"][0][0], 1.0);
+}
+
 fn hostility() -> Hostility {
 	let head = "ID,Faction,FactionGroup,EnemyGroup,Enemies_0,Friend_0\n";
 	let rows = "1,1,3,12,0,0\n3,3,3,12,0,0\n4,4,3,12,0,0\n115,115,3,12,0,0\n2,2,5,10,0,0\n5,5,5,10,0,0\n6,6,5,10,0,0\n116,116,5,10,0,0\n11,72,2,4,0,0\n85,76,4,2,0,0\n120,21,0,0,0,0\n130,80,0,0,2,0\n140,81,2,4,0,2\n";
@@ -56,15 +92,15 @@ fn hostility_from_group_masks_and_enemy_and_friend_factions() {
 fn guards_by_flag_from_level_10_by_name_from_level_20_and_service_npcs_by_flags() {
 	let h = hostility();
 	let t = |name: &str, faction: u32, npc: u32, extra: u32, min: u32| json!({ "name": name, "faction": faction, "npcFlags": npc, "extraFlags": extra, "rank": 0, "minLevel": min });
-	assert_eq!(role_of(&t("Stormwind Guard", 11, 0, 0x400, 55), &h), Some(("Alliance", true)));
-	assert_eq!(role_of(&t("Kul Tiras Marine", 11, 0, 0x400, 6), &h), None, "the flag below level 10");
-	assert_eq!(role_of(&t("Southshore Guard", 11, 0, 0, 25), &h), Some(("Alliance", true)));
-	assert_eq!(role_of(&t("Pyrewood Watcher", 11, 0, 0, 15), &h), None, "a guard's name below level 20");
-	assert_eq!(role_of(&t("Hammerfall Grunt", 85, 0, 0, 30), &h), Some(("Horde", true)));
-	assert_eq!(role_of(&t("Innkeeper Gryshka", 85, 0x80, 0, 30), &h), Some(("Horde", false)));
-	assert_eq!(role_of(&t("Goblin Guard", 120, 0, 0x400, 60), &h), None, "neutral");
-	assert_eq!(role_of(&t("Hidden", 11, 0, 0x480, 60), &h), None, "invisible");
-	assert_eq!(role_of(&t("Wanderer", 11, 0x1, 0, 30), &h), None, "no service flag");
+	assert_eq!(role_of(&t("Stormwind Guard", 11, 0, 0x400, 55), Some(&h)), Some(("Alliance", true)));
+	assert_eq!(role_of(&t("Kul Tiras Marine", 11, 0, 0x400, 6), Some(&h)), None, "the flag below level 10");
+	assert_eq!(role_of(&t("Southshore Guard", 11, 0, 0, 25), Some(&h)), Some(("Alliance", true)));
+	assert_eq!(role_of(&t("Pyrewood Watcher", 11, 0, 0, 15), Some(&h)), None, "a guard's name below level 20");
+	assert_eq!(role_of(&t("Hammerfall Grunt", 85, 0, 0, 30), Some(&h)), Some(("Horde", true)));
+	assert_eq!(role_of(&t("Innkeeper Gryshka", 85, 0x80, 0, 30), Some(&h)), Some(("Horde", false)));
+	assert_eq!(role_of(&t("Goblin Guard", 120, 0, 0x400, 60), Some(&h)), None, "neutral");
+	assert_eq!(role_of(&t("Hidden", 11, 0, 0x480, 60), Some(&h)), None, "invisible");
+	assert_eq!(role_of(&t("Wanderer", 11, 0x1, 0, 30), Some(&h)), None, "no service flag");
 	assert!(guard_name("Stormwind City Guard") && guard_name("Deathguard Bartholomew") && !guard_name("Guardian of Blizzard") && !guard_name("Bodyguards"));
 }
 

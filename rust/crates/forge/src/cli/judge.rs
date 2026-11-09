@@ -296,7 +296,7 @@ zone changes, quests passed by, area visits: all blockers); each return and zone
 do not make (from the model order or the writer), the written walk against the model route and work
 under the quest's level or turned in grey (warnings). Exit 1 when there is a blocker. --json: one
 document { starts, violations }. --out: also write check.md (the player view table first) and
-check.json there. --route-fixes: the deliberate orders (default $POLESTAR_ROUTE_FIXES, else
+check.json there. --route-fixes: the deliberate orders (default $NORTHSTAR_ROUTE_FIXES, else
 data/route-fixes.json of the checkout here). --base: the guides compared against (default
 <root>/guides). --threads: default the machine's.";
 
@@ -345,7 +345,7 @@ fn check(argv: Vec<String>) -> Result<(), Fail> {
 	if let Some(b) = base {
 		inp.v1 = b;
 	}
-	inp.route_fixes = fixes.or_else(|| std::env::var_os("POLESTAR_ROUTE_FIXES").map(PathBuf::from)).or_else(|| {
+	inp.route_fixes = fixes.or_else(|| std::env::var_os("NORTHSTAR_ROUTE_FIXES").map(PathBuf::from)).or_else(|| {
 		let here = std::env::current_dir().ok()?;
 		find_root(&here).map(|r| r.join("data/route-fixes.json")).filter(|f| f.is_file())
 	});
@@ -485,7 +485,7 @@ pub(super) const FEEDBACK_USAGE: &str = "usage: forge judge feedback --out <file
 Player reports into the route's overrides: RouteFeedback.json's insert, drop and constraint inputs and the
 GitHub issues labelled `guide` (gh api, cached; --offline: the cache only) become route-fixes override lines
 (include, skip, and pairs as `deliberate` writes them), each with its source and whether the sim already
-honours it. --out: the route fixes with those overrides (the sim reads it as $POLESTAR_ROUTE_FIXES);
+honours it. --out: the route fixes with those overrides (the sim reads it as $NORTHSTAR_ROUTE_FIXES);
 --report: the full result (entries, manual specs, untriaged issues) as JSON. Defaults under --root (the
 checkout above the current folder): data/local/research/RouteFeedback.json, data/route-fixes.json, and
 data/local/research/guide-issues.json as the issue cache.";

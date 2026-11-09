@@ -1,6 +1,6 @@
 'use strict';
 // `maps build`: each zone's level range, computed from data/forever, ->
-// addon/Polestar/Maps/ZoneLevels.lua. Same inputs give byte-identical output.
+// addon/Northstar/Maps/ZoneLevels.lua. Same inputs give byte-identical output.
 //
 // Heuristic (what a player levelling there actually fights):
 //   1. Samples are spawn points of NPCs that are friendly to neither faction

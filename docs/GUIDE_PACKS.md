@@ -1,8 +1,8 @@
 # Community guides
 
-Guides for Polestar written by other players and published as their own
-addons. Install one next to Polestar and its guides show up in the guide
-menu, with the arrow, the map markers and everything else Polestar does.
+Guides for Northstar written by other players and published as their own
+addons. Install one next to Northstar and its guides show up in the guide
+menu, with the arrow, the map markers and everything else Northstar does.
 
 <table>
   <tr>
@@ -13,7 +13,7 @@ menu, with the arrow, the map markers and everything else Polestar does.
     </td>
     <td width="50%" valign="top">
       <b><a href="#for-authors">I want to write my own</a></b><br>
-      Write guides in plain text, check them with Polestar's tools and
+      Write guides in plain text, check them with Northstar's tools and
       publish them as your own addon.
     </td>
   </tr>
@@ -27,26 +27,26 @@ menu, with the arrow, the map markers and everything else Polestar does.
 
 ### At a glance
 
-| | Polestar's own guides | Community guides |
+| | Northstar's own guides | Community guides |
 |---|---|---|
-| **Written by** | Polestar | the addon's author |
-| **Tested by Polestar** | yes | no: Polestar does not test or vouch for them |
-| **How you get them** | they come with Polestar | a separate addon you install yourself |
+| **Written by** | Northstar | the addon's author |
+| **Tested by Northstar** | yes | no: Northstar does not test or vouch for them |
+| **How you get them** | they come with Northstar | a separate addon you install yourself |
 | **Where they show** | the guide menu's categories (Leveling, Professions…) | the guide menu, under **Community guides** |
 | **Where to report a problem** | the [Polestar Discord](https://discord.gg/polestar) or GitHub | the addon's author, where they publish it |
 
-A community addon only adds guides: it never replaces Polestar's own or
-another community addon's. Polestar does not ship, host or recommend any;
+A community addon only adds guides: it never replaces Northstar's own or
+another community addon's. Northstar does not ship, host or recommend any;
 you only see one if you install it yourself.
 
 ### Install one
 
-1. **Install Polestar first.** A community addon does nothing without it.
+1. **Install Northstar first.** A community addon does nothing without it.
 2. **Download the community addon** from wherever its author publishes it:
    CurseForge, Wago or the author's own site. Its page there should say that
-   it needs Polestar.
+   it needs Northstar.
 3. **Install it like any addon**: with your addon app, or by unzipping it
-   into the game's `Interface/AddOns` folder, next to the `Polestar` folders.
+   into the game's `Interface/AddOns` folder, next to the `Northstar` folders.
 4. **Restart the game.**
 
 > [!TIP]
@@ -54,25 +54,25 @@ you only see one if you install it yourself.
 
 ### Find its guides
 
-Open the guide menu (`/polestar guides`). Below Polestar's own categories is
+Open the guide menu (`/northstar guides`). Below Northstar's own categories is
 the **Community guides** heading, with one entry per community addon: its
 title and its author. Every guide's details say who wrote it:
 "By &lt;author&gt; · &lt;title&gt; &lt;version&gt; · &lt;licence&gt;".
 
 ### Turn one on or off
 
-**Options > Community guides** (`/polestar packs`) lists every community
+**Options > Community guides** (`/northstar packs`) lists every community
 addon you have installed, with its author, version, licence and website.
 
 <p align="center">
-  <img src="preview/options-packs.svg" width="820" alt="Options, Community guides: Polestar Guides and Joe's Routes switched on, Ann's Dungeons with 2 problems and its report, Kim's Quests turned off in the AddOns list, Sam's Professions not loaded">
+  <img src="preview/options-packs.svg" width="820" alt="Options, Community guides: Northstar Guides and Joe's Routes switched on, Ann's Dungeons with 2 problems and its report, Kim's Quests turned off in the AddOns list, Sam's Professions not loaded">
 </p>
 
 - **The switch** on a row shows or hides its guides at once, without a
   reload.
 - **Suggest guides from** picks where the guide for your level is suggested
-  from. It is Polestar's own guides unless you choose a community addon;
-  Polestar's guides still fill in wherever that addon has nothing for your
+  from. It is Northstar's own guides unless you choose a community addon;
+  Northstar's guides still fill in wherever that addon has nothing for your
   character.
 - **To remove one for good**, delete its folder or uninstall it in your
   addon app.
@@ -80,14 +80,14 @@ addon you have installed, with its author, version, licence and website.
 ### When something is wrong
 
 Report wrong steps and other problems in a community addon to **its
-author**, not to Polestar. The author wrote those guides and is the one who
+author**, not to Northstar. The author wrote those guides and is the one who
 can fix them.
 
 - When a community addon has problems, its row on the Community guides page
   says how many. **Show** lists them; **Copy report** copies them, with the
   versions, ready to send.
 - When it cannot run at all, its row says why (for example, turned off in
-  the AddOns list, or made for a newer Polestar).
+  the AddOns list, or made for a newer Northstar).
 - The row shows the author's website when they gave one.
 
 > [!WARNING]
@@ -96,25 +96,25 @@ can fix them.
 > from the place the author publishes them.
 
 <details>
-<summary><b>Telling a community addon from Polestar's own in the AddOns list</b></summary>
+<summary><b>Telling a community addon from Northstar's own in the AddOns list</b></summary>
 
 <br>
 
-In the game's AddOns list, Polestar has one entry in the Quests category.
-Open it and you see Polestar's own addons and your community addons side by
+In the game's AddOns list, Northstar has one entry in the Quests category.
+Open it and you see Northstar's own addons and your community addons side by
 side.
 
-- **Polestar's own addons** are Polestar Guides and the addons that carry
-  Polestar's data (Polestar Quest Database, Polestar Item Data, Polestar
-  Codex), plus Polestar Recorder for guide authors. Each lists Polestar as
+- **Northstar's own addons** are Northstar Guides and the addons that carry
+  Northstar's data (Northstar Quest Database, Northstar Item Data, Northstar
+  Codex), plus Northstar Recorder for guide authors. Each lists Northstar as
   its author.
-- **A community addon** built with Polestar's tools is titled
-  "Polestar Community:" and its own name, such as
-  "Polestar Community: Emberway Routes". Point at it and the tooltip shows
-  its version and a line such as "Community addon for Polestar by Ashka",
+- **A community addon** built with Northstar's tools is titled
+  "Northstar Community:" and its own name, such as
+  "Northstar Community: Emberway Routes". Point at it and the tooltip shows
+  its version and a line such as "Community addon for Northstar by Ashka",
   unless its author wrote their own.
-- One built before Polestar used that name reads "Polestar Pack:" until its
-  author rebuilds it. Polestar reads both.
+- One built before Northstar used that name reads "Northstar Pack:" until its
+  author rebuilds it. Northstar reads both.
 
 </details>
 
@@ -135,8 +135,8 @@ come as an **import string** instead of an addon: one line of text its
 author shares on Discord, GitHub or a forum. Nothing to install.
 
 1. Open **Import** at the foot of the hub's left rail, just above Options
-   (`/polestar import`).
-2. Paste the string into the box. Polestar reads it and shows what it
+   (`/northstar import`).
+2. Paste the string into the box. Northstar reads it and shows what it
    holds before anything is saved: "Cozy Sleeping Bag · by Yendi · 14
    steps · levels 30–40 · Alliance and Horde · CC-BY-4.0".
 3. Press **Import**. The guide is in the guide menu under **Community
@@ -148,20 +148,20 @@ author shares on Discord, GitHub or a forum. Nothing to install.
   and your progress stays where the guide's steps did not change.
 - **To remove it**, press **Delete** on its row under **Your imported
   guides** (twice: the second click confirms).
-- A string Polestar cannot read, one that is too big, or one holding a guide
-  Polestar refuses is turned down with the reason, and nothing is saved.
-- Polestar never suggests an imported guide on its own: you pick it.
+- A string Northstar cannot read, one that is too big, or one holding a guide
+  Northstar refuses is turned down with the reason, and nothing is saved.
+- Northstar never suggests an imported guide on its own: you pick it.
 
-An import string is data, never code: Polestar reads the guide out of it
+An import string is data, never code: Northstar reads the guide out of it
 field by field and runs nothing in it, so it cannot do anything a guide
-cannot. As with a community addon, Polestar does not test or vouch for the
+cannot. As with a community addon, Northstar does not test or vouch for the
 guide; report its problems to its author.
 
 ## For authors
 
 ### What you get
 
-If you write leveling guides, you can use everything Polestar uses for its
+If you write leveling guides, you can use everything Northstar uses for its
 own:
 
 - **The guide format**: plain text `.guide` files. The compiler fills in
@@ -169,7 +169,7 @@ own:
   `accept 7` is a whole line.
 - **The checks**: `lint` checks every guide against the game's data, and
   `playtest` plays each one to the end in the real addon, without the game.
-- **In the game**: Polestar's guide engine, its waypoint arrow, its travel
+- **In the game**: Northstar's guide engine, its waypoint arrow, its travel
   planner and its markers on the map.
 
 You publish the result as your own addon, under your name and a licence of
@@ -194,7 +194,7 @@ polestar dev --play    # lint and build on every save, with the browser playgrou
 ```
 
 > [!TIP]
-> No Node or Lua on your machine? When your Polestar clone came from GitHub,
+> No Node or Lua on your machine? When your Northstar clone came from GitHub,
 > a pack made by `polestar new` carries a dev container: open the pack's
 > repository in GitHub Codespaces and everything is set up. `install` and
 > `dev` need the game, so use `play` and `playtest` there.
@@ -256,7 +256,7 @@ them.
    `LICENSE` you chose. In a clone of the public repository it also writes
    a GitHub workflow that checks every push.
 2. **Write**: `polestar find <text>` prints quest, NPC, object, item, inn
-   and flight-point lines ready to paste. In the game, `/polestar where`
+   and flight-point lines ready to paste. In the game, `/northstar where`
    prints where you stand as a guide line.
 3. **Check**: `forge guide lint` checks every guide against the game's data,
    and `polestar playtest` plays each one to the end, for each race that
@@ -267,7 +267,7 @@ them.
 5. **Build**: `forge release pack` writes `dist/<folder>-<version>.zip`, byte
    for byte reproducible.
 6. **Publish**: upload the zip as a new addon project on CurseForge, Wago
-   or GitHub. On CurseForge and Wago, mark Polestar as a required
+   or GitHub. On CurseForge and Wago, mark Northstar as a required
    dependency so addon apps install it too. With the template's workflow, a
    version tag on GitHub builds the zip and attaches it to a release.
 7. **Update**: raise `version` in `pack.json`, run `forge release pack` again and
@@ -286,12 +286,12 @@ them.
 
 - [ ] `pack.json` has an `id`, `title`, `author`, `version` and `license`.
       The id is 2 to 32 lower-case letters, digits or hyphens, and not one
-      Polestar reserves. A title or an author name is at most 64 characters.
+      Northstar reserves. A title or an author name is at most 64 characters.
 - [ ] Every guide id starts with your pack id and a slash
       (`ashka-emberway/westfall`).
-- [ ] The addon folder is not named `Polestar` and does not start with
-      `Polestar_`. By default it is `PolestarPack_` and your title
-      (`PolestarPack_EmberwayRoutes`).
+- [ ] The addon folder is not named `Northstar` and does not start with
+      `Northstar_`. By default it is `NorthstarPack_` and your title
+      (`NorthstarPack_EmberwayRoutes`).
 - [ ] A `website`, when you give one, starts with `https://` or `http://`.
 - [ ] A `next` line hands over only to a guide that exists, is for the same
       faction, and that the characters of your guide can follow.
@@ -302,22 +302,22 @@ writes for a licence it has no text for.
 **We ask these of you.** No tool checks them, but players need them to tell
 your addon apart and to reach you:
 
-- [ ] **A name of your own** that can't be mistaken for Polestar's addons.
-      The tools put "Polestar Community:" before it in the AddOns list. Say
-      on your addon page that it is a community addon for Polestar, and if
+- [ ] **A name of your own** that can't be mistaken for Northstar's addons.
+      The tools put "Northstar Community:" before it in the AddOns list. Say
+      on your addon page that it is a community addon for Northstar, and if
       you write your own `notes` line, keep that clear there too.
 - [ ] **Your name** as the author: the name players will look for.
 - [ ] **A version** you raise with every release.
 - [ ] **A website or support link** in `website`, so the Community guides
       page shows players where to report problems. Say the same on your
       addon page and in your README.
-- [ ] **A licence of your choice.** Polestar's
+- [ ] **A licence of your choice.** Northstar's
       [LICENSE-EXCEPTION.md](../LICENSE-EXCEPTION.md) lets you publish a
       community addon built by its compiler, including the reference data
       the compiler puts in it, under any terms you like.
-- [ ] **Your own guide text.** Don't copy text from Polestar's own guides:
+- [ ] **Your own guide text.** Don't copy text from Northstar's own guides:
       the licence exception does not cover it. Handing over to one of
-      Polestar's guides with `next` is fine, since that points to the guide
+      Northstar's guides with `next` is fine, since that points to the guide
       rather than copying it.
 - [ ] **Support for it.** Players are told to report problems to the author,
       so answer them where you publish.
@@ -327,19 +327,19 @@ your addon apart and to reach you:
 
 <br>
 
-The TOC places your community addon under Polestar's entry in the Quests
-category, titled "Polestar Community: &lt;your title&gt;", with the line
-"Community addon for Polestar by &lt;author&gt;" unless you write your own
-`notes`. Polestar's own menus show your title as you wrote it. Community
-addons built before this name read "Polestar Pack:" until you rebuild them;
-Polestar reads both.
+The TOC places your community addon under Northstar's entry in the Quests
+category, titled "Northstar Community: &lt;your title&gt;", with the line
+"Community addon for Northstar by &lt;author&gt;" unless you write your own
+`notes`. Northstar's own menus show your title as you wrote it. Community
+addons built before this name read "Northstar Pack:" until you rebuild them;
+Northstar reads both.
 
 </details>
 
 ### Import strings
 
 A single small guide can go to players as one line of text instead of an
-addon: they paste it on Polestar's Import page (`/polestar import`). Use it
+addon: they paste it on Northstar's Import page (`/northstar import`). Use it
 for a quest chain, an item, a mount, an errand; a route or a set of guides is
 a community addon.
 
@@ -366,9 +366,9 @@ polestar export guides/cozy-sleeping-bag.guide > cozy.txt
   `> file.txt` keeps just that line.
 - A guide's `version` decides between Import and Update in the game: raise
   it when you share a new string.
-- A `next` or route choice may lead only to one of Polestar's guides or to a
+- A `next` or route choice may lead only to one of Northstar's guides or to a
   guide the player imported before; `export` names the guides to import
-  first. Polestar refuses a string whose guide leads anywhere else.
+  first. Northstar refuses a string whose guide leads anywhere else.
 - A guide id under the id of a community addon the player has installed
   stays that addon's: the string is refused.
 - In `polestar play <pack>` (and `polestar dev --play`), **Copy import

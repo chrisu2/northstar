@@ -4,11 +4,11 @@
 //! skipped, missing locations) in the Rust replay. The Lua program is engine-chain.js's own (the stub
 //! world, the addon by its TOC, the compiled pack, playtest.js's SIMULATE with the recorder), written
 //! out once by tests/js/engine-program.js (node) and cached in rust/target/judge-ref/rilua-orc
-//! (POLESTAR_REF_REFRESH=1 rebuilds it); only the play runs in rilua. When lua5.1's trace is cached
+//! (NORTHSTAR_REF_REFRESH=1 rebuilds it); only the play runs in rilua. When lua5.1's trace is cached
 //! (engine_parity.rs, engine-orc.json) the two interpreters' traces must match byte for byte as well.
 //! Default: `slice_orc_warrior_chain`, the clean guide slice's Orc chain (rust/tests/golden/engine/rilua-orc
 //! and orc.json, its README). Optional extra: the shipped chain, skipped with a note when
-//! $POLESTAR_CHECKOUT (a checkout with the shipped guides and built data/forever) is unset or lacks them,
+//! $NORTHSTAR_CHECKOUT (a checkout with the shipped guides and built data/forever) is unset or lacks them,
 //! or node is absent. Both are ignored in debug builds
 //! (an unoptimised rilua takes minutes): `cargo test --release -p forge-judge --test engine_rilua`.
 //!
@@ -33,11 +33,11 @@ use std::process::Command;
 use std::time::Instant;
 
 fn checkout() -> Option<PathBuf> {
-	std::env::var_os("POLESTAR_CHECKOUT").map(PathBuf::from)
+	std::env::var_os("NORTHSTAR_CHECKOUT").map(PathBuf::from)
 }
 
 fn data() -> PathBuf {
-	checkout().expect("POLESTAR_CHECKOUT").join("data/forever")
+	checkout().expect("NORTHSTAR_CHECKOUT").join("data/forever")
 }
 
 fn crate_dir() -> PathBuf {
@@ -117,7 +117,7 @@ fn scoped_source(state: &mut LuaState) -> LuaResult<u32> {
 /// The Lua program for the chain (engine-program.js, cached) -> its folder.
 fn program(name: &str, root: &Path, first: &str, race: &str, faction: &str, class: &str) -> PathBuf {
 	let dir = ref_dir().join(format!("rilua-{name}"));
-	if !dir.join("files.json").exists() || std::env::var_os("POLESTAR_REF_REFRESH").is_some() {
+	if !dir.join("files.json").exists() || std::env::var_os("NORTHSTAR_REF_REFRESH").is_some() {
 		assert!(Command::new("node").arg("-v").output().is_ok(), "rilua engine parity for {name} needs node on PATH");
 		let script = crate_dir().join("tests/js/engine-program.js");
 		let st = Command::new("node").arg(&script).args([dir.to_str().unwrap(), root.to_str().unwrap(), first, race, faction, class, data().to_str().unwrap(), "skip"]).status().expect("node runs");
@@ -218,11 +218,11 @@ fn replay(root: &Path, data_dir: &Path, files: &[String], first_id: &str, race: 
 
 fn check_chain(name: &str, root: &Path, first: &str, race: &str, faction: &str, class: &str) {
 	let Some(checkout) = checkout() else {
-		eprintln!("note: POLESTAR_CHECKOUT unset: rilua engine parity for {name} skipped");
+		eprintln!("note: NORTHSTAR_CHECKOUT unset: rilua engine parity for {name} skipped");
 		return;
 	};
 	if !root.join(first).exists() || !checkout.join("data/forever").exists() {
-		eprintln!("note: {} or POLESTAR_CHECKOUT's data/forever absent: rilua engine parity for {name} skipped", root.join(first).display());
+		eprintln!("note: {} or NORTHSTAR_CHECKOUT's data/forever absent: rilua engine parity for {name} skipped", root.join(first).display());
 		return;
 	}
 	let dir = program(name, root, first, race, faction, class);
@@ -274,7 +274,7 @@ fn slice_orc_warrior_chain() {
 			std::fs::copy(e.path(), to.join(e.file_name())).unwrap();
 		}
 	};
-	copy(&gold.join("rilua-orc/pack/Polestar_Guides"), &dir.join("pack/Polestar_Guides"));
+	copy(&gold.join("rilua-orc/pack/Northstar_Guides"), &dir.join("pack/Northstar_Guides"));
 	std::fs::copy(gold.join("rilua-orc/files.json"), dir.join("files.json")).unwrap();
 	let repo = common::golden().join("../../..").canonicalize().unwrap();
 	let program = std::fs::read_to_string(gold.join("rilua-orc/program.lua")).unwrap().replace("@PACK@", &dir.join("pack").to_string_lossy()).replace("@REPO@", &repo.to_string_lossy());
@@ -284,7 +284,7 @@ fn slice_orc_warrior_chain() {
 }
 
 #[test]
-#[ignore = "needs POLESTAR_CHECKOUT (guides, data/forever) and node; run with --release (unoptimised rilua takes ~5.5 min)"]
+#[ignore = "needs NORTHSTAR_CHECKOUT (guides, data/forever) and node; run with --release (unoptimised rilua takes ~5.5 min)"]
 fn orc_warrior_chain() {
 	check_chain("orc", &checkout().unwrap_or_default().join("guides"), "forever/horde/orc-troll/01-durotar.guide", "Orc", "Horde", "WARRIOR");
 }

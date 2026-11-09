@@ -1,6 +1,6 @@
-//! The walking-map writer's maps on Polestar's router (ported from the router-side cases of
+//! The walking-map writer's maps on Northstar's router (ported from the router-side cases of
 //! tests/navmesh-pack.test.js): the nav-pack golden (forge nav pack's output on the nav-grid golden's synthetic
-//! scenes, rust/tests/golden/nav-pack) loaded with Polestar_Nav's Routing. A house's walls close the steps
+//! scenes, rust/tests/golden/nav-pack) loaded with Northstar_Nav's Routing. A house's walls close the steps
 //! through them and its door opens them, a ramp leads onto an upper floor and onto a sheer plateau, an
 //! enclosure no wall opens is unreachable, a Horde walk into an Alliance hub reports it, and the graph's
 //! per-profile costs agree across the APIs. The writer's own rules are forge-nav's tests (tests/pack).
@@ -9,14 +9,14 @@ use forge_addontest::run::{addons_dir, root, toc_entries};
 use forge_addontest::{emitted, Addon, RunAddon};
 use serde_json::{json, Value};
 
-/// Polestar_Nav's Routing and API.lua with the golden's map files (map 0, PolestarPathData).
+/// Northstar_Nav's Routing and API.lua with the golden's map files (map 0, NorthstarPathData).
 fn golden_nav() -> Addon {
-	let mut files: Vec<String> = toc_entries(&addons_dir().join("Polestar_Nav")).unwrap().into_iter().filter(|f| !f.ends_with(".xml")).collect();
-	let dir = root().join("rust/tests/golden/nav-pack/Polestar_Nav/Nav");
+	let mut files: Vec<String> = toc_entries(&addons_dir().join("Northstar_Nav")).unwrap().into_iter().filter(|f| !f.ends_with(".xml")).collect();
+	let dir = root().join("rust/tests/golden/nav-pack/Northstar_Nav/Nav");
 	for f in ["Nav0.lua", "Nav0_1.lua"] {
 		files.push(dir.join(f).to_string_lossy().into_owned());
 	}
-	Addon::Files("Polestar_Nav".into(), files)
+	Addon::Files("Northstar_Nav".into(), files)
 }
 
 /// The scenes' coordinates: E east and S south from tile (32, 32)'s north-west corner (x = -S, y = -E).
@@ -30,7 +30,7 @@ fn p(e: f64, s: f64, z: Option<f64>) -> String {
 fn run(script: &str) -> Value {
 	let full = format!(
 		r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local frames = {{}}
 Path.after = function(fn) frames[#frames + 1] = fn end
 local function pts(list) if not list then return nil end local out = {{}} for i, q in ipairs(list) do out[i] = {{ -q.y, -q.x }} end return out end

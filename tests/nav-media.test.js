@@ -142,18 +142,18 @@ test('the arrow points up, centred, and stays inside the rotation circle', () =>
 test('every texture the Nav UI puts on screen is shipped in the addon', () => {
 	const [used] = runAddon({
 		stubs: ['stub_nav.lua'],
-		addons: [{ name: 'Polestar', files: ['Core/Init.lua', 'Nav/Nav.xml'] }],
+		addons: [{ name: 'Northstar', files: ['Core/Init.lua', 'Nav/Nav.xml'] }],
 		login: true,
 		script: `
 			local m, x, y = stub.nav.mapPoint(100, 0)
-			Polestar.Nav.SetTarget(m, x, y, "T")
+			Northstar.Nav.SetTarget(m, x, y, "T")
 			stub.nav.showWorldMap(9000)
 			stub.advance(0.2)
 			local seen, out = {}, {}
 			local function scan(f)
 				for _, r in ipairs(f.regions or {}) do
 					local t = r.texture
-					if type(t) == "string" and t:find("Polestar\\\\Media\\\\Nav\\\\") and not seen[t] then
+					if type(t) == "string" and t:find("Northstar\\\\Media\\\\Nav\\\\") and not seen[t] then
 						seen[t] = true
 						out[#out + 1] = t
 					end

@@ -1,0 +1,52 @@
+{
+	"generator": "node tools/polestar.js nav pack",
+	"format": 2,
+	"grid": {
+		"product": null,
+		"build": null,
+		"builtAt": "2026-10-23T20:11:22.131Z",
+		"version": 4
+	},
+	"cells": 128,
+	"date": "2026-10-23",
+	"maps": {
+		"0": {
+			"chokepoints": 8,
+			"clusters": 4,
+			"floors": 4970,
+			"nodes": 91,
+			"edges": 259,
+			"components": 1,
+			"clampedCosts": 0,
+			"maxDegree": 17,
+			"rawBytes": 67936,
+			"packedBytes": 20128,
+			"files": 2,
+			"hubs": 2,
+			"classes": {
+				"normal": 66044,
+				"road": 611,
+				"gentle": 1,
+				"steep": 270,
+				"indoor": 500,
+				"city": 2684,
+				"allianceHub": 545,
+				"hordeHub": 716
+			},
+			"roads": {
+				"strong": 2063,
+				"weak": 105,
+				"pieces": 3,
+				"ends": 6,
+				"bridges": 1,
+				"bridgedColumns": 48,
+				"refused": 0
+			}
+		}
+	},
+	"files": {
+		"Nav/Nav0.lua": "618e61fb7b70a765354336f5411eda00679ff3f6f5f3aa5b66adfa9cb8d81723",
+		"Nav/Nav0_1.lua": "25b06d06683c00f65553b15094762a672f573f6aaff4555b3c3779cf4aa50e16",
+		"Nav/Chokepoints.lua": "05f61ca98c78c5409cda73c645d7680086006196462825672b3f3246c9edfe5c"
+	}
+}

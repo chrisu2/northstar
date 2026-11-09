@@ -1,10 +1,10 @@
-//! Quest automation (addon/Polestar/Core/Automation.lua) driven through the stub world's quest, greeting and
+//! Quest automation (addon/Northstar/Core/Automation.lua) driven through the stub world's quest, greeting and
 //! gossip frames.
 
 use forge_addontest::{emitted, Addon, RunAddon, TEST_PACK, TEST_SOURCE};
 use serde_json::{json, Value};
 
-const GUIDE_BODY: &str = r#"Polestar.RegisterGuide({
+const GUIDE_BODY: &str = r#"Northstar.RegisterGuide({
 	id = "test/auto", pack = "test", title = "Automation", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ goals = { { t = "accept", quest = 783, title = "A Threat Within" } } },
@@ -33,7 +33,7 @@ fn run(before: &str, guides: &str, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{MAP}\n{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: format!("{guides}\nfunction flush() stub.advance(0.25) end\nstub.login()\n{script}"),
 		..Default::default()
 	})
@@ -50,7 +50,7 @@ fn accepts_a_quest_the_current_step_wants_and_nothing_else() {
 			w.questDetail(823, 783)
 			flush()
 			${calls}
-			emit({ calls = c, onQuest = w.log[783] ~= nil, other = w.log[999] == nil, step = Polestar.Engine.GetStepIndex() })
+			emit({ calls = c, onQuest = w.log[783] ~= nil, other = w.log[999] == nil, step = Northstar.Engine.GetStepIndex() })
 		"#,
 	);
 	assert_eq!(out, json!({ "calls": ["AcceptQuest 783 nil"], "onQuest": true, "other": true, "step": 2 }));
@@ -81,8 +81,8 @@ fn reading_ahead_with_next_accepts_the_quests_of_the_live_step_and_never_the_one
 		"",
 		&guide(),
 		r#"
-			Polestar.Engine.Next(); Polestar.Engine.Next()
-			local viewed, live = Polestar.Engine.GetStepIndex(), Polestar.Engine.GetLiveStep()
+			Northstar.Engine.Next(); Northstar.Engine.Next()
+			local viewed, live = Northstar.Engine.GetStepIndex(), Northstar.Engine.GetLiveStep()
 			w.questDetail(1, 33)      -- step 3: the step in view
 			w.close()
 			w.questDetail(823, 783)   -- step 1: the live step, behind the view
@@ -103,11 +103,11 @@ fn holding_shift_or_turning_the_settings_off_suppresses_automation() {
 			stub.keys.shift = true
 			w.questDetail(197, 7); w.close()
 			stub.keys.shift = false
-			Polestar.Set("behavior.autoAccept", false)
+			Northstar.Set("behavior.autoAccept", false)
 			w.questDetail(197, 7); w.close()
-			Polestar.Set("behavior.autoAccept", true)
+			Northstar.Set("behavior.autoAccept", true)
 			w.onQuest(783, {}) ; w.completed[783] = nil
-			Polestar.Set("behavior.autoTurnin", false)
+			Northstar.Set("behavior.autoTurnin", false)
 			w.questProgress(197, 783); w.close()
 			${calls}
 			emit(c)
@@ -131,7 +131,7 @@ fn gossip_turns_in_the_finished_guide_quest_first_then_accepts_the_follow_up() {
 			w.gossip(197, { available = opts.available })
 			flush()
 			${calls}
-			emit({ calls = c, done = w.completed[783], on7 = w.log[7] ~= nil, step = Polestar.Engine.GetStepIndex() })
+			emit({ calls = c, done = w.completed[783], on7 = w.log[7] ~= nil, step = Northstar.Engine.GetStepIndex() })
 		"#,
 	);
 	assert_eq!(
@@ -169,7 +169,7 @@ fn never_picks_among_several_rewards_takes_the_only_reward_when_there_is_one() {
 			"calls": ["CompleteQuest 783 nil"],
 			"onQuest": true,
 			"frame": "complete",
-			"said": "|cff4fd1c5Polestar|r: Choose a reward to finish the turn-in.",
+			"said": "|cff4fd1c5Northstar|r: Choose a reward to finish the turn-in.",
 		})
 	);
 
@@ -235,7 +235,7 @@ fn the_greeting_panel_selects_guide_quests_by_their_index() {
 
 // Issue #108: Distracting Jarven (308) is handed in from Jarven Thunderbrew's window with no accept, so the NPC
 // lists it among the quests it offers, not among the ones in the log. `turnin ... direct` is that goal.
-const DIRECT_BODY: &str = r#"Polestar.RegisterGuide({
+const DIRECT_BODY: &str = r#"Northstar.RegisterGuide({
 	id = "test/auto", pack = "test", title = "Direct", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ goals = { { t = "turnin", quest = 308, title = "Distracting Jarven", direct = true, npc = 1373, npcName = "Jarven Thunderbrew" } } },
@@ -259,7 +259,7 @@ fn t_108_a_direct_turn_in_is_taken_from_the_quests_the_giver_offers_and_finished
 			-- window says itself that the hand-in can be made.
 			w.questProgress(1373, 308, { completable = true }); flush()
 			${calls}
-			emit({ calls = c, step = Polestar.Engine.GetStepIndex() })
+			emit({ calls = c, step = Northstar.Engine.GetStepIndex() })
 		"#,
 	);
 	assert_eq!(out["calls"], json!(["C_GossipInfo.SelectAvailableQuest 308 nil", "CompleteQuest 308 nil", "GetQuestReward 308 0"]));
@@ -273,9 +273,9 @@ fn t_108_a_direct_turn_in_follows_autoturnin_not_autoaccept_there_is_no_accept_t
 		${calls}
 		emit(c)
 	"#;
-	let accept_only = run("", &direct(), &format!("Polestar.Set(\"behavior.autoTurnin\", false)\n{script}"));
+	let accept_only = run("", &direct(), &format!("Northstar.Set(\"behavior.autoTurnin\", false)\n{script}"));
 	assert_eq!(accept_only, json!({}), "auto-accept alone must not hand anything in"); // no calls (Lua encodes an empty list as {})
-	let turnin_only = run("", &direct(), &format!("Polestar.Set(\"behavior.autoAccept\", false)\n{script}"));
+	let turnin_only = run("", &direct(), &format!("Northstar.Set(\"behavior.autoAccept\", false)\n{script}"));
 	assert_eq!(turnin_only, json!(["C_GossipInfo.SelectAvailableQuest 308 nil"]));
 }
 
@@ -283,7 +283,7 @@ fn t_108_a_direct_turn_in_follows_autoturnin_not_autoaccept_there_is_no_accept_t
 // not hand in another ale or more cloth.
 #[test]
 fn t_108_a_direct_turn_in_already_done_is_never_handed_in_again() {
-	const BODY: &str = r#"Polestar.RegisterGuide({
+	const BODY: &str = r#"Northstar.RegisterGuide({
 	id = "test/auto", pack = "test", title = "Direct", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ goals = {
@@ -305,7 +305,7 @@ fn t_108_a_direct_turn_in_already_done_is_never_handed_in_again() {
 			w.gossip(1373, { available = { { questID = 308 } } }); flush(); w.close()
 			w.questProgress(1373, 308, { completable = true }); flush(); w.close()
 			w.greeting(1373, { available = { { questID = 308 } } }); flush(); w.close()
-			emit({ first = first, again = #w.calls - first, status = Polestar.Engine.GetStepView(1).goals[1].status })
+			emit({ first = first, again = #w.calls - first, status = Northstar.Engine.GetStepView(1).goals[1].status })
 		"#,
 	);
 	assert_eq!(out, json!({ "first": 3, "again": 0, "status": "done" }));

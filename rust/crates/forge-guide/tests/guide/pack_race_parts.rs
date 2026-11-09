@@ -15,7 +15,7 @@ fn guide(id: &str, head: &str) -> String {
 fn pack_dir(name: &str, mage: bool) -> std::path::PathBuf {
 	let dir = scratch(&format!("parts-{name}"));
 	let mut files = vec![
-		("pack.json", r#"{"id":"parts","title":"Parts Pack","author":"Ann","version":"1.0.0","license":"CC0-1.0","folder":"PolestarPack_Parts"}"#.to_string()),
+		("pack.json", r#"{"id":"parts","title":"Parts Pack","author":"Ann","version":"1.0.0","license":"CC0-1.0","folder":"NorthstarPack_Parts"}"#.to_string()),
 		("guides/plain.guide", guide("parts/plain", "")),
 		("guides/human-warrior.guide", guide("parts/human-warrior/01", "race Human\nclass Warrior")),
 		("guides/warrior-2.guide", guide("parts/human-warrior/02", "race Human\nclass Warrior").replace("levels 1-10", "levels 10-12")),
@@ -40,13 +40,13 @@ fn build(dir: &std::path::Path) -> Vec<(String, FileContent)> {
 #[test]
 fn a_race_part_the_build_no_longer_has_is_removed_another_folder_of_that_name_is_refused() {
 	let addons = scratch("parts-addons");
-	let out = addons.join("PolestarPack_Parts");
+	let out = addons.join("NorthstarPack_Parts");
 	write_pack_dir(&out, &build(&pack_dir("all", true))).unwrap();
-	assert!(addons.join("PolestarPack_Parts_Dwarf/Guides.lua").exists());
+	assert!(addons.join("NorthstarPack_Parts_Dwarf/Guides.lua").exists());
 	write_pack_dir(&out, &build(&pack_dir("nomage", false))).unwrap();
-	assert!(!addons.join("PolestarPack_Parts_Dwarf").exists(), "no Dwarf guide left: the Dwarf part goes");
-	assert!(addons.join("PolestarPack_Parts_Human/Guides.lua").exists());
-	std::fs::create_dir(addons.join("PolestarPack_Parts_Dwarf")).unwrap();
-	std::fs::write(addons.join("PolestarPack_Parts_Dwarf/mine.lua"), "-- someone else").unwrap();
+	assert!(!addons.join("NorthstarPack_Parts_Dwarf").exists(), "no Dwarf guide left: the Dwarf part goes");
+	assert!(addons.join("NorthstarPack_Parts_Human/Guides.lua").exists());
+	std::fs::create_dir(addons.join("NorthstarPack_Parts_Dwarf")).unwrap();
+	std::fs::write(addons.join("NorthstarPack_Parts_Dwarf/mine.lua"), "-- someone else").unwrap();
 	assert_match(&write_pack_dir(&out, &build(&pack_dir("again", true))).unwrap_err(), "not a generated race part");
 }

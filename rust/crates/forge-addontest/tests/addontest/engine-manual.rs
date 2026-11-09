@@ -1,4 +1,4 @@
-//! The player's own word over the guide (addon/Polestar/Core/Engine.lua): › and ‹ look ahead and back without
+//! The player's own word over the guide (addon/Northstar/Core/Engine.lua): › and ‹ look ahead and back without
 //! changing anything, Skip is the only way a step is skipped (and Unskip undoes it), every goal ticks done and
 //! back, optional goals skip with one click, all of it saved and honoured by a reload; the arrow follows the
 //! current goal. Real Core manifest, stub world.
@@ -16,7 +16,7 @@ w.titles[783] = "A Threat Within"; w.titles[7] = "Kobold Camp Cleanup"
 
 // A Northshire-shaped route for a Warrior: step 5 is Mage-only.
 const ROUTE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/route", pack = "test", title = "Route", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Deputy Willem", goals = {
@@ -45,7 +45,7 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 -- A table's keys, sorted and joined ("1:1,3"; "" for none).
 function keys(t)
@@ -57,7 +57,7 @@ end
 "#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 fn run(guides: &str, before: &str, saved: Option<&str>, script: &str) -> Value {
@@ -65,7 +65,7 @@ fn run(guides: &str, before: &str, saved: Option<&str>, script: &str) -> Value {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
 		addons: vec![core()],
-		saved: saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		saved: saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		script: [TEST_PACK, TEST_SOURCE, guides, HELPERS, "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 		..Default::default()
 	})
@@ -73,14 +73,14 @@ fn run(guides: &str, before: &str, saved: Option<&str>, script: &str) -> Value {
 }
 
 // SavedVariables as the client writes them at a reload: the script ends with stub.fire("PLAYER_LOGOUT") and
-// emits PolestarCharDB; this turns it back into the chunk the next session loads.
+// emits NorthstarCharDB; this turns it back into the chunk the next session loads.
 fn reload_of(char_db: &Value) -> String {
-	format!("PolestarCharDB = {}", lua_value(char_db))
+	format!("NorthstarCharDB = {}", lua_value(char_db))
 }
 
 const AT_CAMP: &str = "w.complete({ 783 }); w.onQuest(7, { 10 })"; // the kobolds are the live step (3)
 
-const ROUTE_SAVED: Option<&str> = Some(r#"PolestarCharDB = { schema = 1, guide = "test/route" }"#);
+const ROUTE_SAVED: Option<&str> = Some(r#"NorthstarCharDB = { schema = 1, guide = "test/route" }"#);
 
 #[test]
 fn looks_ahead_and_back_without_skipping_anything_skip_skips_the_step_shown_and_unskip_undoes_it() {
@@ -98,13 +98,13 @@ fn looks_ahead_and_back_without_skipping_anything_skip_skips_the_step_shown_and_
 			E.Next(); flush(); mark("end")
 			E.Prev(); flush(); mark("prev")
 			E.Prev(); flush(); mark("prev")
-			local untouched = keys(PolestarCharDB.skipped["test/route"])
+			local untouched = keys(NorthstarCharDB.skipped["test/route"])
 			E.Skip(); flush(); mark("skip")
-			local skipped = keys(PolestarCharDB.skipped["test/route"])
+			local skipped = keys(NorthstarCharDB.skipped["test/route"])
 			local view3 = E.GetStepView(3)
 			local undone = E.Unskip(3); flush(); mark("unskip")
 			emit({ trail = trail, ahead = ahead, untouched = untouched, skipped = skipped, skippedView = { view3.status, view3.skipped },
-				undone = undone, after = keys(PolestarCharDB.skipped["test/route"]) })
+				undone = undone, after = keys(NorthstarCharDB.skipped["test/route"]) })
 		"#,
 	);
 	assert_eq!(out["trail"], json!(["start=3/3", "next=4/3", "next=6/3", "end=6/3", "prev=4/3", "prev=3/3", "skip=4/4", "unskip=3/3"]));
@@ -120,7 +120,7 @@ fn looks_ahead_and_back_without_skipping_anything_skip_skips_the_step_shown_and_
 fn looking_ahead_at_an_accept_taking_the_quest_moves_on_to_its_objective_step_even_while_the_log_has_not_filled_in_the_objectives_yet_regression_barak_kodobane_passed_for_the_kolkar_leaders_turn_in()
 {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/kolkar", pack = "test", title = "Kolkar", minLevel = 1, maxLevel = 30, steps = {
+		Northstar.RegisterGuide({ id = "test/kolkar", pack = "test", title = "Kolkar", minLevel = 1, maxLevel = 30, steps = {
 			{ title = "Sergra", goals = { { t = "accept", quest = 3261, title = "Jorn Skyseer", npc = 3338 } } },
 			{ title = "Regthar", goals = { { t = "accept", quest = 850, title = "Kolkar Leaders", npc = 3389 } } },
 			{ title = "Barak", goals = { { t = "collect", item = 5022, itemName = "Barak's Head", count = 1, quest = 850, oi = 1 } } },
@@ -129,10 +129,10 @@ fn looking_ahead_at_an_accept_taking_the_quest_moves_on_to_its_objective_step_ev
 	let out = run(
 		guides,
 		"",
-		Some(r#"PolestarCharDB = { schema = 1, guide = "test/kolkar" }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, guide = "test/kolkar" }"#),
 		r#"
 			local w = stub.world
-			Polestar.Set("behavior.autoAccept", false)
+			Northstar.Set("behavior.autoAccept", false)
 			E.Goto(2); flush()
 			local r = { looking = E.GetStepIndex() }
 			w.accept(850, {}); flush() -- in the log, its objectives not there yet
@@ -157,7 +157,7 @@ fn skip_while_looking_ahead_skips_the_step_shown_and_moves_on_from_it_leaving_th
 		r#"
 			E.Next(); flush()
 			E.Skip(); flush()
-			emit({ at = E.GetStepIndex(), live = E.GetLiveStep(), skipped = keys(PolestarCharDB.skipped["test/route"]) })
+			emit({ at = E.GetStepIndex(), live = E.GetLiveStep(), skipped = keys(NorthstarCharDB.skipped["test/route"]) })
 		"#,
 	);
 	assert_eq!(out, json!({ "at": 6, "live": 3, "skipped": "4" }));
@@ -170,8 +170,8 @@ fn a_reload_keeps_the_position_a_skipped_step_stays_skipped_even_with_its_quest_
 	let out = run(
 		ROUTE,
 		"w.complete({ 783 }); w.onQuest(7, { { required = 10, fulfilled = 4 } })",
-		Some(r#"PolestarCharDB = { schema = 1, tabs = { "test/route" }, activeTab = 1, skipped = { ["test/route"] = { [3] = true } } }"#),
-		r#"emit({ at = E.GetStepIndex(), skipped = keys(PolestarCharDB.skipped["test/route"]) })"#,
+		Some(r#"NorthstarCharDB = { schema = 1, tabs = { "test/route" }, activeTab = 1, skipped = { ["test/route"] = { [3] = true } } }"#),
+		r#"emit({ at = E.GetStepIndex(), skipped = keys(NorthstarCharDB.skipped["test/route"]) })"#,
 	);
 	assert_eq!(out, json!({ "at": 4, "skipped": "3" }));
 }
@@ -179,7 +179,7 @@ fn a_reload_keeps_the_position_a_skipped_step_stays_skipped_even_with_its_quest_
 #[test]
 fn a_quest_its_giver_did_not_list_is_never_skipped_nor_kept_across_a_reload_161_741() {
 	const GUIDE: &str = r#"
-		Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", minLevel = 10, maxLevel = 20, steps = {
+		Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", minLevel = 10, maxLevel = 20, steps = {
 			{ title = "Thork", goals = {
 				{ t = "accept", quest = 870, title = "The Forgotten Pools", npc = 3429, npcName = "Thork", map = 1429, x = 51, y = 30 },
 				{ t = "accept", quest = 869, title = "Raptor Thieves", npc = 3464, npcName = "Gazrog", map = 1429, x = 52, y = 30 },
@@ -192,7 +192,7 @@ fn a_quest_its_giver_did_not_list_is_never_skipped_nor_kept_across_a_reload_161_
 	let first = run(
 		GUIDE,
 		before,
-		Some(r#"PolestarDB = { schema = 1, settings = { behavior = { autoAccept = false } } }; PolestarCharDB = { schema = 1, guide = "test/xr" }"#),
+		Some(r#"NorthstarDB = { schema = 1, settings = { behavior = { autoAccept = false } } }; NorthstarCharDB = { schema = 1, guide = "test/xr" }"#),
 		r#"
 			local w = stub.world
 			w.gossip(3429, { available = {} }); w.close(); flush()
@@ -200,12 +200,12 @@ fn a_quest_its_giver_did_not_list_is_never_skipped_nor_kept_across_a_reload_161_
 			local g = E.GetStepView(1).goals[1]
 			local at = E.GetStepIndex()
 			stub.fire("PLAYER_LOGOUT")
-			emit({ at = at, status = g.status, notice = g.noticeText, db = PolestarCharDB })
+			emit({ at = at, status = g.status, notice = g.noticeText, db = NorthstarCharDB })
 		"#,
 	);
 	assert_eq!(first["at"], 1, "the guide stays at Thork");
 	assert_eq!(first["status"], "active");
-	assert_eq!(first["notice"], "Not offered by Thork? Report it with /polestar");
+	assert_eq!(first["notice"], "Not offered by Thork? Report it with /northstar");
 	assert_eq!(first["db"]["offers"], Value::Null, "nothing saved");
 	let script = r#"local g = E.GetStepView(1).goals[1]; emit({ at = E.GetStepIndex(), status = g.status, why = g.unavailable or false, notice = g.noticeText or false })"#;
 	let reload = run(GUIDE, &format!("{before}; w.onQuest(869, {{ 12 }})"), Some(&reload_of(&first["db"])), script);
@@ -215,7 +215,7 @@ fn a_quest_its_giver_did_not_list_is_never_skipped_nor_kept_across_a_reload_161_
 #[test]
 fn a_pack_update_that_moves_steps_keeps_check_offs_skips_and_the_place_the_player_was_looking_at() {
 	const V1: &str = r#"
-		Polestar.RegisterGuide({ id = "test/mv", pack = "test", title = "Moves", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/mv", pack = "test", title = "Moves", minLevel = 1, maxLevel = 60, steps = {
 			{ goals = { { t = "talk", npc = 1, npcName = "One" } } },
 			{ goals = { { t = "accept", quest = 902, title = "Two", npc = 2 } } },
 			{ goals = { { t = "accept", quest = 903, title = "Three", npc = 3 } } },
@@ -228,14 +228,14 @@ fn a_pack_update_that_moves_steps_keeps_check_offs_skips_and_the_place_the_playe
 	let first = run(
 		V1,
 		"",
-		Some(r#"PolestarCharDB = { schema = 1, guide = "test/mv" }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, guide = "test/mv" }"#),
 		r#"
 			E.ToggleGoal(1, 1); flush()
 			E.Skip(); flush()
 			E.Next(); flush()
 			local at = { E.GetStepIndex(), E.GetLiveStep() }
 			stub.fire("PLAYER_LOGOUT")
-			emit({ at = at, db = PolestarCharDB })
+			emit({ at = at, db = NorthstarCharDB })
 		"#,
 	);
 	assert_eq!(first["at"], json!([4, 3]));
@@ -243,14 +243,14 @@ fn a_pack_update_that_moves_steps_keeps_check_offs_skips_and_the_place_the_playe
 		&v2,
 		"",
 		Some(&reload_of(&first["db"])),
-		r#"emit({ at = { E.GetStepIndex(), E.GetLiveStep() }, manual = keys(PolestarCharDB.manual["test/mv"]), skipped = keys(PolestarCharDB.skipped["test/mv"]) })"#,
+		r#"emit({ at = { E.GetStepIndex(), E.GetLiveStep() }, manual = keys(NorthstarCharDB.manual["test/mv"]), skipped = keys(NorthstarCharDB.skipped["test/mv"]) })"#,
 	);
 	assert_eq!(updated, json!({ "at": [5, 4], "manual": "2:1", "skipped": "3" }));
 }
 
 #[test]
 fn a_look_ahead_survives_a_reload_and_a_step_left_behind_by_the_guide_releases_it() {
-	let first = run(ROUTE, AT_CAMP, ROUTE_SAVED, r#"E.Next(); E.Next(); flush(); stub.fire("PLAYER_LOGOUT"); emit({ at = E.GetStepIndex(), db = PolestarCharDB })"#);
+	let first = run(ROUTE, AT_CAMP, ROUTE_SAVED, r#"E.Next(); E.Next(); flush(); stub.fire("PLAYER_LOGOUT"); emit({ at = E.GetStepIndex(), db = NorthstarCharDB })"#);
 	assert_eq!(first["at"], 6);
 	let reload = run(ROUTE, AT_CAMP, Some(&reload_of(&first["db"])), "emit({ E.GetStepIndex(), E.GetLiveStep() })");
 	assert_eq!(reload, json!([6, 3]));
@@ -282,9 +282,9 @@ fn every_goal_ticks_done_and_back_ticks_are_saved_place_the_guide_after_a_reload
 			r.view = { v.goals[2].status, v.goals[2].ticked, v.goals[1].status }
 			r.at = E.GetStepIndex()
 			r.progress = E.GetProgress() - d0
-			r.saved = PolestarCharDB.manual["test/route"]["3:2"]
+			r.saved = NorthstarCharDB.manual["test/route"]["3:2"]
 			stub.fire("PLAYER_LOGOUT")
-			r.db = PolestarCharDB
+			r.db = NorthstarCharDB
 			emit(r)
 		"#,
 	);
@@ -300,7 +300,7 @@ fn every_goal_ticks_done_and_back_ticks_are_saved_place_the_guide_after_a_reload
 		r#"
 			local at = E.GetStepIndex()
 			E.ToggleGoal(3, 2); flush()
-			emit({ at = at, untick = E.GetStepIndex(), saved = keys(PolestarCharDB.manual["test/route"]) })
+			emit({ at = at, untick = E.GetStepIndex(), saved = keys(NorthstarCharDB.manual["test/route"]) })
 		"#,
 	);
 	// The camp's Go to stays latched: the route passed it.
@@ -330,7 +330,7 @@ fn an_accept_ticked_without_taking_the_quest_stays_open_and_keeps_its_later_goal
 // `turnin ... direct` is that goal; the client never flags such a quest completed when it repeats, so the
 // hand-in is stored like the Engine's other latched results.
 const DIRECT: &str = r#"
-	Polestar.RegisterGuide({ id = "test/direct", pack = "test", title = "Direct", minLevel = 1, maxLevel = 60, steps = {
+	Northstar.RegisterGuide({ id = "test/direct", pack = "test", title = "Direct", minLevel = 1, maxLevel = 60, steps = {
 		{ title = "Jarven Thunderbrew", goals = {
 			{ t = "turnin", quest = 308, title = "Distracting Jarven", @DIRECT@npc = 1373, npcName = "Jarven Thunderbrew", map = 1429, x = 49.0, y = 42.0 },
 		} },
@@ -346,17 +346,17 @@ fn t_108_a_direct_turn_in_is_work_without_an_accept_and_the_hand_in_is_saved_eve
 	let out = run(
 		&direct(true),
 		"",
-		Some(r#"PolestarCharDB = { schema = 1, guide = "test/direct" }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, guide = "test/direct" }"#),
 		r#"
 			local r = { before = E.GetStepView(1).goals[1].status, at = E.GetStepIndex() }
 			-- The hand-in itself: no accept, and a repeatable leaves no completed flag.
 			stub.fire("QUEST_TURNED_IN", 308); flush()
 			r.after = E.GetStepView(1).goals[1].status
 			r.flagged = stub.world.completed[308] == true
-			r.saved = PolestarCharDB.manual["test/direct"]["1:1"]
+			r.saved = NorthstarCharDB.manual["test/direct"]["1:1"]
 			r.moved = E.GetStepIndex()
 			stub.fire("PLAYER_LOGOUT")
-			r.db = PolestarCharDB
+			r.db = NorthstarCharDB
 			emit(r)
 		"#,
 	);
@@ -378,13 +378,13 @@ fn t_108_the_same_turn_in_without_direct_reads_as_another_route_s_work_and_its_h
 	let out = run(
 		&direct(false),
 		"",
-		Some(r#"PolestarCharDB = { schema = 1, guide = "test/direct" }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, guide = "test/direct" }"#),
 		r#"
 			local before = E.GetStepView(1).goals[1].status
 			stub.fire("QUEST_TURNED_IN", 308); flush()
-			local r = { before = before, after = E.GetStepView(1).goals[1].status, saved = PolestarCharDB.manual["test/direct"] }
+			local r = { before = before, after = E.GetStepView(1).goals[1].status, saved = NorthstarCharDB.manual["test/direct"] }
 			stub.fire("PLAYER_LOGOUT")
-			r.db = PolestarCharDB
+			r.db = NorthstarCharDB
 			emit(r)
 		"#,
 	);
@@ -402,14 +402,14 @@ fn t_108_the_same_turn_in_without_direct_reads_as_another_route_s_work_and_its_h
 #[test]
 fn t_108_one_hand_in_of_a_repeatable_direct_quest_checks_off_one_goal_not_every_later_one() {
 	const GUIDE: &str = r#"
-		Polestar.RegisterGuide({ id = "test/cloth", pack = "test", title = "Cloth", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/cloth", pack = "test", title = "Cloth", minLevel = 1, maxLevel = 60, steps = {
 			{ title = "First", goals = { { t = "turnin", quest = 7796, title = "Additional Runecloth", direct = true, npc = 14722, npcName = "Clavicus Knavingham", map = 1429, x = 49.0, y = 42.0 } } },
 			{ title = "Second", goals = { { t = "turnin", quest = 7796, title = "Additional Runecloth", direct = true, npc = 14722, npcName = "Clavicus Knavingham", map = 1429, x = 49.0, y = 42.0 } } },
 		} })"#;
 	let out = run(
 		GUIDE,
 		"w.repeatable[7796] = true",
-		Some(r#"PolestarCharDB = { schema = 1, guide = "test/cloth" }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, guide = "test/cloth" }"#),
 		r#"
 			stub.world.turnIn(7796); flush()
 			emit({ E.GetStepView(1).goals[1].status, E.GetStepView(2).goals[1].status, E.GetStepIndex() })
@@ -426,7 +426,7 @@ fn t_108_one_hand_in_of_a_repeatable_direct_quest_checks_off_one_goal_not_every_
 #[test]
 fn a_direct_turn_in_never_flagged_is_done_once_a_later_quest_goal_of_its_step_is_the_tome_of_divinity() {
 	const GUIDE: &str = r#"
-		Polestar.RegisterGuide({ id = "test/tome", pack = "test", title = "Tome", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/tome", pack = "test", title = "Tome", minLevel = 1, maxLevel = 60, steps = {
 			{ title = "The Tome of Divinity", goals = {
 				{ t = "turnin", quest = 1641, title = "The Tome of Divinity", direct = true, npc = 6171, npcName = "Duthorian Rall", map = 1429, x = 49.0, y = 42.0 },
 				{ t = "accept", quest = 1642, title = "The Tome of Divinity", item = 6775 },
@@ -434,7 +434,7 @@ fn a_direct_turn_in_never_flagged_is_done_once_a_later_quest_goal_of_its_step_is
 			} },
 			{ title = "Stephanie Turner", goals = { { t = "level", level = 60 } } },
 		} })"#;
-	let saved = Some(r#"PolestarCharDB = { schema = 1, guide = "test/tome" }"#);
+	let saved = Some(r#"NorthstarCharDB = { schema = 1, guide = "test/tome" }"#);
 	let done = run(GUIDE, "w.repeatable[1641] = true; w.complete({ 1642 })", saved, "emit({ E.GetStepView(1).goals[1].status, E.GetStepIndex() })");
 	assert_eq!(done, json!(["done", 2]), "the book's quest handed in: the Tome's hand-in is behind, after a reload too");
 	let fresh = run(GUIDE, "w.repeatable[1641] = true", saved, "emit({ E.GetStepView(1).goals[1].status, E.GetStepIndex() })");
@@ -444,7 +444,7 @@ fn a_direct_turn_in_never_flagged_is_done_once_a_later_quest_goal_of_its_step_is
 #[test]
 fn optional_goals_skip_with_one_click_are_saved_and_come_back_with_another() {
 	const GUIDE: &str = r#"
-		Polestar.RegisterGuide({ id = "test/og", pack = "test", title = "Optional", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/og", pack = "test", title = "Optional", minLevel = 1, maxLevel = 60, steps = {
 			{ title = "Field", goals = {
 				{ t = "collect", item = 10621, itemName = "Runed Scroll", count = 1, optional = true, map = 1429, x = 20, y = 20 },
 				{ t = "kill", target = "Kobold Vermin", count = 10, quest = 7, oi = 1, map = 1429, x = 30, y = 30 },
@@ -455,17 +455,17 @@ fn optional_goals_skip_with_one_click_are_saved_and_come_back_with_another() {
 	let out = run(
 		GUIDE,
 		"w.onQuest(7, { 10 })",
-		Some(r#"PolestarCharDB = { schema = 1, guide = "test/og" }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, guide = "test/og" }"#),
 		r#"
 			local r = {}
 			r.blocking = E.SkipGoal(1, 2)
 			r.ok = E.SkipGoal(1, 1); flush()
 			local g = E.GetStepView(1).goals[1]
 			r.skipped = { g.status, g.dismissed }
-			r.saved = keys(PolestarCharDB.skipped["test/og"])
+			r.saved = keys(NorthstarCharDB.skipped["test/og"])
 			E.SkipGoal(1, 1); flush()
 			r.back = E.GetStepView(1).goals[1].status
-			r.after = keys(PolestarCharDB.skipped["test/og"])
+			r.after = keys(NorthstarCharDB.skipped["test/og"])
 			emit(r)
 		"#,
 	);
@@ -475,7 +475,7 @@ fn optional_goals_skip_with_one_click_are_saved_and_come_back_with_another() {
 // The Field of Giants (04-the-barrens): the step's Go to names the field; the Runed Scroll drops from Aean
 // Swiftriver at 46,70, south-east of it.
 const FIELD: &str = r#"
-	Polestar.RegisterGuide({ id = "test/fog", pack = "test", title = "Southern Barrens", minLevel = 1, maxLevel = 60, steps = {
+	Northstar.RegisterGuide({ id = "test/fog", pack = "test", title = "Southern Barrens", minLevel = 1, maxLevel = 60, steps = {
 		{ title = "Field of Giants", goals = {
 			{ t = "goto", map = 1429, x = 44.7, y = 70.7, text = "Field of Giants" },
 			{ t = "collect", item = 10621, itemName = "Runed Scroll", count = 1, optional = true, map = 1429, x = 46.0, y = 70.0, note = "Aean Swiftriver" },
@@ -495,7 +495,7 @@ fn the_arrow_leads_to_the_current_goal_s_own_place_the_step_s_go_to_only_when_th
 	let out = run(
 		FIELD,
 		"w.onQuest(7, { 10 }); w.moveTo(1429, 40, 60)",
-		Some(r#"PolestarCharDB = { schema = 1, guide = "test/fog" }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, guide = "test/fog" }"#),
 		r#"
 			local r = {}
 			local wp = E.GetWaypoint()
@@ -521,7 +521,7 @@ fn the_arrow_leads_to_the_current_goal_s_own_place_the_step_s_go_to_only_when_th
 }
 
 const SPOTS: &str = r#"
-		Polestar.RegisterGuide({ id = "test/sp", pack = "test", title = "Spots", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/sp", pack = "test", title = "Spots", minLevel = 1, maxLevel = 60, steps = {
 			{ title = "Hills", goals = {
 				{ t = "kill", target = "Kobold Vermin", count = 10, quest = 7, oi = 1, map = 1429, x = 20, y = 50,
 					spots = { { x = 20, y = 50, r = 30, n = 3 }, { x = 25, y = 50, r = 30, n = 2 } } },
@@ -537,7 +537,7 @@ fn choosing_the_next_spot_of_a_goal_the_arrow_is_not_on_moves_the_arrow_to_that_
 	let out = run(
 		SPOTS,
 		"w.onQuest(7, { 10 }); w.onQuest(868, { 12 }); w.moveTo(1429, 20, 50)",
-		Some(r#"PolestarCharDB = { schema = 1, guide = "test/sp" }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, guide = "test/sp" }"#),
 		r#"
 			local before = E.GetWaypoint().goalIndex
 			E.CycleSpot(1, 2, 3)
@@ -554,8 +554,8 @@ fn the_next_spot_reaches_the_arrow_itself_engine_and_nav_together_over_a_point_p
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}; w.onQuest(7, {{ 10 }}); w.onQuest(868, {{ 12 }}); w.moveTo(1429, 20, 50)"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml"])],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/sp" }"#.into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml"])],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/sp" }"#.into())],
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,
@@ -563,7 +563,7 @@ fn the_next_spot_reaches_the_arrow_itself_engine_and_nav_together_over_a_point_p
 			HELPERS,
 			"stub.login()",
 			r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#,
-			r#"			local Nav = Polestar.Nav
+			r#"			local Nav = Northstar.Nav
 			local r = { first = Nav.GetTarget().x }
 			-- The eggs' next spot, from the row's button: the arrow goes there.
 			E.CycleSpot(1, 2, 2); flush()
@@ -588,7 +588,7 @@ fn the_next_spot_reaches_the_arrow_itself_engine_and_nav_together_over_a_point_p
 #[test]
 fn a_spawn_spot_holds_while_the_player_is_on_another_continent_and_is_picked_afresh_from_where_they_stand_at_the_step_start() {
 	const GUIDE: &str = r#"
-		Polestar.RegisterGuide({ id = "test/sc", pack = "test", title = "Spots", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/sc", pack = "test", title = "Spots", minLevel = 1, maxLevel = 60, steps = {
 			{ goals = { { t = "accept", quest = 5, title = "First", npc = 1, map = 1429, x = 10, y = 50 } } },
 			{ title = "Hills", goals = {
 				{ t = "kill", target = "Kobold Vermin", count = 10, quest = 7, oi = 1, map = 1429, x = 20, y = 50,
@@ -600,7 +600,7 @@ fn a_spawn_spot_holds_while_the_player_is_on_another_continent_and_is_picked_afr
 	let out = run(
 		GUIDE,
 		r#"w.addMap(1411, { name = "Durotar", c = 1, left = 0, right = -3000, top = 0, bottom = -3000 }); w.onQuest(7, { 10 }); w.moveTo(1411, 50, 50)"#,
-		Some(r#"PolestarCharDB = { schema = 1, guide = "test/sc" }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, guide = "test/sc" }"#),
 		r#"
 			local r = {}
 			E.GetStepView(2) -- shown ahead ("Then:"): its spot is picked from Durotar
@@ -623,7 +623,7 @@ fn a_spawn_spot_holds_while_the_player_is_on_another_continent_and_is_picked_afr
 // did passes the step, one who has it in the log is led to the ender, and one who already handed it in finds
 // the step done.
 const OPTIONAL_TAKE: &str = r#"
-	Polestar.RegisterGuide({ id = "test/optional", pack = "test", title = "Optional", minLevel = 1, maxLevel = 20, steps = {
+	Northstar.RegisterGuide({ id = "test/optional", pack = "test", title = "Optional", minLevel = 1, maxLevel = 20, steps = {
 		{ title = "Murlocs", goals = {
 			{ t = "collect", item = 780, itemName = "Torn Murloc Fin", count = 8, quest = 46, oi = 1, map = 1429, x = 76.5, y = 79.7 },
 			{ t = "accept", quest = 91740, title = "Croaky's Head", item = 247826, itemName = "Croaky's Head", optional = true },
@@ -653,7 +653,7 @@ fn optional_take(take: &str) -> Value {
 	let script = OPTIONAL_SCRIPT
 		.replace("@ACCEPT@", if taken { "stub.world.accept(91740, {}); flush()" } else { "" })
 		.replace("@TURNIN@", if taken { "stub.world.turnIn(91740); flush(); r.after = E.GetStepIndex()" } else { "" });
-	run(OPTIONAL_TAKE, &before, Some(r#"PolestarCharDB = { schema = 1, guide = "test/optional" }"#), &script)
+	run(OPTIONAL_TAKE, &before, Some(r#"NorthstarCharDB = { schema = 1, guide = "test/optional" }"#), &script)
 }
 
 #[test]

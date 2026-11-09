@@ -81,7 +81,7 @@ const AREA_YARDS = 150; // farming radius around a place without a spot or `r`
 const POOL_MAX = 60; // spawn points considered per farmed target
 const EVENT_YARDS = 60; // reaching an event objective's point completes it
 const NO_SPAWN_SPACING = 30; // yards between mobs when the data has no spawns
-// Flights: the addon's own timing (addon/Polestar/Maps/FlightTimer.lua), seconds = yards / speed + stop per hop.
+// Flights: the addon's own timing (addon/Northstar/Maps/FlightTimer.lua), seconds = yards / speed + stop per hop.
 const FLIGHT_SPEED = 30;
 const FLIGHT_STOP = 2;
 // Drop chance (%) assumed without a recorded rate, as the simulator does (tools/lib/sim/world.js).

@@ -15,7 +15,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 const APP_ID: &str = "polestar-client";
-const MARK: &str = "X-Polestar-Client-AppImage=true";
+const MARK: &str = "X-Northstar-Client-AppImage=true";
 const ICON: &[u8] = include_bytes!("../icons/128x128@2x.png");
 const SCHEME: &str = "x-scheme-handler/polestar";
 const DEFAULTS: &str = "[Default Applications]";
@@ -99,7 +99,7 @@ fn desktop_entry(appimage: &Path, icon: &Path) -> Option<String> {
 	};
 	let icon = icon.replace('\\', "\\\\");
 	Some(format!(
-		"[Desktop Entry]\nType=Application\nName=Polestar Client\nComment=Installs Polestar's addons and shares your Polestar Recorder data\nExec={exec} %u\nIcon={icon}\nStartupWMClass={APP_ID}\nCategories=Game;Utility;\nMimeType={SCHEME};\nTerminal=false\n{MARK}\n"
+		"[Desktop Entry]\nType=Application\nName=Polestar Client\nComment=Installs Northstar's addons and shares your Northstar Recorder data\nExec={exec} %u\nIcon={icon}\nStartupWMClass={APP_ID}\nCategories=Game;Utility;\nMimeType={SCHEME};\nTerminal=false\n{MARK}\n"
 	))
 }
 
@@ -162,10 +162,10 @@ mod tests {
 		assert!(text.contains("Exec=\"/home/p/Apps/Polestar Client.AppImage\" %u"));
 		assert!(text.contains("MimeType=x-scheme-handler/polestar;"));
 		assert!(text.contains(&format!("Icon={}", data.join("icons/hicolor/256x256/apps/polestar-client.png").display())));
-		write(&data, Path::new("/opt/apps/Polestar-0.2.AppImage")).unwrap();
-		assert!(fs::read_to_string(&entry).unwrap().contains("Exec=/opt/apps/Polestar-0.2.AppImage %u"));
-		write(&data, Path::new("/opt/$odd/Polestar.AppImage")).unwrap();
-		assert!(fs::read_to_string(&entry).unwrap().contains("Exec=\"/opt/\\\\$odd/Polestar.AppImage\" %u"));
+		write(&data, Path::new("/opt/apps/Northstar-0.2.AppImage")).unwrap();
+		assert!(fs::read_to_string(&entry).unwrap().contains("Exec=/opt/apps/Northstar-0.2.AppImage %u"));
+		write(&data, Path::new("/opt/$odd/Northstar.AppImage")).unwrap();
+		assert!(fs::read_to_string(&entry).unwrap().contains("Exec=\"/opt/\\\\$odd/Northstar.AppImage\" %u"));
 		write(&data, Path::new("/opt/a\\b 100%/P.AppImage")).unwrap();
 		assert!(fs::read_to_string(&entry).unwrap().contains("Exec=\"/opt/a\\\\\\\\b 100%%/P.AppImage\" %u"));
 		// A line break in the path would add keys: nothing is written.

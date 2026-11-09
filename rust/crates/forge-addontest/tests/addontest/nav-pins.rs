@@ -1,4 +1,4 @@
-//! Polestar.Pins (addon/Polestar/Nav/Pins.lua): the shared map/minimap pin service. Real Core/Init.lua +
+//! Northstar.Pins (addon/Northstar/Nav/Pins.lua): the shared map/minimap pin service. Real Core/Init.lua +
 //! Nav/Nav.xml against tests/lua/stub_nav.lua (map 9000: 20 yd per map percent, origin at its centre; map 9001
 //! on continent 1).
 
@@ -6,7 +6,7 @@ use forge_addontest::{emitted, Addon, RunAddon};
 use serde_json::{json, Value};
 
 const PRELUDE: &str = r#"
-local Pins = Polestar.Pins
+local Pins = Northstar.Pins
 local nav = stub.nav
 local function at(wx, wy, extra)
 	local m, x, y = nav.mapPoint(wx, wy)
@@ -32,7 +32,7 @@ end
 fn run(script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])],
 		login: true,
 		script: format!("{PRELUDE}{script}"),
 		..Default::default()
@@ -199,7 +199,7 @@ fn edge_clamping_is_per_layer_an_edge_layer_pins_far_targets_to_the_rim_others_d
 #[test]
 fn the_world_map_redraws_for_the_map_being_viewed_converting_world_era_frame_and_other_map_pins() {
 	let out = run(r#"
-		Polestar.RegisterMapFrames({ era = { [9000] = { c = 0, top = 1030, bottom = -970, left = 960, right = -1040 } } })
+		Northstar.RegisterMapFrames({ era = { [9000] = { c = 0, top = 1030, bottom = -970, left = 960, right = -1040 } } })
 		local clicked
 		Pins.SetLayer("maps.taxi", {
 			{ map = 9000, x = 25, y = 75, tooltip = function(tip) tip:SetText("Flight master"); tip:AddLine("known", 1, 1, 1) end,
@@ -335,7 +335,7 @@ fn a_layer_with_minimapareas_draws_its_areas_on_the_minimap_too_cut_at_the_rim_a
 	assert_eq!(out["quests"], json!([1, 0]), "a layer without minimapAreas keeps its areas on the world map");
 	let alpha = num(&out["alpha"]);
 	assert!(alpha > 0.0 && alpha < 0.5, "a faint disc");
-	assert_eq!(out["mask"], json!([r"Interface\AddOns\Polestar\Media\Nav\pin-fill", 213]), "masked to the round minimap: pin-fill's disc over its width");
+	assert_eq!(out["mask"], json!([r"Interface\AddOns\Northstar\Media\Nav\pin-fill", 213]), "masked to the round minimap: pin-fill's disc over its width");
 	assert_eq!(out["moved"][0], json!([0, 0, 42, true]), "the disc follows the player");
 	assert_eq!(out["square"], 3, "a square minimap's corners reach further");
 	assert_eq!(out["squareMask"], json!([r"Interface\Buttons\WHITE8X8", 140]));
@@ -566,11 +566,11 @@ fn map_marks_sit_in_the_icon_pack_s_medallion_with_their_ring_dashed_ring_badge_
 		r.focus = draw({ at(20, 20, { icon = "map:quest-turnin", size = 12, state = "focus" }) })[1]
 		r.dim = draw({ at(20, 20, { icon = "map:quest-available", size = 16, state = "dim" }) })[1]
 		r.spot = draw({ at(20, 20, { icon = "map:pin-small", size = 9, medal = false }) })[1]
-		Polestar.Set("nav.mapIcons", "halo")
+		Northstar.Set("nav.mapIcons", "halo")
 		r.halo = draw({ at(20, 20, { icon = "map:kill", size = 16 }) })[1]
-		Polestar.Set("nav.mapIcons", "bare")
+		Northstar.Set("nav.mapIcons", "bare")
 		r.bare = draw({ at(20, 20, { icon = "map:kill", size = 16 }) })[1]
-		Polestar.Set("nav.mapIcons", "skin")
+		Northstar.Set("nav.mapIcons", "skin")
 		r.edge = draw({ at(0, -900, { icon = "map:kill", size = 16, ring = { 1, 1, 1, 1 }, badge = 3 }) }, { edge = true })[1]
 		local f = Pins.GetMinimapFrames("marks")[1]
 		r.edge.pointer = f.edge:IsShown()
@@ -721,11 +721,11 @@ fn the_minimap_icon_size_setting_scales_minimap_marks_only() {
 			for _, f in ipairs(Pins.GetMinimapFrames("marks")) do r[f.pin.tooltip] = f.medal.width end
 			return r
 		end
-		local r = { default = medals(), setting = Polestar.Get("nav.minimapIconSize") }
-		Polestar.Set("nav.minimapIconSize", 0.6)
+		local r = { default = medals(), setting = Northstar.Get("nav.minimapIconSize") }
+		Northstar.Set("nav.minimapIconSize", 0.6)
 		r.small = medals()
 		stub.minimapZoom = 5
-		Polestar.Set("nav.minimapIconSize", 1.5)
+		Northstar.Set("nav.minimapIconSize", 1.5)
 		r.bigClose = medals()
 		nav.showWorldMap(9000)
 		r.world = {}
@@ -777,7 +777,7 @@ fn minimap_pins_follow_a_rotating_minimap_priority_stacks_tooltips_and_clicks_wo
 }
 
 // The gamepad interface's map cursor is no mouse (Blizzard_GamepadSoftCursor): the map hovers its own pins near
-// it and clicks them on A; Polestar's pins must answer it too, or a gamepad player gets no tooltip and no
+// it and clicks them on A; Northstar's pins must answer it too, or a gamepad player gets no tooltip and no
 // click-to-target on them.
 #[test]
 fn with_the_gamepad_the_map_cursor_near_a_pin_shows_its_tooltip_and_a_clicks_it_once_a_press() {
@@ -829,7 +829,7 @@ fn with_the_gamepad_the_map_cursor_near_a_pin_shows_its_tooltip_and_a_clicks_it_
 fn a_popup_owns_gamepad_a_until_it_closes_and_the_button_is_released() {
 	let out = run(r#"
 		local open,clicks=false,0
-		Polestar.Widgets={MenuShown=function() return open end}
+		Northstar.Widgets={MenuShown=function() return open end}
 		Pins.SetLayer("services",{at(0,0,{tooltip="Services",onClick=function() clicks=clicks+1; open=true end})})
 		nav.showWorldMap(9000)
 		WorldMapFrame.Child.x,WorldMapFrame.Child.y=100,-100
@@ -876,7 +876,7 @@ fn world_map_pins_never_call_the_combat_restricted_setpassthroughbuttons_in_comb
 
 // As the gamepad interface focuses the world map, its navigation (Blizzard_GamepadSmartNavigation/Utility.lua,
 // SmartNavigation_CanFocusFrame) scans every frame under it and takes a Button or EditBox, or a frame with an
-// OnMouseDown or OnMouseUp script, for a button, reading that script back with GetScript: in game Polestar's
+// OnMouseDown or OnMouseUp script, for a button, reading that script back with GetScript: in game Northstar's
 // function in its secure code tainted the map's FocusGamepad, and the next close blocked the interface's
 // actions.
 #[test]

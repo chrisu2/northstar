@@ -1,4 +1,4 @@
-//! Polestar's ingest server: hands out tokens behind a proof of work, receives Recorder chunks
+//! Northstar's ingest server: hands out tokens behind a proof of work, receives Recorder chunks
 //! from Polestar Client, validates them with the recording library and stores them for forge.
 //! The API is specified in docs/RECORDING.md ("Upload API").
 //!

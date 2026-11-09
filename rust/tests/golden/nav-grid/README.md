@@ -19,6 +19,6 @@ Read by `forge-navbuild/tests/{surfaces,links,graph,format_roundtrip}.rs` and, a
   Run nav-walks/regen.js after it on the same scratch root.
 
 Not CI-provable: `geom.rs` (tile_geometry over the client's ADT/WMO/M2 files: client geometry is not
-shareable; opt-in with `POLESTAR_NAV_SCRATCH`), and build.rs's lift search (`lift_links`, private) and
+shareable; opt-in with `NORTHSTAR_NAV_SCRATCH`), and build.rs's lift search (`lift_links`, private) and
 `index.json` writing, which need a geometry Source; the lift's graph edges are checked through
 `lifts.json`.

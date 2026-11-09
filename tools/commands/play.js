@@ -14,17 +14,17 @@ const { PACK_OPTIONS, PACK_USAGE, otherPack, buildPack, folderIn } = require('..
 const { packImporter } = require('../lib/pack/importstring');
 
 const { ROOT } = require('../lib/paths');
-const DEFAULT_ART = '/tmp/polestar-art';
+const DEFAULT_ART = '/tmp/northstar-art';
 
-// Client art when none is named: $POLESTAR_CLIENT_ART, else /tmp/polestar-art
+// Client art when none is named: $NORTHSTAR_CLIENT_ART, else /tmp/northstar-art
 // when it holds maps.json, else '' (draw without art).
 function defaultArt() {
-	return process.env.POLESTAR_CLIENT_ART || (fs.existsSync(path.join(DEFAULT_ART, 'maps.json')) ? DEFAULT_ART : '');
+	return process.env.NORTHSTAR_CLIENT_ART || (fs.existsSync(path.join(DEFAULT_ART, 'maps.json')) ? DEFAULT_ART : '');
 }
 
-// The playground's SavedVariables folder: $POLESTAR_PLAY_DATA, else data/play/.
+// The playground's SavedVariables folder: $NORTHSTAR_PLAY_DATA, else data/play/.
 function playDataDir() {
-	return process.env.POLESTAR_PLAY_DATA ? path.resolve(process.env.POLESTAR_PLAY_DATA) : path.join(ROOT, 'data', 'play');
+	return process.env.NORTHSTAR_PLAY_DATA ? path.resolve(process.env.NORTHSTAR_PLAY_DATA) : path.join(ROOT, 'data', 'play');
 }
 
 function parse(argv) {
@@ -96,7 +96,7 @@ async function run(argv) {
 		dataDir,
 		log: (m) => console.log(`[play] ${m}`),
 	});
-	console.log(`Polestar playground: ${play.url}  (started in ${Date.now() - t0} ms${opts.art ? `, art from ${opts.art}` : ', no client art'})`);
+	console.log(`Northstar playground: ${play.url}  (started in ${Date.now() - t0} ms${opts.art ? `, art from ${opts.art}` : ', no client art'})`);
 	console.log(`SavedVariables in ${path.relative(process.cwd(), dataDir) || '.'} (--fresh resets them). Ctrl-C to stop.`);
 	await untilStopped(() => play.close({ save: true }));
 	return 0;
@@ -123,7 +123,7 @@ function untilStopped(stop) {
 const usage = [
 	'usage: node tools/polestar.js play [<dir>] [--port 8077] [--art <dir>] [--fresh]',
 	'',
-	'Starts a local server running the real Polestar, Polestar_Guides and the',
+	'Starts a local server running the real Northstar, Northstar_Guides and the',
 	'built data packs against the simulated world, and prints its URL. Click,',
 	'hover, scroll, drag and type in the game screen; the side panel sets the',
 	'character, moves them, plays guide goals and tweaks the look live.',
@@ -131,11 +131,11 @@ const usage = [
 	'linted, built into a temp folder and loaded after our guides.',
 	'',
 	'  --port <n>   port on 127.0.0.1 (default 8077; 0 picks a free one)',
-	'  --art <dir>  local client art (default $POLESTAR_CLIENT_ART, else',
-	'               /tmp/polestar-art when present); served locally only',
+	'  --art <dir>  local client art (default $NORTHSTAR_CLIENT_ART, else',
+	'               /tmp/northstar-art when present); served locally only',
 	'  --no-art     draw without client art',
 	'  --fresh      forget the character and SavedVariables (data/play/, or',
-	'               $POLESTAR_PLAY_DATA)',
+	'               $NORTHSTAR_PLAY_DATA)',
 	PACK_USAGE,
 ].join('\n');
 

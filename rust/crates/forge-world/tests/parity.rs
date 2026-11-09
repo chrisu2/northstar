@@ -62,7 +62,7 @@ fn expected(name: &str) -> String {
 }
 
 fn slice_world(f: Faction) -> (World, forge_world::data::GameData) {
-	assert!(std::env::var_os("POLESTAR_GRID").is_none(), "unset POLESTAR_GRID: the golden worlds were built without a walking grid");
+	assert!(std::env::var_os("NORTHSTAR_GRID").is_none(), "unset NORTHSTAR_GRID: the golden worlds were built without a walking grid");
 	World::load_with(&golden_root(), f, &NoFloors).expect("slice world")
 }
 

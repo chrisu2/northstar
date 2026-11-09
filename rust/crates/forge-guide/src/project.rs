@@ -99,12 +99,12 @@ pub fn compile_sources(sources: &[Source], data: &Data, diag: &mut Diagnostics, 
 	Compiled { guides, tokens }
 }
 
-/// Phase timings on stderr when POLESTAR_TIME is set (native).
+/// Phase timings on stderr when NORTHSTAR_TIME is set (native).
 struct Lap(Option<std::time::Instant>);
 impl Lap {
 	fn new() -> Lap {
 		#[cfg(feature = "native")]
-		if std::env::var_os("POLESTAR_TIME").is_some() {
+		if std::env::var_os("NORTHSTAR_TIME").is_some() {
 			return Lap(Some(std::time::Instant::now()));
 		}
 		Lap(None)
@@ -182,7 +182,7 @@ pub fn read_retired_text(text: Option<&str>, file: &str, guides: &[V], diag: &mu
 	let ids: Vec<String> = list.items().iter().map(|v| v.to_js_string()).collect();
 	for id in &ids {
 		if live.contains(id) {
-			diag.warn(file, 1.0, format!("retired guide id \"{id}\" is still a guide of the pack: Polestar keeps opening it"), None);
+			diag.warn(file, 1.0, format!("retired guide id \"{id}\" is still a guide of the pack: Northstar keeps opening it"), None);
 		}
 	}
 	let mut out: Vec<String> = Vec::new();
@@ -283,10 +283,10 @@ pub fn part_addon(folder: &str, race: &str) -> String {
 	format!("{folder}_{race}")
 }
 
-/// The factions of Polestar's own pack's faction parts (`<folder>_<faction>`, format 8).
+/// The factions of Northstar's own pack's faction parts (`<folder>_<faction>`, format 8).
 pub const FACTION_PARTS: [&str; 2] = ["Alliance", "Horde"];
 
-/// The faction part a guide of Polestar's own pack ships in: its faction's, unless a race part holds it
+/// The faction part a guide of Northstar's own pack ships in: its faction's, unless a race part holds it
 /// or it has none (those stay in Guides.lua).
 pub fn faction_part(g: &V) -> Option<&'static str> {
 	if race_part(g).is_some() {
@@ -297,10 +297,10 @@ pub fn faction_part(g: &V) -> Option<&'static str> {
 }
 
 /// Our guide pack's folder (pack id `guides`).
-pub const OWN_FOLDER: &str = "Polestar_Guides";
+pub const OWN_FOLDER: &str = "Northstar_Guides";
 
 /// The texts addon of pack folder `folder` in `locale` (Core/GuideTexts.lua TextsAddon): <folder>_<locale>,
-/// and for our own pack the language folder Polestar_<locale> it shares with the game's names.
+/// and for our own pack the language folder Northstar_<locale> it shares with the game's names.
 pub fn texts_addon(folder: &str, locale: &str) -> String {
 	if folder == OWN_FOLDER {
 		crate::toc::language_addon(locale)
@@ -371,8 +371,8 @@ pub fn build_pack_files(
 	} else {
 		data.meta.clone()
 	};
-	// Polestar's own pack is written for memory (format 8): spawn spots as strings, and each faction's
-	// guides in a load-on-demand part Polestar loads for a player of that faction only.
+	// Northstar's own pack is written for memory (format 8): spawn spots as strings, and each faction's
+	// guides in a load-on-demand part Northstar loads for a player of that faction only.
 	let ours = manifest.get("id").as_str() == Some("guides");
 	let entry = |g: &V| {
 		let loc = g.hidden("_localised");
@@ -381,7 +381,7 @@ pub fn build_pack_files(
 		obj! { "guide" => if loc.truthy() { loc } else { g.clone() }, "source" => if src.truthy() { src } else { V::Null } }.into()
 	};
 	// Leveling guides for one class and named races go into an addon per race (race_part), which
-	// Polestar loads for the player's race only; so do the baked legs of every leveling guide
+	// Northstar loads for the player's race only; so do the baked legs of every leveling guide
 	// (read_legs_text, legs_races), in its Legs.lua.
 	let mut parts: Vec<(String, Vec<V>)> = Vec::new();
 	let mut leg_parts: Vec<(String, Vec<V>)> = Vec::new();
@@ -634,9 +634,9 @@ mod native {
 		})
 	}
 
-	/// coreInterface: the `## Interface:` value of addon/Polestar/Polestar.toc under `root`.
+	/// coreInterface: the `## Interface:` value of addon/Northstar/Northstar.toc under `root`.
 	pub fn core_interface(root: &Path) -> Result<String, String> {
-		let file = root.join("addon/Polestar/Polestar.toc");
+		let file = root.join("addon/Northstar/Northstar.toc");
 		let text = std::fs::read_to_string(&file).map_err(|e| format!("{}: {e}", file.display()))?;
 		for line in text.lines() {
 			if let Some(v) = line.strip_prefix("## Interface:") {
@@ -668,7 +668,7 @@ mod native {
 		Some(text)
 	}
 
-	/// The `## <key>: <value>` line of a TOC (`X-Polestar-Pack`, `-Part`, `-Texts`), when generated.
+	/// The `## <key>: <value>` line of a TOC (`X-Northstar-Pack`, `-Part`, `-Texts`), when generated.
 	fn toc_line(text: &str, key: &str) -> Option<String> {
 		let prefix = format!("## {key}:");
 		text.lines().find_map(|l| {
@@ -712,7 +712,7 @@ mod native {
 		let owner = pack_id.and_then(|_| {
 			list.iter().filter(|e| e.file_type().is_ok_and(|t| t.is_file()) && is_toc(&e.file_name().to_string_lossy())).find_map(|e| {
 				let t = text(e);
-				crate::format::is_generated(&t).then(|| toc_line(&t, "X-Polestar-Pack")).flatten()
+				crate::format::is_generated(&t).then(|| toc_line(&t, "X-Northstar-Pack")).flatten()
 			})
 		});
 		match (owner, pack_id) {
@@ -722,8 +722,8 @@ mod native {
 	}
 
 	/// partDirRefusal / textsDirRefusal (project.js): whether `dir` may hold pack `pack_id`'s race part
-	/// (`what` "race part", key X-Polestar-Part), faction part ("faction part", X-Polestar-Part) or texts
-	/// addon ("texts addon", X-Polestar-Texts).
+	/// (`what` "race part", key X-Northstar-Part), faction part ("faction part", X-Northstar-Part) or texts
+	/// addon ("texts addon", X-Northstar-Texts).
 	fn sibling_refusal(dir: &Path, pack_id: Option<&str>, what: &str, key: &str) -> Option<String> {
 		let Some(list) = entries(dir) else { return dir.exists().then(|| "it is not a folder".into()) };
 		if list.is_empty() {
@@ -750,8 +750,8 @@ mod native {
 	/// `../<texts addon>/...` (texts addons, [`texts_addon`]), `../<folder>_<race>/...` (race parts) and
 	/// `../<folder>_<faction>/...` (faction parts) are each written whole beside `out`, named after `out` as
 	/// the pack folder is; one of the pack the build no longer has is removed. Our pack's texts go into
-	/// the language folders Polestar_<locale>, which the game's names share: there only the TOC and
-	/// Texts.lua are written (or Texts.lua removed), and the retired Polestar_Guides_<locale> folders are
+	/// the language folders Northstar_<locale>, which the game's names share: there only the TOC and
+	/// Texts.lua are written (or Texts.lua removed), and the retired Northstar_Guides_<locale> folders are
 	/// removed.
 	pub fn write_pack_dir(out: &Path, files: &[(String, FileContent)]) -> Result<(), String> {
 		let content = |c: &FileContent| match c {
@@ -759,7 +759,7 @@ mod native {
 			FileContent::Bytes(b) => b.clone(),
 		};
 		let toc = files.iter().find(|(n, _)| !n.starts_with("../") && is_toc(n));
-		let pack_id = toc.and_then(|(_, c)| toc_line(&String::from_utf8_lossy(&content(c)), "X-Polestar-Pack"));
+		let pack_id = toc.and_then(|(_, c)| toc_line(&String::from_utf8_lossy(&content(c)), "X-Northstar-Pack"));
 		let pack_id = pack_id.as_deref();
 		let parent = out.parent().unwrap_or(Path::new("."));
 		let base = out.file_name().map(|b| b.to_string_lossy().into_owned()).unwrap_or_default();
@@ -787,11 +787,11 @@ mod native {
 		let refusal = |folder: &str| {
 			let dir = parent.join(folder);
 			if texts.iter().any(|t| t == folder) {
-				sibling_refusal(&dir, pack_id, "texts addon", "X-Polestar-Texts")
+				sibling_refusal(&dir, pack_id, "texts addon", "X-Northstar-Texts")
 			} else if factions.iter().any(|f| f == folder) {
-				sibling_refusal(&dir, pack_id, "faction part", "X-Polestar-Part")
+				sibling_refusal(&dir, pack_id, "faction part", "X-Northstar-Part")
 			} else {
-				sibling_refusal(&dir, pack_id, "race part", "X-Polestar-Part")
+				sibling_refusal(&dir, pack_id, "race part", "X-Northstar-Part")
 			}
 		};
 		for folder in texts.iter().chain(parts.iter()).chain(factions.iter()) {
@@ -817,8 +817,9 @@ mod native {
 			}
 			std::fs::write(&file, content(c)).map_err(|e| io(e, &file))?;
 		}
-		// Our pack's texts share the language folder with the game's names (`forge data names`): only
-		// the texts' own files are written or removed there, and the folder goes once it holds no names.
+		// Our pack's texts share the language folder with the game's names (`forge data names`) and the
+		// interface strings: only the texts' own files are written or removed there, and the folder goes
+		// once it holds neither.
 		let shared = base == OWN_FOLDER;
 		for folder in texts.iter().chain(parts.iter()).chain(factions.iter()) {
 			let dir = parent.join(folder);
@@ -827,7 +828,7 @@ mod native {
 				None if language => {
 					if refusal(folder).is_none() {
 						let _ = std::fs::remove_file(dir.join("Texts.lua"));
-						if entries(&dir).is_some_and(|l| !l.iter().any(|e| e.file_name() == "Names.lua")) {
+						if entries(&dir).is_some_and(|l| !l.iter().any(|e| e.file_name() == "Names.lua" || e.file_name() == crate::toc::INTERFACE_FILE)) {
 							let _ = std::fs::remove_dir_all(&dir);
 						}
 					}
@@ -848,11 +849,11 @@ mod native {
 				}
 			}
 		}
-		// The texts folders the language folders replaced (Polestar_Guides_<locale>, before 0.3.0).
+		// The texts folders the language folders replaced (Northstar_Guides_<locale>, before 0.3.0).
 		if shared {
 			for l in crate::locales::LOCALE_CODES {
 				let dir = parent.join(format!("{OWN_FOLDER}_{l}"));
-				if entries(&dir).is_some_and(|l| !l.is_empty()) && sibling_refusal(&dir, pack_id, "texts addon", "X-Polestar-Texts").is_none() {
+				if entries(&dir).is_some_and(|l| !l.is_empty()) && sibling_refusal(&dir, pack_id, "texts addon", "X-Northstar-Texts").is_none() {
 					let _ = std::fs::remove_dir_all(&dir);
 				}
 			}

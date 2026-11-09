@@ -1,5 +1,5 @@
 //! The level fit (level_fit.rs, #977) on a round's real routes: what it moves and leaves out per start.
-//! Ignored: needs `POLESTAR_V1` (a checkout with data/forever) and `LEVEL_FIT_ROUND` (a round's `out`
+//! Ignored: needs `NORTHSTAR_V1` (a checkout with data/forever) and `LEVEL_FIT_ROUND` (a round's `out`
 //! folder with routes/ and world/). Prints one line per decision; `LEVEL_FIT_OUT` writes them as JSON.
 
 use forge_core::frames::MapFrames;
@@ -21,10 +21,10 @@ const STARTS: [(&str, &str); 10] = [
 ];
 
 #[test]
-#[ignore = "needs POLESTAR_V1 and LEVEL_FIT_ROUND"]
+#[ignore = "needs NORTHSTAR_V1 and LEVEL_FIT_ROUND"]
 fn level_fit_on_a_rounds_routes() {
-	let (Ok(v1), Ok(round)) = (std::env::var("POLESTAR_V1"), std::env::var("LEVEL_FIT_ROUND")) else {
-		eprintln!("POLESTAR_V1 or LEVEL_FIT_ROUND unset: skipped");
+	let (Ok(v1), Ok(round)) = (std::env::var("NORTHSTAR_V1"), std::env::var("LEVEL_FIT_ROUND")) else {
+		eprintln!("NORTHSTAR_V1 or LEVEL_FIT_ROUND unset: skipped");
 		return;
 	};
 	let root = PathBuf::from(v1);

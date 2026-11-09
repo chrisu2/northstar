@@ -1,6 +1,6 @@
 //! The engine rules (src/engine.rs) on small guides over the reference data: by default the committed
 //! data slice with the writer golden's synthetic quest mechanics (tests/common, rust/tests/golden/writer);
-//! $POLESTAR_V1's full data/forever and data/local/mechanics when set. Each rule: the line is not there
+//! $NORTHSTAR_V1's full data/forever and data/local/mechanics when set. Each rule: the line is not there
 //! with the rule off, and is with it on.
 #![cfg(feature = "native")]
 
@@ -18,7 +18,7 @@ use std::rc::Rc;
 thread_local! {
 	// The data is not Sync (its tables share Rc): one copy per test thread, dropped when the test's
 	// thread ends (libtest runs every test on a thread of its own), so a run holds at most
-	// --test-threads copies of $POLESTAR_V1's full data (~0.5 GB each), not one per test.
+	// --test-threads copies of $NORTHSTAR_V1's full data (~0.5 GB each), not one per test.
 	static REF: Rc<Ref> = Rc::new(common::engine_ref());
 }
 
@@ -109,7 +109,7 @@ fn idx(g: &[String], l: &str) -> usize {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r1_gloom_weed_along_the_road_to_brill() {
 	let g = guide(
 		"a",
@@ -146,7 +146,7 @@ fn r1_gloom_weed_along_the_road_to_brill() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r1_work_walked_past_before_its_step_is_listed_from_the_accept() {
 	let r = reference();
 	// A Sunscale Scytheclaw spawn in the Barrens: a walk passes right by it.
@@ -195,7 +195,7 @@ fn r1_work_walked_past_before_its_step_is_listed_from_the_accept() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r1_along_step_opens_where_its_mobs_come_within_reach() {
 	// Fitz: Darkshore's Fine Crab Chunks (Fruit of the Sea) were listed from Gubber Blump's accept in
 	// Auberdine, but only the Reef and Encrusted Tide Crawlers of the north coast and the far south drop
@@ -241,7 +241,7 @@ fn r1_along_step_opens_where_its_mobs_come_within_reach() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r1_a_list_whose_walk_does_not_pass_its_work_is_a_goal_at_the_stop_with_most_of_it() {
 	// Fitz in game: Darkshore's Fine Crab Chunks were listed along the way for ten stops of which three
 	// had crabs, six walks of nineteen passing one. A list is along only when half its walks (at least
@@ -299,7 +299,7 @@ fn r1_a_list_whose_walk_does_not_pass_its_work_is_a_goal_at_the_stop_with_most_o
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r1_carried_quest_gets_its_along_step_in_each_guide_it_crosses() {
 	let r = reference();
 	let sp = r.data.npcs.get("3256").get("spawns").get("1413").get("pts").at(0);
@@ -334,7 +334,7 @@ fn r1_carried_quest_gets_its_along_step_in_each_guide_it_crosses() {
 }
 
 #[test]
-#[ignore = "needs data/forever and data/local/mechanics (or POLESTAR_V1)"]
+#[ignore = "needs data/forever and data/local/mechanics (or NORTHSTAR_V1)"]
 fn r2_use_for_an_item_summon() {
 	let g = guide(
 		"a",
@@ -353,7 +353,7 @@ fn r2_use_for_an_item_summon() {
 }
 
 #[test]
-#[ignore = "needs data/forever and data/local/mechanics (or POLESTAR_V1)"]
+#[ignore = "needs data/forever and data/local/mechanics (or NORTHSTAR_V1)"]
 fn r2_one_use_per_quest_item() {
 	// #843: A Matter of Time's mechanics list the Temporal Displacer's summon three times; Andorhal's
 	// step had `use 12627` three times.
@@ -364,7 +364,7 @@ fn r2_one_use_per_quest_item() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r3_travel_for_a_carried_quest_is_when_onquest() {
 	let a = guide("a", "Orc", "Horde", "Durotar", Some("b"), &["step Gornek", "  accept 788"]);
 	let b = guide(
@@ -385,7 +385,7 @@ fn r3_travel_for_a_carried_quest_is_when_onquest() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r3_hearth_to_an_inn_bound_in_an_earlier_guide_is_when_bound() {
 	let a = guide("a", "Orc", "Horde", "Durotar", Some("b"), &["step Razor Hill", "  sethome \"Razor Hill\"", "  accept 788"]);
 	let b = guide("b", "Orc", "Horde", "The Barrens", None, &["step Crossroads", "  goto 52.0,30.0 \"Crossroads\"", "", "step Home", "  hearth \"Razor Hill\"", "", "step Gornek", "  turnin 788"]);
@@ -399,7 +399,7 @@ fn r3_hearth_to_an_inn_bound_in_an_earlier_guide_is_when_bound() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r5_group_quest_is_asked_for_under_0_3_only() {
 	let a = guide("a", "Orc", "Horde", "Dustwallow Marsh", None, &["step Mok'Morokk", "  accept 1166", "", "step Ogres", "  kill 4344 quest 1166.1", "", "step Back", "  turnin 1166"]);
 	let before = run(&[("a", a.clone())], "Orc", "Horde", &Opts { when: true, ..off() }, &FxHashMap::default());
@@ -409,7 +409,7 @@ fn r5_group_quest_is_asked_for_under_0_3_only() {
 }
 
 #[test]
-#[ignore = "needs data/forever and data/local/mechanics (or POLESTAR_V1)"]
+#[ignore = "needs data/forever and data/local/mechanics (or NORTHSTAR_V1)"]
 fn r6_emote_before_a_turnin_nothing_else_tracks_is_a_task() {
 	let a = guide("a", "Orc", "Horde", "The Barrens", None, &["step Fizzule", "  accept 2458", "", "step Fizzule again", "  turnin 2458"]);
 	let before = run(&[("a", a.clone())], "Orc", "Horde", &off(), &FxHashMap::default());
@@ -421,7 +421,7 @@ fn r6_emote_before_a_turnin_nothing_else_tracks_is_a_task() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r7_quest_log_past_forty_abandons_a_low_quest() {
 	let r = reference();
 	// 41 low Horde quests (Durotar, the Barrens; no Alliance race bit) accepted at level 30: the 41st
@@ -448,7 +448,7 @@ fn r7_quest_log_past_forty_abandons_a_low_quest() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r8_block_for_a_carried_quest_is_skipped_when_it_is_not_held() {
 	let a = guide("a", "Orc", "Horde", "Durotar", Some("b"), &["step Gornek", "  accept 788"]);
 	let b = guide(
@@ -468,7 +468,7 @@ fn r8_block_for_a_carried_quest_is_skipped_when_it_is_not_held() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r1_onward_along_step_for_a_quest_taken_earlier_goes_before_its_stop() {
 	// LD-22 (the Den's mouth): the stop's step ends at the place before the turn-in; listing the work
 	// after that step put it between the mouth and Kzan. Taken in an earlier step, the work is listed
@@ -509,7 +509,7 @@ fn r1_onward_along_step_for_a_quest_taken_earlier_goes_before_its_stop() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r1_a_walk_that_never_comes_within_sixty_yards_of_a_spawn_lists_nothing() {
 	// #737: the Tirisfal Pumpkins were listed "on the way" through Brill. The walk from Gordo's road to
 	// Calvin comes within about 130 yd of the nearest pumpkin, close to the field's wide spot edge but
@@ -552,7 +552,7 @@ fn r1_a_walk_that_never_comes_within_sixty_yards_of_a_spawn_lists_nothing() {
 }
 
 #[test]
-#[ignore = "needs data/forever and data/local/mechanics (or POLESTAR_V1)"]
+#[ignore = "needs data/forever and data/local/mechanics (or NORTHSTAR_V1)"]
 fn r2_use_at_the_place_nearest_the_routes_work() {
 	// The Corrupt Jaedenar Moonwell has a twin in Darkshore: the canteen is filled at Jaedenar, where
 	// the route works the quest (LD-R06/R12: a Felwood step sent the arrow to Darkshore).
@@ -565,7 +565,7 @@ fn r2_use_at_the_place_nearest_the_routes_work() {
 }
 
 #[test]
-#[ignore = "needs data/forever and data/local/mechanics (or POLESTAR_V1)"]
+#[ignore = "needs data/forever and data/local/mechanics (or NORTHSTAR_V1)"]
 fn r2_use_that_makes_the_quests_collect_is_bound_to_it() {
 	// #875 The Balance of Nature's moonwell: the phial filled, collect 5184 done, and a bare
 	// `use 5185` held the step until ticked.
@@ -583,7 +583,7 @@ fn r2_use_that_makes_the_quests_collect_is_bound_to_it() {
 }
 
 #[test]
-#[ignore = "needs data/forever and data/local/mechanics (or POLESTAR_V1)"]
+#[ignore = "needs data/forever and data/local/mechanics (or NORTHSTAR_V1)"]
 fn r2_use_at_a_border_object_is_on_the_routes_map() {
 	// c18 Orc 50-60/02-felwood: the Jadefire moonwell's spell focus is one spot read in two frames,
 	// Felwood 32.3,66.6 and Darkshore 48.2,85.9; the kitten carrier's use went on Darkshore's map.
@@ -595,7 +595,7 @@ fn r2_use_at_a_border_object_is_on_the_routes_map() {
 }
 
 #[test]
-#[ignore = "needs data/forever and data/local/mechanics (or POLESTAR_V1)"]
+#[ignore = "needs data/forever and data/local/mechanics (or NORTHSTAR_V1)"]
 fn r2_use_that_makes_an_item_goes_before_the_line_that_collects_it() {
 	// #302 The Blackwood Corrupted: v1 fills the bowl at the Auberdine moonwell (`collect 12347`);
 	// the empty bowl's use went to the furbolg camp, after the filled bowl was in the bags.
@@ -608,7 +608,7 @@ fn r2_use_that_makes_an_item_goes_before_the_line_that_collects_it() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r3_hand_in_of_a_quest_picked_up_optionally_is_when_onquest_split_from_other_work() {
 	// Cutting Teeth taken optionally: its own hand-in step is guarded; beside training and the follow-up,
 	// the hand-in becomes a step of its own in place.
@@ -670,7 +670,7 @@ impl Floors for Den {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r9_a_goal_below_ground_says_so_and_one_at_a_walking_npc_says_where_he_walks() {
 	let g = guide("a", "Orc", "Horde", "Durotar", None, &["step Gornek", "  accept 788", "", "step Boars", "  kill 3098 quest 788.1"]);
 	let before = run_on(&reference(), &[("a", g.clone())], "Orc", "Horde", &off(), &FxHashMap::default(), Some(&Den), None);
@@ -693,7 +693,7 @@ fn r9_a_goal_below_ground_says_so_and_one_at_a_walking_npc_says_where_he_walks()
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r10_a_quests_ambush_note_is_a_careful_tip_on_the_step_that_does_its_work() {
 	let g = guide("a", "Orc", "Horde", "Durotar", None, &["step Gornek", "  accept 788", "", "step Boars", "  zone Durotar", "  kill 3098 quest 788.1", "", "step Back", "  turnin 788"]);
 	let notes = serde_json::json!({ "788": { "notes": [
@@ -710,7 +710,7 @@ fn r10_a_quests_ambush_note_is_a_careful_tip_on_the_step_that_does_its_work() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r3_a_ride_for_everyone_is_never_only_in_a_hand_in_step_for_quest_holders() {
 	// c14 Gnome: the Deeprun Tram's goto shared a step with an optional errand's hand-in, which became
 	// `when onquest`: a player who skipped the errand got no tram line.
@@ -731,7 +731,7 @@ fn r3_a_ride_for_everyone_is_never_only_in_a_hand_in_step_for_quest_holders() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r3_a_guarded_hand_in_goes_before_the_follow_up_it_opens() {
 	// c14 Skyborne (Thrall's 95350 before 98024; here Cutting Teeth before Galgar's 4402): a hand-in split
 	// into a step for quest holders came after the follow-up's accept in the same visit: not ready.
@@ -751,7 +751,7 @@ fn r3_a_guarded_hand_in_goes_before_the_follow_up_it_opens() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn r1_work_on_the_ground_of_a_step_the_list_runs_past_is_done_in_that_step() {
 	// Fitz in game, c14 Undead: "Along the way" listed the Rot Hide Graverobbers and their ichor (358)
 	// beside the Doom Weed step, whose weed grows among them north of Brill: one step does both, and the
@@ -864,6 +864,48 @@ fn groups_a_family_is_asked_on_every_step_with_its_size_and_tip() {
 }
 
 #[test]
+fn groups_a_familys_goals_are_not_optional_in_its_asked_steps() {
+	// The Monogrammed Sash (8552) and Margol's Horn (3181): a step of only optional goals is done at once,
+	// so the player who chose the group way got no arrow to the item, the accept or the hand-in. Asked
+	// steps (in place, and the family's goals moved out of a shared step) hold them; the other quest's
+	// optional accept stays optional.
+	let g = guide(
+		"a",
+		"Orc",
+		"Horde",
+		"Durotar",
+		None,
+		&[
+			"step Hana'zua",
+			"  accept 790 optional",
+			"",
+			"step Sarkoth's cave",
+			"  collect 4905 quest 790.1 optional",
+			"",
+			"step Back at Hana'zua",
+			"  accept 788 optional",
+			"  turnin 790 optional",
+			"  accept 804",
+			"",
+			"step Gornek",
+			"  turnin 804 optional                -- Gornek, in the den",
+		],
+	);
+	let of: FxHashMap<u32, u32> = [(790, 790), (804, 790)].into_iter().collect();
+	let fam: Group =
+		serde_json::from_value(serde_json::json!({ "q": 790, "title": "Sarkoth", "size": 3, "level": 10, "mobs": [{ "npc": 3281, "name": "Sarkoth", "level": 10, "rank": 1 }], "quests": [790, 804] }))
+			.unwrap();
+	let after = run_groups(&reference(), &[("a", g)], "Orc", "Horde", &Opts { groups: true, ..off() }, &FxHashMap::default(), None, None, &[fam], &of);
+	let a = &after["a"];
+	for l in ["  accept 790", "  collect 4905 quest 790.1 group 3", "  turnin 790", "  turnin 804                         -- Gornek, in the den", "  accept 788 optional"] {
+		assert!(a.iter().any(|x| x == l), "no {l:?} in\n{}", a.join("\n"));
+	}
+	let asked = a.iter().enumerate().filter(|(_, l)| l.starts_with("  when group 790")).count();
+	assert_eq!(asked, 4, "{}", a.join("\n"));
+	assert_eq!(a.iter().filter(|l| l.contains("optional")).count(), 1, "{}", a.join("\n"));
+}
+
+#[test]
 fn groups_two_families_on_one_step_keep_the_steps_order() {
 	// c17 Azshara (not-ready): Sprogger's hand-in of 8553 (8552's family) and his accept of 8554 (its
 	// own family) were split into two asked steps, the accept's first.
@@ -905,7 +947,7 @@ fn groups_a_title_with_double_quotes_is_written_with_single_quotes() {
 }
 
 #[test]
-#[ignore = "needs data/forever (forge data build, or POLESTAR_V1)"]
+#[ignore = "needs data/forever (forge data build, or NORTHSTAR_V1)"]
 fn groups_the_drop_that_starts_a_family_quest_is_asked_for() {
 	// Croaky's Head (#977): the level 11 elite's drop starts Croaky's Head (91740, a group family), but its
 	// bag collect sat in Elwynn's step for everyone (12 recorded deaths at 8-9): it goes with the family.
@@ -938,7 +980,7 @@ fn groups_the_drop_that_starts_a_family_quest_is_asked_for() {
 	assert!(before["a"][..idx(&before["a"], "  when group 91740")].iter().any(|l| l == "  collect 247826 x1 optional"), "{}", before["a"].join("\n"));
 	let after = run_groups(&reference(), &[("a", g)], "Human", "Alliance", &Opts { groups: true, ..off() }, &FxHashMap::default(), None, None, &[fam], &of);
 	let a = &after["a"];
-	let head = idx(a, "  collect 247826 x1 optional");
+	let head = idx(a, "  collect 247826 x1");
 	let asked = a[..head].iter().rposition(|l| l.starts_with("step ")).unwrap();
 	assert_eq!(a[asked + 1], "  when group 91740", "{}", a.join("\n"));
 	assert!(idx(a, "  collect 247817 quest 91733") < head, "{}", a.join("\n"));

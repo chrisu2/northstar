@@ -28,7 +28,7 @@ const { Session, sharedData, CLASS_NAMES, RACE_NAMES, SCREEN } = require('./sess
 
 const { ROOT } = require('../lib/paths');
 const PUBLIC = path.join(__dirname, 'public');
-const FONTS = path.join(ROOT, 'addon', 'Polestar', 'Media', 'Fonts');
+const FONTS = path.join(ROOT, 'addon', 'Northstar', 'Media', 'Fonts');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ttf': 'font/ttf' };
 const SAVE_EVERY_MS = 5000;
 
@@ -154,7 +154,7 @@ async function startServer(opts = {}) {
 		'GET /api/version': () => ({ version: rebuilds }),
 		'GET /api/guides': () => serial(async () => {
 			const r = await session.call(`local out = {}
-for i, h in ipairs(Polestar.Guides.List()) do
+for i, h in ipairs(Northstar.Guides.List()) do
 	out[i] = { id = h.id, title = h.title, faction = h.faction, lo = h.minLevel, hi = h.maxLevel, cat = h.category or "Leveling", races = h.races, classes = h.classes }
 end
 return out`);
@@ -173,7 +173,7 @@ return out`);
 			await session.save({ logout: true }).catch(() => {});
 			session.kill();
 			// A new character: their world and per-character variables start over;
-			// the account's settings (PolestarDB) carry over.
+			// the account's settings (NorthstarDB) carry over.
 			fs.rmSync(path.join(dataDir, 'world.lua'), { force: true });
 			fs.rmSync(path.join(dataDir, 'Character'), { recursive: true, force: true });
 			config = { ...config, race, cls, faction };

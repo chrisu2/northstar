@@ -1,4 +1,4 @@
-//! Journeys (addon/Polestar/Nav/Journey.lua, Nearby.lua): plan to anywhere from the world map and minimap, the
+//! Journeys (addon/Northstar/Nav/Journey.lua, Nearby.lua): plan to anywhere from the world map and minimap, the
 //! public Nav API, the TomTom stand-in and following TomTom's arrow, /way, nearby services, and the death helper
 //! handing a picked point back. Runs Core/Init.lua + Nav/Nav.xml against tests/lua/stub_nav.lua, plus a
 //! continent map, a world map canvas with click handlers and mouse foci. Test names cite the rows of
@@ -57,7 +57,7 @@ Menu = { ModifyMenu = function(tag, fn) stub.menus[tag] = fn end }
 "#;
 
 const PRELUDE: &str = r#"
-local N = Polestar.Nav
+local N = Northstar.Nav
 local API = N.API
 local J = N.journey
 local nav = stub.nav
@@ -72,9 +72,9 @@ local function keys(shift, alt, ctrl) stub.keys.shift, stub.keys.alt, stub.keys.
 fn run_with(script: &str, before: &str, saved: Option<&str>, login: bool) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])],
 		before: format!("{WORLD}{before}"),
-		saved: saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		saved: saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		login,
 		script: format!("{PRELUDE}{script}"),
 	})
@@ -178,7 +178,7 @@ fn plan_anywhere_alt_click_plans_over_map_icons_by_their_name_and_leaves_polesta
 		stub.fire("GLOBAL_MOUSE_DOWN", "LeftButton")
 		t = N.GetTarget()
 		emit({ x = t.x, y = t.y, label = t.label })
-		Polestar.Pins.SetLayer("test.click", { { map = 9000, x = 90, y = 90, onClick = function() end } })
+		Northstar.Pins.SetLayer("test.click", { { map = 9000, x = 90, y = 90, onClick = function() end } })
 		for _, p in ipairs(nav.pins()) do if p.data.layer.name == "test.click" then stub.foci = { p } end end
 		stub.canvas.cursor = { 0.9, 0.9 }
 		stub.fire("GLOBAL_MOUSE_DOWN", "LeftButton")
@@ -221,7 +221,7 @@ fn plan_anywhere_shift_click_on_the_minimap_goes_to_the_spot_under_the_cursor_of
 #[test]
 fn plan_anywhere_off_in_settings_map_clicks_are_the_map_s_own() {
 	let out = run(r#"
-		Polestar.Set("nav.mapPlan", false)
+		Northstar.Set("nav.mapPlan", false)
 		nav.showWorldMap(9000)
 		keys(true)
 		local took = stub.canvasClick()
@@ -254,18 +254,24 @@ fn api_navigate_checks_its_input_sets_the_target_and_names_the_owner_cancel_only
 }
 
 #[test]
-fn api_a_target_replaced_is_not_the_owner_s_until_the_same_spot_comes_back_the_death_helper_hands_it_back() {
+fn api_a_target_replaced_is_not_the_owner_s_while_the_death_helper_holds_the_arrow_it_waits_and_is_theirs_again() {
 	let out = run(r#"
 		API.Navigate("Helper", 9000, 0.25, 0.75, "Camp")
-		N.SetTarget(9000, 70, 50, "Your corpse")
+		N.Hold(9000, 70, 50, "Your corpse")
 		local active, owner = API.Active()
 		emit({ active = active, owner = owner or false, cancel = API.Cancel("Helper"), label = label() })
+		N.Unhold()
+		active, owner = API.Active()
+		emit({ owner = owner or false, label = label(), cancel = API.Cancel("Helper") })
+		API.Navigate("Helper", 9000, 0.25, 0.75, "Camp")
+		N.SetTarget(9000, 70, 50, "Elsewhere")
 		N.SetTarget(9000, 25, 75, "Camp")
 		active, owner = API.Active()
 		emit({ owner = owner or false, cancel = API.Cancel("Helper") })
 	"#);
 	assert_eq!(out[0], json!({ "active": true, "owner": false, "cancel": false, "label": "Your corpse" }));
-	assert_eq!(out[1], json!({ "owner": "Helper", "cancel": true }));
+	assert_eq!(out[1], json!({ "owner": "Helper", "label": "Camp", "cancel": true }));
+	assert_eq!(out[2], json!({ "owner": false, "cancel": false }), "replaced, then the same spot picked again: a new target, not the owner's");
 }
 
 #[test]
@@ -300,13 +306,13 @@ fn api_a_route_sent_while_a_ghost_is_taken_without_error_c11() {
 // ---------------------------------------------------------------------------
 
 // The stand-in is off by default ("Let other addons set waypoints"): these tests turn it on as a player would.
-const ANSWER: Option<&str> = Some("PolestarDB = { schema = 1, settings = { nav = { answerTomTom = true } } }");
+const ANSWER: Option<&str> = Some("NorthstarDB = { schema = 1, settings = { nav = { answerTomTom = true } } }");
 
 #[test]
 fn tomtom_stand_in_off_by_default_so_no_tomtom_global_an_addon_reading_tomtom_db_would_error_and_no_way() {
 	let out = run(r#"
-		emit({ tomtom = TomTom == nil, answering = J.AnsweringTomTom(), way = SLASH_POLESTARWAY1 == nil,
-			default = Polestar.Get("nav.answerTomTom") })
+		emit({ tomtom = TomTom == nil, answering = J.AnsweringTomTom(), way = SLASH_NORTHSTARWAY1 == nil,
+			default = Northstar.Get("nav.answerTomTom") })
 	"#);
 	assert_eq!(out[0], json!({ "tomtom": true, "answering": false, "way": true, "default": false }));
 }
@@ -323,14 +329,14 @@ fn tomtom_stand_in_other_addons_waypoints_point_the_arrow_one_at_a_time_corpse_a
 			exists = TomTom:WaypointExists(9000, 0.25, 0.75, "Quest giver"), from = uid.from })
 		emit({ removed = TomTom:RemoveWaypoint(uid), target = N.GetTarget() == nil, valid = TomTom:IsValidWaypoint(uid) })
 		emit({ corpse = TomTom:AddWaypoint(9000, 0.5, 0.5, { title = "My Corpse", corpse = true }) == nil,
-			mirror = TomTom:AddWaypoint(9000, 0.5, 0.5, { from = "Polestar" }) == nil, target = N.GetTarget() == nil,
+			mirror = TomTom:AddWaypoint(9000, 0.5, 0.5, { from = "Northstar" }) == nil, target = N.GetTarget() == nil,
 			bad = TomTom:AddWaypoint(9000, 0.5, 0.5, "nope") == nil })
 		TomTom:AddZWaypoint(0, 9000, 30, 40, "Old style")
 		t = N.GetTarget()
 		emit({ x = t.x, y = t.y, label = t.label })
 		TomTom:ClearAllWaypoints()
 		emit(N.GetTarget() == nil)
-		Polestar.Set("nav.answerTomTom", false)
+		Northstar.Set("nav.answerTomTom", false)
 		emit(TomTom == nil)
 	"#,
 		"",
@@ -424,7 +430,7 @@ function TomTom:AddWaypoint(m, x, y, opts)
 	return uid
 end
 "#;
-const FOLLOW: Option<&str> = Some("PolestarDB = { schema = 1, settings = { nav = { followTomTom = true } } }");
+const FOLLOW: Option<&str> = Some("NorthstarDB = { schema = 1, settings = { nav = { followTomTom = true } } }");
 
 #[test]
 fn follow_tomtom_restores_the_arrow_s_waypoint_one_frame_after_player_entering_world_never_mirrored_back_row_7() {
@@ -457,13 +463,13 @@ fn follow_tomtom_remove_all_ends_it_the_corpse_arrow_and_polestar_s_own_mirror_a
 		emit(label())
 		TomTom:AddWaypoint(9000, 0.5, 0.5, { title = "My Corpse", corpse = true })
 		emit(label())
-		N.SetTarget(9000, 60, 60, "Picked") -- Bridges mirrors it (from = "Polestar", crazy off unless the TomTom arrow is used)
+		N.SetTarget(9000, 60, 60, "Picked") -- Bridges mirrors it (from = "Northstar", crazy off unless the TomTom arrow is used)
 		TomTom:SetCrazyArrow(TomTom.adds[#TomTom.adds])
 		emit({ label = label(), from = TomTom.adds[#TomTom.adds].from })
 		TomTom:SetCrazyArrow(uid)
 		TomTom:ClearWaypoint(uid) -- "Remove all waypoints" clears through ClearWaypoint alone
 		emit(N.GetTarget() == nil)
-		Polestar.Set("nav.followTomTom", false)
+		Northstar.Set("nav.followTomTom", false)
 		TomTom:AddWaypoint(9000, 0.1, 0.1, { title = "Ignored", from = "Helper" })
 		emit(N.GetTarget() == nil)
 	"#,
@@ -473,7 +479,7 @@ fn follow_tomtom_remove_all_ends_it_the_corpse_arrow_and_polestar_s_own_mirror_a
 	);
 	assert_eq!(out[0], "Guide pin");
 	assert_eq!(out[1], "Guide pin");
-	assert_eq!(out[2], json!({ "label": "Picked", "from": "Polestar" }));
+	assert_eq!(out[2], json!({ "label": "Picked", "from": "Northstar" }));
 	assert_eq!(out[3], true);
 	assert_eq!(out[4], true);
 }
@@ -486,8 +492,8 @@ fn follow_tomtom_remove_all_ends_it_the_corpse_arrow_and_polestar_s_own_mirror_a
 fn way_x_y_on_your_map_mapid_a_zone_named_inside_its_name_an_ambiguous_name_reset_row_7() {
 	let out = run_with(
 		r##"
-		emit(SLASH_POLESTARWAY1)
-		local way = SlashCmdList.POLESTARWAY
+		emit(SLASH_NORTHSTARWAY1)
+		local way = SlashCmdList.NORTHSTARWAY
 		way("45 61 Camp")
 		local t = N.GetTarget()
 		emit({ map = t.map, x = t.x, y = t.y, label = t.label })
@@ -517,7 +523,7 @@ fn way_x_y_on_your_map_mapid_a_zone_named_inside_its_name_an_ambiguous_name_rese
 
 #[test]
 fn way_left_alone_when_another_addon_has_it() {
-	let out = run_with("emit(SLASH_POLESTARWAY1 == nil)", r#"SLASH_OTHERWAY1 = "/WAY""#, ANSWER, true);
+	let out = run_with("emit(SLASH_NORTHSTARWAY1 == nil)", r#"SLASH_OTHERWAY1 = "/WAY""#, ANSWER, true);
 	assert_eq!(out[0], true);
 }
 
@@ -536,13 +542,13 @@ local npcs = {
 }
 local roles = { repair = { 1, 2, 3, 4 }, vendor = { 1, 5 }, ["trainer:186"] = { 6 } }
 stub.codexLoaded = true
-Polestar.Codex = {
+Northstar.Codex = {
 	IsLoaded = function() return stub.codexLoaded end,
 	Load = function() stub.codexLoaded = true; return true end,
 	WithRole = function(r) return roles[r] or {} end,
 	Npc = function(id) return npcs[id] end,
 }
-Polestar.QoL = { data = { reagentVendors = { [5] = true } } }
+Northstar.QoL = { data = { reagentVendors = { [5] = true } } }
 nav.faction = "Alliance"
 local Near = N.nearby
 "#;
@@ -574,7 +580,7 @@ fn nearby_the_nearest_spawn_of_each_friendly_npc_outside_instances_ranked_by_tra
 	assert_eq!(out[4], "Trainer Tess");
 }
 
-// A French client whose names pack lands after the first /polestar near: the Codex then names its NPCs in
+// A French client whose names pack lands after the first /northstar near: the Codex then names its NPCs in
 // French (Codex drops its records on NAMES_LOADED), and so must the places Nearby kept.
 #[test]
 fn nearby_a_names_pack_landing_late_renames_the_places_a_learned_npc_name_too() {
@@ -585,11 +591,11 @@ fn nearby_a_names_pack_landing_late_renames_the_places_a_learned_npc_name_too() 
 		Near.Go("repair")
 		emit(label())
 		npcs[2].name = "Forgeron lointain"
-		Polestar.Fire("NAMES_LOADED")
+		Northstar.Fire("NAMES_LOADED")
 		Near.Go("repair")
 		emit(label())
 		npcs[2].name = "Forgeron du lointain"
-		Polestar.Fire("NAME_LEARNED", "npc", 2)
+		Northstar.Fire("NAME_LEARNED", "npc", 2)
 		Near.Go("repair")
 		emit(label())
 	"#,
@@ -622,9 +628,9 @@ fn nearby_rank_estimates_only_the_nearest_few_and_the_quickest_by_route_wins_ove
 fn nearby_no_codex_combat_and_nothing_known_each_say_their_own_line_c14() {
 	let out = run(&[
 		r#"
-		Polestar.Codex = nil
+		Northstar.Codex = nil
 		stub.messages = {}
-		emit({ ok = N.nearby.Go("bank"), said = said("Nearby services need the Polestar Codex addon, which is not installed") })
+		emit({ ok = N.nearby.Go("bank"), said = said("Nearby services need the Northstar Codex addon, which is not installed") })
 	"#,
 		CODEX,
 		r#"
@@ -637,7 +643,7 @@ fn nearby_no_codex_combat_and_nothing_known_each_say_their_own_line_c14() {
 		emit({ ok = Near.Go("stable"), said = said("No stable master known for your faction.") })
 		stub.messages = {}
 		Near.Command("spaceport")
-		emit(said("Usage: /polestar near"))
+		emit(said("Usage: /northstar near"))
 	"#,
 	]
 	.concat());
@@ -654,8 +660,8 @@ fn nearby_each_codex_failure_says_its_own_line_missing_disabled_empty_any_other_
 		r#"
 		local function try(loadReason, roleList)
 			stub.codexLoaded = loadReason == nil
-			Polestar.Codex.Load = function() return false, loadReason end
-			Polestar.Codex.WithRole = function() return roleList or {} end
+			Northstar.Codex.Load = function() return false, loadReason end
+			Northstar.Codex.WithRole = function() return roleList or {} end
 			stub.messages = {}
 			local _, why = Near.Find("bank")
 			Near.Go("bank")
@@ -670,13 +676,13 @@ fn nearby_each_codex_failure_says_its_own_line_missing_disabled_empty_any_other_
 	.concat());
 	let (missing, disabled, other, empty) = (&out[0], &out[1], &out[2], &out[3]);
 	assert_eq!(missing["why"], "missing");
-	assert!(is_match(text(&missing["line"]), r"need the Polestar Codex addon, which is not installed"));
+	assert!(is_match(text(&missing["line"]), r"need the Northstar Codex addon, which is not installed"));
 	assert_eq!(disabled["why"], "disabled");
 	assert!(is_match(text(&disabled["line"]), r"turn it on in the AddOns list"));
 	assert_eq!(other["why"], "interface_version");
-	assert!(is_match(text(&other["line"]), r"could not load the Polestar Codex \(interface_version\)"));
+	assert!(is_match(text(&other["line"]), r"could not load the Northstar Codex \(interface_version\)"));
 	assert_eq!(empty["why"], "empty");
-	assert!(is_match(text(&empty["line"]), r"could not read the Polestar Codex: reinstall Polestar"));
+	assert!(is_match(text(&empty["line"]), r"could not read the Northstar Codex: reinstall Northstar"));
 	let lines: HashSet<String> = out.iter().map(|o| o["line"].to_string()).collect();
 	assert_eq!(lines.len(), 4, "four different lines");
 	assert!(out.iter().all(|o| !is_match(text(&o["line"]), r"known for your faction")), "never \"none known\" for a Codex failure");
@@ -701,7 +707,7 @@ fn nearby_the_tracking_menus_carry_a_nearby_services_submenu_with_every_kind_pic
 		for _, k in ipairs(sub.kids[1].kids) do trainers[#trainers + 1] = k.text end
 		sub.kids[4].fn() -- Repair
 		local world = stub.menus.MENU_WORLD_MAP_TRACKING ~= nil
-		Polestar.Set("nav.nearbyMenu", false)
+		Northstar.Set("nav.nearbyMenu", false)
 		local empty = node("root")
 		stub.menus.MENU_MINIMAP_TRACKING(nil, empty)
 		emit({ title = sub.text, texts = texts, trainers = trainers, label = label(), world = world, off = #empty.kids })
@@ -726,11 +732,11 @@ fn nearby_a_trip_ends_at_the_service_or_on_back_to_the_guide_and_the_arrow_is_ba
 		CODEX,
 		r#"
 		local trips = 0
-		Polestar.On("NEARBY_TRIP", function() trips = trips + 1 end)
+		Northstar.On("NEARBY_TRIP", function() trips = trips + 1 end)
 		Near.Go("repair")
 		local going = Near.Trip()
 		local onTrip = { name = going and going.name, label = going and going.label, override = N.IsOverride() }
-		Polestar.Fire("NAV_ARRIVED", N.GetTarget())
+		Northstar.Fire("NAV_ARRIVED", N.GetTarget())
 		local before = Near.Trip() ~= nil
 		stub.runTimers()
 		local arrived = { trip = Near.Trip() == nil, override = N.IsOverride(), said = said("At Far Smith: the arrow is back on the guide.") }
@@ -757,10 +763,10 @@ fn nearby_weapon_masters_the_class_s_weapons_a_master_of_its_side_teaches_known_
 	let out = run(&[
 		CODEX,
 		r#"
-		local C = Polestar.Compat
+		local C = Northstar.Compat
 		local info = { name = "Testchar", level = 12, faction = "Alliance", class = "ROGUE" }
 		C.GetPlayerInfo = function() return info end
-		Polestar.Gear = { PROFICIENCY = { ROGUE = { weapons = { [2] = true, [3] = true, [4] = true, [7] = true, [13] = true, [15] = true, [16] = true, [18] = true } } } }
+		Northstar.Gear = { PROFICIENCY = { ROGUE = { weapons = { [2] = true, [3] = true, [4] = true, [7] = true, [13] = true, [15] = true, [16] = true, [18] = true } } } }
 		C.IsPlayerSpell = function(id) return id == 1180 end -- daggers
 		C.GetSkillRank = function() return nil end
 		local function names(list)
@@ -770,8 +776,8 @@ fn nearby_weapon_masters_the_class_s_weapons_a_master_of_its_side_teaches_known_
 		end
 		local rogue = names(Near.Weapons())
 		-- Woo Ping (Stormwind) teaches swords; Bixi Wobblebonk (Ironforge) daggers.
-		local codexNpc = Polestar.Codex.Npc
-		Polestar.Codex.Npc = function(id)
+		local codexNpc = Northstar.Codex.Npc
+		Northstar.Codex.Npc = function(id)
 			if id == 11867 then return { id = id, name = "Woo Ping", faction = "A", spawns = { { map = 9000, x = 60, y = 50 } } } end
 			if id == 13084 then return { id = id, name = "Bixi Wobblebonk", faction = "A", spawns = { { map = 9000, x = 70, y = 50 } } } end
 			return codexNpc(id)
@@ -782,12 +788,12 @@ fn nearby_weapon_masters_the_class_s_weapons_a_master_of_its_side_teaches_known_
 		info.faction = "Horde"
 		local horde = names(Near.Weapons())
 		info.class, info.level = "WARRIOR", 12
-		Polestar.Gear.PROFICIENCY.WARRIOR = { weapons = { [0] = true, [6] = true, [7] = true } }
+		Northstar.Gear.PROFICIENCY.WARRIOR = { weapons = { [0] = true, [6] = true, [7] = true } }
 		local polearms
 		for _, w in ipairs(Near.Weapons()) do if w.label == "Polearms" then polearms = w.level end end
 		local listed
 		for _, e in ipairs(Near.MenuItems()) do if e.weapons then listed = #e.weapons end end
-		Polestar.Gear = nil
+		Northstar.Gear = nil
 		emit({ rogue = rogue, swords = swords, said = said1, horde = horde, polearms = polearms, listed = listed, none = #Near.Weapons() })
 	"#,
 	]
@@ -822,11 +828,11 @@ fn nearby_the_vendor_page_food_and_drink_arrows_bullets_bows_and_guns_by_class_t
 		roles["sells:ranged"] = { 7 }
 		roles["sells:food"] = { 8, 9 }
 		roles["sells:general"] = { 10 }
-		local C = Polestar.Compat
+		local C = Northstar.Compat
 		local info = { name = "Testchar", level = 12, faction = "Alliance", class = "HUNTER" }
 		C.GetPlayerInfo = function() return info end
 		C.GetSkillRank = function() return nil end
-		Polestar.Gear = { PROFICIENCY = { HUNTER = { weapons = { [2] = true, [3] = true, [18] = true } }, MAGE = { weapons = { [10] = true, [15] = true } } } }
+		Northstar.Gear = { PROFICIENCY = { HUNTER = { weapons = { [2] = true, [3] = true, [18] = true } }, MAGE = { weapons = { [10] = true, [15] = true } } } }
 		local function page()
 			local out = {}
 			for _, e in ipairs(Near.MenuItems()) do
@@ -879,12 +885,12 @@ fn nearby_the_nearest_mailbox_of_the_player_s_side_from_the_codex_s_objects() {
 			[104] = { id = 104, name = "Mailbox", mailbox = true, spawns = { { map = 9000, x = 50.5, y = 50 } } },
 			[105] = { id = 105, name = "Battered Chest", treasure = true, spawns = { { map = 9000, x = 50.2, y = 50 } } },
 		}
-		Polestar.Codex.Each = function(kind, fn)
+		Northstar.Codex.Each = function(kind, fn)
 			if kind ~= "object" then return end
 			for _, id in ipairs({ 101, 102, 103, 104, 105 }) do fn(id, objects[id].name) end
 		end
-		Polestar.Codex.Object = function(id) return objects[id] end
-		Polestar.Compat.GetSkillRank = function() return nil end
+		Northstar.Codex.Object = function(id) return objects[id] end
+		Northstar.Compat.GetSkillRank = function() return nil end
 		local listed = false
 		for _, e in ipairs(Near.MenuItems()) do if e.key == "mailbox" then listed = e.label end end
 		Near.Go("mailbox")
@@ -899,7 +905,7 @@ fn nearby_the_nearest_mailbox_of_the_player_s_side_from_the_codex_s_objects() {
 	let out = &out[0];
 	assert_eq!(out["listed"], "Mailbox", "the guide window's list carries it");
 	assert_eq!(out["first"], json!(["Mailbox", 54, true]), "the both-sides mailbox's nearer spawn; the Horde's and the sideless ones, nearer, never count");
-	assert_eq!(out["alias"], "Mailbox", "/polestar near mail");
+	assert_eq!(out["alias"], "Mailbox", "/northstar near mail");
 }
 
 #[test]
@@ -913,12 +919,12 @@ fn nearby_the_guide_window_s_list_puts_the_everyday_services_first_then_a_traine
 			return out
 		end
 		local MINING = 186
-		Polestar.Compat.GetSkillRank = function(line) if line == MINING then return 75, 150 end end
+		Northstar.Compat.GetSkillRank = function(line) if line == MINING then return 75, 150 end end
 		local items = Near.MenuItems()
 		local miningKey
 		for _, e in ipairs(items) do if e.line == MINING then miningKey = e.key end end
 		emit({ texts = texts(), key = miningKey })
-		Polestar.Compat.GetSkillRank = function() return nil end
+		Northstar.Compat.GetSkillRank = function() return nil end
 		emit(texts())
 	"#,
 	]
@@ -934,52 +940,41 @@ fn nearby_the_guide_window_s_list_puts_the_everyday_services_first_then_a_traine
 }
 
 // ---------------------------------------------------------------------------
-// Corpse: the death helper hands a picked point back
+// Corpse: the death helper holds the arrow (Nav.Hold) over every other target
 // ---------------------------------------------------------------------------
 
 #[test]
-fn death_helper_a_point_picked_before_dying_comes_back_after_resurrecting_on_the_same_step_only() {
-	let run2 = |script: &str| {
-		emitted(&RunAddon {
-			stubs: vec!["stub_qol.lua"],
-			addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Core/Compat.lua", "Theme/Theme.xml", "QoL/QoL.xml"])],
-			login: true,
-			script: ["local q = stub.qol\nlocal QoL = Polestar.QoL\n", script].concat(),
-			..Default::default()
-		})
-		.remove(0)
-	};
-	let back = run2(
-		r#"
-			q.Nav.IsOverride = function() return q.nav.target ~= nil and q.nav.target.label == "Picked" end
-			QoL.SetData({ spiritHealers = { { 0, 20, 0, 9000, 50, 49 } }, flightMasters = {} })
-			q.player = { c = 0, wx = 0, wy = 0 }
-			q.nav.target = { map = 9000, x = 30, y = 30, label = "Picked", kind = "manual", stepIndex = q.engine.step }
-			local _, cx, cy = q.mapPoint(0, -400)
-			q.corpse = { cx, cy }
-			q.level = 30
-			q.ghost = true
-			stub.fire("PLAYER_ALIVE")
-			local during = q.nav.target.label
-			q.ghost = false
-			stub.fire("PLAYER_UNGHOST")
-			emit({ during = during, after = q.nav.target and q.nav.target.label, releases = q.nav.releases })
-		"#,
-	);
-	let moved = run2(
-		r#"
-			q.Nav.IsOverride = function() return q.nav.target ~= nil and q.nav.target.label == "Picked" end
-			QoL.SetData({ spiritHealers = { { 0, 20, 0, 9000, 50, 49 } }, flightMasters = {} })
-			q.player = { c = 0, wx = 0, wy = 0 }
-			q.nav.target = { map = 9000, x = 30, y = 30, label = "Picked", kind = "manual", stepIndex = -1 }
-			q.level = 8
-			q.ghost = true
-			stub.fire("PLAYER_ALIVE")
-			q.ghost = false
-			stub.fire("PLAYER_UNGHOST")
-			emit({ after = q.nav.target and q.nav.target.label or false, releases = q.nav.releases })
-		"#,
-	);
-	assert_eq!(back, json!({ "during": "Your corpse", "after": "Picked", "releases": 0 }));
-	assert_eq!(moved, json!({ "after": false, "releases": 1 }));
+fn hold_nothing_takes_the_arrow_off_the_corpse_once_it_lets_go_what_is_underneath_shows_a_picked_point_only_on_its_step_1382() {
+	let out = run(r#"
+		local function wp(i, x, l) return { map = 9000, x = x, y = 80, label = l, stepIndex = i, goalIndex = 1, kind = "goto", r = 8 } end
+		nav.changeStep(1, wp(1, 50, "Step one"))
+		stub.runTimers()
+		local announced = 0
+		Northstar.On("WAYPOINT_CHANGED", function(t) if t == N.GetTarget() then announced = announced + 1 end end)
+		-- Picked before dying, same step: back once alive.
+		N.SetTarget(9000, 30, 30, "Picked")
+		local held = N.Hold(9000, 70, 50, "Your corpse")
+		emit({ label = label(), same = held == N.GetTarget(), held = N.IsHeld(), own = N.IsOverride() })
+		announced = 0
+		nav.setWaypoint(wp(1, 55, "Goal two"))                 -- the guide's next goal
+		N.SetTarget(9000, 20, 20, "Map click")                 -- picked as a ghost
+		N.ReleaseTarget(); N.SetTarget(9000, 25, 25, "Party: Ana")
+		stub.runTimers()
+		emit({ label = label(), announced = announced })
+		N.Unhold()
+		emit({ label = label(), held = N.IsHeld(), own = N.IsOverride() })
+		-- A step change while held: the corpse stays; alive, the new step's target, the pick dropped.
+		N.SetTarget(9000, 30, 30, "Picked")
+		N.Hold(9000, 70, 50, "Your corpse")
+		nav.changeStep(2, wp(2, 60, "Step two"))
+		stub.runTimers()
+		emit(label())
+		N.Unhold()
+		emit(label())
+	"#);
+	assert_eq!(out[0], json!({ "label": "Your corpse", "same": true, "held": true, "own": false }));
+	assert_eq!(out[1], json!({ "label": "Your corpse", "announced": 0 }), "the guide's goal, a map click, a party member: none moves the arrow or announces");
+	assert_eq!(out[2], json!({ "label": "Party: Ana", "held": false, "own": true }), "the last point picked while a ghost, same step");
+	assert_eq!(out[3], "Your corpse", "a step change while a ghost");
+	assert_eq!(out[4], "Step two", "alive again: the step's target; the point picked on step one went with that step");
 }

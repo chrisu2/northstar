@@ -22,7 +22,7 @@ w.level = 20
 // quest a yellow one needs, a green quest still in the log behind it (kept: they chose it), and the last quest
 // they did.
 const GUIDES: &str = r#"
-Polestar.RegisterGuide({ id = "test/low", pack = "test", title = "Low", faction = "Alliance", minLevel = 1, maxLevel = 12, next = "test/mid", steps = {
+Northstar.RegisterGuide({ id = "test/low", pack = "test", title = "Low", faction = "Alliance", minLevel = 1, maxLevel = 12, next = "test/mid", steps = {
 	{ goals = { { t = "accept", quest = 101, title = "Grey done", qlvl = 5 } } },
 	{ goals = { { t = "goto", map = 1429, x = 10, y = 10, label = "Farm" } } },
 	{ goals = { { t = "accept", quest = 102, title = "Grey not done", qlvl = 6 } } },
@@ -30,7 +30,7 @@ Polestar.RegisterGuide({ id = "test/low", pack = "test", title = "Low", faction 
 	{ goals = { { t = "turnin", quest = 104, title = "Grey direct", direct = true, qlvl = 7 } } },
 	{ goals = { { t = "fly", location = "Stormwind City" } } },
 } })
-Polestar.RegisterGuide({ id = "test/mid", pack = "test", title = "Mid", faction = "Alliance", minLevel = 15, maxLevel = 22, steps = {
+Northstar.RegisterGuide({ id = "test/mid", pack = "test", title = "Mid", faction = "Alliance", minLevel = 15, maxLevel = 22, steps = {
 	{ goals = { { t = "goto", map = 1429, x = 20, y = 20, label = "Town" } } },
 	{ goals = { { t = "accept", quest = 201, title = "Green behind", qlvl = 15 } } },
 	{ goals = { { t = "goto", map = 1429, x = 30, y = 30, label = "Camp" } } },
@@ -48,22 +48,22 @@ Polestar.RegisterGuide({ id = "test/mid", pack = "test", title = "Mid", faction 
 // Saved variables with "Skip grey quests" on (plus `extra` behaviour settings) and the character's own (`db`,
 // none by default).
 fn catch_up_on(extra: &str, db: &str) -> String {
-	format!("PolestarDB = {{ schema = 1, settings = {{ behavior = {{ skipGrey = true{extra} }} }} }}; {db}")
+	format!("NorthstarDB = {{ schema = 1, settings = {{ behavior = {{ skipGrey = true{extra} }} }} }}; {db}")
 }
 
 fn on() -> String {
-	catch_up_on("", "PolestarCharDB = nil")
+	catch_up_on("", "NorthstarCharDB = nil")
 }
 
 // No guide picked at login: Start guide opens one for the player.
 fn pick_off() -> String {
-	catch_up_on(", autoSelectGuide = false", "PolestarCharDB = nil")
+	catch_up_on(", autoSelectGuide = false", "NorthstarCharDB = nil")
 }
 
-const SETUP: &str = r#"			E = Polestar.Engine
+const SETUP: &str = r#"			E = Northstar.Engine
 			function flush() stub.advance(0.25) end
 			PLACED = {}
-			Polestar.On("GUIDE_PLACED", function(id, step, chain)
+			Northstar.On("GUIDE_PLACED", function(id, step, chain)
 				PLACED[#PLACED + 1] = { id = id, step = step or false, chain = table.concat(chain or {}, ",") }
 			end)
 			stub.login()
@@ -74,8 +74,8 @@ fn run(before: &str, guides: &str, saved: &str, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: vec![("Polestar".into(), saved.to_string())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: vec![("Northstar".into(), saved.to_string())],
 		script: format!("{TEST_PACK}\n{TEST_SOURCE}\n{guides}\n{SETUP}{script}"),
 		..Default::default()
 	})
@@ -83,7 +83,7 @@ fn run(before: &str, guides: &str, saved: &str, script: &str) -> Value {
 }
 
 const DONE: &str = "stub.world.complete({ 101, 204 }); stub.world.onQuest(206, {})";
-const OFF: &str = "PolestarDB = { schema = 1, settings = { behavior = { skipGrey = false } } }";
+const OFF: &str = "NorthstarDB = { schema = 1, settings = { behavior = { skipGrey = false } } }";
 
 // Each step's status, as the guide window shows it ("na": left out).
 const STATUSES: &str = r#"
@@ -121,7 +121,7 @@ fn a_level_20_character_given_a_grey_guide_is_taken_through_it_to_the_next_and_r
 #[test]
 fn a_low_quest_in_the_log_goes_while_it_is_not_done_and_stays_once_it_only_has_to_be_handed_in() {
 	let duskwood = r#"
-		Polestar.RegisterGuide({ id = "test/dusk", pack = "test", title = "Duskwood", faction = "Alliance", minLevel = 25, maxLevel = 27, next = "test/mid", steps = {
+		Northstar.RegisterGuide({ id = "test/dusk", pack = "test", title = "Duskwood", faction = "Alliance", minLevel = 25, maxLevel = 27, next = "test/mid", steps = {
 			{ goals = { { t = "accept", quest = 57, title = "The Night Watch", qlvl = 26 } } },
 			{ goals = { { t = "accept", quest = 156, title = "Gather Rot Blossoms", qlvl = 24 } } },
 			{ goals = { { t = "collect", item = 1598, itemName = "Rot Blossom", quest = 156, oi = 1, count = 8 } } },
@@ -172,7 +172,7 @@ fn without_skip_grey_quests_the_guide_is_placed_as_before_the_first_quest_not_do
 #[test]
 fn a_guide_that_is_not_a_leveling_one_does_every_step_an_item_guide_keeps_its_quests_grey_or_not() {
 	let item = r#"
-		Polestar.RegisterGuide({ id = "test/bag", pack = "test", title = "Bag", category = "Collectibles", minLevel = 14, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/bag", pack = "test", title = "Bag", category = "Collectibles", minLevel = 14, maxLevel = 60, steps = {
 			{ goals = { { t = "accept", quest = 301, title = "First clue", qlvl = 8 } } },
 			{ goals = { { t = "turnin", quest = 301, title = "First clue" } } },
 			{ goals = { { t = "accept", quest = 302, title = "Second clue", qlvl = 9 } } },
@@ -215,7 +215,7 @@ fn a_quest_left_out_comes_back_when_the_player_takes_it_by_hand_and_a_level_the_
 
 #[test]
 fn a_reload_places_the_saved_guide_again_at_the_same_step_without_a_catch_up_to_play_with_nothing_behind_the_player_the_guide_is_placed_as_before() {
-	let reload = run(DONE, GUIDES, &catch_up_on("", r#"PolestarCharDB = { schema = 1, tabs = { "test/mid" }, activeTab = 1 }"#), "emit({ at = E.GetStepIndex(), placed = #PLACED })");
+	let reload = run(DONE, GUIDES, &catch_up_on("", r#"NorthstarCharDB = { schema = 1, tabs = { "test/mid" }, activeTab = 1 }"#), "emit({ at = E.GetStepIndex(), placed = #PLACED })");
 	assert_eq!(reload, json!({ "at": 5, "placed": 0 }), "GUIDE_PLACED is for a guide just opened");
 
 	let fresh = run("", GUIDES, &on(), r#"E.SetGuide("test/mid"); flush(); emit(E.GetStepIndex())"#);
@@ -230,13 +230,13 @@ fn with_no_guide_open_at_login_the_catch_up_starts_from_the_first_guide_and_goes
 		DONE,
 		GUIDES,
 		&on(),
-		"emit({ guide = E.GetGuide().id, at = E.GetStepIndex(), placed = PLACED[#PLACED], first = Polestar.Guides.FirstGuide(), suggest = Polestar.Guides.Suggest(), start = E.StartingGuide() })",
+		"emit({ guide = E.GetGuide().id, at = E.GetStepIndex(), placed = PLACED[#PLACED], first = Northstar.Guides.FirstGuide(), suggest = Northstar.Guides.Suggest(), start = E.StartingGuide() })",
 	);
 	// The guide window's and the welcome's Start guide open E.StartingGuide() too.
 	assert_eq!(out, json!({ "guide": "test/mid", "at": 5, "placed": { "id": "test/mid", "step": 5, "chain": "test/low" }, "first": "test/low", "suggest": "test/mid", "start": "test/low" }));
 
 	// Without the catch-up, the guide for their level, as before.
-	let off = run(DONE, GUIDES, "PolestarDB = { schema = 1, settings = { behavior = { skipGrey = false } } }; PolestarCharDB = nil", "emit(E.GetGuide().id)");
+	let off = run(DONE, GUIDES, "NorthstarDB = { schema = 1, settings = { behavior = { skipGrey = false } } }; NorthstarCharDB = nil", "emit(E.GetGuide().id)");
 	assert_eq!(off, "test/mid");
 }
 
@@ -247,14 +247,14 @@ fn with_no_guide_open_at_login_the_catch_up_starts_from_the_first_guide_and_goes
 fn in_a_guide_the_character_is_past_a_low_chain_stays_only_when_three_quests_from_yellow_up_need_it() {
 	let guides = |worth: bool| {
 		r#"
-		Polestar.RegisterGuide({ id = "test/dark", pack = "test", title = "Darkshore", faction = "Alliance", minLevel = 10, maxLevel = 15, next = "test/ashen", steps = {
+		Northstar.RegisterGuide({ id = "test/dark", pack = "test", title = "Darkshore", faction = "Alliance", minLevel = 10, maxLevel = 15, next = "test/ashen", steps = {
 			{ goals = { { t = "accept", quest = 401, title = "Tower 1", qlvl = 12 } } },
 			{ goals = { { t = "turnin", quest = 401, title = "Tower 1" }, { t = "accept", quest = 402, title = "Tower 2", qlvl = 14, pre = { 401 } } } },
 			{ goals = { { t = "turnin", quest = 402, title = "Tower 2" } } },
 			{ goals = { { t = "accept", quest = 403, title = "Lone low", qlvl = 12 } } },
 			{ goals = { { t = "turnin", quest = 403, title = "Lone low" } } },
 		} })
-		Polestar.RegisterGuide({ id = "test/ashen", pack = "test", title = "Ashenvale", faction = "Alliance", minLevel = 18, maxLevel = 25, steps = {
+		Northstar.RegisterGuide({ id = "test/ashen", pack = "test", title = "Ashenvale", faction = "Alliance", minLevel = 18, maxLevel = 25, steps = {
 			{ goals = { { t = "accept", quest = 410, title = "Tower 3", qlvl = 19, pre = { 402 } } } },
 			{ goals = { { t = "turnin", quest = 410, title = "Tower 3" }, { t = "accept", quest = 411, title = "Tower 4", qlvl = 20, pre = { 410 } } } },
 			@WORTH@
@@ -293,7 +293,7 @@ fn a_guide_the_catch_up_passed_whole_is_done_for_the_list_only_once_all_its_ques
 fn a_catch_up_goes_on_to_the_next_guide_silently_on_a_second_try_and_past_a_quest_whose_prerequisite_it_left_out() {
 	let guides = GUIDES.replacen(r#"maxLevel = 12, next = "test/mid""#, r#"maxLevel = 12, next = "test/low2""#, 1)
 		+ r#"
-		Polestar.RegisterGuide({ id = "test/low2", pack = "test", title = "Low 2", faction = "Alliance", minLevel = 8, maxLevel = 14, next = "test/mid", steps = {
+		Northstar.RegisterGuide({ id = "test/low2", pack = "test", title = "Low 2", faction = "Alliance", minLevel = 8, maxLevel = 14, next = "test/mid", steps = {
 			{ goals = { { t = "accept", quest = 150, title = "Grey start", qlvl = 8 } } },
 			{ goals = { { t = "turnin", quest = 150, title = "Grey start" }, { t = "accept", quest = 152, title = "Yellow after it", qlvl = 19, pre = { 150 } } } },
 			{ goals = { { t = "turnin", quest = 152, title = "Yellow after it" } } },
@@ -330,7 +330,7 @@ fn start_guide_goes_on_through_guides_with_every_quest_done_the_list_keeps_such_
 #[test]
 fn a_quest_left_out_ahead_of_any_progress_takes_only_the_travel_to_it_no_flight_path_hearth_or_training_stored_as_done() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/utility", pack = "test", title = "Utility", faction = "Alliance", minLevel = 15, maxLevel = 25, steps = {
+		Northstar.RegisterGuide({ id = "test/utility", pack = "test", title = "Utility", faction = "Alliance", minLevel = 15, maxLevel = 25, steps = {
 			{ goals = { { t = "getfp", location = "Sentinel Hill" } } },
 			{ goals = { { t = "sethome", location = "Lakeshire" } } },
 			{ goals = { { t = "train", class = true, npc = 911, npcName = "Trainer" } } },
@@ -344,7 +344,7 @@ fn a_quest_left_out_ahead_of_any_progress_takes_only_the_travel_to_it_no_flight_
 		guides,
 		&on(),
 		r#"E.SetGuide("test/utility"); flush()
-			local m = PolestarCharDB.manual["test/utility"] or {}
+			local m = NorthstarCharDB.manual["test/utility"] or {}
 			local keys = {}
 			for k in pairs(m) do keys[#keys + 1] = k end
 			table.sort(keys)
@@ -358,7 +358,7 @@ fn a_quest_left_out_ahead_of_any_progress_takes_only_the_travel_to_it_no_flight_
 #[test]
 fn a_guide_finished_in_play_is_done_for_the_list_a_grey_quest_left_out_or_not() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/play", pack = "test", title = "Play", faction = "Alliance", minLevel = 18, maxLevel = 22, steps = {
+		Northstar.RegisterGuide({ id = "test/play", pack = "test", title = "Play", faction = "Alliance", minLevel = 18, maxLevel = 22, steps = {
 			{ goals = { { t = "accept", quest = 601, title = "Grey", qlvl = 8 } } },
 			{ goals = { { t = "accept", quest = 602, title = "Yellow", qlvl = 20 } } },
 			{ goals = { { t = "turnin", quest = 602, title = "Yellow" } } },
@@ -382,11 +382,11 @@ fn a_guide_finished_in_play_is_done_for_the_list_a_grey_quest_left_out_or_not() 
 #[test]
 fn levelling_past_a_guide_during_play_shows_the_outgrown_banner_the_catch_up_on_or_not() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/young", pack = "test", title = "Young", faction = "Alliance", minLevel = 10, maxLevel = 16, steps = {
+		Northstar.RegisterGuide({ id = "test/young", pack = "test", title = "Young", faction = "Alliance", minLevel = 10, maxLevel = 16, steps = {
 			{ goals = { { t = "accept", quest = 701, title = "Yellow then", qlvl = 15 } } },
 			{ goals = { { t = "turnin", quest = 701, title = "Yellow then" } } },
 		} })
-		Polestar.RegisterGuide({ id = "test/older", pack = "test", title = "Older", faction = "Alliance", minLevel = 17, maxLevel = 24, steps = {
+		Northstar.RegisterGuide({ id = "test/older", pack = "test", title = "Older", faction = "Alliance", minLevel = 17, maxLevel = 24, steps = {
 			{ goals = { { t = "accept", quest = 702, title = "Next", qlvl = 19 } } },
 		} })
 	"#;
@@ -396,7 +396,7 @@ fn levelling_past_a_guide_during_play_shows_the_outgrown_banner_the_catch_up_on_
 			guides,
 			&saved,
 			r#"OUT = {}
-				Polestar.On("GUIDE_OUTLEVELED", function(id, suggested) OUT[#OUT + 1] = id .. ">" .. tostring(suggested) end)
+				Northstar.On("GUIDE_OUTLEVELED", function(id, suggested) OUT[#OUT + 1] = id .. ">" .. tostring(suggested) end)
 				E.SetGuide("test/young"); flush()
 				local before = #OUT
 				stub.world.setLevel(19); flush()

@@ -3,7 +3,7 @@
 // client's tables (Map, DungeonEncounter, LFGDungeons, MapDifficulty,
 // ContentTuning, AreaTable), data/forever/npcs.json and items.json
 // (pfQuest, QuestieDB, recordings), data/forever/instances.json (Recorder
-// `enter` / `encounter` events) and the entrance points Polestar's own guides
+// `enter` / `encounter` events) and the entrance points Northstar's own guides
 // name. Replaces AtlasLoot and DungeonJournal in a release build
 // (docs/ARCHITECTURE.md, "Codex (`codex build`)").
 //
@@ -22,7 +22,7 @@
 //   (a chest boss: npc null, unless an encounter has both); role
 //   'rare' | 'event' | 'optional' on the bosses after the encounters (none on
 //   an encounter's); encounter the DungeonEncounter id of an encounter's boss
-//   (its name in every language: Polestar.Names "encounter").
+//   (its name in every language: Northstar.Names "encounter").
 //
 // "Placed inside" an instance: npcs.json / objects.json `instances` (QuestieDB,
 // recordings), or Forever's `location` naming an area on the instance's map

@@ -2,7 +2,7 @@ use forge_addontest::{emitted, is_match, text, Addon, RunAddon};
 use serde_json::{json, Value};
 
 const SETUP: &str = r#"
-local P = Polestar
+local P = Northstar
 local guideA = { id = "route/a", title = "Starter", next = "route/b", steps = {
  { goals = {{ t="turnin", quest=1 }} },
  { goals = {{ t="turnin", quest=2 }} },
@@ -23,7 +23,7 @@ local R = P.RoutePlan
 
 fn run(script: &str, ui: bool) -> Value {
 	let files: &[&str] = if ui { &["Core/Core.xml", "UI/QuestieTurnIns.lua"] } else { &["Core/Core.xml"] };
-	emitted(&RunAddon { stubs: vec!["stub_world.lua"], addons: vec![Addon::files("Polestar", files)], login: true, script: format!("{SETUP}{script}"), ..Default::default() }).remove(0)
+	emitted(&RunAddon { stubs: vec!["stub_world.lua"], addons: vec![Addon::files("Northstar", files)], login: true, script: format!("{SETUP}{script}"), ..Default::default() }).remove(0)
 }
 
 fn num(v: &Value) -> f64 {
@@ -261,7 +261,7 @@ fn questie_final_width_pass_reflows_both_the_caption_and_parent_row_while_preser
 	assert!(num(&out["narrow"]["row"]) > num(&out["wide"]), "wrapped captions expand the row before the next quest is positioned");
 	assert_eq!(num(&out["narrow"]["row"]), num(&out["narrow"]["label"]) + 4.0, "Questie owns the row padding");
 	assert_eq!(out["restored"], out["wide"], "widening releases obsolete wrapped height");
-	assert!(is_match(text(&out["text"]), r"Polestar: Turn in at step 3"));
+	assert!(is_match(text(&out["text"]), r"Northstar: Turn in at step 3"));
 }
 
 #[test]
@@ -306,7 +306,7 @@ fn a_questie_update_dropped_by_its_0_1_s_throttle_is_retried_once_not_polled_and
     -- Questie 12.1.0: QuestieTracker:Update() returns within 0.1 s of the last one.
     local draw, last = tracker.Update, -1
     tracker.Update=function(self) local now=GetTime(); if now-last<0.1 then return end; last=now; draw(self) end
-    local function caught() last=GetTime()+0.2-0.05 end -- Questie redraws 0.05 s before Polestar's pass
+    local function caught() last=GetTime()+0.2-0.05 end -- Questie redraws 0.05 s before Northstar's pass
     stub.advance(1)
     caught(); live=4; P.Fire("STEP_CHANGED"); stub.advance(0.25)
     local first=row.label:GetText()

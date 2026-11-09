@@ -8,7 +8,7 @@ explain each part: [data](data.md), [nav](nav.md), [model](model.md), [routes](r
 
 ## What Forge is for
 
-Forge makes Polestar's leveling routes and writes them into guides, end to end, from the installed
+Forge makes Northstar's leveling routes and writes them into guides, end to end, from the installed
 game client and the guide sources:
 
 1. read the game's data and build the reference data (`data/forever`),
@@ -134,7 +134,7 @@ code can take "a checkout" and work the same inside a build.
 
 **Where the inputs come from.** `--root` names the checkout (default: the nearest folder above the
 current one with `data/sources`). Without one, the build reads the public data pack
-(`forge data fetch`) and builds the grid from the game (or takes `--grid`). The client: `--wow`, `$POLESTAR_WOW_DIR`, the remembered
+(`forge data fetch`) and builds the grid from the game (or takes `--grid`). The client: `--wow`, `$NORTHSTAR_WOW_DIR`, the remembered
 folder, then a search ([FORGE.md](../FORGE.md#how-forge-finds-the-game)).
 
 ## How a port was checked
@@ -204,22 +204,22 @@ Every variable Forge reads. Command-line options win over them where both exist.
 
 | Variable | Read by | Meaning | Default |
 |---|---|---|---|
-| `POLESTAR_WOW_DIR` | every command that reads the game | the game folder (the one holding `.build.info`) | the remembered folder, then a search ([FORGE.md](../FORGE.md#how-forge-finds-the-game)) |
-| `POLESTAR_FORGE_CONFIG` | every command that reads the game | the config file that remembers the game folder | `polestar-forge/config.toml` in your config folder |
-| `POLESTAR_GRID` | `forge build`, `forge doctor`, `forge nav prepare`, `forge sim`, `forge judge`, `forge writer`, `forge walks` | a built walking grid (`--grid` wins) | `forge build`: builds one into `<out>/grid`; the other commands: `data/local/nav4` |
-| `POLESTAR_LEFFE_NAV` | `forge build`, `forge doctor`, `forge walks walks` | Leffe's navigation maps, private (the folder with `Nav.xml` or `Nav/Nav.xml`; `--leffe` wins) | none: without his maps the hybrid runs on the data pack's saved Leffe walks |
-| `POLESTAR_LEFFE_NAV_CACHE_MB` | `forge walks walks` with `POLESTAR_NAV=leffe` | the cache for Leffe's decoded map pieces, in MB | 1,024 (`forge build` and the hybrid use 2,048) |
-| `POLESTAR_NAV` | `forge walks walks` only | the walks backend: `grid`, `leffe` or `hybrid` (`forge build` takes `--nav`) | `hybrid` when `POLESTAR_LEFFE_NAV` names the maps or his saved walks lie beside the store, else `grid` |
-| `POLESTAR_NAV_FP` | `forge build` (walks), `forge data pack` | the walk model tag written into walks files and the pack's manifest | `forge-<walks version>` |
-| `POLESTAR_DATA_PACK` | `forge data fetch`, `forge build`, `forge doctor` | the data pack folder (`--dest` / `--pack` win) | `polestar/data-pack` in your data folder |
-| `POLESTAR_DATA_PACK_URL` | `forge data fetch` | the pack's index (`--url` wins) | `polestar-data-pack.json` of the `data-pack` release |
-| `POLESTAR_KB` | `forge build` (routes), `forge sim` | the knowledge base file | `data/local/kb/forever-kb.sqlite` |
-| `POLESTAR_ROUTES` | `forge sim why`, `forge sim skips` | a routes folder (`--dir` / `--out` win) | none |
-| `POLESTAR_ROUTE_FIXES` | `forge build` (routes), `forge sim` | a route fixes file to use instead of the checkout's ([routes](routes.md#11-overrides)) | `data/route-fixes.json` in the checkout |
-| `POLESTAR_V1_SEEDS` | `forge sim route`, `widen`, `shared` | a folder of saved seed chains (`v1-<faction>-<race>-on.json`) used instead of reading the guides | unset: the seed comes from the current guides |
-| `POLESTAR_DATA_TIMES` | `forge data build` | set: print the time of each step | unset |
-| `POLESTAR_TIME` | `forge guide compile` | set: print the time of each step | unset |
-| `POLESTAR_BUILD_TIMES` | `forge build` (routes, guides), `forge writer` | set (not `0`): a `timing: <scope> <phase> <s> s` line per phase (each start's search, post passes, written-check rounds; the writer's load, runs and shared guides; the free search's hours after 1, 2, 4, ... rounds), and `<out>/.forge/timings-<stage>.json` per stage built | unset |
+| `NORTHSTAR_WOW_DIR` | every command that reads the game | the game folder (the one holding `.build.info`) | the remembered folder, then a search ([FORGE.md](../FORGE.md#how-forge-finds-the-game)) |
+| `NORTHSTAR_FORGE_CONFIG` | every command that reads the game | the config file that remembers the game folder | `polestar-forge/config.toml` in your config folder |
+| `NORTHSTAR_GRID` | `forge build`, `forge doctor`, `forge nav prepare`, `forge sim`, `forge judge`, `forge writer`, `forge walks` | a built walking grid (`--grid` wins) | `forge build`: builds one into `<out>/grid`; the other commands: `data/local/nav4` |
+| `NORTHSTAR_LEFFE_NAV` | `forge build`, `forge doctor`, `forge walks walks` | Leffe's navigation maps, private (the folder with `Nav.xml` or `Nav/Nav.xml`; `--leffe` wins) | none: without his maps the hybrid runs on the data pack's saved Leffe walks |
+| `NORTHSTAR_LEFFE_NAV_CACHE_MB` | `forge walks walks` with `NORTHSTAR_NAV=leffe` | the cache for Leffe's decoded map pieces, in MB | 1,024 (`forge build` and the hybrid use 2,048) |
+| `NORTHSTAR_NAV` | `forge walks walks` only | the walks backend: `grid`, `leffe` or `hybrid` (`forge build` takes `--nav`) | `hybrid` when `NORTHSTAR_LEFFE_NAV` names the maps or his saved walks lie beside the store, else `grid` |
+| `NORTHSTAR_NAV_FP` | `forge build` (walks), `forge data pack` | the walk model tag written into walks files and the pack's manifest | `forge-<walks version>` |
+| `NORTHSTAR_DATA_PACK` | `forge data fetch`, `forge build`, `forge doctor` | the data pack folder (`--dest` / `--pack` win) | `polestar/data-pack` in your data folder |
+| `NORTHSTAR_DATA_PACK_URL` | `forge data fetch` | the pack's index (`--url` wins) | `polestar-data-pack.json` of the `data-pack` release |
+| `NORTHSTAR_KB` | `forge build` (routes), `forge sim` | the knowledge base file | `data/local/kb/forever-kb.sqlite` |
+| `NORTHSTAR_ROUTES` | `forge sim why`, `forge sim skips` | a routes folder (`--dir` / `--out` win) | none |
+| `NORTHSTAR_ROUTE_FIXES` | `forge build` (routes), `forge sim` | a route fixes file to use instead of the checkout's ([routes](routes.md#11-overrides)) | `data/route-fixes.json` in the checkout |
+| `NORTHSTAR_V1_SEEDS` | `forge sim route`, `widen`, `shared` | a folder of saved seed chains (`v1-<faction>-<race>-on.json`) used instead of reading the guides | unset: the seed comes from the current guides |
+| `NORTHSTAR_DATA_TIMES` | `forge data build` | set: print the time of each step | unset |
+| `NORTHSTAR_TIME` | `forge guide compile` | set: print the time of each step | unset |
+| `NORTHSTAR_BUILD_TIMES` | `forge build` (routes, guides), `forge writer` | set (not `0`): a `timing: <scope> <phase> <s> s` line per phase (each start's search, post passes, written-check rounds; the writer's load, runs and shared guides; the free search's hours after 1, 2, 4, ... rounds), and `<out>/.forge/timings-<stage>.json` per stage built | unset |
 | `FOREVER_TDB` | `forge data build --kb` | a TrinityCore world database (SQLite), local evidence | `forever-tdb/world.sqlite` under the local folder (`data/local`, or `--local`) |
 | `WOW_FOREVER_ADDONS` | `forge data build` | the AddOns folder to look in first for Forever's quest data | the AddOns folders of the installs Forge finds |
 | `SOURCE_DATE_EPOCH` | `forge data build` | the build time the data builders record (reproducible builds) | now |

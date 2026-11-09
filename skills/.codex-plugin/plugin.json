@@ -1,6 +1,6 @@
 {
 	"name": "polestar",
-	"description": "Polestar's skills: contributing, triaging a bug report, fixing a guide step, and writing a guide pack. Contributing, triage and guide fixes work in a Polestar clone.",
+	"description": "Northstar's skills: contributing, triaging a bug report, fixing a guide step, and writing a guide pack. Contributing, triage and guide fixes work in a Northstar clone.",
 	"homepage": "https://github.com/fitzforge/polestar",
 	"repository": "https://github.com/fitzforge/polestar",
 	"license": "GPL-3.0-only",

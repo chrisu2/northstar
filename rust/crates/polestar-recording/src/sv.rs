@@ -1,5 +1,5 @@
-//! The Recorder's account SavedVariables file (`WTF/Account/<account>/SavedVariables/Polestar_Recorder.lua`):
-//! `PolestarRecorderDB` as docs/RECORDING.md describes it (schema 2).
+//! The Recorder's account SavedVariables file (`WTF/Account/<account>/SavedVariables/Northstar_Recorder.lua`):
+//! `NorthstarRecorderDB` as docs/RECORDING.md describes it (schema 2).
 
 use std::collections::BTreeMap;
 use std::fmt;
@@ -10,13 +10,13 @@ use crate::lua::{self, Value};
 pub const SCHEMA: u32 = 2;
 
 /// The file name under `WTF/Account/<account>/SavedVariables/`.
-pub const FILE_NAME: &str = "Polestar_Recorder.lua";
+pub const FILE_NAME: &str = "Northstar_Recorder.lua";
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct SavedVars {
 	pub schema: u32,
 	pub enabled: bool,
-	/// The player typed `/psrec off` (and not `/psrec on` since): Polestar Client's share flag
+	/// The player typed `/nsrec off` (and not `/nsrec on` since): Polestar Client's share flag
 	/// does not turn recording on for this account.
 	pub optout: bool,
 	/// 12 base-36 characters, made once per WoW account folder.
@@ -35,7 +35,7 @@ pub struct SavedVars {
 pub enum Error {
 	/// Not a readable Lua SavedVariables file.
 	Syntax(lua::SyntaxError),
-	/// The file has no `PolestarRecorderDB` (or it is nil): the Recorder has not saved anything.
+	/// The file has no `NorthstarRecorderDB` (or it is nil): the Recorder has not saved anything.
 	Missing,
 	/// A schema 1 file (Recorder versions before the recording program): nothing to read.
 	OldSchema,
@@ -52,7 +52,7 @@ impl fmt::Display for Error {
 			Error::Missing => write!(f, "the Recorder has saved nothing in this file yet"),
 			Error::OldSchema => write!(f, "this file is from an older Recorder (schema 1); update the Recorder and play to record in the new format"),
 			Error::NewSchema(n) => write!(f, "this file is from a newer Recorder (schema {n}); update this program"),
-			Error::Field(name) => write!(f, "PolestarRecorderDB.{name} has an unexpected value"),
+			Error::Field(name) => write!(f, "NorthstarRecorderDB.{name} has an unexpected value"),
 		}
 	}
 }
@@ -75,7 +75,7 @@ pub fn valid_char_id(s: &str) -> bool {
 
 pub fn parse(text: &str) -> Result<SavedVars, Error> {
 	let vars = lua::parse_assignments(text).map_err(Error::Syntax)?;
-	let db = vars.into_iter().rev().find(|(n, _)| n == "PolestarRecorderDB").map(|(_, v)| v).ok_or(Error::Missing)?;
+	let db = vars.into_iter().rev().find(|(n, _)| n == "NorthstarRecorderDB").map(|(_, v)| v).ok_or(Error::Missing)?;
 	if !matches!(db, Value::Table(_)) {
 		return Err(Error::Missing);
 	}
@@ -134,7 +134,7 @@ pub fn parse(text: &str) -> Result<SavedVars, Error> {
 mod tests {
 	use super::*;
 
-	const FILE: &str = "\nPolestarRecorderDB = {\n\t[\"schema\"] = 2,\n\t[\"enabled\"] = true,\n\t[\"install\"] = \"k3j9x0q2m7ab\",\n\t[\"seq\"] = 41,\n\t[\"acked\"] = 37,\n\t[\"chunks\"] = {\n\t\t[40] = \"chunk\\t0\\t40\\t1700000000\\tabcdefghij\\npos\\t5\",\n\t\t[41] = \"x\",\n\t},\n\t[\"maps\"] = {\n\t\t[1429] = \"1429\\t3\\t1415\\t0\\t-7939.6\\t1535.4\\t-10135.2\\t-2141.6\",\n\t},\n}\nPolestarRecorderAck = nil\n";
+	const FILE: &str = "\nNorthstarRecorderDB = {\n\t[\"schema\"] = 2,\n\t[\"enabled\"] = true,\n\t[\"install\"] = \"k3j9x0q2m7ab\",\n\t[\"seq\"] = 41,\n\t[\"acked\"] = 37,\n\t[\"chunks\"] = {\n\t\t[40] = \"chunk\\t0\\t40\\t1700000000\\tabcdefghij\\npos\\t5\",\n\t\t[41] = \"x\",\n\t},\n\t[\"maps\"] = {\n\t\t[1429] = \"1429\\t3\\t1415\\t0\\t-7939.6\\t1535.4\\t-10135.2\\t-2141.6\",\n\t},\n}\nNorthstarRecorderAck = nil\n";
 
 	#[test]
 	fn reads_the_db() {
@@ -148,16 +148,16 @@ mod tests {
 	#[test]
 	fn reads_the_opt_out() {
 		assert!(!parse(FILE).unwrap().optout);
-		let off = parse("PolestarRecorderDB = { schema = 2, enabled = false, optout = true, install = \"k3j9x0q2m7ab\" }").unwrap();
+		let off = parse("NorthstarRecorderDB = { schema = 2, enabled = false, optout = true, install = \"k3j9x0q2m7ab\" }").unwrap();
 		assert!(off.optout && !off.enabled);
 		// Only `true` counts, as in the Recorder.
-		assert!(!parse("PolestarRecorderDB = { schema = 2, optout = 1, install = \"k3j9x0q2m7ab\" }").unwrap().optout);
+		assert!(!parse("NorthstarRecorderDB = { schema = 2, optout = 1, install = \"k3j9x0q2m7ab\" }").unwrap().optout);
 	}
 
 	#[test]
 	fn nil_entries_are_absent() {
 		let sv = parse(
-			"PolestarRecorderDB = {
+			"NorthstarRecorderDB = {
 [\"schema\"] = 2,
 [\"install\"] = \"k3j9x0q2m7ab\",
 [\"chunks\"] = {
@@ -181,13 +181,13 @@ nil,
 
 	#[test]
 	fn schema_one_missing_and_bad_fields() {
-		assert_eq!(parse("PolestarRecorderDB = { schema = 1, sessions = {} }"), Err(Error::OldSchema));
-		assert_eq!(parse("PolestarRecorderDB = { sessions = {} }"), Err(Error::OldSchema));
-		assert_eq!(parse("PolestarRecorderDB = nil"), Err(Error::Missing));
+		assert_eq!(parse("NorthstarRecorderDB = { schema = 1, sessions = {} }"), Err(Error::OldSchema));
+		assert_eq!(parse("NorthstarRecorderDB = { sessions = {} }"), Err(Error::OldSchema));
+		assert_eq!(parse("NorthstarRecorderDB = nil"), Err(Error::Missing));
 		assert_eq!(parse("Other = {}"), Err(Error::Missing));
-		assert_eq!(parse("PolestarRecorderDB = { schema = 3 }"), Err(Error::NewSchema(3)));
-		assert_eq!(parse("PolestarRecorderDB = { schema = 2, install = \"BAD\" }"), Err(Error::Field("install")));
-		assert_eq!(parse("PolestarRecorderDB = { schema = 2, install = \"k3j9x0q2m7ab\", chunks = { [1] = 5 } }"), Err(Error::Field("chunks")));
-		assert!(matches!(parse("PolestarRecorderDB = { schema = 2,"), Err(Error::Syntax(_))));
+		assert_eq!(parse("NorthstarRecorderDB = { schema = 3 }"), Err(Error::NewSchema(3)));
+		assert_eq!(parse("NorthstarRecorderDB = { schema = 2, install = \"BAD\" }"), Err(Error::Field("install")));
+		assert_eq!(parse("NorthstarRecorderDB = { schema = 2, install = \"k3j9x0q2m7ab\", chunks = { [1] = 5 } }"), Err(Error::Field("chunks")));
+		assert!(matches!(parse("NorthstarRecorderDB = { schema = 2,"), Err(Error::Syntax(_))));
 	}
 }

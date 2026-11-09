@@ -2,7 +2,7 @@
 local AL_VERSION = 1
 local function nameOf(prefix, id) return "{" .. prefix .. ":" .. tostring(id) .. "}" end
 local function locale() return setmetatable({}, { __index = function(_, k) return k end }) end
-POLESTAR_band = function(a, b)
+NORTHSTAR_band = function(a, b)
   local r, bitv = 0, 1
   a, b = math.floor(a or 0), math.floor(b or 0)
   while a > 0 and b > 0 do
@@ -11,7 +11,7 @@ POLESTAR_band = function(a, b)
   end
   return r
 end
-POLESTAR_AL = { stores = {}, order = {}, droprates = {} }
+NORTHSTAR_AL = { stores = {}, order = {}, droprates = {} }
 local Store = {}
 function Store:AddDifficulty(dif, uniqueName)
   local meta = rawget(self, "__al")
@@ -53,9 +53,9 @@ local storeMt = {
 local Droprate = {}
 function Droprate:AddData(d)
   if type(d) ~= "table" then return end
-  for npc, items in pairs(d) do POLESTAR_AL.droprates[npc] = items end
+  for npc, items in pairs(d) do NORTHSTAR_AL.droprates[npc] = items end
 end
-function Droprate:GetData(npc, item) local d = POLESTAR_AL.droprates[npc] return d and d[item] end
+function Droprate:GetData(npc, item) local d = NORTHSTAR_AL.droprates[npc] return d and d[item] end
 local ContentPhase = {}
 function ContentPhase:GetActivePhase() return 6 end
 function ContentPhase:IsActive() return true end
@@ -76,12 +76,12 @@ AtlasLoot = {
 }
 function AtlasLoot.ItemDB:Add(addonName)
   local name = tostring(addonName)
-  if not POLESTAR_AL.stores[name] then
+  if not NORTHSTAR_AL.stores[name] then
     local store = { __al = { order = {}, diffs = {}, diffIndex = {}, ctypes = {}, ctypeIndex = {}, ttypes = {}, extras = {} } }
-    POLESTAR_AL.stores[name] = setmetatable(store, storeMt)
-    POLESTAR_AL.order[#POLESTAR_AL.order + 1] = name
+    NORTHSTAR_AL.stores[name] = setmetatable(store, storeMt)
+    NORTHSTAR_AL.order[#NORTHSTAR_AL.order + 1] = name
   end
-  return POLESTAR_AL.stores[name]
+  return NORTHSTAR_AL.stores[name]
 end
 function AtlasLoot.ReturnForGameVersion(classic) return classic end
 function AtlasLoot:GetGameVersion() return AL_VERSION end
@@ -98,7 +98,7 @@ function AtlasLoot:GetGameVersionDataTable()
   local data = setmetatable({}, { __newindex = function(_, _, v) for k, x in pairs(v) do use[k] = x end end })
   return use, data
 end
-POLESTAR_NS.IS_CLASSIC = true
+NORTHSTAR_NS.IS_CLASSIC = true
 ATLASLOOT_IT_FILTERIGNORE, ATLASLOOT_IT_HORDE, ATLASLOOT_IT_ALLIANCE, ATLASLOOT_IT_AMOUNT1, ATLASLOOT_IT_AMOUNT2 = 900, 901, 902, 903, 904
 for _, k in ipairs({ "COLLECTION", "DUNGEON", "FACTION", "PERMRECEVENTS", "PRIMPROFESSION", "PVP", "RAID", "RAID40", "RAID20",
   "REMOVED", "SEASONALEVENTS", "SECPROFESSION", "WORLD_BOSS", "COLLECTIONS", "CLASSPROFESSION", "UNKNOWN", "HORDE", "ALLIANCE" }) do
@@ -110,7 +110,7 @@ RAID_CLASS_COLORS = setmetatable({}, { __index = function() return { colorStr = 
 WOW_PROJECT_ID, WOW_PROJECT_CLASSIC, WOW_PROJECT_MAINLINE = 2, 2, 1
 function UnitFactionGroup() return "Alliance", "Alliance" end
 function GetFactionInfoByID(id) return nameOf("faction", id) end
-function CreateFrame() return POLESTAR_STUB end
+function CreateFrame() return NORTHSTAR_STUB end
 function hooksecurefunc() end
 C_Map = { GetAreaInfo = function(id) return nameOf("area", id) end }
 C_Spell = { GetSpellTexture = function() return 0 end, GetSpellName = function(id) return nameOf("spell", id) end }
@@ -156,8 +156,8 @@ local function dumpBoss(boss, extras)
   end
   return out
 end
-function POLESTAR_dumpStore(name)
-  local store = POLESTAR_AL.stores[name]
+function NORTHSTAR_dumpStore(name)
+  local store = NORTHSTAR_AL.stores[name]
   if not store then return nil end
   local meta = rawget(store, "__al")
   local contents = {}
@@ -181,9 +181,9 @@ function POLESTAR_dumpStore(name)
   end
   return { contents = contents, diffs = meta.diffs, ttypes = meta.ttypes }
 end
-function POLESTAR_dumpDroprates()
+function NORTHSTAR_dumpDroprates()
   local out = {}
-  for npc, items in pairs(POLESTAR_AL.droprates) do
+  for npc, items in pairs(NORTHSTAR_AL.droprates) do
     if type(items) == "table" then
       local row = {}
       for item, rate in pairs(items) do if type(rate) == "number" then row[tostring(item)] = rate end end

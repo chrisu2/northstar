@@ -3,8 +3,8 @@
 // returns (judge), plus deaths, training trips, trains, grind minutes, quests done, hours.
 // Training trip: a train goal whose stop (goals until the walk leaves 400 yd) holds only
 // service goals (train/vendor/sethome/getfp/repair/buy/learn/fly/hearth/goto).
-process.env.POLESTAR_CAS = 'off';
-process.env.POLESTAR_CAS_SKIP = 'walks';
+process.env.NORTHSTAR_CAS = 'off';
+process.env.NORTHSTAR_CAS_SKIP = 'walks';
 const JR = process.env.JUDGE_ROOT;
 process.chdir(JR);
 const fs = require('fs');

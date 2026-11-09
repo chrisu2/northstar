@@ -1,7 +1,7 @@
 # forever-db: quest data for World of Warcraft: Forever
 
 An open database of World of Warcraft: Forever's quests, NPCs, objects, items, spawn points and
-quest steps, built by Polestar's `forge` from the game client and independent open sources. Every
+quest steps, built by Northstar's `forge` from the game client and independent open sources. Every
 value in `data/` is held by at least one independent source (NOTICE.md credits them all); a value
 only one closed or web source knows is left out rather than copied.
 
@@ -99,7 +99,7 @@ checked against, and says in our own words what was wrong:
 - `items`: `removeDrops` `{ npc: [ids], object: [ids] }` and `removeVendors` `[ids]` drop wrong sources.
 - `mechanics`: by quest id, `params` `[{ kind, ...fields }]` and `steps` `{ "<n>": { set } }`.
 
-`source` is `{ kind, ref }` or a list of them. `kind` is one of `recording` (a Polestar Recorder
+`source` is `{ kind, ref }` or a list of them. `kind` is one of `recording` (a Northstar Recorder
 session), `in-game-check` (a player's or maintainer's check in game, such as an issue report),
 `client` (the game client's tables and caches), `eg` (EG Link), `cmangos` (CMaNGOS / VMaNGOS),
 `tdb` (ForeverTDB), `questie`, `pfquest` or `factoruide`; `ref` says which table, field, recording

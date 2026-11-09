@@ -389,7 +389,7 @@ test('a boat whose ends have board points is walked to and from the decks, not t
 test('the Dwarf chain plays from Dun Morogh to level 55 or more', { skip: needs('quests.json', 'npcs.json', 'objects.json', 'items.json', 'zones.json', 'map-frames.json', 'travel.json') }, () => {
 	const { compileProject } = require('../tools/lib/dsl/project');
 	const root = path.join(__dirname, '..');
-	const { guides: list, data } = compileProject({ packDir: path.join(root, 'guides'), manifest: { id: 'guides', author: 'Polestar' }, dataDir: DATA });
+	const { guides: list, data } = compileProject({ packDir: path.join(root, 'guides'), manifest: { id: 'guides', author: 'Northstar' }, dataDir: DATA });
 	const guides = new Map(list.map((g) => [g.id, g]));
 	const character = { race: 'Dwarf', cls: 'WARRIOR', faction: 'Alliance' };
 	const tl = buildTimeline({

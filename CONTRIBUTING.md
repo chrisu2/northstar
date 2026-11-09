@@ -1,6 +1,6 @@
-# Contributing to Polestar
+# Contributing to Northstar
 
-Polestar is a guide addon for WoW: Forever: a Lua 5.1 addon in `addon/`, the
+Northstar is a guide addon for WoW: Forever: a Lua 5.1 addon in `addon/`, the
 guides in `guides/`, and Node tools in `tools/` that check, compile, play and
 package them. You can help without touching any code.
 
@@ -16,12 +16,12 @@ package them. You can help without touching any code.
   [good first issue](https://github.com/fitzforge/polestar/labels/good%20first%20issue)
   or `confirmed`: small issues to start on, and confirmed guide-only fixes with
   the evidence on the issue.
-- **Record a session.** The Polestar Recorder addon (its own download beside
-  Polestar on the GitHub release; it runs with or without Polestar) logs your
+- **Record a session.** The Northstar Recorder addon (its own download beside
+  Northstar on the GitHub release; it runs with or without Northstar) logs your
   play: quests, routes, rares you see, what creatures and chests drop, the
-  dungeons you enter. Turn it on with `/psrec on` and play. No tools needed to
+  dungeons you enter. Turn it on with `/nsrec on` and play. No tools needed to
   share it: after logging out, send the file
-  `WTF/Account/<your account>/SavedVariables/Polestar_Recorder.lua` on Discord
+  `WTF/Account/<your account>/SavedVariables/Northstar_Recorder.lua` on Discord
   or attach it to an issue. We import it with
   `forge record import --wtf <file> --anonymize`, which counts it as its own
   contributor. With the tools set up you can measure a route
@@ -30,7 +30,7 @@ package them. You can help without touching any code.
   deaths and detours.
 - **Code.** Bugs in the addon or the tools; see [Code changes](#code-changes).
   For a Lua error, use the "Bug report" form.
-- **Translate.** Polestar's interface is in German, Latin American Spanish
+- **Translate.** Northstar's interface is in German, Latin American Spanish
   and French, and AI-made languages need native speakers to check them.
   [docs/TRANSLATING.md](docs/TRANSLATING.md) shows the file to edit: a text
   editor is enough.
@@ -41,7 +41,7 @@ package them. You can help without touching any code.
 
 The in-game report (the bug in the guide window) fills in most of this for
 you: the guide, the step and its goals, your position, your race, class and
-level, the versions and any errors Polestar caught. Add what is wrong.
+level, the versions and any errors Northstar caught. Add what is wrong.
 
 - The guide and the step as the guide window shows them (the guide's title
   and the step's number and text).
@@ -50,7 +50,7 @@ level, the versions and any errors Polestar caught. Add what is wrong.
   and position as guide lines (`zone map <id>` and `goto <x>,<y> live`) and
   opens them in a box you can copy from.
 - Your race, class and level.
-- Your Polestar version (shown at the foot of the Options sidebar and in the
+- Your Northstar version (shown at the foot of the Options sidebar and in the
   game's AddOns list).
 
 ## How a report is handled
@@ -60,7 +60,7 @@ have an incomplete install, misread a step or meet another addon's lines. Each
 report goes through the same steps before anything changes:
 
 1. **Check the version and install.** The report's first line names the
-   Polestar version. Is the step still the same on the coming release?
+   Northstar version. Is the step still the same on the coming release?
 2. **Reproduce it.** In the data (`data/forever/*.json`, the compiled guide),
    in the test client (`tests/`, see tests/README.md) or in the game. A
    report that can't be reproduced gets an answer saying so, and why.
@@ -163,7 +163,7 @@ below.
   see it. Give the entry a `source` (an in-game check or issue, a recording,
   the client, CMaNGOS, the Forever TrinityCore DB, QuestieDB or pfQuest;
   `forever-db/README.md` lists the kinds) and a `note` in your own words.
-- **Do not commit `addon/Polestar_Guides/Guides.lua`.** It is compiled from
+- **Do not commit `addon/Northstar_Guides/Guides.lua`.** It is compiled from
   `guides/` and `data/forever`; the maintainer runs `forge guide compile`
   (via `polestar regen`) after merge. Never hand-edit it or splice
   in a hunk from a partial compile: a spliced hunk can still be valid Lua
@@ -186,7 +186,7 @@ checks, and they are run before it is merged.
 
 ## Setup
 
-- `forge`, Polestar's Rust tool (`cargo build --release -p forge` in
+- `forge`, Northstar's Rust tool (`cargo build --release -p forge` in
   `rust/`, or a prebuilt one from the Releases page): compiling and linting
   guides (`forge guide compile|lint|check`), the data (`forge data ...`), the
   walking maps (`forge nav pack|check`), releases (`forge release ...`) and
@@ -231,7 +231,7 @@ pull request and tells you if anything else broke.
 |---|---|
 | A guide step (`.guide` file, existing guide) | `forge guide lint` and `playtest --filter <guide>` (need reference data; say so in the PR if unavailable); for a fix to a reported bug, also `node --test tests/guides-reported.test.js` (or `tests/guides-caves.test.js` for a cave mouth) |
 | A new or renamed guide file | The same lint and playtest; note in the PR that `Guides.lua` needs recompiling — the maintainer does it after merge |
-| The addon's Lua (`addon/Polestar/`) | The test file(s) for the area you changed: `node --test tests/<area>.test.js`. Find it with `grep -rl <module-name> tests/*.test.js`; for example, a change to `Theme/` → `node --test tests/theme.test.js`. For a UI change, optionally run `node tools/polestar.js preview` to review the renders |
+| The addon's Lua (`addon/Northstar/`) | The test file(s) for the area you changed: `node --test tests/<area>.test.js`. Find it with `grep -rl <module-name> tests/*.test.js`; for example, a change to `Theme/` → `node --test tests/theme.test.js`. For a UI change, optionally run `node tools/polestar.js preview` to review the renders |
 | A tool or its library (`tools/`) | That tool's tests: `node --test "tests/<tool>*.test.js"` (e.g. `node --test tests/compile.test.js`) |
 | `tools/media/` (texture generators) | `node tools/polestar.js media` to see the textures locally; CI verifies the generators work |
 | Player-facing English strings (`L["..."]`) | The area's tests (see addon Lua row above); translations are handled by the maintainer after merge — nothing extra from you |
@@ -243,8 +243,8 @@ A few tests skip automatically when the reference data (`data/forever`) or
 Lua 5.1 is missing. [tests/README.md](tests/README.md) describes the suite;
 [docs/SUITE.md](docs/SUITE.md) what is in and out of scope.
 
-**You do not commit** `addon/Polestar_Guides/Guides.lua`, `docs/preview/*.svg`,
-the locale files in `addon/Polestar*/`, or `addon/Polestar/Media/*.tga` unless
+**You do not commit** `addon/Northstar_Guides/Guides.lua`, `docs/preview/*.svg`,
+the locale files in `addon/Northstar*/`, or `addon/Northstar/Media/*.tga` unless
 your change is to the generator itself (a texture generator in `tools/media/`,
 the preview renderer in `tools/preview/`, or the compiler in `tools/lib/dsl/`).
 The maintainer regenerates those after merging your PR.
@@ -266,7 +266,7 @@ The maintainer regenerates those after merging your PR.
   a string does not require any extra step from you: CI checks the existing
   locale files and the maintainer runs `i18n sync` after merge to propagate
   new strings to the locale files.
-- **Polestar Forge** (`rust/`, the Rust pipeline that makes the routes):
+- **Northstar Forge** (`rust/`, the Rust pipeline that makes the routes):
   start at [docs/FORGE.md](docs/FORGE.md) and
   [docs/forge/internals.md](docs/forge/internals.md). Run `cargo fmt --all`,
   `cargo clippy --workspace --all-targets --release -- -D warnings` and
@@ -390,6 +390,6 @@ merge; pull requests that leave the line blank are treated the same way.
 
 ## Licence
 
-Contributions to Polestar are under GPL-3.0 ([LICENSE](LICENSE)). Community
+Contributions to Northstar are under GPL-3.0 ([LICENSE](LICENSE)). Community
 addons written by others are separate works; see
 [LICENSE-EXCEPTION.md](LICENSE-EXCEPTION.md).

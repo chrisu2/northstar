@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	// The addon's authored glyph family (addon/Polestar/Media/UI, drawn by
+	// The addon's authored glyph family (addon/Northstar/Media/UI, drawn by
 	// tools/media/ui.js): white at 32px, used here as masks tinted by `color`.
 	const files = import.meta.glob('../assets/ui/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 	const urls: Record<string, string> = {};

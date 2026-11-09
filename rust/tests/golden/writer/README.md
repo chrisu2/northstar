@@ -8,6 +8,6 @@ Inputs for `forge-writer/tests/{engine,travel_repair}.rs` (helper: `forge-writer
 - `mechanics/quest-mechanics.json`, `mechanics/quest-steps.json`: synthetic. They hold only the fields the engine reads, for quests 882 (summon by item 10338 at The Dead Tree, 60.0,30.2 in the Barrens) and 2458 (an emote at Taskmaster Fizzule).
 - `travel.json` (travel_repair only; it replaces the slice's travel.json): a whole-world travel build. Made with this checkout's JS (rust-retire, a8f669093) on the same public data build:
   `node tools/polestar.js travel build --offline --data <public forever-full> --recordings data/recordings --sources <wago + cmangos only> --shipped tools/lib/travel/crossings.json --crossings <absent file> --grid none --json travel.json`
-  Sources: Blizzard client tables (wago.tools), CMaNGOS classic-db (GPL facts), pfQuest npcs/objects (MIT), Polestar's recordings and crossings (Carbonite zone crossings, GPL-3.0). Not read: QuestieDB, ForeverDB, the web zone lists or the walking grid.
+  Sources: Blizzard client tables (wago.tools), CMaNGOS classic-db (GPL facts), pfQuest npcs/objects (MIT), Northstar's recordings and crossings (Carbonite zone crossings, GPL-3.0). Not read: QuestieDB, ForeverDB, the web zone lists or the walking grid.
 
-Local mode (optional): with `POLESTAR_V1=<checkout with built data/forever and data/local/mechanics>`, the tests play on that checkout's full data instead.
+Local mode (optional): with `NORTHSTAR_V1=<checkout with built data/forever and data/local/mechanics>`, the tests play on that checkout's full data instead.

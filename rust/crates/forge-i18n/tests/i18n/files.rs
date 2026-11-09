@@ -140,7 +140,18 @@ fn a_new_file_has_every_key_commented_out_filled_ones_translated_unknown_ones_re
 	let keys = extract_keys(root(), dir.path()).unwrap();
 	let fill = V::Obj(forge_guide::obj! { "Bye" => "Au revoir" });
 	let retire = V::Obj(forge_guide::obj! { "Old" => "Vieux" });
-	let out = new_locale_text("frFR", &keys.by_file(), &fill, &retire, "Polestar's interface strings").unwrap();
+	let out = new_locale_text("frFR", &keys.by_file(), &fill, &retire, "Northstar's interface strings", true).unwrap();
+	assert!(
+		out.text.contains("\nlocal ns = Northstar\nif not (ns and GetLocale and GetLocale() == \"frFR\") then return end\nlocal L = ns.L\n"),
+		"Northstar_frFR is an addon of its own: Northstar's namespace is the global\n{}",
+		out.text
+	);
+	let recorder = new_locale_text("frFR", &keys.by_file(), &fill, &retire, "Northstar Recorder's interface strings", false).unwrap();
+	assert!(
+		recorder.text.contains("\nlocal _, ns = ...\nif not (GetLocale and GetLocale() == \"frFR\") then return end\nlocal L = ns.L\n"),
+		"the Recorder's file is its own addon's\n{}",
+		recorder.text
+	);
 	let (p, retired) = placed(&out.text);
 	assert_eq!(p.len(), keys.len());
 	for (k, w) in &keys.list {
@@ -148,7 +159,7 @@ fn a_new_file_has_every_key_commented_out_filled_ones_translated_unknown_ones_re
 		assert_eq!((x.1, x.2.clone()), (if k == "Bye" { "entry" } else { "todo" }, vec![w[0].file.clone()]), "{k}");
 	}
 	assert_eq!(retired, ["-- L[\"Old\"] = \"Vieux\""]);
-	let file = write(dir.path(), "Locales/frFR.lua", &out.text);
+	let file = write(dir.path(), "Polestar_frFR/Interface.lua", &out.text);
 	let f = file.to_string_lossy().into_owned();
 	let r = read_locale_files(&[(f.clone(), "frFR".into()), (f, "deDE".into())]).unwrap();
 	assert_eq!(r[0].layout.as_deref(), Some("L"));
@@ -189,7 +200,7 @@ fn glossary_warns_on_a_translation_without_its_word_and_every_glossary_names_kno
 	for e in std::fs::read_dir(&dir).unwrap().flatten() {
 		let name = e.file_name().to_string_lossy().into_owned();
 		let Some(locale) = name.strip_suffix(".json") else { continue };
-		assert!(forge_guide::locales::locale(locale).is_some(), "{name}: not a locale Polestar ships");
+		assert!(forge_guide::locales::locale(locale).is_some(), "{name}: not a locale Northstar ships");
 		for entry in read_glossary(locale, &dir).unwrap().unwrap() {
 			assert!(TERMS.iter().any(|(t, _)| *t == entry.id), "{name}: {}", entry.id);
 		}

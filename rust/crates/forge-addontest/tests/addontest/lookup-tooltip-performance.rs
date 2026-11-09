@@ -4,8 +4,8 @@ use serde_json::{json, Value};
 
 const SCRIPT: &str = r#"
 local calls = 0
-Polestar.Nav = Polestar.Nav or {}
-Polestar.Nav.EstimateTravel = function(a, b)
+Northstar.Nav = Northstar.Nav or {}
+Northstar.Nav.EstimateTravel = function(a, b)
 	calls = calls + 1
 	local mapGap = math.abs((a.map or 0) - (b.map or 0)) * 1000
 	return mapGap + math.abs((a.x or 0) - (b.x or 0)) + math.abs((a.y or 0) - (b.y or 0))
@@ -22,19 +22,19 @@ local itemLines = showItem(8000)
 local itemTooltipCalls = calls - before
 
 before = calls
-Polestar.Lookup.Sources("mount", 8000)
+Northstar.Lookup.Sources("mount", 8000)
 local itemLookupCalls = calls - before
 
 lookuprt.units.target = { guid = "Player-1-0000BEEF", player = true }
 lookuprt.auras.target = { { spellId = 9502, name = "Ember Wolf", icon = 132226 } }
 GameTooltip:SetOwner(UIParent)
 before = calls
-Polestar.Lookup.UnitTooltip(GameTooltip, "target")
+Northstar.Lookup.UnitTooltip(GameTooltip, "target")
 local unitTooltipCalls = calls - before
 local unitLines = GameTooltip.lines
 
 before = calls
-Polestar.Lookup.Sources("mount", 8012)
+Northstar.Lookup.Sources("mount", 8012)
 local unitLookupCalls = calls - before
 
 emit({
@@ -72,7 +72,7 @@ fn run() -> Value {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_lookup_runtime.lua"],
 		before,
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Lookup/Lookup.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Lookup/Lookup.xml"])],
 		login: true,
 		script: SCRIPT.into(),
 		..Default::default()
@@ -91,5 +91,5 @@ fn source_tooltips_never_invoke_route_planning_and_do_not_fill_the_routed_cache(
 	assert!(out["unitLookupCalls"].as_f64().unwrap() > 0.0, "normal mount lookup must still route after the unit tooltip");
 	// Item 8000 is a mount without a curated guide: no Alt-click promise.
 	assert_eq!(out["itemLines"], json!(["From Mira Saddler | Vendor · Amber Vale"]));
-	assert_eq!(out["unitLines"], json!(["Mount: Ember Wolf | Horde only", "/pole mount: how to get it"]));
+	assert_eq!(out["unitLines"], json!(["Mount: Ember Wolf | Horde only", "/ns mount: how to get it"]));
 }

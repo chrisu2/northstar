@@ -5,27 +5,27 @@
 use crate::emit::header;
 use crate::js::V;
 
-// The pack format the compiler writes, and the first Polestar version that
-// reads each format (written into the TOC as X-Polestar-Needs). Format 2
+// The pack format the compiler writes, and the first Northstar version that
+// reads each format (written into the TOC as X-Northstar-Needs). Format 2
 // adds `group` (docs/PACK_FORMAT.md, "Format 2"); format 4 adds a step's
 // `when`, `label` and `along`, a level goal's `frac` and a `next` option's
 // `when` (`nextWhen`); format 5 adds the `money`, `task`, `enter`, `cast`, `abandon`, `destroy` and `die` goals, the
 // `money`, `dungeon`, `upgrade`, `done`, `skill`, `cooldown`, `group` and `knows` when predicates and a step's `skipto`; a pack is written in the first format its guides
-// need (format_for): a pack without any stays readable by Polestar 0.2.5.
+// need (format_for): a pack without any stays readable by Northstar 0.2.5.
 pub const FORMAT: u32 = 3;
 pub const WHEN_FORMAT: u32 = 4;
 pub const MONEY_TASK_FORMAT: u32 = 5;
 /// Format 6 (read, no longer written): a guide's baked legs inline (`legs`). Format 7: baked legs
-/// in the race parts' Legs.lua (Polestar.RegisterLegs; legs.json, forge guide bake).
+/// in the race parts' Legs.lua (Northstar.RegisterLegs; legs.json, forge guide bake).
 pub const LEGS_FORMAT: u32 = 7;
-/// Format 8: Polestar's own pack written for memory (project.rs build_pack_files): a goal's spawn
+/// Format 8: Northstar's own pack written for memory (project.rs build_pack_files): a goal's spawn
 /// spots as one string (`spotsPacked`) and the guides of each faction in a part of their own.
 pub const PACKED_FORMAT: u32 = 8;
-/// Format 9: the `wait` goal (a countdown in the step). An older Polestar refuses the pack as too new
+/// Format 9: the `wait` goal (a countdown in the step). An older Northstar refuses the pack as too new
 /// instead of refusing each guide with "unknown verb".
 pub const WAIT_FORMAT: u32 = 9;
 
-/// NEEDS[format]: the first Polestar version that reads it (`undefined` -> None).
+/// NEEDS[format]: the first Northstar version that reads it (`undefined` -> None).
 pub fn needs(format: u32) -> Option<&'static str> {
 	Some(match format {
 		1 => "0.1.0",
@@ -37,13 +37,13 @@ pub fn needs(format: u32) -> Option<&'static str> {
 	})
 }
 
-/// A step with `label` or `along` (an older Polestar would stop at an along step).
+/// A step with `label` or `along` (an older Northstar would stop at an along step).
 fn uses_along(s: &V) -> bool {
 	!s.get("label").is_undef() || !s.get("along").is_undef()
 }
 
 /// A `level` goal with `frac` (a point inside the level) needs format 4:
-/// an older Polestar would count it done at the start of the level.
+/// an older Northstar would count it done at the start of the level.
 fn uses_level_frac(g: &V) -> bool {
 	g.get("steps").items().iter().any(|s| s.get("goals").items().iter().any(|goal| goal.get("t").as_str() == Some("level") && goal.get("frac").truthy()))
 }
@@ -52,7 +52,7 @@ fn uses_level_frac(g: &V) -> bool {
 // `skill`, `cooldown`, `group` and `knows` when predicates (on a step or a `next` option) and a
 // step's `skipto` need format 5: a 0.2.6 client would accept a format-4 pack
 // but refuse these with "unknown verb" or "bad when" rather than "needs
-// Polestar 0.3.0", and would never take a `skipto` jump.
+// Northstar 0.3.0", and would never take a `skipto` jump.
 const MONEY_TASK_VERBS: [&str; 7] = ["money", "task", "enter", "cast", "abandon", "destroy", "die"];
 const FORMAT5_WHEN: [&str; 8] = ["money", "dungeon", "upgrade", "done", "skill", "cooldown", "group", "knows"];
 
@@ -142,8 +142,8 @@ pub fn toc_marker() -> String {
 /// What a community addon's TOC Title starts with, so the AddOns list reads it
 /// as one (Core/Guides.lua drops it again for the Community guides page).
 /// Community addons built before the rename carry the legacy prefix.
-pub const TOC_TITLE_PREFIX: &str = "Polestar Community: ";
-pub const LEGACY_TOC_TITLE_PREFIX: &str = "Polestar Pack: ";
+pub const TOC_TITLE_PREFIX: &str = "Northstar Community: ";
+pub const LEGACY_TOC_TITLE_PREFIX: &str = "Northstar Pack: ";
 
 /// Our pack `guides` owns forever/ and draft/; every other pack owns `<id>/`.
 pub fn owns_guide_id(pack_id: &str, guide_id: &str) -> bool {
@@ -153,8 +153,8 @@ pub fn owns_guide_id(pack_id: &str, guide_id: &str) -> bool {
 	guide_id.starts_with(&format!("{pack_id}/"))
 }
 
-/// "Joe's Routes" -> "PolestarPack_JoesRoutes"; a title with no letters or
-/// digits falls back to the id ("joe-routes" -> "PolestarPack_JoeRoutes").
+/// "Joe's Routes" -> "NorthstarPack_JoesRoutes"; a title with no letters or
+/// digits falls back to the id ("joe-routes" -> "NorthstarPack_JoeRoutes").
 /// `None` stands for a missing value (`String(s || '')`).
 pub fn default_folder(title: Option<&str>, id: Option<&str>) -> String {
 	let camel = |s: Option<&str>| -> String {
@@ -173,7 +173,7 @@ pub fn default_folder(title: Option<&str>, id: Option<&str>) -> String {
 		name = camel(id);
 	}
 	// ASCII only, so a byte slice is the JS UTF-16 slice.
-	let mut out = format!("PolestarPack_{name}");
+	let mut out = format!("NorthstarPack_{name}");
 	out.truncate(64);
 	out
 }

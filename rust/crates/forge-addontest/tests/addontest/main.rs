@@ -3,12 +3,16 @@
 #![recursion_limit = "512"]
 mod alts;
 mod automation;
+#[path = "automation-accept-off.rs"]
+mod automation_accept_off;
 #[path = "automation-close-skipped.rs"]
 mod automation_close_skipped;
 #[path = "automation-spoken.rs"]
 mod automation_spoken;
 #[path = "class-quests.rs"]
 mod class_quests;
+#[path = "class-skip.rs"]
+mod class_skip;
 mod closes;
 mod codex;
 #[path = "codex-bosses.rs"]
@@ -22,6 +26,8 @@ mod compile_pack;
 mod core;
 #[path = "data-addons.rs"]
 mod data_addons;
+#[path = "death-arrow.rs"]
+mod death_arrow;
 #[path = "docs-packs.rs"]
 mod docs_packs;
 #[path = "dsl-farm.rs"]
@@ -52,6 +58,8 @@ mod e2e;
 mod engine;
 #[path = "engine-abandon-destroy.rs"]
 mod engine_abandon_destroy;
+#[path = "engine-aim-accept-first.rs"]
+mod engine_aim_accept_first;
 #[path = "engine-along.rs"]
 mod engine_along;
 #[path = "engine-alt-start.rs"]
@@ -62,10 +70,18 @@ mod engine_cast;
 mod engine_catchup;
 #[path = "engine-die.rs"]
 mod engine_die;
+#[path = "engine-dwell.rs"]
+mod engine_dwell;
 #[path = "engine-enter.rs"]
 mod engine_enter;
+#[path = "engine-feeders.rs"]
+mod engine_feeders;
+#[path = "engine-flights.rs"]
+mod engine_flights;
 #[path = "engine-focus.rs"]
 mod engine_focus;
+#[path = "engine-grind.rs"]
+mod engine_grind;
 #[path = "engine-group-default.rs"]
 mod engine_group_default;
 #[path = "engine-guide-end.rs"]
@@ -100,12 +116,16 @@ mod engine_professions;
 mod engine_review;
 #[path = "engine-routes.rs"]
 mod engine_routes;
+#[path = "engine-skip-undo.rs"]
+mod engine_skip_undo;
 #[path = "engine-skipquest.rs"]
 mod engine_skipquest;
 #[path = "engine-skipto.rs"]
 mod engine_skipto;
 #[path = "engine-smart.rs"]
 mod engine_smart;
+#[path = "engine-tab-restore.rs"]
+mod engine_tab_restore;
 #[path = "engine-tabs.rs"]
 mod engine_tabs;
 #[path = "engine-talk.rs"]
@@ -114,6 +134,8 @@ mod engine_talk;
 mod engine_training;
 #[path = "engine-unavailable.rs"]
 mod engine_unavailable;
+#[path = "engine-vendor.rs"]
+mod engine_vendor;
 #[path = "engine-wait.rs"]
 mod engine_wait;
 #[path = "engine-waypoint-keys.rs"]
@@ -134,6 +156,8 @@ mod engine_when_skill;
 mod engine_when_upgrade;
 #[path = "engine-while-here.rs"]
 mod engine_while_here;
+#[path = "engine-zone-walk.rs"]
+mod engine_zone_walk;
 mod gamepad;
 #[path = "gamepad-ui.rs"]
 mod gamepad_ui;
@@ -150,6 +174,8 @@ mod guides_compiled;
 mod guides_end;
 #[path = "guides-end-early.rs"]
 mod guides_end_early;
+#[path = "guides-end-places.rs"]
+mod guides_end_places;
 #[path = "guides-memory.rs"]
 mod guides_memory;
 mod harness;
@@ -160,6 +186,8 @@ mod import;
 mod import_safety;
 mod install;
 mod levels;
+#[path = "locale-load.rs"]
+mod locale_load;
 mod lookup;
 #[path = "lookup-codex.rs"]
 mod lookup_codex;
@@ -218,6 +246,8 @@ mod nav_spf;
 mod nav_trail;
 #[path = "nav-transit.rs"]
 mod nav_transit;
+#[path = "new-in-forever.rs"]
+mod new_in_forever;
 #[path = "pack-race-parts.rs"]
 mod pack_race_parts;
 #[path = "packs-parity.rs"]
@@ -245,6 +275,8 @@ mod questdb_memory;
 mod quests;
 #[path = "quests-levels.rs"]
 mod quests_levels;
+#[path = "quoted-quest-names.rs"]
+mod quoted_quest_names;
 mod rares;
 mod recorder;
 #[path = "recorder-finds.rs"]
@@ -259,6 +291,8 @@ mod release;
 mod riding;
 #[path = "route-plan.rs"]
 mod route_plan;
+#[path = "skins-sweep.rs"]
+mod skins_sweep;
 mod syntax;
 mod talents;
 mod theme;
@@ -288,16 +322,26 @@ mod ui_options;
 mod ui_packs;
 #[path = "ui-picker.rs"]
 mod ui_picker;
+#[path = "ui-picker-folders.rs"]
+mod ui_picker_folders;
 #[path = "ui-picker-levels.rs"]
 mod ui_picker_levels;
 #[path = "ui-picker-packs.rs"]
 mod ui_picker_packs;
+#[path = "ui-picker-scroll.rs"]
+mod ui_picker_scroll;
 #[path = "ui-quest-unlocks.rs"]
 mod ui_quest_unlocks;
 #[path = "ui-route.rs"]
 mod ui_route;
+#[path = "ui-scrub.rs"]
+mod ui_scrub;
+#[path = "ui-thanks.rs"]
+mod ui_thanks;
 #[path = "ui-welcome.rs"]
 mod ui_welcome;
+#[path = "ui-whatsnew.rs"]
+mod ui_whatsnew;
 #[path = "ui-while-here.rs"]
 mod ui_while_here;
 #[path = "ui-zoneart.rs"]

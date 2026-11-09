@@ -1,7 +1,7 @@
 'use strict';
-// A language folder (Polestar_<locale>) holding only a Names.lua, as
+// A language folder (Northstar_<locale>) holding only a Names.lua, as
 // `forge data names` writes it, built from a few names, for the addon's
-// tests: the stubbed client loads it when Polestar asks (C_AddOns.LoadAddOn),
+// tests: the stubbed client loads it when Northstar asks (C_AddOns.LoadAddOn),
 // the way the game loads a load-on-demand addon, and counts every language
 // folder it is asked for in __namesLoads.
 //
@@ -27,7 +27,7 @@ function longString(text) {
 }
 function namesLua(locale, names) {
 	const lines = [
-		'local N = Polestar and Polestar.Names',
+		'local N = Northstar and Northstar.Names',
 		'if not (N and N.AddChunk) then return end',
 		`local function R(kind, lo, hi, text) N.AddChunk(${luaString(locale)}, kind, lo, hi, text) end`,
 	];
@@ -50,7 +50,7 @@ function namesPack(locale, names) {
 do
   local __load = C_AddOns.LoadAddOn
   function C_AddOns.LoadAddOn(name)
-    if type(name) == "string" and name:find("^Polestar_%l%l%u%u$") then __namesLoads = __namesLoads + 1 end
+    if type(name) == "string" and name:find("^Northstar_%l%l%u%u$") then __namesLoads = __namesLoads + 1 end
     if name ~= ${JSON.stringify(name)} then return __load(name) end
     if not stub.addonsLoaded[name] then
       dofile(${JSON.stringify(path.join(dir, 'Names.lua'))})

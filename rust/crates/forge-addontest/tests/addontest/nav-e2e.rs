@@ -1,6 +1,6 @@
-//! End to end: the arrow on Shortest Path Forever's real walking engine and Polestar's packed maps (maps 0 and 1,
-//! `forge nav pack`). The real Polestar (with TravelData, the guides' Era map frames, and the local crossings when
-//! built) loads the real Polestar_Nav on demand at login, its maps decoded by tests/lua/stub_encoding.lua the way
+//! End to end: the arrow on Shortest Path Forever's real walking engine and Northstar's packed maps (maps 0 and 1,
+//! `forge nav pack`). The real Northstar (with TravelData, the guides' Era map frames, and the local crossings when
+//! built) loads the real Northstar_Nav on demand at login, its maps decoded by tests/lua/stub_encoding.lua the way
 //! the client decodes them; the stub world's maps are data/forever/map-frames.json's, and UnitPosition answers from
 //! the same place (x north, y west, z, the instance map id). A character in Goldshire is guided to the Fargodeep
 //! Mine and into the Jasperlode Mine; the engine's path must come back through Nav/Walk.lua, Nav/Travel.lua and Nav.Sample to the arrow. Every
@@ -23,11 +23,11 @@ fn skip_reason() -> Option<String> {
 	if let Some(why) = forge_addontest::locale::needs(&["map-frames.json", "zones.json"]) {
 		return Some(why);
 	}
-	if !addons_dir().join("Polestar_Nav/Nav/Nav.xml").exists() {
-		return Some("addon/Polestar_Nav has no walking maps (forge nav pack)".into());
+	if !addons_dir().join("Northstar_Nav/Nav/Nav.xml").exists() {
+		return Some("addon/Northstar_Nav has no walking maps (forge nav pack)".into());
 	}
-	if !addons_dir().join("Polestar_Guides/MapFrames.lua").exists() {
-		return Some("addon/Polestar_Guides/MapFrames.lua not built (forge compile)".into());
+	if !addons_dir().join("Northstar_Guides/MapFrames.lua").exists() {
+		return Some("addon/Northstar_Guides/MapFrames.lua not built (forge compile)".into());
 	}
 	None
 }
@@ -92,7 +92,7 @@ fn maps_lua() -> String {
 		.join("\n")
 }
 
-/// Appended to Polestar_Nav's files: keeps its namespace, for the snapped-node check.
+/// Appended to Northstar_Nav's files: keeps its namespace, for the snapped-node check.
 fn ns_file() -> (TempDir, PathBuf) {
 	let tmp = TempDir::new("polestar-nav-e2e-");
 	let p = tmp.path().join("keep-ns.lua");
@@ -101,7 +101,7 @@ fn ns_file() -> (TempDir, PathBuf) {
 }
 
 fn nav_files(ns: &Path) -> Vec<PathBuf> {
-	let mut files = toc_files("Polestar_Nav").unwrap();
+	let mut files = toc_files("Northstar_Nav").unwrap();
 	files.push(ns.to_path_buf());
 	files
 }
@@ -111,7 +111,7 @@ fn before(files: &[PathBuf]) -> String {
 	format!(
 		r#"local w = stub.world
 {}
-stub.packs.Polestar_Nav = {{ {list} }}
+stub.packs.Northstar_Nav = {{ {list} }}
 -- UnitPosition: the world position the live map frame gives, z as set, the instance map id.
 function UnitPosition(unit)
 	if unit ~= "player" or not w.map or w.inInstance then return nil end
@@ -124,13 +124,13 @@ end"#,
 }
 
 const PRELUDE: &str = r#"
-local w, N, C = stub.world, Polestar.Nav, Polestar.Compat
-local E = Polestar_NavEngine
+local w, N, C = stub.world, Northstar.Nav, Northstar.Compat
+local E = Northstar_NavEngine
 local floor, sqrt = math.floor, math.sqrt
 local function r1(v) return v and floor(v * 10 + 0.5) / 10 end
 -- Every search the arrow asks for, with what it was asked (style: its opts.style; opts: the whole) and what came back.
 local finds = {}
-if E then -- nil when Polestar_Nav was not loaded (routing off)
+if E then -- nil when Northstar_Nav was not loaded (routing off)
 	local realFind = E.Find
 	E.Find = function(map, from, to, callback, water)
 		local rec = { map = map, from = { from.x, from.y, from.z }, to = { to.x, to.y, to.z }, at = GetTime(), combat = InCombatLockdown() and true or false,
@@ -210,13 +210,13 @@ end
 "#;
 
 fn polestar_addons() -> Vec<Addon> {
-	vec![Addon::name("Polestar"), Addon::files("Polestar_Guides", &["MapFrames.lua"])]
+	vec![Addon::name("Northstar"), Addon::files("Northstar_Guides", &["MapFrames.lua"])]
 }
 
 fn run_files(files: &[PathBuf], script: &str, shipped: bool, saved: Vec<(String, String)>) -> Value {
 	let mut addons = polestar_addons();
-	if !shipped && addons_dir().join("Polestar_Travel/Polestar_Travel.toc").exists() {
-		addons.push(Addon::name("Polestar_Travel"));
+	if !shipped && addons_dir().join("Northstar_Travel/Northstar_Travel.toc").exists() {
+		addons.push(Addon::name("Northstar_Travel"));
 	}
 	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua", "stub_encoding.lua", "stub_packs.lua"], before: before(files), addons, saved, login: true, script: format!("{PRELUDE}\n{script}") })
 		.remove(0);
@@ -225,7 +225,7 @@ fn run_files(files: &[PathBuf], script: &str, shipped: bool, saved: Vec<(String,
 }
 
 // Runs the scenario; its emitted record goes to stderr (the numbers behind each check).
-// shipped: only what the release zip carries (no local Polestar_Travel crossing data).
+// shipped: only what the release zip carries (no local Northstar_Travel crossing data).
 fn run(script: &str, shipped: bool) -> Value {
 	let (_tmp, ns) = ns_file();
 	run_files(&nav_files(&ns), script, shipped, vec![])
@@ -236,7 +236,7 @@ fn a_polestars_world_frame_is_the_engines_known_unitposition_spots_and_guide_coo
 	skip_unless_ready!();
 	let out = run(
 		r#"
-		local r = { loads = stub.packLoads.Polestar_Nav, engine = N.Path == E }
+		local r = { loads = stub.packLoads.Northstar_Nav, engine = N.Path == E }
 		r.cs = stub.navNs.PathGrid.State(0).cs
 		local ns = stub.navNs
 		local G = ns.PathGrid
@@ -253,7 +253,7 @@ fn a_polestars_world_frame_is_the_engines_known_unitposition_spots_and_guide_coo
 			return { d = dist(cx, cy, x, y), z = G.zOf(G.grid(st, k), n) }
 		end
 		local function spot(map, ux, uy, uz)
-			-- UnitPosition -> Polestar's map coordinates -> Polestar's world point -> the engine's node there.
+			-- UnitPosition -> Northstar's map coordinates -> Northstar's world point -> the engine's node there.
 			local x, y = C.WorldToMap(0, ux, uy, map)
 			local c, wx, wy = C.MapToWorld(map, x, y, "e")
 			local n = node(wx, wy, uz)
@@ -264,7 +264,7 @@ fn a_polestars_world_frame_is_the_engines_known_unitposition_spots_and_guide_coo
 		local c, mx, my = C.MapToWorld(1429, 39.5, 82.4, "e")
 		r.mine = { c = c, node = node(mx, my).d }
 		r.available = { E.Available(c), E.Available(1429), E.Available(1415) }
-		-- What the arrow asks: the player's UnitPosition (with its height) on instance 0, to Polestar's target point.
+		-- What the arrow asks: the player's UnitPosition (with its height) on instance 0, to Northstar's target point.
 		place(1429, GOLDSHIRE[1], GOLDSHIRE[2], GOLDSHIRE[3])
 		local pc, px, py = C.GetPlayerWorldPosition()
 		r.player = { pc, dist(px, py, GOLDSHIRE[1], GOLDSHIRE[2]) }
@@ -275,7 +275,7 @@ fn a_polestars_world_frame_is_the_engines_known_unitposition_spots_and_guide_coo
 		emit(r)"#,
 		false,
 	);
-	assert_eq!(out["loads"], 1, "Data.Pack loaded Polestar_Nav once at login");
+	assert_eq!(out["loads"], 1, "Data.Pack loaded Northstar_Nav once at login");
 	assert_eq!(out["engine"], true);
 	// Goldshire: Elwynn 42.0,65.0; the mine's lower mouth 39.5,80.0.
 	assert_eq!(out["goldshire"]["map"], serde_json::json!([42, 65]));
@@ -283,9 +283,9 @@ fn a_polestars_world_frame_is_the_engines_known_unitposition_spots_and_guide_coo
 	let cs = f(&out["cs"]);
 	for name in ["goldshire", "lowerMouth"] {
 		let s = &out[name];
-		assert_eq!(s["c"], 0, "{name}: Polestar's continent is UnitPosition's instance map id");
+		assert_eq!(s["c"], 0, "{name}: Northstar's continent is UnitPosition's instance map id");
 		assert!(f(&s["back"]) < 0.01, "{name}: map -> world gives the UnitPosition back ({})", s["back"]);
-		assert!(f(&s["node"]) < cs, "{name}: the engine's node is {:.2} yd from Polestar's point (cells are {cs:.2} yd)", f(&s["node"]));
+		assert!(f(&s["node"]) < cs, "{name}: the engine's node is {:.2} yd from Northstar's point (cells are {cs:.2} yd)", f(&s["node"]));
 		assert!(f(&s["dz"]) < 3.0, "{name}: and at the height UnitPosition reads there (off by {:.2})", f(&s["dz"]));
 		assert_eq!(s["swapped"], true, "{name}: north and west swapped would be off the engine's map");
 	}
@@ -303,7 +303,7 @@ fn a_polestars_world_frame_is_the_engines_known_unitposition_spots_and_guide_coo
 	assert!(points >= 3.0 && (second_z - 57.0).abs() < 15.0, "a {points}-point path on the ground (z {second_z})");
 }
 
-// The Jasperlode Mine's lower mouth in Polestar_Nav's Chokepoints.lua (a doorway: its indoor floor with outdoor
+// The Jasperlode Mine's lower mouth in Northstar_Nav's Chokepoints.lua (a doorway: its indoor floor with outdoor
 // ground at its height beside it): the walk from Goldshire into the mine (the Kobold Geomancer chain's last stop,
 // Era 61.13,49.28) is split there (a named cave step), the walk to the mouth first, then the mine itself (Ruling 26
 // of pathing v2: the format 2 path passes within the mouth's radius). This was the Fargodeep Mine's walk until maps
@@ -331,7 +331,7 @@ fn b_e_f_the_arrow_aims_along_the_engine_path_ahead_of_the_player_the_route_line
 		r.aim = { state = a.state, along = at, n = #pts, measured = a.measured, dist = a.dist, off = off, ahead = dist(a.x, a.y, GOLDSHIRE[1], GOLDSHIRE[2]), toTarget = dist(a.x, a.y, tx, ty) }
 		r.path = { length = length(pts), straight = dist(GOLDSHIRE[1], GOLDSHIRE[2], tx, ty), endGap = dist(pts[#pts].x, pts[#pts].y, tx, ty) }
 		r.left = { walk = N.walk.Left(0, tx, ty), along = length(pts) }
-		r.shown = { text = N.arrow.distText:GetText(), want = Polestar.FormatDistance(floor(a.dist + 0.5)), visible = PolestarNavArrow:IsShown() }
+		r.shown = { text = N.arrow.distText:GetText(), want = Northstar.FormatDistance(floor(a.dist + 0.5)), visible = NorthstarNavArrow:IsShown() }
 		-- e: the route lines' walk legs are the engine's path, the player first:
 		-- every path point, in order, along the pieces' points (the mouth between them).
 		local g = N.GetRouteGeometry()
@@ -425,7 +425,7 @@ fn second_review_after_the_path_arrives_the_arrow_the_panels_step_times_and_the_
 		local a = aim()
 		local legs, ci = N.GetRoute()
 		local T = N.travel
-		local view = Polestar.UI.JourneyPanel.Compute(legs, ci)
+		local view = Northstar.UI.JourneyPanel.Compute(legs, ci)
 		local steps = 0
 		for i = 1, view.n do steps = steps + view.secs[i] end
 		emit({ arrow = T.Remaining(a.dist, true), n = view.n, leg = view.secs[1], rest = legs[ci].rest, steps = steps, header = view.total, planned = legs[ci].seconds + legs[ci].rest })"#
@@ -486,12 +486,12 @@ fn the_arrows_walk_find_answers_before_walk_measures_batch_findmany_gets_any_sli
 
 // One continent's walking maps at a time (Fitz, 2026-10-25: 137 MB in the AddOn Memory readout with both of Leffe's
 // continents): a journey to the other continent searches and measures only the walks on the player's own, so only its
-// part of Polestar_Nav loads (Polestar_Nav_EK in Brill); the walk at the far end keeps the planner's straight estimate.
+// part of Northstar_Nav loads (Northstar_Nav_EK in Brill); the walk at the far end keeps the planner's straight estimate.
 // The other part loads once the player is there (Nav/Walk.lua canSearch, Path.Resident).
 #[test]
 fn a_journey_to_the_other_continent_loads_only_the_players_continents_walking_maps_the_other_part_on_arrival() {
 	skip_unless_ready!();
-	if !addons_dir().join("Polestar_Nav_Kalimdor").is_dir() {
+	if !addons_dir().join("Northstar_Nav_Kalimdor").is_dir() {
 		eprintln!("skipped: no continent parts (the walking maps are not Leffe's)");
 		return;
 	}
@@ -527,12 +527,12 @@ fn a_journey_to_the_other_continent_loads_only_the_players_continents_walking_ma
 		emit(r)"#,
 		false,
 	);
-	assert_eq!(out["loads"], "Polestar_Nav_EK", "in Brill only the Eastern Kingdoms' part loads");
+	assert_eq!(out["loads"], "Northstar_Nav_EK", "in Brill only the Eastern Kingdoms' part loads");
 	assert_eq!(out["resident1"], false);
 	assert_eq!((f(&out["finds1"]), f(&out["asked1"])), (0.0, 0.0), "nothing is searched or measured on Kalimdor from Brill");
 	assert!(f(&out["asked0"]) > 0.0, "the walks on the Eastern Kingdoms are");
 	assert!(f(&out["far"]) >= 1.0 && out["finite"] == true, "the walk on Kalimdor stays in the journey, timed by its estimate");
-	assert_eq!(out["arrived"]["loads"], "Polestar_Nav_EK,Polestar_Nav_Kalimdor", "Kalimdor's part loads on arrival");
+	assert_eq!(out["arrived"]["loads"], "Northstar_Nav_EK,Northstar_Nav_Kalimdor", "Kalimdor's part loads on arrival");
 	assert_eq!(out["arrived"]["resident1"], true);
 }
 
@@ -751,7 +751,7 @@ fn z1_a_guide_goal_at_andron_gant_is_walked_to_his_floor_with_his_height_without
 		w.faction = "Horde"
 		-- The walk itself, from Brill: without route planning the arrow searches player to target
 		-- (with it, Undercity's entrance chain takes the last stretch straight).
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		place(1420, 2269, 260, 34)
 		-- The last search for Andron's point, once it is in: what it was asked and the
 		-- engine's last point before the goal itself (the floor the walk ends on).
@@ -769,7 +769,7 @@ fn z1_a_guide_goal_at_andron_gant_is_walked_to_his_floor_with_his_height_without
 			local pts = f and f.points or {}
 			return { z = f and f.to[3], endZ = #pts >= 3 and r1(pts[#pts - 1].z) or nil, asked = #finds, aim = aim().state }
 		end
-		Polestar.Fire("WAYPOINT_CHANGED", { map = 1458, x = 54.81, y = 76.33, f = "e", z = ANDRON[3], label = "Andron Gant", kind = "turnin", r = 5 })
+		Northstar.Fire("WAYPOINT_CHANGED", { map = 1458, x = 54.81, y = 76.33, f = "e", z = ANDRON[3], label = "Andron Gant", kind = "turnin", r = 5 })
 		r.withZ = toAndron()
 		r.targetZ = select(4, N.GetTargetWorld())
 		N.SetTarget(1458, 54.81, 76.33, "Andron Gant", "e")
@@ -797,7 +797,7 @@ fn z1_a_guide_goal_at_andron_gant_is_walked_to_his_floor_with_his_height_without
 fn z1_a_walk_to_apothecary_zamah_with_her_height_ends_in_the_pools_of_vision_without_it_on_spirit_rise_above_1024() {
 	skip_unless_ready!();
 	let script = r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local ZAMAH = { -995.4, 278.6, 112 } -- her CMaNGOS spawn (the Forever server's agrees)
 local FLIGHT = { -1196.8, 29.1 }     -- Thunder Bluff's flight master, on the mesa
 local s, a, n = {}, {}, nil
@@ -809,7 +809,7 @@ local function lastZ(z)
 	return pts and #pts >= 3 and pts[#pts - 1].z or false
 end
 emit({ surfaces = surfaces, withZ = lastZ(ZAMAH[3]), withoutZ = lastZ(nil) })"#;
-	let out = emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], addons: vec![Addon::name("Polestar_Nav")], script: script.into(), ..Default::default() }).remove(0);
+	let out = emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], addons: vec![Addon::name("Northstar_Nav")], script: script.into(), ..Default::default() }).remove(0);
 	eprintln!("{out}");
 	let pools: Vec<f64> = out["surfaces"].as_array().unwrap().iter().filter(|s| s["area"] == "The Pools of Vision").map(|s| f(&s["z"])).collect();
 	assert!(pools.iter().any(|z| (z - 112.0).abs() <= 4.0), "her point has the Pools of Vision's floor at her height: {}", out["surfaces"]);
@@ -826,7 +826,7 @@ fn k1_a_walk_into_a_cave_is_split_at_its_mouth_from_polestar_navs_chokepoints_lu
 		local c, sx, sy = C.MapToWorld(1426, 46.7, 53.0, "e")
 		place(1426, sx, sy, 401.5)
 		-- A goal inside the cave with its height (a guide's spawn point): the engine walks in, not over the hill above.
-		Polestar.Fire("WAYPOINT_CHANGED", { map = 1426, x = 41.18, y = 50.28, f = "e", z = 355, label = "Grizzled Den", kind = "turnin", r = 5 })
+		Northstar.Fire("WAYPOINT_CHANGED", { map = 1426, x = 41.18, y = 50.28, f = "e", z = 355, label = "Grizzled Den", kind = "turnin", r = 5 })
 		aim()
 		local n = 0
 		while not (finds[#finds] and finds[#finds].done) and n < 200 do stub.advance(0.05); aim(); n = n + 1 end
@@ -838,11 +838,11 @@ fn k1_a_walk_into_a_cave_is_split_at_its_mouth_from_polestar_navs_chokepoints_lu
 			list[#list + 1] = { kind = l.kind, label = l.label, step = l.step, choke = l.choke and l.choke.name, seconds = l.seconds }
 		end
 		local caves = 0
-		for _, e in ipairs(PolestarNavChokepoints and PolestarNavChokepoints[0] or {}) do if e.kind == "cave" then caves = caves + 1 end end
+		for _, e in ipairs(NorthstarNavChokepoints and NorthstarNavChokepoints[0] or {}) do if e.kind == "cave" then caves = caves + 1 end end
 		emit({ legs = list, caves = caves, points = finds[#finds] and finds[#finds].points and #finds[#finds].points })"#,
 		false,
 	);
-	assert!(f(&out["caves"]) > 50.0, "Chokepoints.lua loads with Polestar_Nav ({} caves on map 0)", out["caves"]);
+	assert!(f(&out["caves"]) > 50.0, "Chokepoints.lua loads with Northstar_Nav ({} caves on map 0)", out["caves"]);
 	let legs = out["legs"].as_array().unwrap();
 	let cave = legs.iter().find(|l| l["step"] == "cave").unwrap_or_else(|| panic!("a cave step: {}", out["legs"]));
 	assert_eq!(cave["choke"], "The Grizzled Den");
@@ -850,11 +850,11 @@ fn k1_a_walk_into_a_cave_is_split_at_its_mouth_from_polestar_navs_chokepoints_lu
 	assert!(legs.iter().all(|l| l["label"].as_str().is_some_and(|s| !s.is_empty() && s != "Unknown")), "K1: every step is named");
 }
 
-// Review conditions for shipping Polestar's maps (nav-maps): the maps load only with routing on; all of a map's files
+// Review conditions for shipping Northstar's maps (nav-maps): the maps load only with routing on; all of a map's files
 // missing from Nav.xml, or a corrupted grid block, leave the straight arrow, never a Lua error (one missing part file:
 // nav-load.rs); every zone the guides walk in routes.
 fn nav_dir() -> PathBuf {
-	addons_dir().join("Polestar_Nav/Nav")
+	addons_dir().join("Northstar_Nav/Nav")
 }
 
 #[test]
@@ -868,7 +868,7 @@ fn the_walking_maps_load_on_demand_only_with_walk_real_paths_on_nav_navrouting_o
 			stubs: vec!["stub_world.lua", "stub_encoding.lua", "stub_packs.lua"],
 			before: before(&files),
 			addons,
-			saved: vec![("Polestar".into(), format!("PolestarDB = {{ schema = 1, settings = {{ nav = {{ navRouting = {routing} }} }} }}"))],
+			saved: vec![("Northstar".into(), format!("NorthstarDB = {{ schema = 1, settings = {{ nav = {{ navRouting = {routing} }} }} }}"))],
 			login: true,
 			script: format!(
 				"{PRELUDE}{}",
@@ -876,7 +876,7 @@ fn the_walking_maps_load_on_demand_only_with_walk_real_paths_on_nav_navrouting_o
 			place(1429, GOLDSHIRE[1], GOLDSHIRE[2], GOLDSHIRE[3])
 			N.SetTarget(1429, 39.5, 82.4, "Fargodeep Mine", "e")
 			for _ = 1, 40 do stub.advance(0.05); aim() end
-			emit({ loads = stub.packLoads.Polestar_Nav or 0, data = PolestarPathData ~= nil, chokepoints = PolestarNavChokepoints ~= nil, finds = #finds, state = aim().state })"#
+			emit({ loads = stub.packLoads.Northstar_Nav or 0, data = NorthstarPathData ~= nil, chokepoints = NorthstarNavChokepoints ~= nil, finds = #finds, state = aim().state })"#
 			),
 		})
 		.remove(0)
@@ -889,7 +889,7 @@ fn the_walking_maps_load_on_demand_only_with_walk_real_paths_on_nav_navrouting_o
 	assert!(f(&on["finds"]) >= 1.0);
 }
 
-// Map 0's part files: in its part addon (maps format 5: Polestar_Nav_EK) or in Polestar_Nav/Nav.
+// Map 0's part files: in its part addon (maps format 5: Northstar_Nav_EK) or in Northstar_Nav/Nav.
 fn parts_dir() -> PathBuf {
 	forge_nav::pack::part_of(0).map(|p| addons_dir().join(p)).filter(|d| d.is_dir()).unwrap_or_else(nav_dir)
 }
@@ -988,7 +988,7 @@ fn to_world(frames: &Value, map: i64, x: f64, y: f64, era: bool) -> Option<(i64,
 fn every_one_of_the_49_zones_the_guides_walk_in_routes_on_the_shipped_maps_and_zephras_isle_too() {
 	skip_unless_ready!();
 	let frames = json_file("map-frames.json");
-	let src = std::fs::read_to_string(addons_dir().join("Polestar_Guides/Guides.lua")).unwrap();
+	let src = std::fs::read_to_string(addons_dir().join("Northstar_Guides/Guides.lua")).unwrap();
 	// A goal's coordinates are in the Era frame with f = "e", else the live (Forever) frame (Compat.MapToWorld); its
 	// height, when the guide carries one (an NPC's or object's spawn), goes with it, as the arrow sends it
 	// (Nav.GetTargetWorld), and a walk with them that finds nothing is asked once more without them, as the arrow does
@@ -1043,7 +1043,7 @@ fn every_one_of_the_49_zones_the_guides_walk_in_routes_on_the_shipped_maps_and_z
 	let zeph = to_world(&frames, 2521, 50.0, 50.0, false).unwrap();
 	let zeph2 = to_world(&frames, 2521, 45.0, 60.0, false).unwrap();
 	let script = r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local out = { failed = {}, n = 0 }
 for _, z in ipairs({ @ZONES }) do
 	out.n = out.n + 1
@@ -1064,7 +1064,7 @@ emit(out)"#
 		.replace("@Z2Y", &js(zeph2.2))
 		.replace("@ZX", &js(zeph.1))
 		.replace("@ZY", &js(zeph.2));
-	let out = emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], addons: vec![Addon::name("Polestar_Nav")], script, ..Default::default() }).remove(0);
+	let out = emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], addons: vec![Addon::name("Northstar_Nav")], script, ..Default::default() }).remove(0);
 	// The 49 zones of Eastern Kingdoms and Kalimdor the guides walk in (uiMapIDs), pinned so none drops out unseen.
 	const ZONES: [i64; 49] = [
 		1411, 1412, 1413, 1416, 1417, 1418, 1419, 1420, 1421, 1422, 1423, 1424, 1425, 1426, 1427, 1428, 1429, 1430, 1431, 1432, 1433, 1434, 1435, 1436, 1437, 1438, 1439, 1440, 1441, 1442, 1443, 1444,
@@ -1096,7 +1096,7 @@ fn ashenvale_40_70_from_the_crossroads_the_route_lands_where_the_engines_walk_is
 	let out = run(
 		r#"
 		w.faction = "Horde"
-		Polestar.CharState().flags.taxi = { [22] = true, [23] = true, [25] = true, [29] = true, [58] = true, [61] = true, [77] = true }
+		Northstar.CharState().flags.taxi = { [22] = true, [23] = true, [25] = true, [29] = true, [58] = true, [61] = true, [77] = true }
 		local by = {}
 		for _, n in ipairs(N.GetTravelData().taxi) do by[n.id] = n end
 		local xr, sun, splinter = by[25], by[29], by[61]
@@ -1177,7 +1177,7 @@ fn ashenvale_west_of_astranaar_where_a_ridge_makes_the_straight_choices_measured
 	let out = run(
 		r#"
 		w.faction = "Horde"
-		Polestar.CharState().flags.taxi = { [22] = true, [23] = true, [25] = true, [58] = true, [61] = true, [77] = true }
+		Northstar.CharState().flags.taxi = { [22] = true, [23] = true, [25] = true, [58] = true, [61] = true, [77] = true }
 		local by, byName = {}, {}
 		for _, n in ipairs(N.GetTravelData().taxi) do by[n.id] = n; byName[n.name] = n end
 		local xr = by[25]
@@ -1304,8 +1304,8 @@ fn route_styles_goldshire_to_sentinel_hill_keeps_to_the_road_with_roads_and_cuts
 		r#"
 		-- The whole walk is the arrow's (the corpus route): the planner, which walks
 		-- the Elwynn-Westfall crossing by hand, is off.
-		Polestar.Set("nav.travel", false)
-		Polestar.Set("nav.routeStyle", "balanced")
+		Northstar.Set("nav.travel", false)
+		Northstar.Set("nav.routeStyle", "balanced")
 		w.moveTo(1429, 42, 65)
 		w.z = nil
 		N.SetTarget(1436, 56.5, 47.5, "Sentinel Hill")
@@ -1335,7 +1335,7 @@ fn route_styles_goldshire_to_sentinel_hill_keeps_to_the_road_with_roads_and_cuts
 		assert(bal, "the Balanced walk is never in")
 		r.balanced = { style = bal.style or false, map = bal.map, pts = line(bal), drawn = drawn() }
 		local before = #finds
-		Polestar.Set("nav.routeStyle", "roads")
+		Northstar.Set("nav.routeStyle", "roads")
 		aim()
 		r.switched = { drawn = drawn(), sameTarget = N.GetTarget() == target }
 		local road = settle(before)
@@ -1378,7 +1378,7 @@ fn zone_danger_195_tirisfal_to_the_spring_well_at_level_20_as_horde_walks_no_yar
 	skip_unless_ready!();
 	let out = run(
 		r#"
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		w.setLevel(20)
 		w.faction = "Horde"
 		w.moveTo(1420, 75.92, 68.39)
@@ -1488,8 +1488,8 @@ fn floor_den(style: &str) {
 	skip_unless_ready!();
 	// DEN: the reporter's spot at the Den's camp (ground z 39.2, the rock top 73 within a cell); HANAZUA: the goal.
 	let script = r#"
-		Polestar.Set("nav.travel", false)
-		Polestar.Set("nav.routeStyle", "@STYLE")
+		Northstar.Set("nav.travel", false)
+		Northstar.Set("nav.routeStyle", "@STYLE")
 		w.setLevel(3)
 		w.faction = "Horde"
 		local DEN, HANAZUA = { -574.567, -4230.838 }, { -397.8, -4109, 50.3 }
@@ -1538,7 +1538,7 @@ fn t_234_floor_off_the_undercitys_south_lift_indoors_the_walk_to_the_plundering_
 		&format!(
 			"{FLOOR_WALK}{}",
 			r#"
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		w.setLevel(16)
 		w.faction = "Horde"
 		IsIndoors = function() return 1 end
@@ -1565,7 +1565,7 @@ fn t_234_floor_off_the_undercitys_south_lift_indoors_the_walk_to_the_plundering_
 }
 
 // Lifts (Fitz, 2026-10-23): the walking grid has no link between a lift's landings, so from the Undercity's lower
-// floor to Brill the walk went out through the sewers. The router joins the landings of Polestar_Nav's lift
+// floor to Brill the walk went out through the sewers. The router joins the landings of Northstar_Nav's lift
 // chokepoints; the way in and out is one fixed chain (crossings.json, undercity-south-lift: Fitz's own walk), from the
 // south lift's bottom landing up through the entrance hall and out of the front, both ways (its three nodes over the
 // Ruins' courtyard and gate since 2026-10-25: three more legs out).
@@ -1930,6 +1930,64 @@ fn lifts_the_walk_on_from_thunder_bluffs_lift_crossing_is_the_engines_drawn_alon
 	assert_eq!(out["aim"]["measured"], true, "and the arrow follows the path, not a straight line");
 }
 
+// #1053 (troders, beside Arch Druid Hamuul Runetotem in his hut on Elder Rise: the arrow 358 yd, the journey 720 yd,
+// back over the bridge and round again) and #1023 (Pilk, beside Nara Wildmane): the turn-in came up in the Barrens, so
+// the player's walk to Hamuul was measured from there (thousands of yards, through Mulgore and up a lift), and within
+// 400 yd of a target nothing is measured again. That far measure less the yards moved stood for the player's walk in
+// Thunder Bluff, dearer than a walk to the north lift's top and the measured walk in from there; at the lift top the
+// walk went back to the hut, and at the hut back to the lift top. Within 400 yd the player's walk is straight.
+#[test]
+fn a_turn_in_set_in_the_barrens_walked_to_from_thunder_bluffs_flight_master_arrives_beside_hamuul_runetotem_never_back_to_the_lift_1053() {
+	skip_unless_ready!();
+	let out = run(
+		r#"
+		w.faction = "Horde"
+		w.setLevel(17)
+		local HAMUUL = { -1049.0, -303.7 } -- 1456 78.6,28.6
+		local function route()
+			local legs, ci = N.GetRoute()
+			local list = {}
+			for i = ci or 1, #(legs or {}) do list[#list + 1] = legs[i].kind .. "|" .. legs[i].label end
+			return list
+		end
+		-- At Tonga Runetotem in the Barrens (the step's accept): the turn-in comes up and is measured from there.
+		local _, bx, by = C.MapToWorld(1413, 52.3, 31.9, "e")
+		place(1413, bx, by, 0)
+		for _ = 1, 40 do stub.advance(0.05); aim() end
+		Northstar.Fire("WAYPOINT_CHANGED", { map = 1456, x = 78.6, y = 28.6, f = "e", label = "Hamuul Runetotem", kind = "turnin", r = 5 })
+		for _ = 1, 600 do aim(); stub.advance(0.05) end
+		local r = { measured = N.walk.Measured(1, HAMUUL[1], HAMUUL[2], false) ~= nil }
+		-- Flown to Thunder Bluff, 365 yd from him.
+		place(1456, -1197.2, 29.7, 0)
+		for _ = 1, 100 do aim(); stub.advance(0.05) end
+		r.landed = route()
+		-- Along the arrow's path into the hut (indoors there), then at the report's spot (78.28,28.52) beside him.
+		local f = finds[#finds]
+		local _, x0, y0 = C.GetPlayerWorldPosition()
+		for _, p in ipairs(f and f.points or {}) do
+			local k = math.max(1, math.ceil(dist(x0, y0, p.x, p.y) / 2))
+			for i = 1, k do
+				local x, y = x0 + (p.x - x0) * i / k, y0 + (p.y - y0) * i / k
+				w.indoors = dist(x, y, HAMUUL[1], HAMUUL[2]) < 12
+				place(1456, x, y, 0)
+				stub.advance(0.3)
+				aim()
+			end
+			x0, y0 = p.x, p.y
+		end
+		w.indoors = true
+		place(1456, -1048.45, -300.38, 0)
+		for _ = 1, 200 do aim(); stub.advance(0.05) end
+		r.beside = { state = aim().state, route = route() }
+		emit(r)"#,
+		true,
+	);
+	assert_eq!(out["measured"], true, "the walk to Hamuul was measured from the Barrens");
+	assert_eq!(out["landed"], serde_json::json!(["walk|Hamuul Runetotem"]), "from the flight master, the walk to him: not by the north lift's top");
+	assert_eq!(out["beside"]["state"], "arrived", "beside him in his hut, arrived");
+	assert_eq!(out["beside"]["route"], serde_json::json!(["walk|Hamuul Runetotem"]), "with nothing to walk back to");
+}
+
 // Ironforge's gate (Fitz, 2026-10-23, a Tauren after a /reload at the gate): the client says outdoors in the gate's
 // arch, where the cell holds the city's floor (an indoor city class, 497) and the mountain's ground over it (620, the
 // one outdoor surface), so the floor was seeded on the mountain and the walk to Loch Modan was searched and drawn from
@@ -2258,7 +2316,7 @@ fn acceptance_dolanaar_auberdine_from_auberdine_to_dolanaar_no_walk_leg_joins_th
 }
 
 /// #566 (dogoku), Horde, level 24: from Tarren Mill (Hillsbrad 60.79,19.92) to Nurse Neela in Brill (Tirisfal
-/// 61.82,52.83) with no flight path known to Polestar, the route walked 1471 yd through Western Plaguelands (levels
+/// 61.82,52.83) with no flight path known to Northstar, the route walked 1471 yd through Western Plaguelands (levels
 /// 51-57) and 1399 yd through Alterac Mountains: the planner's straight walks between zone crossings never counted
 /// the zones of their own two ends (Danger.Along), so a walk from one Plaguelands crossing to the next was safe ground.
 #[test]
@@ -2270,7 +2328,7 @@ fn zone_danger_566_tarren_mill_to_brill_at_level_24_with_no_flight_path_known_wa
 		w.setLevel(24)
 		local c, wx, wy = C.MapToWorld(1424, 60.79, 19.92, "e")
 		place(1424, wx, wy)
-		Polestar.CharState().flags.taxi = {}
+		Northstar.CharState().flags.taxi = {}
 		N.SetTarget(1420, 61.82, 52.83, "Nurse Neela", "e")
 		for _ = 1, 600 do stub.advance(0.05); aim() end
 		local legs, ci = N.GetRoute()

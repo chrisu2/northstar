@@ -1,8 +1,8 @@
 //! `travel build` (port of tools/commands/travel.js build and tools/lib/travel/build.js, byte for
 //! byte): the flight network, transports, inns, learned walking paths and zone crossings ->
-//! data/forever/travel.json, addon/Polestar/Nav/TravelData.lua (with the timetables, portals and
-//! class teleports), addon/Polestar/Maps/FlightPaths.lua, and the local data addon
-//! Polestar_Travel when a local crossings file exists. Offline: every source is read from the
+//! data/forever/travel.json, addon/Northstar/Nav/TravelData.lua (with the timetables, portals and
+//! class teleports), addon/Northstar/Maps/FlightPaths.lua, and the local data addon
+//! Northstar_Travel when a local crossings file exists. Offline: every source is read from the
 //! caches (data/sources), data/forever, data/recordings and the navigation grid (forge-nav).
 //!
 //! Library: [`build`] (`Options` -> `Output`, the files' texts) and [`write`].

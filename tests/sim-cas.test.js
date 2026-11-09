@@ -12,8 +12,8 @@ const { tmpdir } = require('./helpers/tmp');
 
 test('a world built in one worktree is taken from the shared store by another; gc empties it', async () => {
 	const root = tmpdir('polestar-cas-');
-	const saved = process.env.POLESTAR_CAS;
-	process.env.POLESTAR_CAS = path.join(root, 'cas');
+	const saved = process.env.NORTHSTAR_CAS;
+	process.env.NORTHSTAR_CAS = path.join(root, 'cas');
 	try {
 		const cas = require('../tools/lib/sim/cas');
 		const sim = require('../tools/lib/sim');
@@ -36,29 +36,29 @@ test('a world built in one worktree is taken from the shared store by another; g
 		assert.equal(r.kept, 0);
 		assert.ok(r.removed >= 1);
 	} finally {
-		if (saved === undefined) delete process.env.POLESTAR_CAS;
-		else process.env.POLESTAR_CAS = saved;
+		if (saved === undefined) delete process.env.NORTHSTAR_CAS;
+		else process.env.NORTHSTAR_CAS = saved;
 	}
 });
 
-test('POLESTAR_CAS_SKIP keeps a kind out of the store: neither stored nor fetched', () => {
+test('NORTHSTAR_CAS_SKIP keeps a kind out of the store: neither stored nor fetched', () => {
 	const root = fs.mkdtempSync(path.join(os.tmpdir(), 'polestar-cas-skip-'));
-	const saved = [process.env.POLESTAR_CAS, process.env.POLESTAR_CAS_SKIP];
-	process.env.POLESTAR_CAS = path.join(root, 'cas');
+	const saved = [process.env.NORTHSTAR_CAS, process.env.NORTHSTAR_CAS_SKIP];
+	process.env.NORTHSTAR_CAS = path.join(root, 'cas');
 	try {
 		const cas = require('../tools/lib/sim/cas');
 		const src = path.join(root, 'w.bin');
 		fs.writeFileSync(src, 'walks');
-		process.env.POLESTAR_CAS_SKIP = 'walks';
+		process.env.NORTHSTAR_CAS_SKIP = 'walks';
 		assert.equal(cas.store('walks', 'k', src), false);
 		assert.equal(fs.existsSync(cas.file('walks', 'k')), false);
 		assert.equal(cas.store('world', 'k', src), true, 'other kinds still shared');
-		delete process.env.POLESTAR_CAS_SKIP;
+		delete process.env.NORTHSTAR_CAS_SKIP;
 		assert.equal(cas.store('walks', 'k', src), true);
-		process.env.POLESTAR_CAS_SKIP = 'walks';
+		process.env.NORTHSTAR_CAS_SKIP = 'walks';
 		assert.equal(cas.fetch('walks', 'k', path.join(root, 'out.bin')), false, 'a skipped kind is not fetched either');
 	} finally {
-		for (const [k, v] of [['POLESTAR_CAS', saved[0]], ['POLESTAR_CAS_SKIP', saved[1]]]) if (v === undefined) delete process.env[k];
+		for (const [k, v] of [['NORTHSTAR_CAS', saved[0]], ['NORTHSTAR_CAS_SKIP', saved[1]]]) if (v === undefined) delete process.env[k];
 		else process.env[k] = v;
 		fs.rmSync(root, { recursive: true, force: true });
 	}

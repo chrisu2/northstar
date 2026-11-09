@@ -1,4 +1,4 @@
-//! Zone art overlays (tools/lib/maps/overlays.js -> addon/Polestar/UI/ZoneArtOverlays.lua): the table built
+//! Zone art overlays (tools/lib/maps/overlays.js -> addon/Northstar/UI/ZoneArtOverlays.lua): the table built
 //! from synthetic DB2 rows (keyed by art, tiles row-major, partial tiles, bad rows dropped), the generated Lua,
 //! and the addon reading it.
 
@@ -124,11 +124,11 @@ fn the_generated_lua_registers_the_table_with_zoneart_byte_identical_for_the_sam
 	let file = dir.path().join("ZoneArtOverlays.lua");
 	std::fs::write(&file, &lua).unwrap();
 	let script = r#"uistub.install()
-			local ZA = Polestar.UI.ZoneArt
-			assert(loadfile(FILE))("Polestar", { UI = Polestar.UI })
+			local ZA = Northstar.UI.ZoneArt
+			assert(loadfile(FILE))("Northstar", { UI = Northstar.UI })
 			emit({ ZA.overlaysBuild, ZA.overlays[100], ZA.overlays[101][2] })"#
 		.replace("FILE", &lua_string(file.to_str().unwrap()));
-	let out = emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"])], script, ..Default::default() }).remove(0);
+	let out = emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"])], script, ..Default::default() }).remove(0);
 	assert_eq!(out[0], "9.9.9.1");
 	assert_eq!(out[1], json!([256, 256, [600, 300, 10, 20, 1001, 1002, 1003, 1004, 1005, 1006], [128, 128, 400, 400, 2001]]));
 	assert_eq!(out[2], 512);

@@ -61,10 +61,10 @@ fn run_opts(script: &str, enabled: Option<bool>, settings: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_maps.lua"],
 		before: BEFORE.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml", "Maps/Maps.xml"])],
-		saved: vec![("Polestar".into(), format!("PolestarDB={{schema=1, settings={{maps={{{pins}{settings}}}}}}}; Polestar.Codex=__codex"))],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml", "Maps/Maps.xml"])],
+		saved: vec![("Northstar".into(), format!("NorthstarDB={{schema=1, settings={{maps={{{pins}{settings}}}}}}}; Northstar.Codex=__codex"))],
 		login: true,
-		script: format!("stub.advance(0.25)\n{OPEN_MAP}local M,P=Polestar.Maps,Polestar.Pins\n{script}"),
+		script: format!("stub.advance(0.25)\n{OPEN_MAP}local M,P=Northstar.Maps,Northstar.Pins\n{script}"),
 	})
 }
 
@@ -80,14 +80,14 @@ fn run_off(script: &str) -> Value {
 fn service_groups_tolerate_missing_mapcanvas_and_install_the_watcher_once_when_it_becomes_available() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Maps/Maps.lua", "Maps/ServiceClusters.lua"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Maps/Maps.lua", "Maps/ServiceClusters.lua"])],
 		login: true,
 		script: r#"
-      local missing=Polestar.MapCanvas==nil
+      local missing=Northstar.MapCanvas==nil
       stub.addonLoaded("Blizzard_WorldMap")
       local frame,calls=WorldMapFrame,0
       WorldMapFrame=nil
-      Polestar.MapCanvas={Watch=function(map) assert(map==frame); calls=calls+1; return {} end}
+      Northstar.MapCanvas={Watch=function(map) assert(map==frame); calls=calls+1; return {} end}
       stub.addonLoaded("Blizzard_WorldMap")
       local withoutFrame=calls
       WorldMapFrame=frame
@@ -126,13 +126,13 @@ fn services_use_codex_alone_with_live_coordinates_reject_hostile_npcs_and_invali
 fn category_toggles_update_immediately_without_rereading_the_db_or_misclassifying_class_and_weapon_trainers() {
 	let out = run(r#"
     local reads=__reads
-    Polestar.Set("maps.serviceFilters.repair",false)
-    Polestar.Set("maps.serviceFilters.weapon",false)
+    Northstar.Set("maps.serviceFilters.repair",false)
+    Northstar.Set("maps.serviceFilters.weapon",false)
     local found={}
     for _,p in ipairs(P.GetLayer("maps.services")) do found[p.category]=(found[p.category] or 0)+1 end
-    Polestar.Set("maps.servicePins",false)
+    Northstar.Set("maps.servicePins",false)
     local hidden=P.GetLayer("maps.services")==nil
-    Polestar.Set("maps.servicePins",true)
+    Northstar.Set("maps.servicePins",true)
     emit({categories=found,hidden=hidden,readsSame=__reads==reads,restored=#P.GetLayer("maps.services")})
   "#);
 	assert_eq!(out, json!({ "categories": { "vendor": 2, "class": 1, "trainer": 1, "mailbox": 1 }, "hidden": true, "readsSame": true, "restored": 5 }));
@@ -145,7 +145,7 @@ fn tooltips_expose_all_npc_services_and_a_click_routes_to_the_exact_spawn_and_fr
     local lines={}
     pin.tooltip({SetText=function(_,s) lines[#lines+1]=s end,AddLine=function(_,s) lines[#lines+1]=s end})
     local target
-    Polestar.Nav.SetTarget=function(...) target={...} end
+    Northstar.Nav.SetTarget=function(...) target={...} end
     pin.onClick("RightButton")
     local right=target==nil
     pin.onClick("LeftButton")
@@ -162,11 +162,11 @@ fn explicitly_disabled_services_read_no_db_combat_defers_the_scan_and_one_driver
 		r#"
     local initial=__reads
     stub.inCombat=true
-    Polestar.Set("maps.servicePins",true)
+    Northstar.Set("maps.servicePins",true)
     local combatReads=__reads
     stub.inCombat=false
     stub.fire("PLAYER_REGEN_ENABLED")
-    for i=1,10 do Polestar.Set("maps.serviceFilters.vendor",i%2==0) end
+    for i=1,10 do Northstar.Set("maps.serviceFilters.vendor",i%2==0) end
     stub.advance(1)
     emit({initial=initial,combatReads=combatReads,reads=__reads,pins=#P.GetLayer("maps.services")})
   "#,
@@ -179,12 +179,12 @@ fn batched_work_pauses_in_combat_resumes_and_retries_after_a_missing_database_is
 	let out = run_off(
 		r#"
     for id=10,500 do __npcs[id]={name="Unfriendly vendor",roles={"vendor"}} end
-    local db=Polestar.Codex
-    Polestar.Codex=nil
-    Polestar.Set("maps.servicePins",true)
+    local db=Northstar.Codex
+    Northstar.Codex=nil
+    Northstar.Set("maps.servicePins",true)
     local missing=P.GetLayer("maps.services")==nil
-    Polestar.Codex=db
-    stub.addonLoaded("Polestar_Codex")
+    Northstar.Codex=db
+    stub.addonLoaded("Northstar_Codex")
     local first=__reads
     stub.inCombat=true; stub.advance(0.1)
     local paused=__reads==first
@@ -217,10 +217,10 @@ fn tracking_menus_offer_persistent_categories_and_minimap_opt_in() {
     repair.fn()
     sub.kids[2].fn()
     stub.advance(0.1)
-    emit({title=sub.text,count=#sub.kids,before=before,after=repair.selected(),minimap=Polestar.Get("maps.serviceMinimap"),
+    emit({title=sub.text,count=#sub.kids,before=before,after=repair.selected(),minimap=Northstar.Get("maps.serviceMinimap"),
       hooks=#stub.menus.MENU_WORLD_MAP_TRACKING,frames=#P.GetMinimapFrames("maps.services")})
   "#);
-	assert_eq!(out["title"], "Polestar: NPC services");
+	assert_eq!(out["title"], "Northstar: NPC services");
 	assert_eq!(out["count"], 13);
 	assert_eq!(out["before"], true);
 	assert_eq!(out["after"], false);
@@ -234,13 +234,13 @@ fn a_synchronous_codex_load_event_selects_the_codex_once_without_a_second_scan()
 	let out = run_off(
 		r#"
     local loaded,loads,reads=false,0,0
-    Polestar.Codex={
+    Northstar.Codex={
       IsLoaded=function() return loaded end,
-      Load=function() loads=loads+1; loaded=true; Polestar.Fire("CODEX_LOADED"); return true end,
+      Load=function() loads=loads+1; loaded=true; Northstar.Fire("CODEX_LOADED"); return true end,
       WithRole=function(role) return role=="vendor" and {21} or {} end,
       Npc=function(id) reads=reads+1; return {id=id,name="Codex vendor",faction="A",roles={"vendor"},spawns={{map=9000,x=50,y=50,f="e"}}} end,
     }
-    Polestar.Set("maps.servicePins",true); stub.advance(0.2)
+    Northstar.Set("maps.servicePins",true); stub.advance(0.2)
     local pins=P.GetLayer("maps.services")
     emit({loads=loads,reads=reads,id=pins[1].id,frame=pins[1].f})
   "#,
@@ -258,7 +258,7 @@ fn nearby_mailbox_observations_merge_across_object_ids_while_separate_physical_m
         return {id=id,kind="object",name="Mailbox",roles={"mailbox"},spawns={{map=9000,x=x,y=50,f="l"}}}
       end }
     end
-    Polestar.Set("maps.servicePins",true); stub.advance(0.2)
+    Northstar.Set("maps.servicePins",true); stub.advance(0.2)
     local out={}
     for _,p in ipairs(P.GetLayer("maps.services")) do if p.kind=="object" then out[#out+1]={id=p.id,x=p.x} end end
     emit(out)
@@ -283,7 +283,7 @@ fn nearby_observations_of_one_service_npc_share_a_pin_without_merging_different_
     for _,p in ipairs(pins) do counts[p.category]=(counts[p.category] or 0)+1 end
     local p=pins[1]
     p.onClick("LeftButton")
-    local target=Polestar.Nav.GetTarget()
+    local target=Northstar.Nav.GetTarget()
     emit({count=#pins,categories=counts,first={id=p.id,x=p.x,y=p.y,f=p.f},
       second={id=pins[2].id,x=pins[2].x},target={map=target.map,x=target.x,y=target.y,f=target.f},
       unchanged=records[1].spawns[1]==before and #records[1].spawns==4})
@@ -304,8 +304,8 @@ fn service_observations_compare_world_positions_across_maps_and_keep_map_frame_g
 	let out = run(r#"
     stub.world.addMap(9100,{c=0,left=1000,right=-1000,top=1000,bottom=-1000})
     stub.world.addMap(9101,{c=1,left=1000,right=-1000,top=1000,bottom=-1000})
-    local saved=Polestar.MapFrames.era[9100]
-    Polestar.MapFrames.era[9100]={c=0,left=2000,right=0,top=1000,bottom=-1000}
+    local saved=Northstar.MapFrames.era[9100]
+    Northstar.MapFrames.era[9100]={c=0,left=2000,right=0,top=1000,bottom=-1000}
     local pins=M.BuildServicePins({{id=101,name="Service",roles={"repair"},spawns={
       {map=9000,x=40,y=50,f="l"},{map=9100,x=40.2,y=50,f="l"},
       {map=9100,x=90,y=50,f="e"},{map=9100,x=40.2,y=50,f="e"},
@@ -316,7 +316,7 @@ fn service_observations_compare_world_positions_across_maps_and_keep_map_frame_g
     }}})
     local rows={}
     for _,p in ipairs(pins) do rows[#rows+1]={map=p.map,x=p.x,f=p.f} end
-    Polestar.MapFrames.era[9100]=saved
+    Northstar.MapFrames.era[9100]=saved
     emit(rows)
   "#);
 	assert_eq!(
@@ -369,7 +369,7 @@ fn zephras_repair_and_vendor_observations_share_original_locations_even_without_
     local known=summary()
     local pin=M.BuildServicePins(records)[1]
     local target
-    Polestar.Nav.SetTarget=function(...) target={...} end
+    Northstar.Nav.SetTarget=function(...) target={...} end
     pin.onClick("LeftButton")
     emit({unknown=unknown,known=known,target=target,raw=#records[1].spawns+#records[2].spawns+#records[3].spawns})
   "#);
@@ -403,9 +403,9 @@ fn services_are_opt_in_with_a_lean_category_set_leave_flight_masters_and_inns_to
     local icons,on={},{}
     for _,category in ipairs(M.ServiceCategories) do
       icons[category.key]=category.mark
-      if Polestar.Get("maps.serviceFilters."..category.key) then on[#on+1]=category.key end
+      if Northstar.Get("maps.serviceFilters."..category.key) then on[#on+1]=category.key end
     end
-    emit({enabled=Polestar.Get("maps.servicePins"),on=on,inn=icons.innkeeper==nil,flight=icons.flightmaster==nil,
+    emit({enabled=Northstar.Get("maps.servicePins"),on=on,inn=icons.innkeeper==nil,flight=icons.flightmaster==nil,
       vendor=icons.vendor,banker=icons.banker,reads=__reads})
     emit(M.ServiceCategories[4].icon)
   "#,
@@ -506,22 +506,22 @@ fn a_region_city_pile_lists_npcs_with_coordinates_and_routes_to_the_selected_spa
     P.SetLayer("maps.services",M.BuildServicePins(records),{worldLayout=M.LayoutServicePins,minimap=false,minMapType=3})
     local f=groupFrame()
     local target
-    Polestar.Nav.SetTarget=function(...) target={...} end
+    Northstar.Nav.SetTarget=function(...) target={...} end
     f.data.pin.onClick("RightButton",f)
-    local right=PolestarMenu==nil
+    local right=NorthstarMenu==nil
     stub.RunScript(f,"OnEnter")
     stub.fire("GLOBAL_MOUSE_DOWN","LeftButton")
     stub.fire("GLOBAL_MOUSE_UP","LeftButton")
     stub.RunScript(f,"OnLeave")
-    local category=PolestarMenu.rows[1].Text:GetText()
-    PolestarMenu.rows[1]:Click()
+    local category=NorthstarMenu.rows[1].Text:GetText()
+    NorthstarMenu.rows[1]:Click()
     local rows=0
-    for _,r in ipairs(PolestarMenu.rows) do if r:IsShown() then rows=rows+1 end end
-    for _,r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText()=="Next" then r:Click(); break end end
-    local name=PolestarMenu.rows[2].Text:GetText()
-    PolestarMenu.rows[2]:Click()
+    for _,r in ipairs(NorthstarMenu.rows) do if r:IsShown() then rows=rows+1 end end
+    for _,r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText()=="Next" then r:Click(); break end end
+    local name=NorthstarMenu.rows[2].Text:GetText()
+    NorthstarMenu.rows[2]:Click()
     emit({right=right,category=category,rows=rows,name=name,target=target,
-      opened=#opened,map=stub.worldMapID,closed=not PolestarMenu:IsShown()})
+      opened=#opened,map=stub.worldMapID,closed=not NorthstarMenu:IsShown()})
   "#,
 	);
 	assert_eq!(out["right"], true);
@@ -542,13 +542,13 @@ fn the_npc_menu_survives_unrelated_redraws_and_closes_on_detail_map_or_filter_ch
     f.data.pin.onClick("LeftButton",f)
     P.SetLayer("quests",{{map=9000,x=10,y=10}},{minimap=false})
     P.GetWorldFrames()
-    local kept=PolestarMenu:IsShown()
+    local kept=NorthstarMenu:IsShown()
     stub.worldMapID=9002; stub.runMapFrame(WorldMapFrame,0)
-    local detailClosed=not PolestarMenu:IsShown()
+    local detailClosed=not NorthstarMenu:IsShown()
     stub.worldMapID=9000; stub.runMapFrame(WorldMapFrame,0)
     f=groupFrame(); f.data.pin.onClick("LeftButton",f)
-    Polestar.Set("maps.servicePins",false)
-    emit({kept=kept,detailClosed=detailClosed,filterClosed=not PolestarMenu:IsShown()})
+    Northstar.Set("maps.servicePins",false)
+    emit({kept=kept,detailClosed=detailClosed,filterClosed=not NorthstarMenu:IsShown()})
   "#,
 	);
 	assert_eq!(out, json!({ "kept": true, "detailClosed": true, "filterClosed": true }));
@@ -577,7 +577,7 @@ fn detail_maps_group_by_their_region_hierarchy_even_without_city_flags_detail_vi
     C_Map.IsCityMap=nil
     local withoutCityAPI=#layout(9000)
     C_Map.IsCityMap=function(map) return map==9002 or map==9003 end
-    Polestar.GamepadUI=function() return true end
+    Northstar.GamepadUI=function() return true end
     local gamepad=#layout(9000)
     local getInfo=C_Map.GetMapInfo
     C_Map.GetMapInfo=nil
@@ -635,17 +635,17 @@ fn codex_weapon_masters_use_the_existing_npc_index_without_changing_shared_recor
 	let out = run_off(
 		r#"
     local npc={id=11867,name="Woo Ping",faction="A",roles={"trainer"},spawns={{map=9000,x=50,y=50,f="l"}}}
-    Polestar.Codex={IsLoaded=function() return true end,
+    Northstar.Codex={IsLoaded=function() return true end,
       WithRole=function(role) return role=="trainer" and {11867} or {} end,
       Npc=function() return npc end}
     M.ServiceMailboxSource=function() return nil end
-    Polestar.Set("maps.servicePins",true); stub.advance(0.2)
+    Northstar.Set("maps.servicePins",true); stub.advance(0.2)
     local category=P.GetLayer("maps.services")[1].category
-    Polestar.Set("maps.serviceFilters.trainer",false)
+    Northstar.Set("maps.serviceFilters.trainer",false)
     local withoutProfession=#P.GetLayer("maps.services")
-    Polestar.Set("maps.serviceFilters.weapon",false)
+    Northstar.Set("maps.serviceFilters.weapon",false)
     local withoutWeapon=#P.GetLayer("maps.services")
-    Polestar.Set("maps.serviceFilters.trainer",true)
+    Northstar.Set("maps.serviceFilters.trainer",true)
     local professionOnly=#P.GetLayer("maps.services")
     local object=M.BuildServicePins({{id=11867,kind="object",name="Mailbox",roles={"mailbox"},spawns=npc.spawns}})
     emit({category=category,withoutProfession=withoutProfession,withoutWeapon=withoutWeapon,
@@ -720,17 +720,17 @@ fn a_fresh_install_leaves_the_codex_unloaded_until_the_layer_is_on_and_the_world
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_maps.lua"],
 		before: pack.stub_lua.clone() + "\nstub.maps.useWorld(); stub.maps.place(0,0); stub.world.faction=\"Alliance\"; LibQuestieDB=nil",
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml", "Lookup/Codex.lua", "Maps/Maps.xml"])],
-		saved: vec![("Polestar".into(), "PolestarDB={schema=1,settings={}}".into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Nav/Nav.xml", "Lookup/Codex.lua", "Maps/Maps.xml"])],
+		saved: vec![("Northstar".into(), "NorthstarDB={schema=1,settings={}}".into())],
 		login: true,
 		script: r#"stub.advance(1)
-        local atLogin=Polestar.Codex.IsLoaded()
-        Polestar.Set("maps.servicePins",true)
+        local atLogin=Northstar.Codex.IsLoaded()
+        Northstar.Set("maps.servicePins",true)
         stub.advance(1)
-        local beforeMap=Polestar.Codex.IsLoaded()
+        local beforeMap=Northstar.Codex.IsLoaded()
         WorldMapFrame:Show(); stub.runMapFrame(WorldMapFrame,0); stub.advance(1)
-        local out={atLogin=atLogin,beforeMap=beforeMap,loaded=Polestar.Codex.IsLoaded(),questie=LibQuestieDB~=nil,npcs={},boxes={}}
-        for _,p in ipairs(Polestar.Pins.GetLayer("maps.services")) do
+        local out={atLogin=atLogin,beforeMap=beforeMap,loaded=Northstar.Codex.IsLoaded(),questie=LibQuestieDB~=nil,npcs={},boxes={}}
+        for _,p in ipairs(Northstar.Pins.GetLayer("maps.services")) do
           local list=p.kind=="object" and out.boxes or out.npcs
           list[#list+1]={id=p.id,category=p.category,x=p.x,y=p.y}
         end

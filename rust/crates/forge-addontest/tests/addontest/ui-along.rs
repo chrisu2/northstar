@@ -49,12 +49,12 @@ const BEFORE: &str = r#"
 				w.moveTo(1429, 48.5, 42.5)"#;
 
 const SCRIPT: &str = r#"
-				Polestar.Set("ui.upcoming", 3)
-				Polestar.Set("ui.upcomingOpen", true)
+				Northstar.Set("ui.upcoming", 3)
+				Northstar.Set("ui.upcomingOpen", true)
 				stub.login()
 				stub.advance(0.5)
 				local w = stub.world
-				local GF = Polestar.UI.GuideFrame
+				local GF = Northstar.UI.GuideFrame
 				local function plain(s) return (s or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "") end
 				local function snap()
 					local A = GF.parts.along
@@ -64,7 +64,7 @@ const SCRIPT: &str = r#"
 					end
 					for _, r in ipairs(GF.upRows) do if r:IsShown() then ups[#ups + 1] = r.psIndex end end
 					emit({
-						step = Polestar.Engine.GetStepIndex(),
+						step = Northstar.Engine.GetStepIndex(),
 						shown = A:IsShown(),
 						header = A:IsShown() and plain(A.Label:GetText()) or false,
 						rows = rows,
@@ -85,12 +85,12 @@ const SCRIPT: &str = r#"
 				local r = GF.alongRows[1]
 				r:GetScript("OnClick")(r)
 				stub.advance(0.5)
-				local t = Polestar.Nav.GetTarget()
+				local t = Northstar.Nav.GetTarget()
 				emit(t and { t.stepIndex, t.goalIndex } or false)
-				Polestar.Set("ui.compact", true)
+				Northstar.Set("ui.compact", true)
 				stub.advance(0.1)
 				snap()
-				Polestar.Set("ui.compact", false)
+				Northstar.Set("ui.compact", false)
 				w.moveTo(1429, 47.6, 35.1)
 				stub.advance(1)
 				snap()
@@ -101,10 +101,10 @@ const SCRIPT: &str = r#"
 #[test]
 fn along_goals_show_under_the_card_while_the_route_is_past_them_then_and_up_next_leave_the_along_step_out() {
 	let pack = compile_pack();
-	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Polestar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
+	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Northstar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
 	let loads = format!("do local ns = {{}}\n{}\nend", lines.join("\n"));
 	let out =
-		emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: BEFORE.into(), addons: vec![Addon::name("Polestar")], script: "\n\t\t\t\t".to_string() + &loads + SCRIPT, ..Default::default() });
+		emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: BEFORE.into(), addons: vec![Addon::name("Northstar")], script: "\n\t\t\t\t".to_string() + &loads + SCRIPT, ..Default::default() });
 	let (login, on_seven, kills, target, compact, at_back, done) = (&out[0], &out[1], &out[2], &out[3], &out[4], &out[5], &out[6]);
 
 	// Step 1: nothing is along yet; Up next leaves out the along step 3.
@@ -146,12 +146,12 @@ fn along_goals_show_under_the_card_while_the_route_is_past_them_then_and_up_next
 #[test]
 fn paging_never_lands_on_the_along_step_and_the_header_does_not_count_it() {
 	let pack = compile_pack();
-	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Polestar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
+	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Northstar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
 	let loads = format!("do local ns = {{}}\n{}\nend", lines.join("\n"));
 	let script = r#"
 				stub.login()
 				stub.advance(0.5)
-				local E, GF = Polestar.Engine, Polestar.UI.GuideFrame
+				local E, GF = Northstar.Engine, Northstar.UI.GuideFrame
 				local function head() return GF.parts.nav.Steps.Count:GetText() end
 				local ahead = { { E.GetStepIndex(), head() } }
 				for _ = 1, 5 do GF.parts.nav.Next:Click(); stub.advance(0.1); ahead[#ahead + 1] = { E.GetStepIndex(), head() } end
@@ -161,7 +161,7 @@ fn paging_never_lands_on_the_along_step_and_the_header_does_not_count_it() {
 				local _, total = E.GetProgress()
 				emit({ ahead = ahead, back = back, gotoAlong = E.GetStepIndex(), total = total })"#;
 	let out =
-		emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: BEFORE.into(), addons: vec![Addon::name("Polestar")], script: "\n\t\t\t\t".to_string() + &loads + script, ..Default::default() });
+		emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: BEFORE.into(), addons: vec![Addon::name("Northstar")], script: "\n\t\t\t\t".to_string() + &loads + script, ..Default::default() });
 	assert_eq!(
 		out[0]["ahead"],
 		json!([[1, "1 / 4"], [2, "2 / 4"], [4, "3 / 4"], [5, "4 / 4"], [5, "4 / 4"], [5, "4 / 4"]]),
@@ -189,7 +189,7 @@ fn a_mage_paging_through_darkshore_never_meets_a_druid_step_and_the_header_count
 	let source = std::fs::read_to_string(root().join(file)).unwrap();
 	let compiled = compile_with(&[(file, &source)], &data, None);
 	let pack = write_test_pack(&compiled.guides, &data, &our_manifest());
-	let loads: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Polestar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
+	let loads: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Northstar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
 	let before = r#"local w = stub.world
 w.race, w.raceName, w.class, w.className, w.faction, w.level = "Human", "Human", "MAGE", "Mage", "Alliance", 17
 "#;
@@ -200,7 +200,7 @@ end
 stub.login()
 stub.fire("QUEST_LOG_UPDATE")
 stub.advance(0.6)
-local E, GF, G = Polestar.Engine, Polestar.UI.GuideFrame, Polestar.Guides
+local E, GF, G = Northstar.Engine, Northstar.UI.GuideFrame, Northstar.Guides
 E.SetGuide("forever/alliance/03-darkshore"); stub.advance(0.5)
 GF.LookAt(1); stub.advance(0.1)
 local function head() return GF.parts.nav.Steps.Count:GetText() end
@@ -211,7 +211,7 @@ for _ = 1, 100 do
 	if E.GetStepIndex() == at then break end
 	seen[#seen + 1] = {{ E.GetStepIndex(), head() }}
 end
-local guide, me = E.GetGuide(), Polestar.Compat.GetPlayerInfo()
+local guide, me = E.GetGuide(), Northstar.Compat.GetPlayerInfo()
 local druid, along, visible = {{}}, {{}}, 0
 for s, step in ipairs(guide.steps) do
 	local mine = not step.along and G.Matches(step.only, me)
@@ -227,7 +227,7 @@ emit({{ seen = seen, druid = druid, along = along, visible = visible, steps = #g
 "#,
 		loads.join("\n")
 	);
-	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: before.into(), addons: vec![Addon::name("Polestar")], script, ..Default::default() }).remove(0);
+	let out = emitted(&RunAddon { stubs: vec!["stub_world.lua"], before: before.into(), addons: vec![Addon::name("Northstar")], script, ..Default::default() }).remove(0);
 	let seen: Vec<(i64, String)> = out["seen"].as_array().unwrap().iter().map(|p| (p[0].as_i64().unwrap(), text(&p[1]).to_string())).collect();
 	let druid: Vec<i64> = out["druid"].as_array().unwrap().iter().map(|v| v.as_i64().unwrap()).collect();
 	let along: Vec<i64> = out["along"].as_array().unwrap().iter().map(|v| v.as_i64().unwrap()).collect();

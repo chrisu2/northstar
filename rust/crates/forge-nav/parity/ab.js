@@ -2,15 +2,15 @@
 // A/B of the walking maps on acceptance walks: our walking grid (this checkout's router.js on data/local/nav4: path.js
 // route, the drawn line the pipeline's walks are priced on) against Leffe's navigation maps (the format-4 Node reader,
 // bit-identical to the Rust port), each walk's expectations judged by nav eval's compare.js.
-// POLESTAR_JS=<checkout with the format-4 Node reader> POLESTAR_V1=<v1 checkout, built data/forever> POLESTAR_LEFFE_NAV=<pack>
+// NORTHSTAR_JS=<checkout with the format-4 Node reader> NORTHSTAR_V1=<v1 checkout, built data/forever> NORTHSTAR_LEFFE_NAV=<pack>
 //   node ab.js <out.json> <corpus.json>... [--only id,id] [--ours-only | --his-only]
 //   corpus: acceptance.json-shaped files ({ routes }); entries { ref: id } are skipped (the base corpus holds them).
 const fs = require('node:fs');
 const path = require('node:path');
-const { POLESTAR_JS: NODE4, POLESTAR_V1: V1, POLESTAR_LEFFE_NAV: PACK } = process.env;
+const { NORTHSTAR_JS: NODE4, NORTHSTAR_V1: V1, NORTHSTAR_LEFFE_NAV: PACK } = process.env;
 const OURS = path.resolve(__dirname, '../../../..');
 if (!NODE4 || !V1 || !PACK || process.argv.length < 4) {
-	console.error('usage: POLESTAR_JS=<dir> POLESTAR_V1=<dir> POLESTAR_LEFFE_NAV=<dir> node ab.js <out.json> <corpus.json>... [--only id,id] [--ours-only | --his-only]');
+	console.error('usage: NORTHSTAR_JS=<dir> NORTHSTAR_V1=<dir> NORTHSTAR_LEFFE_NAV=<dir> node ab.js <out.json> <corpus.json>... [--only id,id] [--ours-only | --his-only]');
 	process.exit(2);
 }
 const args = process.argv.slice(2);

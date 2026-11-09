@@ -176,7 +176,7 @@ function compareCodex(ours, theirs, verify = null) {
 		k('instances').total++;
 		if (!o) {
 			k('instances').missing.push(row);
-			if (t.forever) needs.push({ kind: 'instance', id: key, name: t.name, what: 'the instance (not in the Forever client tables Polestar reads)', event: 'enter, encounter' });
+			if (t.forever) needs.push({ kind: 'instance', id: key, name: t.name, what: 'the instance (not in the Forever client tables Northstar reads)', event: 'enter, encounter' });
 			continue;
 		}
 		k('instances').match++;

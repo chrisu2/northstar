@@ -2,7 +2,7 @@
 -- name, NPC source count, (npc, chance)..., object source count, (object, chance)..., vendors...
 -- One record a line, "<id>\t<fields>" (forge-data questdb.rs payload), read on demand.
 
-local Q = Polestar and Polestar.QuestDB
+local Q = Northstar and Northstar.QuestDB
 if not (Q and Q.AddChunk) then return end
 local R = Q.AddChunk
 R("items", 750, 1972, [[

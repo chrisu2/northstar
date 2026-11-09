@@ -1,6 +1,6 @@
-# Polestar Forge
+# Northstar Forge
 
-This folder is the Rust workspace of Polestar Forge, the tool that makes Polestar's leveling
+This folder is the Rust workspace of Northstar Forge, the tool that makes Northstar's leveling
 routes: from the installed game and the guides it builds the reference data, prices the walks,
 improves each start's route, writes it into the guides and reports the result.
 

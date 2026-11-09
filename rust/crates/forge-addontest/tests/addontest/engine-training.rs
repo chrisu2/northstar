@@ -17,32 +17,32 @@ w.moveTo(1413, 51.9, 30.4)
 
 // The Barrens guide trains Orcs and Trolls in Orgrimmar; nothing for an Undead.
 const GUIDES: &str = r#"
-Polestar.RegisterGuide({ id = "test/barrens", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/barrens", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 	{ goals = { { t = "accept", quest = 870, title = "The Forgotten Pools", map = 1413, x = 52, y = 31 } } },
 	{ only = { races = { "Orc", "Troll" } }, goals = { { t = "train", npc = 3353, npcName = "Grezz Ragefist", only = { classes = { "WARRIOR" } } } } },
 	{ goals = { { t = "level", level = 20 } } },
 } })
-Polestar.RegisterGuide({ id = "test/trains", pack = "test", title = "Trains soon", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/trains", pack = "test", title = "Trains soon", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 	{ goals = { { t = "accept", quest = 870, title = "The Forgotten Pools", map = 1413, x = 52, y = 31 } } },
 	{ goals = { { t = "train", class = true, candidates = { { npc = 3353, npcName = "Grezz Ragefist", map = 1454, x = 79.8, y = 31.4, f = "e", faction = "H", classes = { "WARRIOR" } } } } } },
 	{ goals = { { t = "level", level = 20 } } },
 } })
 -- Heads south-west to Mulgore: the nearest trainer from the Crossroads lies the other way.
-Polestar.RegisterGuide({ id = "test/route", pack = "test", title = "To Mulgore", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/route", pack = "test", title = "To Mulgore", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 	{ goals = { { t = "accept", quest = 870, title = "The Forgotten Pools", map = 1413, x = 52, y = 31 } } },
 	{ goals = { { t = "goto", map = 1413, x = 45, y = 58 } } },
 	{ goals = { { t = "goto", map = 1412, x = 47, y = 60 } } },
 	{ goals = { { t = "level", level = 20 } } },
 } })
 -- Dun Morogh: from the trogg tunnel on to Kharanos (the report in #664).
-Polestar.RegisterGuide({ id = "test/tunnel", pack = "test", title = "The tunnel", faction = "Alliance", minLevel = 1, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/tunnel", pack = "test", title = "The tunnel", faction = "Alliance", minLevel = 1, maxLevel = 20, steps = {
 	{ goals = { { t = "accept", quest = 2160, title = "Supplies to Tannok", map = 1426, x = 33.9, y = 72.2 } } },
 	{ goals = { { t = "goto", map = 1426, x = 47.2, y = 52.4 } } },
 	{ goals = { { t = "goto", map = 1426, x = 47.3, y = 52.9 } } },
 	{ goals = { { t = "level", level = 20 } } },
 } })
 -- A Dwarf near the tunnel with Coldridge work still ahead: Anvilmar, then the tunnel, then Kharanos.
-Polestar.RegisterGuide({ id = "test/coldridge", pack = "test", title = "Coldridge", faction = "Alliance", minLevel = 1, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/coldridge", pack = "test", title = "Coldridge", faction = "Alliance", minLevel = 1, maxLevel = 20, steps = {
 	{ goals = { { t = "goto", map = 1426, x = 28.8, y = 66.2 } } },
 	{ goals = { { t = "goto", map = 1426, x = 26.9, y = 80.0 } } },
 	{ goals = { { t = "goto", map = 1426, x = 28.8, y = 66.2 } } },
@@ -51,21 +51,21 @@ Polestar.RegisterGuide({ id = "test/coldridge", pack = "test", title = "Coldridg
 	{ goals = { { t = "level", level = 20 } } },
 } })
 -- Grik'nir's cave, then (or not) a stop in Anvilmar, the tunnel and Kharanos.
-Polestar.RegisterGuide({ id = "test/cave-anvilmar", pack = "test", title = "Cave, Anvilmar", faction = "Alliance", minLevel = 1, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/cave-anvilmar", pack = "test", title = "Cave, Anvilmar", faction = "Alliance", minLevel = 1, maxLevel = 20, steps = {
 	{ goals = { { t = "goto", map = 1426, x = 26.9, y = 80.0 } } },
 	{ goals = { { t = "goto", map = 1426, x = 28.8, y = 66.2 } } },
 	{ goals = { { t = "goto", map = 1426, x = 33.9, y = 72.2 } } },
 	{ goals = { { t = "goto", map = 1426, x = 47.2, y = 52.4 } } },
 	{ goals = { { t = "level", level = 20 } } },
 } })
-Polestar.RegisterGuide({ id = "test/cave-direct", pack = "test", title = "Cave, tunnel", faction = "Alliance", minLevel = 1, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/cave-direct", pack = "test", title = "Cave, tunnel", faction = "Alliance", minLevel = 1, maxLevel = 20, steps = {
 	{ goals = { { t = "goto", map = 1426, x = 26.9, y = 80.0 } } },
 	{ goals = { { t = "goto", map = 1426, x = 33.9, y = 72.2 } } },
 	{ goals = { { t = "goto", map = 1426, x = 47.2, y = 52.4 } } },
 	{ goals = { { t = "level", level = 20 } } },
 } })
 -- The trainer is the sixth step: past the reminder's reach from step 1.
-Polestar.RegisterGuide({ id = "test/trains-far", pack = "test", title = "Trains far", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/trains-far", pack = "test", title = "Trains far", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 	{ goals = { { t = "goto", map = 1413, x = 20, y = 20 } } },
 	{ goals = { { t = "goto", map = 1413, x = 21, y = 20 } } },
 	{ goals = { { t = "goto", map = 1413, x = 22, y = 20 } } },
@@ -78,8 +78,8 @@ Polestar.RegisterGuide({ id = "test/trains-far", pack = "test", title = "Trains 
 
 const EVENTS: &str = r#"
 DUE = {}
-Polestar.On("TRAIN_DUE", function(level, t) DUE[#DUE + 1] = { level = level, npc = t.npc, map = t.map, faction = t.faction, warrior = (function() for _, c in ipairs(t.classes) do if c == "WARRIOR" then return true end end return false end)() } end)
-Polestar.On("CLASS_TRAINED", function(level) DUE[#DUE + 1] = { trained = level } end)
+Northstar.On("TRAIN_DUE", function(level, t) DUE[#DUE + 1] = { level = level, npc = t.npc, map = t.map, faction = t.faction, warrior = (function() for _, c in ipairs(t.classes) do if c == "WARRIOR" then return true end end return false end)() } end)
+Northstar.On("CLASS_TRAINED", function(level) DUE[#DUE + 1] = { trained = level } end)
 "#;
 
 fn run(saved: Option<&str>, pre: &str, script: &str) -> Value {
@@ -90,15 +90,15 @@ fn run_files(saved: Option<&str>, pre: &str, script: &str, files: &[&str]) -> Va
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", files)],
-		saved: saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		addons: vec![Addon::files("Northstar", files)],
+		saved: saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		script: [TEST_PACK, TEST_SOURCE, GUIDES, EVENTS, pre, "stub.login()", script].join("\n"),
 		..Default::default()
 	})
 	.remove(0)
 }
 
-const TRAINED_AT_10: Option<&str> = Some("PolestarCharDB = { schema = 1, classTrainLevel = 10 }");
+const TRAINED_AT_10: Option<&str> = Some("NorthstarCharDB = { schema = 1, classTrainLevel = 10 }");
 
 #[test]
 fn an_undead_in_the_barrens_is_reminded_at_12_with_the_nearest_horde_warrior_trainer_training_clears_it() {
@@ -106,13 +106,13 @@ fn an_undead_in_the_barrens_is_reminded_at_12_with_the_nearest_horde_warrior_tra
 		TRAINED_AT_10,
 		"",
 		r#"
-			Polestar.Engine.SetGuide("test/barrens"); stub.advance(0.5)
+			Northstar.Engine.SetGuide("test/barrens"); stub.advance(0.5)
 			local first = DUE[1]
 			-- Once per level: more evaluations do not repeat it.
-			stub.advance(0.5); Polestar.Engine.RequestUpdate(); stub.advance(0.5)
+			stub.advance(0.5); Northstar.Engine.RequestUpdate(); stub.advance(0.5)
 			local count = #DUE
 			stub.world.trainer(first.npc); stub.advance(0.5)
-			emit({ first = first, count = count, trained = DUE[#DUE], saved = PolestarCharDB.classTrainLevel })"#,
+			emit({ first = first, count = count, trained = DUE[#DUE], saved = NorthstarCharDB.classTrainLevel })"#,
 	);
 	assert_eq!(out["first"]["level"], 12);
 	assert_eq!(out["first"]["faction"], "H");
@@ -127,11 +127,11 @@ fn an_undead_in_the_barrens_is_reminded_at_12_with_the_nearest_horde_warrior_tra
 #[test]
 fn a_warlock_at_the_crossroads_is_reminded_with_strahad_farsan_in_ratchet_not_orgrimmar() {
 	let out = run(
-		Some("PolestarCharDB = { schema = 1, classTrainLevel = 16 }"),
+		Some("NorthstarCharDB = { schema = 1, classTrainLevel = 16 }"),
 		r#"stub.world.race, stub.world.raceName, stub.world.class, stub.world.level = "Orc", "Orc", "WARLOCK", 18"#,
 		r#"
-			Polestar.Engine.SetGuide("test/barrens"); stub.advance(0.5)
-			emit({ npc = DUE[1] and DUE[1].npc, trainer = Polestar.Engine.IsClassTrainer(6251) })"#,
+			Northstar.Engine.SetGuide("test/barrens"); stub.advance(0.5)
+			emit({ npc = DUE[1] and DUE[1].npc, trainer = Northstar.Engine.IsClassTrainer(6251) })"#,
 	);
 	assert_eq!(out, json!({ "npc": 6251, "trainer": true }));
 }
@@ -140,9 +140,9 @@ fn a_warlock_at_the_crossroads_is_reminded_with_strahad_farsan_in_ratchet_not_or
 fn no_reminder_when_the_guide_trains_the_class_within_its_next_steps_on_odd_levels_on_first_sight_or_when_off() {
 	// The open guide sends warriors to their trainer two steps ahead.
 	let soon = run(
-		Some(r#"PolestarCharDB = { schema = 1, classTrainLevel = 10, tabs = { "test/trains" }, activeTab = 1 }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, classTrainLevel = 10, tabs = { "test/trains" }, activeTab = 1 }"#),
 		"",
-		"stub.advance(0.5); emit({ due = #DUE, guide = Polestar.Engine.GetGuide().id })",
+		"stub.advance(0.5); emit({ due = #DUE, guide = Northstar.Engine.GetGuide().id })",
 	);
 	assert_eq!(soon, json!({ "due": 0, "guide": "test/trains" }));
 
@@ -150,16 +150,16 @@ fn no_reminder_when_the_guide_trains_the_class_within_its_next_steps_on_odd_leve
 	assert_eq!(odd["due"], 0);
 
 	// No stored level (new install, or lost saved variables): counts as trained now.
-	let fresh = run(None, "", "stub.advance(0.5); emit({ due = #DUE, saved = PolestarCharDB.classTrainLevel })");
+	let fresh = run(None, "", "stub.advance(0.5); emit({ due = #DUE, saved = NorthstarCharDB.classTrainLevel })");
 	assert_eq!(fresh, json!({ "due": 0, "saved": 12 }));
 
-	let off = run(TRAINED_AT_10, r#"Polestar.Set("behavior.trainReminder", "off")"#, "stub.advance(0.5); emit({ due = #DUE })");
+	let off = run(TRAINED_AT_10, r#"Northstar.Set("behavior.trainReminder", "off")"#, "stub.advance(0.5); emit({ due = #DUE })");
 	assert_eq!(off["due"], 0);
 }
 
 /// A character with `guide` open, last trained at `trained`.
 fn on_guide(guide: &str, trained: i32) -> String {
-	format!(r#"PolestarCharDB = {{ schema = 1, classTrainLevel = {trained}, tabs = {{ "{guide}" }}, activeTab = 1 }}"#)
+	format!(r#"NorthstarCharDB = {{ schema = 1, classTrainLevel = {trained}, tabs = {{ "{guide}" }}, activeTab = 1 }}"#)
 }
 
 // Dun Morogh's Era frame, with a Dwarf Shaman at `level` standing at (x, y).
@@ -185,7 +185,7 @@ fn the_reminder_names_the_trainer_on_the_guide_s_route_not_the_nearest_one_behin
 fn the_route_never_leads_to_a_trainer_in_a_zone_far_above_the_character() {
 	let out = run_files(
 		Some(&on_guide("test/route", 10)),
-		"Polestar.Maps.RegisterZoneLevels({ [1413] = { 10, 25, 50, 50 }, [1411] = { 1, 10, 50, 50 }, [1454] = { 1, 20, 50, 50 }, [1412] = { 55, 60, 50, 50 }, [1456] = { 55, 60, 50, 50 } })",
+		"Northstar.Maps.RegisterZoneLevels({ [1413] = { 10, 25, 50, 50 }, [1411] = { 1, 10, 50, 50 }, [1454] = { 1, 20, 50, 50 }, [1412] = { 55, 60, 50, 50 }, [1456] = { 55, 60, 50, 50 } })",
 		"stub.advance(0.5); emit({ map = DUE[1].map })",
 		&["Core/Core.xml", "Maps/Maps.lua", "Maps/WorldMap.lua"],
 	);
@@ -196,7 +196,7 @@ fn the_route_never_leads_to_a_trainer_in_a_zone_far_above_the_character() {
 fn a_trainer_close_by_line_but_far_by_the_route_planner_a_mountain_between_loses_to_one_that_is_reachable() {
 	let pick = |planner: bool| {
 		let pre = if planner {
-			r#"Polestar.Nav = { EstimateTravel = function(a, b)
+			r#"Northstar.Nav = { EstimateTravel = function(a, b)
 			if a.npc == 3063 or b.npc == 3063 then return 2500 end -- Krang Stonehoof: over the ridge
 			return a.map == b.map and 100 or 1000
 		end }"#
@@ -219,7 +219,7 @@ fn a_dwarf_shaman_who_dings_6_in_the_trogg_tunnel_is_sent_on_to_kharanos_not_bac
 
 #[test]
 fn near_the_tunnel_with_coldridge_work_still_ahead_the_reminder_keeps_to_anvilmar_664() {
-	let out = run(Some(&on_guide("test/coldridge", 2)), &dwarf_shaman(4, 36.5, 71.5), "stub.advance(0.5); emit({ step = Polestar.Engine.GetStepIndex(), npc = DUE[1] and DUE[1].npc })");
+	let out = run(Some(&on_guide("test/coldridge", 2)), &dwarf_shaman(4, 36.5, 71.5), "stub.advance(0.5); emit({ step = Northstar.Engine.GetStepIndex(), npc = DUE[1] and DUE[1].npc })");
 	// 257446 Teo Hammerstorm (Anvilmar).
 	assert_eq!(out, json!({ "step": 1, "npc": 257446 }));
 }
@@ -241,10 +241,10 @@ fn the_reminder_follows_the_live_step_not_the_step_on_screen_664() {
 			"",
 			&format!(
 				"stub.advance(0.5)
-			Polestar.Engine.Goto({view}); stub.advance(0.5)
+			Northstar.Engine.Goto({view}); stub.advance(0.5)
 			stub.world.level = 14
-			Polestar.Engine.RequestUpdate(); stub.advance(0.5)
-			emit({{ due = #DUE, step = Polestar.Engine.GetStepIndex() }})"
+			Northstar.Engine.RequestUpdate(); stub.advance(0.5)
+			emit({{ due = #DUE, step = Northstar.Engine.GetStepIndex() }})"
 			),
 		)
 	};
@@ -262,8 +262,8 @@ fn the_guide_s_next_training_stop_counts_applicable_steps_from_the_live_step_not
 			"",
 			&format!(
 				"stub.advance(0.5)
-			Polestar.Engine.Goto({view}); stub.advance(0.5)
-			emit({{ Polestar.Engine.GuideTrainStop() }})"
+			Northstar.Engine.Goto({view}); stub.advance(0.5)
+			emit({{ Northstar.Engine.GuideTrainStop() }})"
 			),
 		)
 	};
@@ -281,9 +281,9 @@ fn a_train_goal_that_already_reads_done_is_no_training_stop_ahead_677() {
 		Some(&on_guide("test/trains-far", 12)),
 		"",
 		"stub.advance(0.5)
-		local before = { Polestar.Engine.GuideTrainStop() }
-		Polestar.Engine.ToggleGoal(6, 1); stub.advance(0.5)
-		emit({ before = before, after = { Polestar.Engine.GuideTrainStop() } })",
+		local before = { Northstar.Engine.GuideTrainStop() }
+		Northstar.Engine.ToggleGoal(6, 1); stub.advance(0.5)
+		emit({ before = before, after = { Northstar.Engine.GuideTrainStop() } })",
 	);
 	assert_eq!(out, json!({ "before": [6], "after": [false] }));
 }
@@ -294,7 +294,7 @@ fn a_class_trainer_is_one_the_registry_holds_for_the_character_s_class_riding_tr
 		None,
 		"",
 		r#"
-			local E = Polestar.Engine
+			local E = Northstar.Engine
 			emit({ warrior = E.IsClassTrainer(2119), mage = E.IsClassTrainer(198), riding = E.IsClassTrainer(4732), none = E.IsClassTrainer(nil) })"#,
 	);
 	// Dannal Stern (warrior, Tirisfal), Khelden Bremen (mage, Northshire), Randal Hunter (riding, Elwynn).
@@ -307,7 +307,7 @@ fn every_class_trainer_counts_not_only_the_reminder_s_one_per_town_capital_train
 	// Ironforge), Grezz Ragefist and Ander Germaine (warriors, Orgrimmar and Stormwind).
 	let cases = [("HUNTER", 3406), ("WARLOCK", 3325), ("MAGE", 7312), ("ROGUE", 5167), ("WARRIOR", 3353), ("WARRIOR", 914)];
 	for (cls, npc) in cases {
-		let out = run(None, &format!("stub.world.class = \"{cls}\""), &format!("emit({{ yes = Polestar.Engine.IsClassTrainer({npc}) }})"));
+		let out = run(None, &format!("stub.world.class = \"{cls}\""), &format!("emit({{ yes = Northstar.Engine.IsClassTrainer({npc}) }})"));
 		assert_eq!(out["yes"], true, "{cls} {npc}");
 	}
 	// Pet trainer (Nalesette Wildbringer), weapon master (Hanashi), riding (Randal Hunter), and Ariyell
@@ -315,7 +315,7 @@ fn every_class_trainer_counts_not_only_the_reminder_s_one_per_town_capital_train
 	let out = run(
 		None,
 		r#"stub.world.class = "HUNTER""#,
-		"local E = Polestar.Engine emit({ pet = E.IsClassTrainer(543), weapon = E.IsClassTrainer(2704), riding = E.IsClassTrainer(4732), merchant = E.IsClassTrainer(4203) })",
+		"local E = Northstar.Engine emit({ pet = E.IsClassTrainer(543), weapon = E.IsClassTrainer(2704), riding = E.IsClassTrainer(4732), merchant = E.IsClassTrainer(4203) })",
 	);
 	assert_eq!(out, json!({ "pet": false, "weapon": false, "riding": false, "merchant": false }));
 }
@@ -323,20 +323,20 @@ fn every_class_trainer_counts_not_only_the_reminder_s_one_per_town_capital_train
 // Grezz trains warriors in step 1; step 2 holds the route; step 3 trains again.
 const AGAIN: &str = r#"
 local grezz = { { npc = 3353, npcName = "Grezz Ragefist", map = 1454, x = 79.8, y = 31.4, f = "e", faction = "H", classes = { "WARRIOR" } } }
-Polestar.RegisterGuide({ id = "test/again", pack = "test", title = "Trains again", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/again", pack = "test", title = "Trains again", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 	{ goals = { { t = "train", class = true, candidates = grezz } } },
 	{ goals = { { t = "accept", quest = 870, title = "The Forgotten Pools", map = 1413, x = 52, y = 31 } } },
 	{ goals = { { t = "train", class = true, candidates = grezz } } },
 	{ goals = { { t = "level", level = 20 } } },
 } })
-Polestar.Engine.SetGuide("test/again")
+Northstar.Engine.SetGuide("test/again")
 "#;
 
 #[test]
 fn train_class_asks_nothing_when_there_is_nothing_new_trained_at_this_level_or_at_the_even_level_below_an_odd_one() {
 	let at = |level: i32, visit: Option<i32>, extra: &str| {
-		let saved = format!("PolestarCharDB = {{ schema = 1, classTrainLevel = {}{} }}", visit.unwrap_or(level), visit.map(|v| format!(", classTrainVisit = {v}")).unwrap_or_default());
-		run(Some(&saved), &format!("stub.world.level = {level}"), &format!("{AGAIN} stub.advance(0.5) {extra} emit({{ step = Polestar.Engine.GetStepIndex() }})"))["step"].clone()
+		let saved = format!("NorthstarCharDB = {{ schema = 1, classTrainLevel = {}{} }}", visit.unwrap_or(level), visit.map(|v| format!(", classTrainVisit = {v}")).unwrap_or_default());
+		run(Some(&saved), &format!("stub.world.level = {level}"), &format!("{AGAIN} stub.advance(0.5) {extra} emit({{ step = Northstar.Engine.GetStepIndex() }})"))["step"].clone()
 	};
 	assert_eq!(at(12, Some(12), ""), 2, "trained at 12, still 12");
 	assert_eq!(at(13, Some(12), ""), 2, "trained at 12, now 13: classes learn on even levels");
@@ -348,6 +348,49 @@ fn train_class_asks_nothing_when_there_is_nothing_new_trained_at_this_level_or_a
 	assert_eq!(at(13, Some(12), "stub.world.setLevel(14) stub.advance(0.5)"), 2, "passed at 13, then 14");
 }
 
+// A Dwarf at 19 stood at Ironforge's trainer with nothing new, and Loch Modan's `train class` step held
+// the guide (2026-11-09): no spell was learned, and no visit had been recorded at 18. A class trainer's
+// list with no "available" service is the visit for the level; with one, the step waits for the spell.
+#[test]
+fn train_class_is_done_when_the_class_trainer_lists_nothing_to_learn_and_waits_for_the_spell_when_it_lists_one() {
+	let play = |services: &str, filter_off: bool, after: &str| {
+		let pre = format!(
+			r#"stub.world.level = 19
+			SERVICES = {services}
+			function GetNumTrainerServices() return #SERVICES end
+			function GetTrainerServiceInfo(i) local s = SERVICES[i] if s then return s[1], s[2] end end
+			{}"#,
+			if filter_off { "function GetTrainerServiceTypeFilter(kind) return kind ~= \"available\" end" } else { "" }
+		);
+		run(
+			None,
+			&pre,
+			&format!(
+				r#"{AGAIN} stub.advance(0.5)
+				local before = Northstar.Engine.GetStepIndex()
+				stub.world.trainer(3353); stub.advance(0.5)
+				local open = Northstar.Engine.GetStepIndex()
+				{after}
+				emit({{ before = before, open = open, after = Northstar.Engine.GetStepIndex(), visit = NorthstarCharDB.classTrainVisit or false }})"#
+			),
+		)
+	};
+	let used = r#"{ { "Battle Shout", "used" }, { "Cleave", "unavailable" } }"#;
+	assert_eq!(play(used, false, ""), json!({ "before": 1, "open": 2, "after": 2, "visit": 19 }), "nothing to learn at 19: done");
+	assert_eq!(play("{}", false, ""), json!({ "before": 1, "open": 2, "after": 2, "visit": 19 }), "an empty list: done");
+	let one = r#"{ { "Battle Shout", "used" }, { "Hamstring", "available" } }"#;
+	assert_eq!(play(one, false, "stub.world.learnSpell(1715); stub.advance(0.5)"), json!({ "before": 1, "open": 1, "after": 2, "visit": 19 }), "a spell to learn: waits until it is learned");
+	assert_eq!(play(one, false, "stub.world.close(); stub.advance(0.5)"), json!({ "before": 1, "open": 1, "after": 1, "visit": false }), "closed without training: still open");
+	// With the "available" filter off the list hides what could be learned: no word either way.
+	assert_eq!(play(used, true, ""), json!({ "before": 1, "open": 1, "after": 1, "visit": false }), "filter off: unknown");
+	// The list after the last purchase (TRAINER_UPDATE) has nothing left.
+	assert_eq!(
+		play(one, false, r#"SERVICES[2][2] = "used"; stub.fire("TRAINER_UPDATE"); stub.advance(0.5)"#),
+		json!({ "before": 1, "open": 1, "after": 2, "visit": 19 }),
+		"nothing left after training"
+	);
+}
+
 #[test]
 fn a_spell_learned_at_a_class_trainer_records_the_visit_s_level_opening_the_window_or_a_first_sight_does_not() {
 	let out = run(
@@ -355,11 +398,11 @@ fn a_spell_learned_at_a_class_trainer_records_the_visit_s_level_opening_the_wind
 		"",
 		r#"
 			stub.advance(0.5)
-			local before = PolestarCharDB.classTrainVisit
+			local before = NorthstarCharDB.classTrainVisit
 			stub.world.trainer(3353); stub.advance(0.5)
-			local opened = PolestarCharDB.classTrainVisit
+			local opened = NorthstarCharDB.classTrainVisit
 			stub.world.learnSpell(100); stub.advance(0.5)
-			emit({ before = before or false, opened = opened or false, visit = PolestarCharDB.classTrainVisit })"#,
+			emit({ before = before or false, opened = opened or false, visit = NorthstarCharDB.classTrainVisit })"#,
 	);
 	assert_eq!(out, json!({ "before": false, "opened": false, "visit": 12 }));
 }

@@ -98,11 +98,11 @@ mod native {
 	}
 
 	/// worldInputs(dataDir, sourcesDir, rulesFile, gridDir) of a repository checkout.
-	/// The grid: $POLESTAR_GRID, else data/local/nav4 (nav/router.js GRID_DIR).
+	/// The grid: $NORTHSTAR_GRID, else data/local/nav4 (nav/router.js GRID_DIR).
 	pub fn world_inputs(root: &Path) -> Result<Vec<(String, String)>, crate::data::Error> {
 		let data = root.join("data/forever");
 		let sources = root.join("data/sources");
-		let grid = std::env::var_os("POLESTAR_GRID").map(std::path::PathBuf::from).unwrap_or_else(|| root.join("data/local/nav4"));
+		let grid = std::env::var_os("NORTHSTAR_GRID").map(std::path::PathBuf::from).unwrap_or_else(|| root.join("data/local/nav4"));
 		let mut out = vec![("builder".to_string(), crate::BUILDER_VERSION.to_string()), ("grid".to_string(), grid_fingerprint(&grid).unwrap_or_else(|| "-".into()))];
 		for f in WORLD_DATA_FILES {
 			let name = format!("{f}.json");

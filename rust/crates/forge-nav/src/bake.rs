@@ -2,14 +2,14 @@
 //! guide step, routed at build time on the hybrid backend (Leffe's navigation maps, our grid where
 //! his have no way or a detour, as the walks stage chooses: hybrid.rs), simplified to its corners
 //! with each segment's move and floor, and the ground's height every STRIP_YD along it, packed as
-//! one printable string the addon decodes (addon/Polestar/Nav/Baked.lua).
+//! one printable string the addon decodes (addon/Northstar/Nav/Baked.lua).
 //!
 //! A leg: the drawn way; 3D Douglas-Peucker at SIMPLIFY_YD that never drops a corner where the move
 //! or the floor changes, or a hop (jump, drop, climb, lift) starts or ends; then the ground every
 //! STRIP_YD along the kept line: our grid's surface nearest the line's own height there (its
 //! heights are the collision mesh's), else the drawing backend's, else the line's. A leg that does
 //! not route, or runs more than DETOUR times the straight line without passing a named chokepoint
-//! (Polestar_Nav's Chokepoints.lua), is not baked: it goes to the QA list.
+//! (Northstar_Nav's Chokepoints.lua), is not baked: it goes to the QA list.
 //!
 //! The string: base-64 digits (A-Z a-z 0-9 + /), each 5 bits of a varint plus a continuation bit
 //! (32), signed values zigzagged. Version 2: 2, n; per point dx, dy (QXY yd) and dz (QZ yd) from the
@@ -444,7 +444,7 @@ pub fn decode(s: &str) -> Option<Leg> {
 	(r.i == r.b.len() && strip.len() == m).then_some(Leg { pts, cls, floor, tail, strip })
 }
 
-/// A named chokepoint (Polestar_Nav's Nav/Chokepoints.lua): a gate, bridge, tunnel, cave or
+/// A named chokepoint (Northstar_Nav's Nav/Chokepoints.lua): a gate, bridge, tunnel, cave or
 /// building mouth, pass or lift.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Choke {
@@ -454,7 +454,7 @@ pub struct Choke {
 	pub r: f64,
 }
 
-/// Nav/Chokepoints.lua's entries (`PolestarNavChokepoints[<c>] = {` then one `{ wx = .., wy = ..,
+/// Nav/Chokepoints.lua's entries (`NorthstarNavChokepoints[<c>] = {` then one `{ wx = .., wy = ..,
 /// z = .., r = .., kind = "..", name = ".." ...` per line).
 pub fn load_chokepoints(text: &str) -> Vec<Choke> {
 	let mut out = Vec::new();
@@ -466,7 +466,7 @@ pub fn load_chokepoints(text: &str) -> Vec<Choke> {
 		rest[..end].parse().ok()
 	};
 	for line in text.lines() {
-		if let Some(rest) = line.strip_prefix("PolestarNavChokepoints[") {
+		if let Some(rest) = line.strip_prefix("NorthstarNavChokepoints[") {
 			c = rest.split(']').next().and_then(|v| v.parse::<u32>().ok());
 			continue;
 		}
@@ -728,7 +728,7 @@ mod tests {
 
 	#[test]
 	fn chokepoints_read_from_the_pack_file() {
-		let text = "PolestarNavChokepoints[1] = {\n\t{ wx = -1290.5, wy = 188, z = 67.5, r = 6, kind = \"lift\", name = \"Mesa Elevator\" },\n}\n";
+		let text = "NorthstarNavChokepoints[1] = {\n\t{ wx = -1290.5, wy = 188, z = 67.5, r = 6, kind = \"lift\", name = \"Mesa Elevator\" },\n}\n";
 		let c = load_chokepoints(text);
 		assert_eq!(c, vec![Choke { c: 1, wx: -1290.5, wy: 188.0, r: 6.0 }]);
 		assert!(passes_named(&[[-1300.0, 180.0, 0.0]], 1, &c));

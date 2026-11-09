@@ -1,5 +1,5 @@
 //! tools/lib/gear/leveling.js (+ the itemdb/stats.js encode/decode it uses): ForeverLevelingBiS ->
-//! addon/Polestar_ItemDB/Forever.lua, Forever's item stats over the Era table and where each
+//! addon/Northstar_ItemDB/Forever.lua, Forever's item stats over the Era table and where each
 //! leveling item comes from.
 
 use forge_guide::js::{num_str, str_to_num, Obj, V};
@@ -430,7 +430,7 @@ pub fn build_forever_pack(flb: &Flb, era_text: &str) -> Result<Pack, String> {
 		"--   src     q<quest> | d<npc>x<pct*10>z<zone> | c<spell>p<profession>s<skill>".into(),
 		"--   quests  \"<level> <req> <side> <zone> <reqRace> <reqClass> <dungeon>|<choices>|<items>|<name>\"".into(),
 		String::new(),
-		"local DB = Polestar and Polestar.ItemDB".into(),
+		"local DB = Northstar and Northstar.ItemDB".into(),
 		"if not (DB and DB.Register and DB.RegisterLeveling) then return end".into(),
 		String::new(),
 		"DB.Register(nil, {".into(),

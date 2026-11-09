@@ -1,6 +1,6 @@
 //! Walking maps for the addon router's tests: hand-made maps written as `forge nav pack` writes a map
 //! (forge-nav's fixture writer, `forge_nav::pack::fixture`), in a temp folder the test loads with
-//! `dofile` before Polestar_Nav's Routing files.
+//! `dofile` before Northstar_Nav's Routing files.
 //!
 //! ```ignore
 //! let cells = [(20 * 128 + 64, FixtureCell { val: 1, cls: 1 })];

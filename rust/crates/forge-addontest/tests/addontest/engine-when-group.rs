@@ -1,4 +1,4 @@
-//! `when group <quest>` during play (addon/Polestar/Core/Engine.lua): the player answers "do this group quest?"
+//! `when group <quest>` during play (addon/Northstar/Core/Engine.lua): the player answers "do this group quest?"
 //! once per quest, per character (CharState().groupQuests, Engine.AnswerGroup). Unanswered, the step applies but
 //! is not done, so the route waits there and automation leaves the quest alone; "skip" makes `when group` fail
 //! (its turn-in goes with it, orphaned) and `when !group` hold, "do" the other way round. The answer is never
@@ -20,7 +20,7 @@ w.onQuest(783, {})
 // Step 1 offers group quest 7 (Kobold Camp Cleanup, standing in for a group quest), step 2 hands it in, step 3
 // hands in A Threat Within.
 const GROUP_GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/group", pack = "test", title = "Group", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Group quest", when = { { k = "group", q = 7 } }, goals = {
@@ -39,7 +39,7 @@ Polestar.RegisterGuide({
 // A solo and a group way to the same objective of A Threat Within, already in the log: step 1 for those who
 // skip, step 2 for those who group.
 const PAIR_GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/group", pack = "test", title = "Group", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "The solo way", when = { { k = "group", q = 783, neg = true } }, goals = { { t = "task", text = "Pull one at a time" } } },
@@ -52,13 +52,13 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 function at() return E.GetLiveStep() end
 "#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 struct Opts<'a> {
@@ -78,7 +78,7 @@ fn run(o: Opts) -> Vec<Value> {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{}", o.before),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), format!("{}PolestarCharDB = {}", o.db, lua_value(&o.saved)))],
+		saved: vec![("Northstar".into(), format!("{}NorthstarCharDB = {}", o.db, lua_value(&o.saved)))],
 		script: [TEST_PACK, TEST_SOURCE, o.guide, HELPERS, "stub.login()", r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, o.script].join("\n"),
 		..Default::default()
 	})
@@ -106,7 +106,7 @@ fn a_step_whose_goals_are_done_still_waits_for_the_answer() {
 #[test]
 fn skip_passes_the_step_and_its_turn_in_goes_with_it_do_keeps_the_quest_on_the_route() {
 	let out = run(opts(
-		r#"E.AnswerGroup(7, "skip"); flush(); emit({ at = at(), s1 = E.GetStepView(1).status, q = E.GroupQuestion() or false }); stub.fire("PLAYER_LOGOUT"); emit(PolestarCharDB.groupQuests)"#,
+		r#"E.AnswerGroup(7, "skip"); flush(); emit({ at = at(), s1 = E.GetStepView(1).status, q = E.GroupQuestion() or false }); stub.fire("PLAYER_LOGOUT"); emit(NorthstarCharDB.groupQuests)"#,
 	));
 	assert_eq!(out[0], json!({ "at": 3, "s1": "skipped", "q": false }));
 	assert_eq!(out[1], json!({ "7": "skip" }));
@@ -163,7 +163,7 @@ fn a_group_quest_with_nothing_to_do_now_does_not_hold_the_route_one_not_open_yet
 	assert_eq!(skipped[0], json!({ "at": 3, "q": false }));
 	// Grey, left out by the catch-up ("Skip grey quests").
 	let grey = GROUP_GUIDE.replacen(r#"{ t = "accept", quest = 7,"#, r#"{ t = "accept", quest = 7, qlvl = 2,"#, 1).replacen("maxLevel = 10", "maxLevel = 30", 1);
-	let left = run(Opts { guide: &grey, before: "w.setLevel(20)", db: "PolestarDB = { schema = 1, settings = { behavior = { skipGrey = true } } }; ", ..opts(ask) });
+	let left = run(Opts { guide: &grey, before: "w.setLevel(20)", db: "NorthstarDB = { schema = 1, settings = { behavior = { skipGrey = true } } }; ", ..opts(ask) });
 	assert_eq!(left[0], json!({ "at": 3, "q": false }));
 	// Above the character's level: passed for now, asked about at that level.
 	let high = GROUP_GUIDE.replacen(r#"{ t = "accept", quest = 7,"#, r#"{ t = "accept", quest = 7, minLevel = 5,"#, 1);
@@ -179,7 +179,7 @@ fn guides_validate_takes_group_with_one_quest_id_on_a_step_and_refuses_it_on_a_n
 		stubs: vec!["stub_world.lua"],
 		addons: vec![core()],
 		script: r#"
-			local V = Polestar.Guides.Validate
+			local V = Northstar.Guides.Validate
 			local function g(step, extra) local d = { id = "t/v", pack = "test", title = "V", minLevel = 1, maxLevel = 10, steps = { step, { label = "end", goals = { { t = "note", text = "y" } } } } }; for k, v in pairs(extra or {}) do d[k] = v end; return d end
 			local note = { { t = "note", text = "x" } }
 			emit({
@@ -203,34 +203,34 @@ fn guides_validate_takes_group_with_one_quest_id_on_a_step_and_refuses_it_on_a_n
 fn groupquests_lists_the_group_quests_of_this_character_s_guides_once_each_the_options_tab_answers_them() {
 	// An Alliance Warrior: the Horde guide's quest and the Mage-only step's are not listed.
 	let guides = r#"
-Polestar.RegisterGuide({ id = "test/a", pack = "test", title = "A", faction = "Alliance", minLevel = 1, maxLevel = 10, steps = {
+Northstar.RegisterGuide({ id = "test/a", pack = "test", title = "A", faction = "Alliance", minLevel = 1, maxLevel = 10, steps = {
 	{ when = { { k = "group", q = 7 } }, goals = { { t = "accept", quest = 7, title = "Kobold Camp Cleanup", npc = 197, map = 1429, x = 48.9, y = 41.6 } } },
 	{ when = { { k = "group", q = 7, neg = true } }, goals = { { t = "note", text = "Solo" } } },
 	{ only = { classes = { "MAGE" } }, when = { { k = "group", q = 9 } }, goals = { { t = "note", text = "Mages" } } },
 } })
-Polestar.RegisterGuide({ id = "test/h", pack = "test", title = "H", faction = "Horde", minLevel = 1, maxLevel = 10, steps = {
+Northstar.RegisterGuide({ id = "test/h", pack = "test", title = "H", faction = "Horde", minLevel = 1, maxLevel = 10, steps = {
 	{ when = { { k = "group", q = 8 } }, goals = { { t = "note", text = "Horde" } } },
 } })
 "#;
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Dungeons/Dungeons.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Dungeons/Dungeons.xml"])],
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,
 			guides,
 			r#"stub.login()
-			emit(Polestar.Engine.GroupQuests())
+			emit(Northstar.Engine.GroupQuests())
 			local out = {}
-			for _, spec in ipairs(Polestar.Widgets.OptionsRegistry) do
+			for _, spec in ipairs(Northstar.Widgets.OptionsRegistry) do
 				if spec.page == "Discovery" and spec.tab == "Group quests" then
 					for _, c in ipairs(spec.controls) do
 						local before = c.get()
 						c.set(true)
-						out[#out + 1] = { label = c.label(), before = before, after = Polestar.Engine.GroupAnswer(7) }
+						out[#out + 1] = { label = c.label(), before = before, after = Northstar.Engine.GroupAnswer(7) }
 						c.set(false)
-						out[#out].off = Polestar.Engine.GroupAnswer(7)
+						out[#out].off = Northstar.Engine.GroupAnswer(7)
 					end
 				end
 			end

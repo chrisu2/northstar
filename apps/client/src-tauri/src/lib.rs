@@ -1,4 +1,4 @@
-//! Polestar Client: finds World of Warcraft: Forever, installs the Polestar
+//! Polestar Client: finds World of Warcraft: Forever, installs the Northstar
 //! Recorder, and with the player's consent uploads what it records to the
 //! recording server (docs/RECORDING.md is the contract). It also installs and
 //! updates community guide packs from polestar.guide, and opens the site's

@@ -1,11 +1,11 @@
-//! `forge i18n`: Polestar's translations (docs/TRANSLATING.md; forge_i18n): the interface strings
+//! `forge i18n`: Northstar's translations (docs/TRANSLATING.md; forge_i18n): the interface strings
 //! (status, check, sync, keys, import), a pack's guide texts (guides sync|check|stats) and the English
 //! left on a non-English client (leaks), and the translations against the client's names (audit). Port of tools/commands/i18n.js; `i18n fit` still runs there,
 //! and the names addons are `forge data names`.
 
 use super::release::{checkout, opt, positional};
 use super::{usage, Fail};
-use forge_guide::i18n_files::read_locale_files;
+use forge_guide::i18n_files::{locale_file, read_locale_files};
 use forge_guide::i18n_guides::{guide_state, pack_locales};
 use forge_guide::js::{stringify, Obj, V};
 use forge_guide::locales::{locale, LOCALE_CODES};
@@ -20,10 +20,10 @@ pub fn usage_text() -> String {
 	format!(
 		"usage: forge i18n <status|check|sync|keys|import|leaks|audit|guides> [options]
 
-Polestar's interface translations (docs/TRANSLATING.md): one file per
-locale, addon/Polestar/Locales/<locale>.lua, and the same for the Recorder,
-addon/Polestar_Recorder/Locales/<locale>.lua. Locales: {}.
-check and sync read both addons; status, keys and import read Polestar's
+Northstar's interface translations (docs/TRANSLATING.md): one file per
+locale, Interface.lua in its language folder addon/Northstar_<locale>, and
+the Recorder's, addon/Northstar_Recorder/Locales/<locale>.lua. Locales: {}.
+check and sync read both addons; status, keys and import read Northstar's
 unless --addon names the other. (`i18n fit` still runs on node
 tools/polestar.js; the names addons are forge data names.)
 
@@ -43,8 +43,8 @@ tools/polestar.js; the names addons are forge data names.)
                              group, and moves translations of keys it lost to
                              a commented block at the end. Never rewrites a
                              translation. A locale named that has no file
-                             gets one, loaded from Core/Core.xml (the
-                             Recorder's TOC lists its own).
+                             gets one (the language folder's TOC lists
+                             Interface.lua; the Recorder's TOC its own).
   i18n keys                  every interface key with where it is used.
   i18n import <locale> <file.lua>...
                              merges translations written apart (a file that
@@ -64,7 +64,7 @@ tools/polestar.js; the names addons are forge data names.)
                              data/i18n/leaks-allow.json does not allow,
                              grouped by where it came from (an untranslated
                              interface string or guide text, a name missing
-                             from the names pack, a name Polestar.Names was
+                             from the names pack, a name Northstar.Names was
                              not asked for, English in the code). Fails (exit
                              1) on any, or on a scene that errors. Scenes
                              (--scene; default all):
@@ -124,8 +124,8 @@ options:
   --pack <dir>      guides: the pack (default our guides/)
   --data <dir>      guides: the reference data (default data/forever)
   --markdown        status: a Markdown table
-  --addon <name>    status, check, sync, keys, import: Polestar or
-                    Polestar_Recorder only
+  --addon <name>    status, check, sync, keys, import: Northstar or
+                    Northstar_Recorder only
   --root <dir>      the checkout (default: the one above here, else above the forge binary)",
 		LOCALE_CODES.join(", "),
 		wrap_words(&format!("{}.", scenes.join(", ")), 29)
@@ -218,7 +218,7 @@ fn locales(positional: &[String]) -> Result<Vec<String>, Fail> {
 	positional.iter().map(|l| if locale(l).is_some() { Ok(l.clone()) } else { Err(usage(format!("unknown locale \"{l}\": one of {}", LOCALE_CODES.join(", ")))) }).collect()
 }
 
-/// --addon <name> -> that addon; else every addon, or Polestar's alone for the commands that read one.
+/// --addon <name> -> that addon; else every addon, or Northstar's alone for the commands that read one.
 fn addons<'a>(o: &Opts, one: bool) -> Result<Vec<&'a Addon>, Fail> {
 	if let Some(a) = o.opt("--addon") {
 		return match ADDONS.iter().find(|x| x.name == a) {
@@ -335,7 +335,7 @@ fn check(o: &Opts, positional: &[String]) -> Result<u8, Fail> {
 		}
 		if positional.is_empty() {
 			for f in stray_files(&dir) {
-				fail(format!("{}: not a locale Polestar ships (LOCALES in rust/crates/forge-guide/src/locales.rs)", rel(&f)));
+				fail(format!("{}: not a locale Northstar ships (LOCALES in rust/crates/forge-guide/src/locales.rs)", rel(&f)));
 			}
 		}
 		for (l, s) in &st.locales {
@@ -386,26 +386,10 @@ fn check(o: &Opts, positional: &[String]) -> Result<u8, Fail> {
 	Ok(0)
 }
 
-/// The Core/Core.xml line that loads a locale file, added after the last one.
-fn load_in_core_xml(o: &Opts, locale: &str) -> Result<bool, String> {
-	let xml = o.root.join("addon/Polestar/Core/Core.xml");
-	let text = std::fs::read_to_string(&xml).map_err(|e| format!("{}: {e}", xml.display()))?;
-	let line = format!("\t<Script file=\"..\\Locales\\{locale}.lua\"/>");
-	if text.contains(&line) {
-		return Ok(false);
-	}
-	let mut lines: Vec<String> = text.split('\n').map(String::from).collect();
-	let at = lines.iter().rposition(|l| l.contains("file=\"..\\Locales\\")).or_else(|| lines.iter().position(|l| l.contains("file=\"Init.lua\"")));
-	let at = at.map_or(0, |i| i + 1);
-	lines.insert(at, line);
-	std::fs::write(&xml, lines.join("\n")).map_err(|e| format!("{}: {e}", xml.display()))?;
-	Ok(true)
-}
-
-/// Writes the files that changed. A new Polestar locale file is loaded from Core/Core.xml; another
-/// addon's TOC lists its files. -> how many were written.
-fn write_sync(o: &Opts, files: &[(PathBuf, String)]) -> Result<usize, String> {
-	let own = o.root.join("addon/Polestar/Locales");
+/// Writes the files that changed. A new Northstar locale file is Interface.lua in its language folder,
+/// whose TOC (forge_guide::toc::language_toc) lists it; another addon's TOC lists its files. -> how many
+/// were written.
+fn write_sync(files: &[(PathBuf, String)]) -> Result<usize, String> {
 	let mut written = 0;
 	for (file, text) in files {
 		if std::fs::read_to_string(file).is_ok_and(|t| t == *text) {
@@ -415,10 +399,9 @@ fn write_sync(o: &Opts, files: &[(PathBuf, String)]) -> Result<usize, String> {
 		std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
 		let created = !file.exists();
 		std::fs::write(file, text).map_err(|e| format!("{}: {e}", file.display()))?;
-		let mine = dir == own;
-		let stem = file.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
-		if created && mine && load_in_core_xml(o, &stem)? {
-			println!("Core/Core.xml loads {}", rel(file));
+		let mine = file.file_name().is_some_and(|f| f == forge_guide::toc::INTERFACE_FILE);
+		if created && mine && !dir.join(format!("{}.toc", dir.file_name().unwrap_or_default().to_string_lossy())).exists() {
+			println!("{} is new: its language folder has no TOC yet (`forge guide compile` or `forge data names` writes it)", rel(file));
 		}
 		if created && !mine {
 			println!("{} is new: list it in its addon's TOC", rel(file));
@@ -433,7 +416,7 @@ fn sync(o: &Opts, positional: &[String]) -> Result<u8, Fail> {
 	let mut files = Vec::new();
 	for a in addons(o, false)? {
 		let dir = addon_dir(o, a);
-		let list = if positional.is_empty() { LOCALE_CODES.iter().filter(|l| dir.join("Locales").join(format!("{l}.lua")).exists()).map(|l| l.to_string()).collect() } else { locales(positional)? };
+		let list = if positional.is_empty() { LOCALE_CODES.iter().filter(|l| locale_file(&dir, l).exists()).map(|l| l.to_string()).collect() } else { locales(positional)? };
 		let st = locale_state(&o.root, &dir, &list, None)?;
 		for (l, s) in &st.locales {
 			if let Some(e) = &s.error {
@@ -460,7 +443,7 @@ fn sync(o: &Opts, positional: &[String]) -> Result<u8, Fail> {
 		}
 	}
 	let texts: Vec<(PathBuf, String)> = files.into_iter().map(|(f, r)| (f, r.text)).collect();
-	println!("{} written", plural(write_sync(o, &texts)?, "file"));
+	println!("{} written", plural(write_sync(&texts)?, "file"));
 	if code != 0 {
 		return Err(Fail::Run("a locale file Lua cannot load was left as it is".into()));
 	}
@@ -525,7 +508,7 @@ fn import(o: &Opts, positional: &[String]) -> Result<u8, Fail> {
 	}
 	let out = sync_files(&st, std::slice::from_ref(l), &[(l.clone(), V::Obj(fill))], &[(l.clone(), V::Obj(retire))], a.title)?;
 	let texts: Vec<(PathBuf, String)> = out.iter().map(|(f, r)| (f.clone(), r.text.clone())).collect();
-	write_sync(o, &texts)?;
+	write_sync(&texts)?;
 	let r = &out.iter().find(|(f, _)| *f == s.file).ok_or("nothing to write")?.1;
 	let kept = if r.kept.is_empty() { String::new() } else { format!(", {} kept as translated before", plural(r.kept.len(), "key")) };
 	let retired = if r.retired.is_empty() { String::new() } else { format!(", {} the code lacks put in the block at the end", plural(r.retired.len(), "key")) };
@@ -559,7 +542,7 @@ fn run_audit(o: &Opts, positional: &[String]) -> Result<u8, Fail> {
 	let mut rows: Vec<(&str, audit::Finding)> = Vec::new();
 	let mut checked: Vec<(&str, usize, usize)> = Vec::new();
 	for locale in &wanted {
-		let mut files: Vec<PathBuf> = ADDONS.iter().map(|a| addon_dir(o, a).join("Locales").join(format!("{locale}.lua"))).filter(|f| f.exists()).collect();
+		let mut files: Vec<PathBuf> = ADDONS.iter().map(|a| locale_file(&addon_dir(o, a), locale)).filter(|f| f.exists()).collect();
 		files.extend(audit::lua_files(&o.root.join("guides/locales").join(locale)));
 		let texts = audit::read_texts(&files, &|f| f.strip_prefix(&o.root).map_or_else(|_| rel(f), |r| r.to_string_lossy().replace('\\', "/")))?;
 		let names = &tables.names[locale];

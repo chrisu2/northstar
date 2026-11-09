@@ -1,15 +1,15 @@
-//! Route telemetry and movement in the recorder (addon/Polestar_Recorder/Route.lua, World.lua, Trail.lua):
+//! Route telemetry and movement in the recorder (addon/Northstar_Recorder/Route.lua, World.lua, Trail.lua):
 //! `step` records with the reason the step changed, the session's packs, combat, AFK, deaths with their killer
 //! and revives, breadcrumbs, rides, flights, services, casts, eating, zones and levels, and running with
-//! Polestar absent or late.
+//! Northstar absent or late.
 
 use crate::recorder::{run, run_with};
 use serde_json::json;
 
-// A stand-in for Polestar's bus, Engine and guide registry (docs/ARCHITECTURE.md "Message bus", "Tabs"):
+// A stand-in for Northstar's bus, Engine and guide registry (docs/ARCHITECTURE.md "Message bus", "Tabs"):
 // __fire(msg, ...) delivers a message; __polestar.guide/step is the active tab; the Engine's actions move
 // the step and fire STEP_CHANGED inside, as the real one does.
-const FAKE_POLESTAR: &str = r#"
+const FAKE_NORTHSTAR: &str = r#"
 __polestar = {
 	handlers = {},
 	guides = {
@@ -20,8 +20,8 @@ __polestar = {
 __polestar.guide, __polestar.step = __polestar.guides.g1, 2
 local function fire(msg, ...) for _, fn in ipairs(__polestar.handlers[msg] or {}) do fn(...) end end
 __fire = fire
-function __installPolestar()
-	Polestar = {
+function __installNorthstar()
+	Northstar = {
 		On = function(msg, fn)
 			__polestar.handlers[msg] = __polestar.handlers[msg] or {}
 			table.insert(__polestar.handlers[msg], fn)
@@ -44,7 +44,7 @@ end
 fn step_records_say_why_the_step_changed_the_session_names_the_packs_and_the_active_guide() {
 	let out = run_with(
 		r#"
-		local E = Polestar.Engine
+		local E = Northstar.Engine
 		stub.moveTo(48.2, 41.9)
 		stub.advance(1)
 		E.Next(); stub.advance(1)                      -- next
@@ -64,7 +64,7 @@ fn step_records_say_why_the_step_changed_the_session_names_the_packs_and_the_act
 		__fire("GUIDE_COMPLETED", "professions/mining")
 		logout()
 		emit({ steps = recs("step"), session = recs("session")[1] })"#,
-		&format!("{FAKE_POLESTAR}__installPolestar()"),
+		&format!("{FAKE_NORTHSTAR}__installNorthstar()"),
 		true,
 		None,
 	);
@@ -94,17 +94,17 @@ fn without_polestar_nothing_is_stepped_and_nothing_errors_a_late_or_broken_poles
 		emit({ steps = #recs("step"), combat = #recs("combat") })"#);
 	assert_eq!(absent, json!({ "steps": 0, "combat": 1 }));
 
-	// Polestar loads after the recorder: attached on its ADDON_LOADED.
+	// Northstar loads after the recorder: attached on its ADDON_LOADED.
 	let late = run_with(
 		r#"
-		__installPolestar()
-		stub.addonLoaded("Polestar")
+		__installNorthstar()
+		stub.addonLoaded("Northstar")
 		__polestar.step = 3
 		__fire("STEP_CHANGED", 3)
 		stub.advance(1)
 		logout()
 		emit(recs("step"))"#,
-		FAKE_POLESTAR,
+		FAKE_NORTHSTAR,
 		true,
 		None,
 	);
@@ -113,14 +113,14 @@ fn without_polestar_nothing_is_stepped_and_nothing_errors_a_late_or_broken_poles
 	// An Engine that errors or returns junk: records carry what is known.
 	let broken = run_with(
 		r#"
-		Polestar.Engine.GetGuide = function() error("boom") end
+		Northstar.Engine.GetGuide = function() error("boom") end
 		__fire("STEP_CHANGED", 2)
 		stub.advance(1)
 		__fire("GUIDE_CHANGED", { id = "x/y" })
 		__fire("GUIDE_COMPLETED", nil)
 		logout()
 		emit({ steps = recs("step"), bad = malformed() })"#,
-		&format!("{FAKE_POLESTAR}__installPolestar()"),
+		&format!("{FAKE_NORTHSTAR}__installNorthstar()"),
 		true,
 		None,
 	);

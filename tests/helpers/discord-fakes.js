@@ -81,7 +81,7 @@ function fakeDiscord() {
 		},
 		async send(channel, content, users = [], roles = []) {
 			sent.push({ channel, content, users, roles });
-			const msg = { id: String(nextId++), channel_id: channel, content, attachments: [], mentions: [], author: { id: BOT, username: 'Polestar Bot', bot: true } };
+			const msg = { id: String(nextId++), channel_id: channel, content, attachments: [], mentions: [], author: { id: BOT, username: 'Northstar Bot', bot: true } };
 			if (messages.has(channel)) messages.get(channel).push(msg);
 			return msg;
 		},

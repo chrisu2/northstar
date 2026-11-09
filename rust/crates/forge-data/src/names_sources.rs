@@ -1,4 +1,4 @@
-//! The sources of `forge data names` (names.rs) beside Polestar's own data, each read into id -> name maps
+//! The sources of `forge data names` (names.rs) beside Northstar's own data, each read into id -> name maps
 //! per kind (ports of tools/lib/i18n/names.js's DingDB part, names-wago.js, names-web.js and
 //! tools/lib/data/pfquest.js's loadPfQuestNames):
 //! - DingDB (Ding/DB/Locales/<locale>.lua of Ding! by Yendi, GPL-3.0, used with his permission:

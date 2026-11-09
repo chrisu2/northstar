@@ -1,5 +1,5 @@
-//! Polestar_Nav's maps are used whole or not at all (addon/Polestar_Nav/API.lua): a map whose part file is
-//! missing from the folder (or failed to load) is dropped, so the engine reports no data for it and Polestar's
+//! Northstar_Nav's maps are used whole or not at all (addon/Northstar_Nav/API.lua): a map whose part file is
+//! missing from the folder (or failed to load) is dropped, so the engine reports no data for it and Northstar's
 //! arrow points straight, instead of the engine raising a Lua error when a search crosses a cluster whose graph
 //! it cannot read. Without the client's decoder (C_EncodingUtil) every map is dropped. Checks from
 //! docs/NAV_QA.md name their row (C17: a missing or unloadable map file).
@@ -16,10 +16,10 @@ use serde_json::json;
 const T: f64 = 1600.0 / 3.0;
 
 fn nav() -> PathBuf {
-	addons_dir().join("Polestar_Nav")
+	addons_dir().join("Northstar_Nav")
 }
 
-// Where a map's part files are: its part addon (maps format 5: Polestar_Nav_EK, _Kalimdor) or Polestar_Nav/Nav.
+// Where a map's part files are: its part addon (maps format 5: Northstar_Nav_EK, _Kalimdor) or Northstar_Nav/Nav.
 fn parts_dir(map: i32) -> (PathBuf, Option<&'static str>) {
 	match forge_nav::pack::part_of(map as u32).filter(|p| addons_dir().join(p).is_dir()) {
 		Some(p) => (addons_dir().join(p), Some(p)),
@@ -70,7 +70,7 @@ fn without(addon: &str, drop: &str) -> Vec<String> {
 }
 
 const WALK_LUA: &str = r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local frames = {}
 Path.after = function(fn) frames[#frames + 1] = fn end
 local ok, pts, why = pcall(Path.FindSync, @MAP@, { x = @AX@, y = @AY@ }, { x = @BX@, y = @BY@ })
@@ -88,15 +88,15 @@ fn c17(map: i32) {
 	let drop = middle_part(map);
 	assert!(drop.is_some(), "a part file holding a cluster between the walk's ends (map {map})");
 	let drop = drop.unwrap();
-	let whole = emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], addons: vec![Addon::name("Polestar_Nav")], script: walk(map), ..Default::default() }).remove(0);
+	let whole = emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], addons: vec![Addon::name("Northstar_Nav")], script: walk(map), ..Default::default() }).remove(0);
 	assert_eq!(whole["found"], true, "with every file the walk routes (map {map})");
-	// The file goes missing from Polestar_Nav, or from the map's part addon (which the router loads on demand).
+	// The file goes missing from Northstar_Nav, or from the map's part addon (which the router loads on demand).
 	let (_, part) = parts_dir(map);
-	let files = without(part.unwrap_or("Polestar_Nav"), &drop);
+	let files = without(part.unwrap_or("Northstar_Nav"), &drop);
 	let files: Vec<&str> = files.iter().map(String::as_str).collect();
 	let addons = match part {
-		Some(p) => vec![Addon::name("Polestar_Nav"), Addon::files(p, &files)],
-		None => vec![Addon::files("Polestar_Nav", &files)],
+		Some(p) => vec![Addon::name("Northstar_Nav"), Addon::files(p, &files)],
+		None => vec![Addon::files("Northstar_Nav", &files)],
 	};
 	let out = emitted(&RunAddon { stubs: vec!["stub_encoding.lua"], addons, script: walk(map), ..Default::default() }).remove(0);
 	assert_eq!(out["ok"], true, "no Lua error without {drop}: {}", text(&out["why"]));
@@ -118,7 +118,7 @@ fn c17_a_part_file_of_map_1_missing_from_the_folder_drops_that_map_no_data_the_s
 
 #[test]
 fn without_the_client_s_decoder_c_encodingutil_every_map_reports_no_data_with_no_lua_error() {
-	let out = emitted(&RunAddon { addons: vec![Addon::name("Polestar_Nav")], before: "C_EncodingUtil = nil".into(), script: walk(0), ..Default::default() }).remove(0);
+	let out = emitted(&RunAddon { addons: vec![Addon::name("Northstar_Nav")], before: "C_EncodingUtil = nil".into(), script: walk(0), ..Default::default() }).remove(0);
 	assert_eq!(out["ok"], true, "{}", text(&out["why"]));
 	assert_eq!(out["why"], "nodata");
 	assert_eq!(out["available"], json!([false, false, false]));

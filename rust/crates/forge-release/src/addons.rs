@@ -3,16 +3,16 @@
 use std::path::Path;
 
 /// Always in the release: the addon, our guides and the walking router and maps (committed).
-pub const RELEASE_ADDONS: [&str; 3] = ["Polestar", "Polestar_Guides", "Polestar_Nav"];
+pub const RELEASE_ADDONS: [&str; 3] = ["Northstar", "Northstar_Guides", "Northstar_Nav"];
 /// The Codex folder (Lookup, Dungeons and Rares read it): a release refuses to go without it.
-pub const CODEX: &str = "Polestar_Codex";
+pub const CODEX: &str = "Northstar_Codex";
 /// The optional recorder, in a zip of its own.
-pub const RECORDER: &str = "Polestar_Recorder";
+pub const RECORDER: &str = "Northstar_Recorder";
 
 /// The generated data addons, shipped when built: the quest and item databases, the Codex, then the
-/// language folders `Polestar_<locale>` (our guides' texts and the game's names in each language).
+/// language folders `Northstar_<locale>` (our guides' texts and the game's names in each language).
 pub fn data_addons() -> Vec<String> {
-	let mut out: Vec<String> = ["Polestar_QuestDB", "Polestar_ItemDB", CODEX].iter().map(|s| s.to_string()).collect();
+	let mut out: Vec<String> = ["Northstar_QuestDB", "Northstar_ItemDB", CODEX].iter().map(|s| s.to_string()).collect();
 	out.extend(forge_guide::locales::LOCALE_CODES.iter().map(|l| forge_guide::toc::language_addon(l)));
 	out
 }
@@ -29,8 +29,8 @@ fn has_toc(addons: &Path, name: &str) -> bool {
 }
 
 /// The walking maps' part addons, shipped when `forge nav pack --leffe` wrote them (each continent's maps of
-/// Leffe's, loaded on demand by Polestar_Nav's router).
-pub const NAV_PARTS: [&str; 2] = ["Polestar_Nav_EK", "Polestar_Nav_Kalimdor"];
+/// Leffe's, loaded on demand by Northstar_Nav's router).
+pub const NAV_PARTS: [&str; 2] = ["Northstar_Nav_EK", "Northstar_Nav_Kalimdor"];
 
 /// The release's folders: the three always shipped, the walking maps' part addons when written, our guides'
 /// faction parts and race parts once built, then the data addons that are built (our guides' texts are in the
@@ -47,8 +47,8 @@ pub fn release_addons(addons: &Path) -> Release {
 	Release { names, skipped }
 }
 
-/// The folders under `addons` the language folders replaced (Polestar_Guides_<locale> and
-/// Polestar_Names_<locale>, before 0.3.0): never shipped; a release names them so they get deleted.
+/// The folders under `addons` the language folders replaced (Northstar_Guides_<locale> and
+/// Northstar_Names_<locale>, before 0.3.0): never shipped; a release names them so they get deleted.
 pub fn retired_addons(addons: &Path) -> Vec<String> {
 	forge_guide::locales::LOCALE_CODES.iter().flat_map(|l| forge_guide::toc::retired_language_addons(l)).filter(|n| addons.join(n).is_dir()).collect()
 }
@@ -59,15 +59,15 @@ pub fn toc_version(dir: &Path, name: &str) -> Option<String> {
 	text.lines().find_map(|l| l.strip_prefix("## Version:")).and_then(|v| v.split_whitespace().next()).map(str::to_string)
 }
 
-/// The first built data addon among `names` (Polestar_QuestDB, Polestar_ItemDB, the language folders) that
+/// The first built data addon among `names` (Northstar_QuestDB, Northstar_ItemDB, the language folders) that
 /// lacks its third-party notice, LICENSE-DATA.txt, with the command that writes it; None when each has one.
 /// A data addon holds facts from the sources its notice credits, so it never ships without it.
 pub fn notice_refusal(addons: &Path, names: &[String]) -> Option<String> {
 	for n in names.iter().filter(|n| data_addons().contains(n) && n.as_str() != CODEX) {
 		if !addons.join(n).join("LICENSE-DATA.txt").exists() {
 			let cmd = match n.as_str() {
-				"Polestar_QuestDB" => "forge data questdb".to_string(),
-				"Polestar_ItemDB" => "forge data itemdb".to_string(),
+				"Northstar_QuestDB" => "forge data questdb".to_string(),
+				"Northstar_ItemDB" => "forge data itemdb".to_string(),
 				_ => format!("forge data names {}", n.trim_start_matches(forge_guide::toc::LANGUAGE_PREFIX)),
 			};
 			return Some(format!("{n} has no LICENSE-DATA.txt (rebuild it with `{cmd}`)"));
@@ -76,7 +76,7 @@ pub fn notice_refusal(addons: &Path, names: &[String]) -> Option<String> {
 	None
 }
 
-/// The first of our guide parts among `names` (Polestar_Guides and its faction parts) that lacks its
+/// The first of our guide parts among `names` (Northstar_Guides and its faction parts) that lacks its
 /// LICENSE-DATA.txt; None when each has one. Their guides carry the reference data's facts, so like a data
 /// addon none ships without the notice `forge guide compile` writes beside it.
 pub fn guide_notice_refusal(addons: &Path, names: &[String]) -> Option<String> {
@@ -156,16 +156,16 @@ mod tests {
 	fn the_release_holds_the_built_data_addons_in_load_order_and_names_the_others() {
 		let root = tmp("order");
 		for n in [
-			"Polestar",
-			"Polestar_Codex",
-			"Polestar_QuestDB",
-			"Polestar_deDE",
-			"Polestar_Guides_Orc",
-			"Polestar_Guides_Horde",
-			"Polestar_Guides_Alliance",
-			"Polestar_frFR",
-			"Polestar_Guides_deDE",
-			"Polestar_Names_frFR",
+			"Northstar",
+			"Northstar_Codex",
+			"Northstar_QuestDB",
+			"Northstar_deDE",
+			"Northstar_Guides_Orc",
+			"Northstar_Guides_Horde",
+			"Northstar_Guides_Alliance",
+			"Northstar_frFR",
+			"Northstar_Guides_deDE",
+			"Northstar_Names_frFR",
 		] {
 			addon(&root, n);
 		}
@@ -173,22 +173,22 @@ mod tests {
 		assert_eq!(
 			r.names,
 			[
-				"Polestar",
-				"Polestar_Guides",
-				"Polestar_Nav",
-				"Polestar_Guides_Alliance",
-				"Polestar_Guides_Horde",
-				"Polestar_Guides_Orc",
-				"Polestar_QuestDB",
-				"Polestar_Codex",
-				"Polestar_deDE",
-				"Polestar_frFR"
+				"Northstar",
+				"Northstar_Guides",
+				"Northstar_Nav",
+				"Northstar_Guides_Alliance",
+				"Northstar_Guides_Horde",
+				"Northstar_Guides_Orc",
+				"Northstar_QuestDB",
+				"Northstar_Codex",
+				"Northstar_deDE",
+				"Northstar_frFR"
 			]
 		);
-		assert!(r.skipped.contains(&"Polestar_ItemDB".to_string()));
-		assert!(!r.skipped.contains(&"Polestar_Codex".to_string()));
+		assert!(r.skipped.contains(&"Northstar_ItemDB".to_string()));
+		assert!(!r.skipped.contains(&"Northstar_Codex".to_string()));
 		// The folders the language folders replaced never ship; the release names them.
-		assert_eq!(retired_addons(&root), ["Polestar_Guides_deDE", "Polestar_Names_frFR"]);
+		assert_eq!(retired_addons(&root), ["Northstar_Guides_deDE", "Northstar_Names_frFR"]);
 	}
 
 	#[test]
@@ -200,7 +200,7 @@ mod tests {
 		assert!(codex_refusal(&dir).unwrap().starts_with("Meta.lua is missing"));
 		std::fs::write(dir.join("Meta.lua"), "C.Register(\"meta\", {\n\tlocalExtras = false,\n\tsources = {\n\t\t{\n\t\t\tname = \"pfQuest\",\n\t\t},\n\t},\n})\n").unwrap();
 		assert!(codex_refusal(&dir).unwrap().starts_with("LICENSE-DATA.txt is missing"));
-		std::fs::write(dir.join("LICENSE-DATA.txt"), "Polestar Codex: third-party notices\n").unwrap();
+		std::fs::write(dir.join("LICENSE-DATA.txt"), "Northstar Codex: third-party notices\n").unwrap();
 		assert_eq!(codex_refusal(&dir), None);
 		std::fs::write(dir.join("Meta.lua"), "C.Register(\"meta\", {\n\tlocalExtras = true,\n})\n").unwrap();
 		assert!(codex_refusal(&dir).unwrap().starts_with("it is a --local-extras build"));
@@ -216,36 +216,36 @@ mod tests {
 		let root = tmp("codex-flbis");
 		let dir = root.join(CODEX);
 		addon(&root, CODEX);
-		std::fs::write(dir.join("LICENSE-DATA.txt"), "Polestar Codex: third-party notices\n").unwrap();
+		std::fs::write(dir.join("LICENSE-DATA.txt"), "Northstar Codex: third-party notices\n").unwrap();
 		let flbis = "C.Register(\"meta\", {\n\tlocalExtras = false,\n\tsources = {\n\t\t{\n\t\t\tlicence = \"MIT\",\n\t\t\tname = \"ForeverLevelingBiS\",\n\t\t\tversion = \"v0.12.0-beta\",\n\t\t},\n\t},\n})\n";
 		std::fs::write(dir.join("Meta.lua"), flbis).unwrap();
 		assert_eq!(codex_refusal(&dir).unwrap(), "its sources include ForeverLevelingBiS, which the Codex no longer ships; rebuild it with `forge data codex`");
 		// Named only in its notices.
 		std::fs::write(dir.join("Meta.lua"), "C.Register(\"meta\", {\n\tlocalExtras = false,\n})\n").unwrap();
-		std::fs::write(dir.join("LICENSE-DATA.txt"), "Polestar Codex: third-party notices\n\nForeverLevelingBiS\n------------------\nVersion: v0.12.0-beta\nLicence: MIT\n").unwrap();
+		std::fs::write(dir.join("LICENSE-DATA.txt"), "Northstar Codex: third-party notices\n\nForeverLevelingBiS\n------------------\nVersion: v0.12.0-beta\nLicence: MIT\n").unwrap();
 		assert!(codex_refusal(&dir).unwrap().starts_with("its sources include ForeverLevelingBiS"));
 	}
 
 	#[test]
 	fn a_data_addon_ships_only_with_its_notice() {
 		let root = tmp("notice");
-		addon(&root, "Polestar_QuestDB");
-		let names = vec!["Polestar".to_string(), "Polestar_QuestDB".to_string()];
-		assert_eq!(notice_refusal(&root, &names).unwrap(), "Polestar_QuestDB has no LICENSE-DATA.txt (rebuild it with `forge data questdb`)");
-		std::fs::write(root.join("Polestar_QuestDB").join("LICENSE-DATA.txt"), "Polestar quest database: third-party notices\n").unwrap();
+		addon(&root, "Northstar_QuestDB");
+		let names = vec!["Northstar".to_string(), "Northstar_QuestDB".to_string()];
+		assert_eq!(notice_refusal(&root, &names).unwrap(), "Northstar_QuestDB has no LICENSE-DATA.txt (rebuild it with `forge data questdb`)");
+		std::fs::write(root.join("Northstar_QuestDB").join("LICENSE-DATA.txt"), "Northstar quest database: third-party notices\n").unwrap();
 		assert_eq!(notice_refusal(&root, &names), None);
 	}
 
 	#[test]
 	fn a_guide_part_ships_only_with_its_notice() {
 		let root = tmp("guide-notice");
-		for n in ["Polestar_Guides", "Polestar_Guides_Horde"] {
+		for n in ["Northstar_Guides", "Northstar_Guides_Horde"] {
 			addon(&root, n);
 		}
-		std::fs::write(root.join("Polestar_Guides").join("LICENSE-DATA.txt"), "notices\n").unwrap();
-		let names = vec!["Polestar_Guides".to_string(), "Polestar_Guides_Horde".to_string()];
-		assert_eq!(guide_notice_refusal(&root, &names).unwrap(), "Polestar_Guides_Horde has no LICENSE-DATA.txt (rebuild it with `forge guide compile`)");
-		std::fs::write(root.join("Polestar_Guides_Horde").join("LICENSE-DATA.txt"), "notices\n").unwrap();
+		std::fs::write(root.join("Northstar_Guides").join("LICENSE-DATA.txt"), "notices\n").unwrap();
+		let names = vec!["Northstar_Guides".to_string(), "Northstar_Guides_Horde".to_string()];
+		assert_eq!(guide_notice_refusal(&root, &names).unwrap(), "Northstar_Guides_Horde has no LICENSE-DATA.txt (rebuild it with `forge guide compile`)");
+		std::fs::write(root.join("Northstar_Guides_Horde").join("LICENSE-DATA.txt"), "notices\n").unwrap();
 		assert_eq!(guide_notice_refusal(&root, &names), None);
 	}
 
@@ -259,7 +259,7 @@ mod tests {
 		// #999: 0.3.3 shipped a Codex from the 2026-11-02 data; the Rath'mael prerequisite came later.
 		std::fs::write(dir.join("Meta.lua"), "C.Register(\"meta\", {\n\tbuiltAt = \"2026-11-02T16:05:25.128Z\",\n})\n").unwrap();
 		let w = codex_data_warning(&dir, &data).unwrap();
-		assert!(w.starts_with("Polestar_Codex was built from the reference data of 2026-11-02T16:05:25.128Z,"), "{w}");
+		assert!(w.starts_with("Northstar_Codex was built from the reference data of 2026-11-02T16:05:25.128Z,"), "{w}");
 		assert!(w.contains("is from 2026-11-05T23:10:00.000Z") && w.contains("`forge data codex`"), "{w}");
 		std::fs::write(dir.join("Meta.lua"), "C.Register(\"meta\", {\n\tbuiltAt = \"2026-11-05T23:10:00.000Z\",\n})\n").unwrap();
 		assert_eq!(codex_data_warning(&dir, &data), None);

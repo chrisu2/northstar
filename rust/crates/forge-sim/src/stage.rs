@@ -63,14 +63,14 @@ pub struct Context {
 	pub rewards: crate::needs::Rewards,
 }
 
-/// The knowledge base: $POLESTAR_KB or `<root>/data/local/kb/forever-kb.sqlite`.
+/// The knowledge base: $NORTHSTAR_KB or `<root>/data/local/kb/forever-kb.sqlite`.
 pub fn kb_path(root: &Path) -> PathBuf {
-	std::env::var("POLESTAR_KB").map(PathBuf::from).unwrap_or_else(|_| root.join("data/local/kb/forever-kb.sqlite"))
+	std::env::var("NORTHSTAR_KB").map(PathBuf::from).unwrap_or_else(|_| root.join("data/local/kb/forever-kb.sqlite"))
 }
 
 pub fn context(root: &Path, faction: Faction) -> Result<Context, String> {
 	let data = forge_world::GameData::from_source(&forge_world::data::DirSource::repo(root)).map_err(|e| format!("game data: {e:?}"))?;
-	let grid = std::env::var("POLESTAR_GRID").map(PathBuf::from).unwrap_or_else(|_| root.join("data/local/nav4"));
+	let grid = std::env::var("NORTHSTAR_GRID").map(PathBuf::from).unwrap_or_else(|_| root.join("data/local/nav4"));
 	let sub = forge_world::atlas::GridSubzones::open(&grid, &root.join("data/sources"));
 	let atlas = forge_world::Atlas::build_for(faction, &data, Some(&sub), None);
 	let kb = kb_path(root);

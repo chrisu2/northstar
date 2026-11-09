@@ -1,4 +1,4 @@
-//! The travel planner's newer legs (addon/Polestar/Nav/Travel.lua): timetable waits and departure captions from
+//! The travel planner's newer legs (addon/Northstar/Nav/Travel.lua): timetable waits and departure captions from
 //! Nav/Transit.lua (a fake ns.Transit here), class teleports, walk-in portals, a ghost's walk-only route,
 //! skipping a leg, and the leg fields the prompts and map lines read. Runs the real Core/Init.lua + Nav/Nav.xml
 //! against tests/lua/stub_nav.lua's travel world.
@@ -7,7 +7,7 @@ use forge_addontest::{emitted, Addon, RunAddon};
 use serde_json::{json, Value};
 
 const PRELUDE: &str = r#"
-local N = Polestar.Nav
+local N = Northstar.Nav
 local T = N.travel
 local nav = stub.nav
 local function target(wx, wy, label)
@@ -24,7 +24,7 @@ local function route()
 	return out
 end
 local function known(...)
-	local flags = Polestar.CharState().flags
+	local flags = Northstar.CharState().flags
 	flags.taxi = {}
 	for _, id in ipairs({ ... }) do flags.taxi[id] = true end
 end
@@ -37,7 +37,7 @@ end
 fn run(script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])],
 		login: true,
 		script: format!("{PRELUDE}\nnav.faction = \"Alliance\"\nnav.useTravelWorld()\n{script}"),
 		..Default::default()
@@ -52,7 +52,7 @@ fn a_ride_waits_as_the_timetable_says_from_when_the_player_reaches_the_dock_the_
 		nav.place(0, 0, 1)
 		target(-800, 100, "Docks quest")
 		r.average = leg("boat").seconds
-		Polestar.Transit = {
+		Northstar.Transit = {
 			Now = function() return 1000 end,
 			NextDeparture = function(kind, id, now, side) seen = seen or { kind, id, now, side } return 500, 60 end,
 			Caption = function(kind, id, now, side) return "Next " .. kind .. " in 1:20 (" .. side .. ")" end,
@@ -77,7 +77,7 @@ fn a_ride_waits_as_the_timetable_says_from_when_the_player_reaches_the_dock_the_
 fn c11_a_class_teleport_is_a_leg_from_the_start_when_it_is_faster_a_ghost_only_walks_with_no_error() {
 	let out = run(r#"
 		local r = {}
-		Polestar.Transit = {
+		Northstar.Transit = {
 			Now = function() return 0 end,
 			Teleports = function() return { { spell = 3561, name = "Teleport: Testshire", cast = 10, ready = 0,
 				to = { name = "Testshire", c = 0, wx = -500, wy = -500, map = 9000, x = 75, y = 75 } } } end,
@@ -167,7 +167,7 @@ fn t_11_after_skipping_the_hearthstone_a_class_teleport_is_still_planned() {
 		nav.items[6948] = 1
 		nav.bind = "Testshire Inn"
 		nav.useTravelWorld(nil, 400)
-		Polestar.Transit = {
+		Northstar.Transit = {
 			Now = function() return 0 end,
 			Teleports = function() return { { spell = 3561, name = "Teleport: Testshire", cast = 10, ready = 500,
 				to = { name = "Testshire", c = 0, wx = -480, wy = -690, map = 9000, x = 84.5, y = 74 } } } end,
@@ -201,7 +201,7 @@ fn t_2_3_no_flight_leg_lands_at_or_passes_through_an_unknown_flight_master_the_k
 		target(0, -890, "South")
 		r.unknownMiddle = route()
 		r.unknownStops = stopsOf()
-		Polestar.CharState().flags.taxi[2] = true      -- learned in place, as the client does
+		Northstar.CharState().flags.taxi[2] = true      -- learned in place, as the client does
 		target(0, -890, "South")
 		r.known = route()
 		r.stops = stopsOf()
@@ -212,6 +212,40 @@ fn t_2_3_no_flight_leg_lands_at_or_passes_through_an_unknown_flight_master_the_k
 	assert_eq!(out["unknownStops"], json!([2, 3]), "Middle Post unknown: no flight through it");
 	assert_eq!(out["known"], json!(["walk|Walk to the flight master", "fly|Fly to South Post", "walk|South"]));
 	assert_eq!(out["stops"], json!([1, 2, 3]));
+}
+
+// A flight path learnt while Polestar was not running: the world map's flight points (C_TaxiMap.GetTaxiNodesForMap,
+// isUndiscovered) make it known on the next loading screen, with no flight map opened (#1308: from Ironforge the
+// arrow walked to the Wetlands until the flight map there showed Menethil Harbor). A client that reads no node as
+// undiscovered, or gives no such field, is not trusted.
+#[test]
+fn a_flight_path_learnt_without_polestar_counts_from_the_world_map_on_a_loading_screen() {
+	let out = run(r#"
+		local r = {}
+		local nodes
+		C_TaxiMap.GetTaxiNodesForMap = function(mapID)
+			if mapID ~= 9000 then return {} end
+			return nodes
+		end
+		local function reload(list)
+			known()
+			nodes = list
+			stub.fire("PLAYER_ENTERING_WORLD")
+			target(0, -780, "Kobolds")
+			return route()
+		end
+		nav.place(0, 600)
+		r.none = reload({})
+		r.world = reload({ { nodeID = 1, isUndiscovered = false }, { nodeID = 2, isUndiscovered = false }, { nodeID = 3, isUndiscovered = true } })
+		r.saved = { Northstar.CharState().flags.taxi[1] == true, Northstar.CharState().flags.taxi[2] == true, Northstar.CharState().flags.taxi[3] == true }
+		r.allKnown = reload({ { nodeID = 1, isUndiscovered = false }, { nodeID = 2, isUndiscovered = false } })
+		r.noField = reload({ { nodeID = 1 }, { nodeID = 2 }, { nodeID = 3 } })
+		emit(r)"#);
+	assert_eq!(out["none"], json!(["walk|Kobolds"]), "East Hold unknown: walked");
+	assert_eq!(out["world"], json!(["walk|Walk to the flight master", "fly|Fly to East Hold", "walk|Kobolds"]));
+	assert_eq!(out["saved"], json!([true, true, false]), "only the discovered nodes, saved");
+	assert_eq!(out["allKnown"], json!(["walk|Kobolds"]), "no node read as undiscovered: not trusted");
+	assert_eq!(out["noField"], json!(["walk|Kobolds"]));
 }
 
 #[test]
@@ -258,13 +292,13 @@ fn review_p0_1_a_timetable_that_raises_or_answers_nonsense_never_breaks_planning
 	let out = run(r#"
 		local r = {}
 		nav.place(0, 0, 1)
-		Polestar.Transit = { Now = function() return 0 end, NextDeparture = function() error("stops[0]") end }
+		Northstar.Transit = { Now = function() return 0 end, NextDeparture = function() error("stops[0]") end }
 		target(-800, 100, "Docks quest")
 		r.raises = leg("boat") and leg("boat").seconds
-		Polestar.Transit = { Now = function() return 0 end, NextDeparture = function() return 0 / 0, 60 end }
+		Northstar.Transit = { Now = function() return 0 end, NextDeparture = function() return 0 / 0, 60 end }
 		target(-800, 100, "Docks quest")
 		r.nan = leg("boat") and leg("boat").seconds
-		Polestar.Transit = { Now = function() return 0 end, NextDeparture = function() return -5, 60 end }
+		Northstar.Transit = { Now = function() return 0 end, NextDeparture = function() return -5, 60 end }
 		target(-800, 100, "Docks quest")
 		r.negative = leg("boat") and leg("boat").seconds
 		emit(r)"#);
@@ -275,12 +309,12 @@ fn review_p0_1_a_timetable_that_raises_or_answers_nonsense_never_breaks_planning
 fn security_m3_shared_times_replan_only_a_route_using_the_changed_service_at_most_every_20_s_own_rides_at_once() {
 	let out = run(r#"
 		local r, plans = {}, 0
-		Polestar.On("ROUTE_CHANGED", function() plans = plans + 1 end)
+		Northstar.On("ROUTE_CHANGED", function() plans = plans + 1 end)
 		nav.place(0, 0, 1)
 		target(-800, 100, "Docks quest")
 		local function count(changed, own)
 			local before = plans
-			Polestar.Fire("NAV_TRANSIT", changed, own)
+			Northstar.Fire("NAV_TRANSIT", changed, own)
 			return plans - before
 		end
 		stub.advance(30)
@@ -292,7 +326,7 @@ fn security_m3_shared_times_replan_only_a_route_using_the_changed_service_at_mos
 		r.tooSoon = count({ ["boat-test"] = "boat" })
 		local before = plans
 		stub.advance(21)
-		Polestar.Nav.Refresh()
+		Northstar.Nav.Refresh()
 		r.owed = plans - before
 		emit(r)"#);
 	assert_eq!(out, json!({ "other": 0, "used": 1, "tooSoon": 0, "own": 1, "all": 1, "owed": 1 }));
@@ -306,7 +340,7 @@ fn review_p2_4_progress_counts_a_ride_flight_or_hearth_down_from_when_it_became_
 		nav.useTravelWorld(nil, 400)
 		nav.place(0, 0, 1)
 		target(-520, -690, "Innkeeper quest")
-		local T = Polestar.Nav.travel
+		local T = Northstar.Nav.travel
 		local a = T.Progress()
 		stub.advance(5)
 		local b = T.Progress()
@@ -321,7 +355,7 @@ fn review_p2_5_the_arrow_eta_adds_the_1_25_detour_only_to_straight_distances_not
 		known(1, 2)
 		nav.place(0, 600)
 		target(0, -780, "Kobolds")
-		local T = Polestar.Nav.travel
+		local T = Northstar.Nav.travel
 		local legs = N.GetRoute()
 		local rest = legs[1].rest
 		emit({ T.Remaining(70, true) - rest, T.Remaining(70) - rest })"#);
@@ -332,7 +366,7 @@ fn review_p2_5_the_arrow_eta_adds_the_1_25_detour_only_to_straight_distances_not
 fn review_p2_6_skipping_a_teleport_a_flight_or_a_ride_plans_the_rest_of_the_way_without_it() {
 	let out = run(&r#"
 		local r = {}
-		Polestar.Transit = { Now = function() return 0 end, Teleports = function() return { @TELEPORT@ } end }
+		Northstar.Transit = { Now = function() return 0 end, Teleports = function() return { @TELEPORT@ } end }
 		nav.place(0, 0, 1)
 		target(-500, -480, "Quest")
 		r.teleport = route()[1]
@@ -340,7 +374,7 @@ fn review_p2_6_skipping_a_teleport_a_flight_or_a_ride_plans_the_rest_of_the_way_
 		r.afterTeleport = route()[1]
 		target(-500, -470, "Other")
 		r.otherTarget = route()[1]
-		Polestar.Transit = nil
+		Northstar.Transit = nil
 		known(1, 2)
 		nav.place(0, 790)
 		target(0, -780, "Kobolds")
@@ -358,6 +392,64 @@ fn review_p2_6_skipping_a_teleport_a_flight_or_a_ride_plans_the_rest_of_the_way_
 	assert_eq!(out["otherTarget"], "teleport|Cast Teleport: Testshire", "another target may cast it again");
 	assert_eq!(out["afterFlight"], json!(["walk|Kobolds"]));
 	assert_eq!(out["afterBoat"], 0, "no other way across: nothing left to follow");
+}
+
+// The quest timer (Compat.QuestTimerRunning, tested in compat.rs) the test turns on and off; the quest log's update tells
+// the planner to read it again.
+const TIMER: &str = r#"
+		local running = false
+		Northstar.Compat.QuestTimerRunning = function() return running end
+		local function timer(on)
+			running = on
+			stub.fire("QUEST_LOG_UPDATE")
+		end"#;
+
+#[test]
+fn issue_1327_no_class_teleport_while_a_quest_timer_runs_it_comes_back_when_the_quest_is_done() {
+	let out = run(&r#"
+		@TIMER@
+		local r = {}
+		Northstar.Transit = { Now = function() return 0 end, Teleports = function() return { @TELEPORT@ } end }
+		nav.place(0, 0, 1)
+		target(-500, -480, "Quest")
+		r.free = route()[1]
+		local m, x, y = nav.mapPoint(-500, -470)
+		r.freeEstimate = N.EstimateTravel(nil, { map = m, x = x, y = y })
+		timer(true)
+		r.timedEstimate = N.EstimateTravel(nil, { map = m, x = x, y = y })
+		N.Refresh()
+		r.timed = route()[1]
+		timer(false)
+		N.Refresh()
+		r.done = route()[1]
+		emit(r)"#
+		.replace("@TIMER@", TIMER)
+		.replace("@TELEPORT@", TELEPORT));
+	assert_eq!(out["free"], "teleport|Cast Teleport: Testshire");
+	assert_eq!(out["timed"], "walk|Walk to the boat", "the running timer plans again, without the teleport");
+	assert!(out["timedEstimate"].as_f64() > out["freeEstimate"].as_f64(), "estimates leave it out too: {out}");
+	assert_eq!(out["done"], "teleport|Cast Teleport: Testshire", "the trial done: teleports count again");
+}
+
+#[test]
+fn issue_1327_no_hearthstone_while_a_quest_timer_runs_it_comes_back_when_the_timer_ends() {
+	let out = run(&r#"
+		@TIMER@
+		local r = {}
+		nav.items[6948] = 1
+		nav.bind = "Testshire Inn"
+		nav.useTravelWorld(nil, 400)
+		timer(true)
+		nav.place(0, 0, 1)
+		target(-520, -690, "Innkeeper quest")
+		r.timed = route()[1]
+		timer(false)
+		N.Refresh()
+		r.ended = route()[1]
+		emit(r)"#
+		.replace("@TIMER@", TIMER));
+	assert_eq!(out["timed"], "walk|Walk to the boat");
+	assert_eq!(out["ended"], "hearth|Hearth to Testshire Inn: saves 10 min");
 }
 
 #[test]
@@ -438,7 +530,7 @@ fn second_review_p2_api_estimate_answers_busy_past_the_budget_and_a_number_the_n
 		emit(r)"#);
 	assert_eq!(out["first"], true, "the frame's first estimate is planned");
 	assert_eq!(out["busy"], json!([true, "busy"]), "no straight line stands in for it");
-	assert_eq!(out["internal"], true, "Polestar's own estimates are never refused");
+	assert_eq!(out["internal"], true, "Northstar's own estimates are never refused");
 	assert_eq!(out["nextFrame"], true);
 }
 
@@ -453,7 +545,7 @@ fn second_review_p3_the_arrow_and_the_panel_count_down_alike_while_waiting_at_a_
 		local s = T.Progress()
 		local secs = math.floor(T.Remaining(nil) + 0.5)
 		emit({ kind = leg.kind, waited = before - T.Remaining(nil), agree = T.Remaining(nil) - (s + leg.rest),
-			mode = Polestar.Nav.arrow.GetMode(), eta = Polestar.Nav.arrow.etaText:GetText(),
+			mode = Northstar.Nav.arrow.GetMode(), eta = Northstar.Nav.arrow.etaText:GetText(),
 			want = string.format("%d:%02d total", math.floor(secs / 60), secs % 60) })"#);
 	assert_eq!(out["kind"], "boat");
 	assert_eq!(out["waited"], 20);
@@ -471,7 +563,7 @@ fn second_review_p3_a_flight_counts_down_from_take_off_not_from_reaching_the_fli
 		local leg = T.CurrentLeg()
 		stub.advance(30)                       -- talking to the flight master
 		nav.taxi = true
-		Polestar.Nav.Refresh()
+		Northstar.Nav.Refresh()
 		stub.advance(10)
 		emit({ kind = leg.kind, seconds = leg.seconds, left = T.Progress(), remaining = T.Remaining(nil) - leg.rest })"#);
 	assert_eq!(out["kind"], "fly");
@@ -484,11 +576,11 @@ fn second_review_p3_a_flight_counts_down_from_take_off_not_from_reaching_the_fli
 #[test]
 fn review_p3_10_the_arrow_dial_shows_the_leg_s_own_glyph_for_a_teleport() {
 	let out = run(&r#"
-		Polestar.Transit = { Now = function() return 0 end, Teleports = function() return { @TELEPORT@ } end }
+		Northstar.Transit = { Now = function() return 0 end, Teleports = function() return { @TELEPORT@ } end }
 		nav.place(0, 0, 1)
 		target(-500, -480, "Quest")
 		stub.advance(0.2)
-		local A = Polestar.Nav.arrow
+		local A = Northstar.Nav.arrow
 		emit({ A.GetMode(), (A.legIcon:GetTexture() or ""):match("[^\\]+$") })"#
 		.replace("@TELEPORT@", TELEPORT));
 	assert_eq!(out, json!(["instruction", "icon-use"]));

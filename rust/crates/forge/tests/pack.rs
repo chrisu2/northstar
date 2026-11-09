@@ -85,7 +85,7 @@ fn checkout(root: &Path) {
 	}
 	put(root, "data/sources/eg-link/d98f/index.json", "{}\n");
 	put(root, "data/sources/eg-link/d98f/wow_classic_beta/1.60.1.70450/quests.enUS.json", "{\"quests\":{}}\n");
-	for f in ["forever-db/corrections/quests.json", "data/rules.json", "data/sim/params.json", "addon/Polestar_Nav/PACK.json", "data/crossings.json", "data/forever/travel.json"] {
+	for f in ["forever-db/corrections/quests.json", "data/rules.json", "data/sim/params.json", "addon/Northstar_Nav/PACK.json", "data/crossings.json", "data/forever/travel.json"] {
 		put(root, f, "{}\n");
 	}
 	kb(&root.join("data/local/kb/forever-kb.sqlite"));

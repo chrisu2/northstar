@@ -24,11 +24,11 @@ fn forge(args: &[&str]) -> (i32, String) {
 
 #[test]
 fn nav_check_passes_on_the_committed_walking_maps_and_fails_on_a_changed_one() {
-	let nav = repo().join("addon/Polestar_Nav");
+	let nav = repo().join("addon/Northstar_Nav");
 	let (code, out) = forge(&["nav", "check", "--out", nav.to_str().unwrap()]);
 	assert_eq!(code, 0, "{out}");
 	assert!(out.contains("the walking maps match PACK.json"));
-	let copy = tmp("check").join("Polestar_Nav");
+	let copy = tmp("check").join("Northstar_Nav");
 	std::fs::create_dir_all(copy.join("Nav")).unwrap();
 	std::fs::copy(nav.join("PACK.json"), copy.join("PACK.json")).unwrap();
 	for e in std::fs::read_dir(nav.join("Nav")).unwrap().flatten() {

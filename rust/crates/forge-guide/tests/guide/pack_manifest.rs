@@ -57,7 +57,7 @@ fn a_complete_manifest_has_no_diagnostics_and_a_default_folder_from_its_title() 
 	let (m, diags) = read_manifest(&write_pack("complete", &serde_json::to_string_pretty(&good()).unwrap()), false);
 	assert!(diags.is_empty(), "{diags:?}");
 	let m = m.unwrap();
-	assert_eq!(m.get("folder").to_js_string(), "PolestarPack_JoesRoutes");
+	assert_eq!(m.get("folder").to_js_string(), "NorthstarPack_JoesRoutes");
 	assert_eq!(m.get("id").to_js_string(), "joe");
 	assert_eq!(m.get("license").to_js_string(), "CC-BY-4.0");
 }
@@ -68,7 +68,7 @@ fn a_title_without_letters_or_digits_takes_the_folder_from_the_id() {
 	g["title"] = json!("!!!");
 	let (folder, diags) = folder_of("noletters", &g);
 	assert!(diags.is_empty());
-	assert_eq!(folder, "PolestarPack_JoeRoutes");
+	assert_eq!(folder, "NorthstarPack_JoeRoutes");
 }
 
 #[test]
@@ -93,11 +93,11 @@ fn malformed_and_reserved_pack_ids_are_errors_ours_may_use_guides() {
 
 #[test]
 fn folder_names_must_be_plain_and_may_not_look_like_our_addons() {
-	for folder in ["../evil", "a/b", "Polestar", "Polestar_Guides", "Polestar_Anything"] {
+	for folder in ["../evil", "a/b", "Northstar", "Northstar_Guides", "Northstar_Anything"] {
 		one(check(&with("folder", json!(folder))), "error", "folder");
 	}
 	let mut ours = with("id", json!("guides"));
-	ours["folder"] = json!("Polestar_Guides");
+	ours["folder"] = json!("Northstar_Guides");
 	assert!(check_official(&ours).is_empty());
 	assert!(check(&with("folder", json!("MyPack-1"))).is_empty());
 	assert_eq!(folder_of("plainfolder", &with("folder", json!("MyPack-1"))).0, "MyPack-1");
@@ -123,10 +123,10 @@ fn control_characters_are_refused_in_every_string_field() {
 
 #[test]
 fn the_default_folder_is_polestarpack_and_the_title_in_camelcase_cut_to_the_64_characters_a_folder_may_have() {
-	// 64 characters, one word: PolestarPack_ and it would be 77.
+	// 64 characters. NorthstarPack_ is 14, so Long plus 46 r's fills it.
 	let title = format!("Long{}", "r".repeat(60));
 	let (folder, _) = folder_of("long", &with("title", json!(title)));
-	assert_eq!(folder, format!("PolestarPack_Long{}", "r".repeat(47)));
+	assert_eq!(folder, format!("NorthstarPack_Long{}", "r".repeat(46)));
 	assert_eq!(folder.len(), 64);
 	assert!(check(&with("folder", json!(folder))).is_empty());
 }

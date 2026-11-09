@@ -1,4 +1,4 @@
-//! Phase timings for the build loop (`POLESTAR_BUILD_TIMES=1`): where a `forge build` spends its minutes,
+//! Phase timings for the build loop (`NORTHSTAR_BUILD_TIMES=1`): where a `forge build` spends its minutes,
 //! per stage, start and phase (the routes stage's searches, post passes and written-check rounds,
 //! the writer per start).
 //!
@@ -18,10 +18,10 @@ pub struct Row {
 	pub seconds: f64,
 }
 
-static ON: LazyLock<bool> = LazyLock::new(|| std::env::var("POLESTAR_BUILD_TIMES").is_ok_and(|v| !v.is_empty() && v != "0"));
+static ON: LazyLock<bool> = LazyLock::new(|| std::env::var("NORTHSTAR_BUILD_TIMES").is_ok_and(|v| !v.is_empty() && v != "0"));
 static ROWS: Mutex<Vec<Row>> = Mutex::new(Vec::new());
 
-/// Timings are on: `POLESTAR_BUILD_TIMES` set to anything but empty or `0`.
+/// Timings are on: `NORTHSTAR_BUILD_TIMES` set to anything but empty or `0`.
 pub fn on() -> bool {
 	*ON
 }
@@ -80,7 +80,7 @@ mod tests {
 
 	#[test]
 	fn off_by_default_records_nothing() {
-		// (POLESTAR_BUILD_TIMES is not set in the test environment.)
+		// (NORTHSTAR_BUILD_TIMES is not set in the test environment.)
 		if on() {
 			return;
 		}

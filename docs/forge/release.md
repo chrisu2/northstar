@@ -9,7 +9,7 @@ the whole release, step by step; this page has the commands.
 | `forge release version [<x.y.z>]` | prints the version, or sets it in `package.json`, `guides/pack.json` and every addon TOC |
 | `forge release pack [<dir>]` | the release zips and `SHA256SUMS`; given another pack, that pack's zip |
 | `forge release notes <x.y.z>` | the release notes (GitHub, CurseForge, Discord) from the version's CHANGELOG.md section |
-| `forge release credits` | rewrites `addon/Polestar/Core/Credits.lua` (the Guiding Stars page) |
+| `forge release credits` | rewrites `addon/Northstar/Core/Credits.lua` (the Guiding Stars page) |
 | `forge changelog add\|check\|show\|build` | the fragments in `changes/`: write one, check them, preview the release, build CHANGELOG.md |
 
 Every command reads the checkout above the working directory (or above the forge binary); `--root
@@ -28,7 +28,7 @@ forge changelog --help
 ## The version
 
 The version lives in `package.json`, in `guides/pack.json` (the compiler writes it into
-`Polestar_Guides.toc`) and in the `## Version` line of every addon TOC.
+`Northstar_Guides.toc`) and in the `## Version` line of every addon TOC.
 
 ```sh
 forge release version            # print it; exit 1 if guides/pack.json or a TOC disagrees
@@ -39,13 +39,13 @@ Versions are `x.y.z`, or `x.y.z-rc.1` for a release candidate.
 
 ## The zips
 
-`forge release pack` in the checkout compiles our guides into `addon/Polestar_Guides` (with its race
-parts, and its texts in the language folders `Polestar_<locale>`), then writes to `dist/`:
+`forge release pack` in the checkout compiles our guides into `addon/Northstar_Guides` (with its race
+parts, and its texts in the language folders `Northstar_<locale>`), then writes to `dist/`:
 
 | File | Contents |
 |---|---|
-| `Polestar-<version>.zip` | `Polestar` (with `LICENSE` and the players' `README.txt`), `Polestar_Guides` and its parts, `Polestar_Nav`, `Polestar_QuestDB` and `Polestar_ItemDB` when built, `Polestar_Codex`, the language folders `Polestar_<locale>` (guide texts and names). The old `Polestar_Guides_<locale>` and `Polestar_Names_<locale>` are never shipped: `pack` names any left in `addon/` so they get deleted |
-| `Polestar_Recorder-<version>.zip` | `Polestar_Recorder` with `LICENSE` |
+| `Northstar-<version>.zip` | `Northstar` (with `LICENSE` and the players' `README.txt`), `Northstar_Guides` and its parts, `Northstar_Nav`, `Northstar_QuestDB` and `Northstar_ItemDB` when built, `Northstar_Codex`, the language folders `Northstar_<locale>` (guide texts and names). The old `Northstar_Guides_<locale>` and `Northstar_Names_<locale>` are never shipped: `pack` names any left in `addon/` so they get deleted |
+| `Northstar_Recorder-<version>.zip` | `Northstar_Recorder` with `LICENSE` |
 | `SHA256SUMS` | both zips' checksums, as `sha256sum -c` reads them |
 
 It stops before writing anything when the Codex is not built (`forge data codex`), was built with local
@@ -89,7 +89,24 @@ line break of a release's notes, and each file starts with a `[[REPLACE ...]]` l
 
 ## The credits
 
-`forge release credits` rewrites `addon/Polestar/Core/Credits.lua` from `data/credits.json` (the
-supporters, highest total first; amounts are never stored) and the merged pull requests on GitHub,
-fetched with the GitHub CLI (`gh`, logged in): contributors by merged pull requests, most first, bots
-and the logins in `exclude` left out, `names` mapping a login to the name shown.
+`forge release credits` rewrites `addon/Northstar/Core/Credits.lua` from `data/credits.json` (the
+supporters, highest total first; amounts are never stored) and the pull requests and issues on GitHub,
+fetched with the GitHub CLI (`gh`, logged in):
+
+- contributors by merged or folded pull requests, most first. A closed pull request counts as folded when
+  one of its commits is on the checkout's HEAD with its authorship kept: the same author email, and a
+  subject that starts with the pull request commit's headline (a contributor's work cherry-picked into a
+  maintainer's branch, as the 0.3.6 hotfix did);
+- the top 40 bug reporters by useful reports, most first, ties to whoever reported first. The reporter
+  is the Discord name in the bot's first line ("**Reported by <name> on [Discord](...)**", unescaped
+  and folded to NFKC so styled letters show in the game's fonts), else the GitHub login that opened
+  the issue. A report counts when it is labelled `confirmed` or `fix-merged`, or was closed as
+  completed by a fix: a pull request that closed it, a `released:*` label, or a comment by the
+  repository's owner, a member or a collaborator saying it is fixed ("not fixed" and "isn't fixed
+  yet" don't count). It never counts when closed as a duplicate or not planned, labelled
+  `duplicate`, `invalid`, `wontfix` or `resolution:*`, still labelled `needs-info` or `stale`, or a
+  feature request (`enhancement` without `bug`).
+
+Bots, names with no letter or digit, and the logins and names in `exclude` are left out (the
+maintainer's login and Discord name, and anyone who asked not to be listed); `names` maps a login or
+Discord name to the name shown, and two names that differ only in case are one person.

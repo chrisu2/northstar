@@ -6,12 +6,12 @@
 //! bytes received; an index older than the last one accepted (a rollback) or
 //! past its `expires` is refused. A pack's download must come from the site's
 //! own origin and match the index's SHA-256 and size, hold only the folders the
-//! index lists (`PolestarPack_<id>` and `PolestarPack_<id>_<locale>`) with the
+//! index lists (`NorthstarPack_<id>` and `NorthstarPack_<id>_<locale>`) with the
 //! files the guide compiler makes in them (each folder's TOC with the generated
 //! directives and file lines only, the `.lua` files it lists, `.tga`/`.blp`
 //! pictures, licence texts), and carry its id in each TOC. A pack only ever
 //! writes, moves or removes its own folders: ones that do not exist yet or
-//! already carry the same id. Polestar's own folders and every other addon are
+//! already carry the same id. Northstar's own folders and every other addon are
 //! never touched. The swap itself is the Addons page's (addons.rs): staged,
 //! backed up, put back on failure.
 //!
@@ -43,9 +43,9 @@ const MAX_ENTRIES: usize = 10_000;
 const MAX_INDEX: usize = 8 * 1024 * 1024;
 const WEEK_MS: i64 = 7 * 24 * 3600 * 1000;
 /// The main folder's TOC names its pack; a locale folder's names the pack its texts belong to.
-const PACK_FIELD: &str = "X-Polestar-Pack";
-const TEXTS_FIELD: &str = "X-Polestar-Texts";
-const FOLDER_PREFIX: &str = "PolestarPack_";
+const PACK_FIELD: &str = "X-Northstar-Pack";
+const TEXTS_FIELD: &str = "X-Northstar-Texts";
+const FOLDER_PREFIX: &str = "NorthstarPack_";
 /// What a pack folder may hold besides LICENSE* and README* texts: its TOC, the Lua files that
 /// TOC lists, and pictures (guide-forge's images.rs: `.tga` and `.blp`). Nothing else the
 /// compiler makes, so no `.xml`.
@@ -63,11 +63,11 @@ const TOC_KEYS: [&str; 16] = [
 	"Group",
 	"Dependencies",
 	"LoadOnDemand",
-	"X-Polestar-Pack",
-	"X-Polestar-Format",
-	"X-Polestar-Needs",
-	"X-Polestar-Texts",
-	"X-Polestar-Locale",
+	"X-Northstar-Pack",
+	"X-Northstar-Format",
+	"X-Northstar-Needs",
+	"X-Northstar-Texts",
+	"X-Northstar-Locale",
 	"X-License",
 	"X-Website",
 ];
@@ -124,7 +124,7 @@ pub fn trusted_keys(dev: bool) -> Vec<&'static PinnedKey> {
 	RELEASE_KEYS.iter().chain(DEV_KEYS.iter().filter(|_| dev)).collect()
 }
 
-/// One spelling per site: `https://Polestar.Guide:443/` -> `https://polestar.guide`. Scheme and
+/// One spelling per site: `https://Northstar.Guide:443/` -> `https://polestar.guide`. Scheme and
 /// host in lower case, the default port dropped, no trailing slash, query or fragment. What the
 /// settings keep and the saved index is keyed by.
 pub fn normalize_base(url: &str) -> Option<String> {
@@ -181,8 +181,8 @@ fn parse_folder(name: &str) -> Option<(&str, Option<&str>)> {
 	(valid_id(id) && locale.is_none_or(valid_locale)).then_some((id, locale))
 }
 
-/// The pack a folder in AddOns belongs to, by its TOC (`X-Polestar-Pack` in the main folder,
-/// `X-Polestar-Texts` in a locale folder); `None` when it carries no such id.
+/// The pack a folder in AddOns belongs to, by its TOC (`X-Northstar-Pack` in the main folder,
+/// `X-Northstar-Texts` in a locale folder); `None` when it carries no such id.
 fn folder_owner(folder: &Path, locale: bool) -> Option<String> {
 	toc_field(folder, if locale { TEXTS_FIELD } else { PACK_FIELD })
 }
@@ -683,7 +683,7 @@ fn interface_name(interface: u32) -> String {
 }
 
 /// Why this pack can't go into this game now, or `None` when it can: the game must be the
-/// version it was made for, and Polestar at least the version it needs.
+/// version it was made for, and Northstar at least the version it needs.
 pub fn blocked(entry: &Entry, interface: Option<u32>, polestar: Option<&str>) -> Option<String> {
 	match interface {
 		None => return Some("Polestar Client couldn't read your game's version, so it can't tell whether this guide fits it.".to_owned()),
@@ -694,8 +694,8 @@ pub fn blocked(entry: &Entry, interface: Option<u32>, polestar: Option<&str>) ->
 	}
 	let need = entry.min_polestar.as_deref()?;
 	match polestar {
-		None => Some(format!("Needs Polestar {need} or newer. Install Polestar on the Addons page first.")),
-		Some(have) if newer(need, have) => Some(format!("Needs Polestar {need} or newer; you have {have}. Update it on the Addons page.")),
+		None => Some(format!("Needs Northstar {need} or newer. Install Northstar on the Addons page first.")),
+		Some(have) if newer(need, have) => Some(format!("Needs Northstar {need} or newer; you have {have}. Update it on the Addons page.")),
 		_ => None,
 	}
 }
@@ -713,7 +713,7 @@ pub struct Installed {
 	pub folders: Vec<String>,
 }
 
-/// The packs in `addons`: every `PolestarPack_<id>` folder whose TOC says it is pack `<id>`,
+/// The packs in `addons`: every `NorthstarPack_<id>` folder whose TOC says it is pack `<id>`,
 /// with the locale folders that say they belong to it.
 pub fn installed(addons: &Path) -> Vec<Installed> {
 	let Ok(entries) = fs::read_dir(addons) else { return Vec::new() };
@@ -726,7 +726,7 @@ pub fn installed(addons: &Path) -> Vec<Installed> {
 		if folder_owner(&dir, false).as_deref() != Some(id) {
 			continue;
 		}
-		let title = toc_field(&dir, "Title").map(|t| t.strip_prefix("Polestar Community: ").map(str::to_owned).unwrap_or(t));
+		let title = toc_field(&dir, "Title").map(|t| t.strip_prefix("Northstar Community: ").map(str::to_owned).unwrap_or(t));
 		packs.push(Installed { id: id.to_owned(), version: toc_field(&dir, "Version"), title, author: toc_field(&dir, "Author"), folders: vec![name.clone()] });
 	}
 	for name in names.iter() {
@@ -1125,7 +1125,7 @@ mod tests {
 
 	/// A main folder's TOC as the compiler writes it.
 	fn toc(id: &str, version: &str) -> String {
-		format!("## Interface: 16001\n## Title: Polestar Community: Pack {id}\n## Author: Tester\n## Version: {version}\n## X-Polestar-Pack: {id}\n# Generated by the compiler.\n\nPack.lua\nMapFrames.lua\nGuides.lua\n")
+		format!("## Interface: 16001\n## Title: Northstar Community: Pack {id}\n## Author: Tester\n## Version: {version}\n## X-Northstar-Pack: {id}\n# Generated by the compiler.\n\nPack.lua\nMapFrames.lua\nGuides.lua\n")
 	}
 
 	/// A signed index made with a fresh key, and that key pinned as `test-1`.
@@ -1151,11 +1151,11 @@ mod tests {
 
 	fn index_body(generated: &str, expires: &str) -> Vec<u8> {
 		let pack = serde_json::json!({
-			"id": "emberway", "addon": ["PolestarPack_emberway"], "title": "Emberway Routes", "author": "Ashka", "version": "1.0.0",
+			"id": "emberway", "addon": ["NorthstarPack_emberway"], "title": "Emberway Routes", "author": "Ashka", "version": "1.0.0",
 			"channel": "stable", "download": { "url": "https://polestar.guide/api/v1/packs/emberway/1.0.0/download", "sha256": "76eca11a179b9fd32c2798f6b9bd7eeab0c5c4c7f50f4732f0b99362cc55d618", "size": 10251 },
-			"toc": 16001, "minPolestar": "0.2.5", "homepage": null, "changelog": "First release."
+			"toc": 16001, "minNorthstar": "0.2.5", "homepage": null, "changelog": "First release."
 		});
-		let bad = serde_json::json!({ "id": "Bad_Id", "addon": ["PolestarPack_Bad_Id"], "title": "x", "author": "x", "version": "1", "channel": "stable", "download": { "url": "https://x/y", "sha256": "00", "size": 1 }, "toc": 16001 });
+		let bad = serde_json::json!({ "id": "Bad_Id", "addon": ["NorthstarPack_Bad_Id"], "title": "x", "author": "x", "version": "1", "channel": "stable", "download": { "url": "https://x/y", "sha256": "00", "size": 1 }, "toc": 16001 });
 		format!("{}\n", serde_json::to_string_pretty(&serde_json::json!({ "schema": 1, "generated": generated, "expires": expires, "packs": [pack, bad] })).unwrap()).into_bytes()
 	}
 
@@ -1186,12 +1186,12 @@ mod tests {
 	fn a_real_generated_pack_installs() {
 		// The dev site's emberway 1.0.0, as the compiler made it: Pack.lua, MapFrames.lua,
 		// Guides.lua, its TOC and licence texts.
-		let zip = include_bytes!("fixtures/PolestarPack_emberway-1.0.0.zip");
+		let zip = include_bytes!("fixtures/NorthstarPack_emberway-1.0.0.zip");
 		let index = verify_index(include_bytes!("fixtures/dev-index.json"), include_bytes!("fixtures/dev-index.json.sig"), &trusted_keys(true), "http://localhost:3100", NOW, None).unwrap();
 		let e = index.get("emberway").unwrap();
 		verify_zip(e, zip).unwrap();
 		let addons = temp("real");
-		assert_eq!(install_zip(zip, e, &addons).unwrap(), ["PolestarPack_emberway"]);
+		assert_eq!(install_zip(zip, e, &addons).unwrap(), ["NorthstarPack_emberway"]);
 		assert_eq!(installed(&addons)[0].version.as_deref(), Some("1.0.0"));
 		let _ = fs::remove_dir_all(&addons);
 	}
@@ -1263,42 +1263,42 @@ mod tests {
 			entry("ember", zip)
 		}
 		// The good one.
-		unpack_one(&[("PolestarPack_ember/PolestarPack_ember.toc", main.as_bytes()), ("PolestarPack_ember/Guides.lua", b"x"), ("PolestarPack_ember/LICENSE-DATA.txt", b"cc"), ("PolestarPack_ember/Art/map.blp", b"b")], None).unwrap();
+		unpack_one(&[("NorthstarPack_ember/NorthstarPack_ember.toc", main.as_bytes()), ("NorthstarPack_ember/Guides.lua", b"x"), ("NorthstarPack_ember/LICENSE-DATA.txt", b"cc"), ("NorthstarPack_ember/Art/map.blp", b"b")], None).unwrap();
 		// A folder the index doesn't list.
-		let err = unpack_one(&[("PolestarPack_ember/PolestarPack_ember.toc", main.as_bytes()), ("Questie/Questie.toc", b"x")], None).unwrap_err();
+		let err = unpack_one(&[("NorthstarPack_ember/NorthstarPack_ember.toc", main.as_bytes()), ("Questie/Questie.toc", b"x")], None).unwrap_err();
 		assert!(err.contains("isn't this guide's (Questie)"), "{err}");
 		// A file of the wrong kind.
-		let err = unpack_one(&[("PolestarPack_ember/PolestarPack_ember.toc", main.as_bytes()), ("PolestarPack_ember/run.exe", b"MZ")], None).unwrap_err();
+		let err = unpack_one(&[("NorthstarPack_ember/NorthstarPack_ember.toc", main.as_bytes()), ("NorthstarPack_ember/run.exe", b"MZ")], None).unwrap_err();
 		assert!(err.contains("may not hold"), "{err}");
-		assert!(unpack_one(&[("PolestarPack_ember/PolestarPack_ember.toc", main.as_bytes()), ("PolestarPack_ember/notes.txt", b"x")], None).is_err());
+		assert!(unpack_one(&[("NorthstarPack_ember/NorthstarPack_ember.toc", main.as_bytes()), ("NorthstarPack_ember/notes.txt", b"x")], None).is_err());
 		// Zip slip.
-		let err = unpack_one(&[("PolestarPack_ember/../../evil.lua", b"x")], None).unwrap_err();
+		let err = unpack_one(&[("NorthstarPack_ember/../../evil.lua", b"x")], None).unwrap_err();
 		assert!(err.contains("unsafe path"), "{err}");
 		assert!(unpack_one(&[("/etc/evil.lua", b"x")], None).is_err());
 		// Names Windows would open as a device or an alternate data stream.
-		for bad in ["PolestarPack_ember/COM1.lua", "PolestarPack_ember/nul.lua", "PolestarPack_ember/a.lua:x.lua", "PolestarPack_ember/x.lua."] {
-			let err = unpack_one(&[("PolestarPack_ember/PolestarPack_ember.toc", main.as_bytes()), (bad, b"x")], None).unwrap_err();
+		for bad in ["NorthstarPack_ember/COM1.lua", "NorthstarPack_ember/nul.lua", "NorthstarPack_ember/a.lua:x.lua", "NorthstarPack_ember/x.lua."] {
+			let err = unpack_one(&[("NorthstarPack_ember/NorthstarPack_ember.toc", main.as_bytes()), (bad, b"x")], None).unwrap_err();
 			assert!(err.contains("unsafe path"), "{bad}: {err}");
 		}
 		// A file beside the folders.
-		assert!(unpack_one(&[("PolestarPack_ember/PolestarPack_ember.toc", main.as_bytes()), ("README.txt", b"x")], None).unwrap_err().contains("outside its folders"));
-		// No X-Polestar-Pack, or another pack's.
-		let err = unpack_one(&[("PolestarPack_ember/PolestarPack_ember.toc", b"## Interface: 16001\n## Version: 1.0.0\n")], None).unwrap_err();
-		assert!(err.contains("X-Polestar-Pack: ember"), "{err}");
-		assert!(unpack_one(&[("PolestarPack_ember/PolestarPack_ember.toc", toc("other", "1").as_bytes())], None).is_err());
+		assert!(unpack_one(&[("NorthstarPack_ember/NorthstarPack_ember.toc", main.as_bytes()), ("README.txt", b"x")], None).unwrap_err().contains("outside its folders"));
+		// No X-Northstar-Pack, or another pack's.
+		let err = unpack_one(&[("NorthstarPack_ember/NorthstarPack_ember.toc", b"## Interface: 16001\n## Version: 1.0.0\n")], None).unwrap_err();
+		assert!(err.contains("X-Northstar-Pack: ember"), "{err}");
+		assert!(unpack_one(&[("NorthstarPack_ember/NorthstarPack_ember.toc", toc("other", "1").as_bytes())], None).is_err());
 		// A locale folder must say whose texts it holds.
-		let zip = zip_of(&[("PolestarPack_ember/PolestarPack_ember.toc", main.as_bytes()), ("PolestarPack_ember_deDE/PolestarPack_ember_deDE.toc", b"## X-Polestar-Pack: ember\n")]);
+		let zip = zip_of(&[("NorthstarPack_ember/NorthstarPack_ember.toc", main.as_bytes()), ("NorthstarPack_ember_deDE/NorthstarPack_ember_deDE.toc", b"## X-Northstar-Pack: ember\n")]);
 		let mut with_locale = entry("ember", &zip);
-		with_locale.addon.push("PolestarPack_ember_deDE".to_owned());
+		with_locale.addon.push("NorthstarPack_ember_deDE".to_owned());
 		let staging = fresh_dir(&dir, STAGING).unwrap();
 		let folders = unpack(&zip, &staging, &with_locale).unwrap();
-		assert!(check(&staging, &with_locale, &folders).unwrap_err().contains("X-Polestar-Texts"));
+		assert!(check(&staging, &with_locale, &folders).unwrap_err().contains("X-Northstar-Texts"));
 		// The size cap, on what the zip unpacks to.
 		let big = vec![b'-'; (MAX_UNPACKED + 1) as usize];
-		let err = unpack_one(&[("PolestarPack_ember/PolestarPack_ember.toc", main.as_bytes()), ("PolestarPack_ember/Big.lua", &big)], None).unwrap_err();
+		let err = unpack_one(&[("NorthstarPack_ember/NorthstarPack_ember.toc", main.as_bytes()), ("NorthstarPack_ember/Big.lua", &big)], None).unwrap_err();
 		assert!(err.contains("100 MB"), "{err}");
 		// And on the download: the index never lists more than 20 MB, and the bytes must match it.
-		let zip = zip_of(&[("PolestarPack_ember/PolestarPack_ember.toc", main.as_bytes())]);
+		let zip = zip_of(&[("NorthstarPack_ember/NorthstarPack_ember.toc", main.as_bytes())]);
 		let e = entry("ember", &zip);
 		assert!(verify_zip(&e, &zip).is_ok());
 		let mut longer = zip.clone();
@@ -1316,38 +1316,38 @@ mod tests {
 	#[test]
 	fn installs_update_and_remove_only_its_own_folders() {
 		let addons = temp("own");
-		for (dir, body) in [("Polestar", "## Author: Polestar\n## Version: 0.2.6\n".to_owned()), ("Questie", "## Author: Aero\n".to_owned()), ("PolestarPack_taken", toc("someone", "1.0.0")), ("PolestarPack_ember_frFR", "## X-Polestar-Texts: ember\n".to_owned())] {
+		for (dir, body) in [("Northstar", "## Author: Northstar\n## Version: 0.2.6\n".to_owned()), ("Questie", "## Author: Aero\n".to_owned()), ("NorthstarPack_taken", toc("someone", "1.0.0")), ("NorthstarPack_ember_frFR", "## X-Northstar-Texts: ember\n".to_owned())] {
 			fs::create_dir_all(addons.join(dir)).unwrap();
 			fs::write(addons.join(dir).join(format!("{dir}.toc")), body).unwrap();
 		}
 		// 1.0.0 with a French folder, then 1.1.0 without it.
-		let v1 = zip_of(&[("PolestarPack_ember/PolestarPack_ember.toc", toc("ember", "1.0.0").as_bytes()), ("PolestarPack_ember_frFR/PolestarPack_ember_frFR.toc", b"## X-Polestar-Texts: ember\n")]);
+		let v1 = zip_of(&[("NorthstarPack_ember/NorthstarPack_ember.toc", toc("ember", "1.0.0").as_bytes()), ("NorthstarPack_ember_frFR/NorthstarPack_ember_frFR.toc", b"## X-Northstar-Texts: ember\n")]);
 		let mut e1 = entry("ember", &v1);
-		e1.addon.push("PolestarPack_ember_frFR".to_owned());
+		e1.addon.push("NorthstarPack_ember_frFR".to_owned());
 		install_zip(&v1, &e1, &addons).unwrap();
 		let have = installed(&addons);
 		assert_eq!(have.len(), 1);
 		assert_eq!(have[0].version.as_deref(), Some("1.0.0"));
-		assert_eq!(have[0].folders, ["PolestarPack_ember", "PolestarPack_ember_frFR"]);
+		assert_eq!(have[0].folders, ["NorthstarPack_ember", "NorthstarPack_ember_frFR"]);
 		assert_eq!(have[0].title.as_deref(), Some("Pack ember"));
-		let v2 = zip_of(&[("PolestarPack_ember/PolestarPack_ember.toc", toc("ember", "1.1.0").as_bytes())]);
+		let v2 = zip_of(&[("NorthstarPack_ember/NorthstarPack_ember.toc", toc("ember", "1.1.0").as_bytes())]);
 		install_zip(&v2, &entry("ember", &v2), &addons).unwrap();
 		assert_eq!(installed(&addons)[0].version.as_deref(), Some("1.1.0"));
-		assert!(!addons.join("PolestarPack_ember_frFR").exists());
+		assert!(!addons.join("NorthstarPack_ember_frFR").exists());
 		// A folder that carries another pack's id is never overwritten.
-		let taken = zip_of(&[("PolestarPack_taken/PolestarPack_taken.toc", toc("taken", "1.0.0").as_bytes())]);
+		let taken = zip_of(&[("NorthstarPack_taken/NorthstarPack_taken.toc", toc("taken", "1.0.0").as_bytes())]);
 		let err = install_zip(&taken, &entry("taken", &taken), &addons).unwrap_err();
 		assert!(err.contains("belongs to the guide someone"), "{err}");
-		assert_eq!(fs::read_to_string(addons.join("PolestarPack_taken/PolestarPack_taken.toc")).unwrap(), toc("someone", "1.0.0"));
+		assert_eq!(fs::read_to_string(addons.join("NorthstarPack_taken/NorthstarPack_taken.toc")).unwrap(), toc("someone", "1.0.0"));
 		// Nor one with no id at all.
-		fs::create_dir_all(addons.join("PolestarPack_plain")).unwrap();
-		let plain = zip_of(&[("PolestarPack_plain/PolestarPack_plain.toc", toc("plain", "1").as_bytes())]);
+		fs::create_dir_all(addons.join("NorthstarPack_plain")).unwrap();
+		let plain = zip_of(&[("NorthstarPack_plain/NorthstarPack_plain.toc", toc("plain", "1").as_bytes())]);
 		assert!(install_zip(&plain, &entry("plain", &plain), &addons).unwrap_err().contains("something else"));
 		// Removing takes only the pack's folders.
-		assert_eq!(uninstall("ember", &addons).unwrap(), ["PolestarPack_ember"]);
+		assert_eq!(uninstall("ember", &addons).unwrap(), ["NorthstarPack_ember"]);
 		let mut left: Vec<String> = fs::read_dir(&addons).unwrap().map(|e| e.unwrap().file_name().into_string().unwrap()).collect();
 		left.sort();
-		assert_eq!(left, ["Polestar", "PolestarPack_plain", "PolestarPack_taken", "Questie"]);
+		assert_eq!(left, ["Northstar", "NorthstarPack_plain", "NorthstarPack_taken", "Questie"]);
 		assert!(uninstall("someone", &addons).unwrap().is_empty(), "someone's pack is in a folder not named for it");
 		let _ = fs::remove_dir_all(&addons);
 	}
@@ -1361,13 +1361,13 @@ mod tests {
 		assert_eq!(blocked(&e, Some(16001), Some("0.2.6")), None);
 		assert!(blocked(&e, Some(11508), Some("0.2.6")).unwrap().contains("Made for game version 1.60.1; your game is 1.15.8"));
 		assert!(blocked(&e, Some(16001), Some("0.2.4")).unwrap().contains("you have 0.2.4"));
-		assert!(blocked(&e, Some(16001), None).unwrap().contains("Install Polestar"));
+		assert!(blocked(&e, Some(16001), None).unwrap().contains("Install Northstar"));
 		assert!(blocked(&e, None, Some("0.2.6")).is_some());
 		assert!(valid_id("emberway") && valid_id("a1") && valid_id("durotar-dash"));
 		assert!(!valid_id("a") && !valid_id("-ab") && !valid_id("Ember") && !valid_id("a_b") && !valid_id(&"a".repeat(33)));
-		assert_eq!(parse_folder("PolestarPack_ember_deDE"), Some(("ember", Some("deDE"))));
-		assert_eq!(parse_folder("PolestarPack_ember_de"), None);
-		assert_eq!(parse_folder("Polestar_Guides"), None);
+		assert_eq!(parse_folder("NorthstarPack_ember_deDE"), Some(("ember", Some("deDE"))));
+		assert_eq!(parse_folder("NorthstarPack_ember_de"), None);
+		assert_eq!(parse_folder("Northstar_Guides"), None);
 		assert_eq!(snapshot_id("\"6-1793119304877\""), Some("6"));
 		assert_eq!(snapshot_id("W/\"12-1\""), Some("12"));
 		assert_eq!(snapshot_id("\"abc\""), None);
@@ -1394,35 +1394,35 @@ mod tests {
 			let e = entry("ember", &zip);
 			unpack(&zip, &staging, &e).and_then(|folders| check(&staging, &e, &folders))
 		};
-		let toc_file = "PolestarPack_ember/PolestarPack_ember.toc";
-		let good: [(&str, &[u8]); 5] = [(toc_file, main.as_bytes()), ("PolestarPack_ember/Pack.lua", b"x"), ("PolestarPack_ember/MapFrames.lua", b"x"), ("PolestarPack_ember/Guides.lua", b"x"), ("PolestarPack_ember/media/map.tga", b"t")];
+		let toc_file = "NorthstarPack_ember/NorthstarPack_ember.toc";
+		let good: [(&str, &[u8]); 5] = [(toc_file, main.as_bytes()), ("NorthstarPack_ember/Pack.lua", b"x"), ("NorthstarPack_ember/MapFrames.lua", b"x"), ("NorthstarPack_ember/Guides.lua", b"x"), ("NorthstarPack_ember/media/map.tga", b"t")];
 		try_zip(&good).unwrap();
 		// XML (a <Script> runs code), and pictures the game doesn't draw from packs.
-		for name in ["PolestarPack_ember/Frames.xml", "PolestarPack_ember/art.png"] {
+		for name in ["NorthstarPack_ember/Frames.xml", "NorthstarPack_ember/art.png"] {
 			let err = try_zip(&[good[0], good[1], (name, b"<Ui/>")]).unwrap_err();
 			assert!(err.contains("may not hold"), "{name}: {err}");
 		}
 		// A Lua file its TOC doesn't list, or one in a subfolder.
-		let err = try_zip(&[good[0], good[1], ("PolestarPack_ember/Evil.lua", b"x")]).unwrap_err();
+		let err = try_zip(&[good[0], good[1], ("NorthstarPack_ember/Evil.lua", b"x")]).unwrap_err();
 		assert!(err.contains("which its TOC doesn't load"), "{err}");
-		assert!(try_zip(&[good[0], ("PolestarPack_ember/sub/Guides.lua", b"x")]).unwrap_err().contains("may not hold"));
+		assert!(try_zip(&[good[0], ("NorthstarPack_ember/sub/Guides.lua", b"x")]).unwrap_err().contains("may not hold"));
 		// A flavour TOC the game would read instead of the checked one.
-		assert!(try_zip(&[good[0], ("PolestarPack_ember/PolestarPack_ember_Vanilla.toc", main.as_bytes())]).unwrap_err().contains("may not hold"));
+		assert!(try_zip(&[good[0], ("NorthstarPack_ember/NorthstarPack_ember_Vanilla.toc", main.as_bytes())]).unwrap_err().contains("may not hold"));
 		// TOC directives the compiler never writes, and file lines that aren't its files.
-		for (line, says) in [("## SavedVariables: PolestarEvil", "SavedVariables"), ("## SavedVariablesPerCharacter: X", "SavedVariablesPerCharacter"), ("## LoadWith: Blizzard_AuctionUI", "LoadWith"), ("## LoadManagers: Foo", "LoadManagers"), ("## AllowLoad: Glue", "AllowLoad"), ("## RequiredDeps: Foo", "RequiredDeps"), ("Evil.lua", "Evil.lua"), ("Frames.xml", "Frames.xml"), ("..\\Polestar\\Core.lua", "Core.lua")] {
+		for (line, says) in [("## SavedVariables: NorthstarEvil", "SavedVariables"), ("## SavedVariablesPerCharacter: X", "SavedVariablesPerCharacter"), ("## LoadWith: Blizzard_AuctionUI", "LoadWith"), ("## LoadManagers: Foo", "LoadManagers"), ("## AllowLoad: Glue", "AllowLoad"), ("## RequiredDeps: Foo", "RequiredDeps"), ("Evil.lua", "Evil.lua"), ("Frames.xml", "Frames.xml"), ("..\\Northstar\\Core.lua", "Core.lua")] {
 			let bad = format!("{main}{line}\n");
 			let err = try_zip(&[(toc_file, bad.as_bytes()), good[1]]).unwrap_err();
-			assert!(err.contains(says) && err.contains("PolestarPack_ember.toc"), "{line}: {err}");
+			assert!(err.contains(says) && err.contains("NorthstarPack_ember.toc"), "{line}: {err}");
 		}
 		// What the compiler does write: localized titles, comments, CRLF and a BOM.
 		let windows = format!("\u{feff}{}## Title-deDE: Pack\r\n## X-Website: https://x\r\n", main.replace('\n', "\r\n"));
 		try_zip(&[(toc_file, windows.as_bytes()), good[1]]).unwrap();
 		// A locale folder loads Texts.lua only.
-		let texts = "## Interface: 16001\n## Title: Pack (deDE)\n## LoadOnDemand: 1\n## Dependencies: Polestar\n## X-Polestar-Texts: ember\n## X-Polestar-Locale: deDE\n## X-License: CC-BY-SA-4.0\n\nTexts.lua\n";
+		let texts = "## Interface: 16001\n## Title: Pack (deDE)\n## LoadOnDemand: 1\n## Dependencies: Northstar\n## X-Northstar-Texts: ember\n## X-Northstar-Locale: deDE\n## X-License: CC-BY-SA-4.0\n\nTexts.lua\n";
 		let unpack_locale = |locale_toc: &str| {
-			let zip = zip_of(&[(toc_file, main.as_bytes()), ("PolestarPack_ember_deDE/PolestarPack_ember_deDE.toc", locale_toc.as_bytes()), ("PolestarPack_ember_deDE/Texts.lua", b"x")]);
+			let zip = zip_of(&[(toc_file, main.as_bytes()), ("NorthstarPack_ember_deDE/NorthstarPack_ember_deDE.toc", locale_toc.as_bytes()), ("NorthstarPack_ember_deDE/Texts.lua", b"x")]);
 			let mut e = entry("ember", &zip);
-			e.addon.push("PolestarPack_ember_deDE".to_owned());
+			e.addon.push("NorthstarPack_ember_deDE".to_owned());
 			let staging = fresh_dir(&dir, STAGING).unwrap();
 			unpack(&zip, &staging, &e).and_then(|folders| check(&staging, &e, &folders))
 		};
@@ -1435,7 +1435,7 @@ mod tests {
 	fn downloads_come_from_the_site_only() {
 		let ok = entry("ember", b"z");
 		assert!(check_entry(ok.clone(), DEFAULT_BASE).is_ok());
-		assert!(check_entry(ok.clone(), "https://Polestar.guide:443").is_ok());
+		assert!(check_entry(ok.clone(), "https://Northstar.guide:443").is_ok());
 		for url in ["https://cdn.example.com/ember.zip", "http://polestar.guide/api/v1/packs/ember/1.0.0/download", "https://polestar.guide:8443/x.zip", "https://evil.polestar.guide/x.zip"] {
 			let mut e = ok.clone();
 			e.download.url = url.to_owned();
@@ -1462,7 +1462,7 @@ mod tests {
 	#[test]
 	fn site_addresses_have_one_spelling() {
 		assert_eq!(normalize_base("https://polestar.guide/").as_deref(), Some("https://polestar.guide"));
-		assert_eq!(normalize_base(" HTTPS://Polestar.GUIDE:443 ").as_deref(), Some("https://polestar.guide"));
+		assert_eq!(normalize_base(" HTTPS://Northstar.GUIDE:443 ").as_deref(), Some("https://polestar.guide"));
 		assert_eq!(normalize_base("http://localhost:3100/").as_deref(), Some("http://localhost:3100"));
 		assert_eq!(normalize_base("http://localhost:80").as_deref(), Some("http://localhost"));
 		assert_eq!(normalize_base("not an address"), None);
@@ -1486,11 +1486,11 @@ mod tests {
 		assert!(c.describe("Ember").contains("new publisher (Mallory instead of Tester)"));
 		// A new folder, or one gone.
 		let mut more = e.clone();
-		more.addon.push("PolestarPack_ember_deDE".to_owned());
+		more.addon.push("NorthstarPack_ember_deDE".to_owned());
 		assert!(auto_update_ok(Some(&pin), &more, published + day).is_err());
-		assert_eq!(changes(&pin, &more).added, ["PolestarPack_ember_deDE"]);
+		assert_eq!(changes(&pin, &more).added, ["NorthstarPack_ember_deDE"]);
 		let wide = Pin::of(&more, &more.addon);
-		assert_eq!(changes(&wide, &e).removed, ["PolestarPack_ember_deDE"]);
+		assert_eq!(changes(&wide, &e).removed, ["NorthstarPack_ember_deDE"]);
 		assert!(auto_update_ok(Some(&wide), &e, published + day).is_err());
 		// Another pack under the same id: replaced, never an update.
 		let mut replaced = e.clone();
@@ -1505,10 +1505,10 @@ mod tests {
 		}
 		assert!(auto_update_ok(None, &e, published + day).is_err());
 		// A pack installed before pins adopts the index's uid and publisher, its folders as on disk.
-		let have = Installed { id: "ember".to_owned(), version: Some("1.0.0".to_owned()), title: None, author: None, folders: vec!["PolestarPack_ember".to_owned()] };
+		let have = Installed { id: "ember".to_owned(), version: Some("1.0.0".to_owned()), title: None, author: None, folders: vec!["NorthstarPack_ember".to_owned()] };
 		let adopted = Pin::adopt(None, Some(&more), &have);
 		assert_eq!((adopted.uid.as_deref(), adopted.publisher.as_deref()), (Some("pk_ember"), Some("usr_1")));
-		assert_eq!(adopted.folders, ["PolestarPack_ember"]);
+		assert_eq!(adopted.folders, ["NorthstarPack_ember"]);
 		// And a pin never takes another uid from the index.
 		assert_eq!(Pin::adopt(Some(&pin), Some(&replaced), &have).uid.as_deref(), Some("pk_ember"));
 	}
@@ -1542,11 +1542,11 @@ mod tests {
 		let root = temp("revoke");
 		let addons = root.join("AddOns");
 		let kept = root.join("data").join("disabled").join("ember");
-		for (dir, body) in [("Polestar", "## Author: Polestar\n".to_owned()), ("Questie", "## Author: Aero\n".to_owned()), ("PolestarPack_ember", toc("ember", "1.2.0")), ("PolestarPack_ember_deDE", "## X-Polestar-Texts: ember\n".to_owned()), ("PolestarPack_ember_frFR", "## X-Polestar-Texts: someone\n".to_owned()), ("PolestarPack_other", toc("other", "1.0.0"))] {
+		for (dir, body) in [("Northstar", "## Author: Northstar\n".to_owned()), ("Questie", "## Author: Aero\n".to_owned()), ("NorthstarPack_ember", toc("ember", "1.2.0")), ("NorthstarPack_ember_deDE", "## X-Northstar-Texts: ember\n".to_owned()), ("NorthstarPack_ember_frFR", "## X-Northstar-Texts: someone\n".to_owned()), ("NorthstarPack_other", toc("other", "1.0.0"))] {
 			fs::create_dir_all(addons.join(dir)).unwrap();
 			fs::write(addons.join(dir).join(format!("{dir}.toc")), body).unwrap();
 		}
-		fs::write(addons.join("PolestarPack_ember/Guides.lua"), "x").unwrap();
+		fs::write(addons.join("NorthstarPack_ember/Guides.lua"), "x").unwrap();
 		let names = |dir: &Path| {
 			let mut v: Vec<String> = fs::read_dir(dir).map(|r| r.map(|e| e.unwrap().file_name().into_string().unwrap()).collect()).unwrap_or_default();
 			v.sort();
@@ -1554,24 +1554,24 @@ mod tests {
 		};
 		// Disable: its own folders leave AddOns for the data folder; a folder that names another
 		// pack (frFR) and every other addon stay.
-		assert_eq!(disable("ember", &addons, &kept).unwrap(), ["PolestarPack_ember", "PolestarPack_ember_deDE"]);
-		assert_eq!(names(&addons), ["Polestar", "PolestarPack_ember_frFR", "PolestarPack_other", "Questie"]);
-		assert_eq!(names(&kept), ["PolestarPack_ember", "PolestarPack_ember_deDE"]);
-		assert_eq!(fs::read_to_string(kept.join("PolestarPack_ember/Guides.lua")).unwrap(), "x");
+		assert_eq!(disable("ember", &addons, &kept).unwrap(), ["NorthstarPack_ember", "NorthstarPack_ember_deDE"]);
+		assert_eq!(names(&addons), ["Northstar", "NorthstarPack_ember_frFR", "NorthstarPack_other", "Questie"]);
+		assert_eq!(names(&kept), ["NorthstarPack_ember", "NorthstarPack_ember_deDE"]);
+		assert_eq!(fs::read_to_string(kept.join("NorthstarPack_ember/Guides.lua")).unwrap(), "x");
 		// Restore puts them back, and refuses when AddOns has one of them again.
-		assert_eq!(restore("ember", &addons, &kept).unwrap(), ["PolestarPack_ember", "PolestarPack_ember_deDE"]);
+		assert_eq!(restore("ember", &addons, &kept).unwrap(), ["NorthstarPack_ember", "NorthstarPack_ember_deDE"]);
 		assert!(!kept.exists());
 		disable("ember", &addons, &kept).unwrap();
-		fs::create_dir_all(addons.join("PolestarPack_ember")).unwrap();
+		fs::create_dir_all(addons.join("NorthstarPack_ember")).unwrap();
 		assert!(restore("ember", &addons, &kept).unwrap_err().contains("already has"));
-		fs::remove_dir_all(addons.join("PolestarPack_ember")).unwrap();
+		fs::remove_dir_all(addons.join("NorthstarPack_ember")).unwrap();
 		restore("ember", &addons, &kept).unwrap();
 		// Remove: its own folders are deleted, nothing else.
-		assert_eq!(uninstall("ember", &addons).unwrap(), ["PolestarPack_ember", "PolestarPack_ember_deDE"]);
-		assert_eq!(names(&addons), ["Polestar", "PolestarPack_ember_frFR", "PolestarPack_other", "Questie"]);
+		assert_eq!(uninstall("ember", &addons).unwrap(), ["NorthstarPack_ember", "NorthstarPack_ember_deDE"]);
+		assert_eq!(names(&addons), ["Northstar", "NorthstarPack_ember_frFR", "NorthstarPack_other", "Questie"]);
 		// Nothing of its own left: nothing moves.
 		assert!(disable("ember", &addons, &kept).unwrap().is_empty());
-		assert_eq!(names(&addons), ["Polestar", "PolestarPack_ember_frFR", "PolestarPack_other", "Questie"]);
+		assert_eq!(names(&addons), ["Northstar", "NorthstarPack_ember_frFR", "NorthstarPack_other", "Questie"]);
 		let _ = fs::remove_dir_all(&root);
 	}
 }

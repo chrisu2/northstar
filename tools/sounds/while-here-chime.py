@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# The "While you're here" chime, addon/Polestar/Media/Sounds/while-here.ogg
-# ("star twinkle"; UI/WhileHere.lua plays it). Made for Polestar: synthesized,
+# The "While you're here" chime, addon/Northstar/Media/Sounds/while-here.ogg
+# ("star twinkle"; UI/WhileHere.lua plays it). Made for Northstar: synthesized,
 # no third-party source. Three quick rising glass-bell notes, E6, G#6 and B6,
 # 75 ms apart, each with bell partials at 1, 2.76 and 5.4 times its pitch, and
 # a light reverb, normalized to a -12 dB peak; then trimmed to 0.9 s with a
@@ -18,7 +18,7 @@ import numpy as np
 
 SR = 48000
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "addon", "Polestar", "Media", "Sounds", "while-here.ogg")
+OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "addon", "Northstar", "Media", "Sounds", "while-here.ogg")
 LENGTH = 1.2  # seconds synthesized
 TRIM, FADE = 0.9, 0.3  # seconds kept, and the fade-out ending them
 

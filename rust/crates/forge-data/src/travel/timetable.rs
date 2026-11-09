@@ -1,7 +1,7 @@
 //! Timetables for boats, zeppelins, the Deeprun Tram and lifts, the walk-in portals and the class
 //! teleports (port of tools/lib/travel/timetable.js; see its header). Ported from Shortest Path
 //! Forever (GPL-3.0-or-later, by Cillian Berragan, used with permission).
-//! Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15.
+//! Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15.
 //! Portions Copyright (C) the CMaNGOS project (see its AUTHORS file), GPL-2.0-or-later, used under GPL-3.0.
 
 use forge_core::jsnum::{js_hypot, js_hypot_n, js_round};

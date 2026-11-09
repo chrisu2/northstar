@@ -1,8 +1,8 @@
 //! `forge data codex` (the port of the JS `codex build`), offline: data/forever/*.json + the Forever
 //! client's cached wago.tools tables + the cached web facts + the recorded item sources
-//! (data/codex/recorded.json) + Polestar's guides and curated tables -> data/forever/codex/*.json
+//! (data/codex/recorded.json) + Northstar's guides and curated tables -> data/forever/codex/*.json
 //! and the pack
-//! addon/Polestar_Codex. Byte for byte the JS build's output. `--local-extras` (`Options::local_extras`)
+//! addon/Northstar_Codex. Byte for byte the JS build's output. `--local-extras` (`Options::local_extras`)
 //! also merges the installed AtlasLoot and RareScanner and dungeons.json, skips the web facts, and
 //! marks the build local (this machine only).
 //!
@@ -39,7 +39,7 @@ use util::{kstr, sort_keys_deep};
 
 #[derive(Clone)]
 pub struct Options {
-	/// The checkout: data/codex/*.json, guides/, package.json, addon/Polestar/Lookup/Codex.lua.
+	/// The checkout: data/codex/*.json, guides/, package.json, addon/Northstar/Lookup/Codex.lua.
 	pub root: PathBuf,
 	/// data/forever (default <root>/data/forever).
 	pub data_dir: PathBuf,
@@ -65,6 +65,8 @@ pub struct Options {
 	/// Also merge the installed AtlasLoot, RareScanner and data/forever/dungeons.json: a build for
 	/// this machine only (its meta says so and `pack` refuses it).
 	pub local_extras: bool,
+	/// Do not read data/codex/recorded.json. The committed snapshot is left untouched.
+	pub skip_recorded: bool,
 }
 
 impl Options {
@@ -82,6 +84,7 @@ impl Options {
 			load_ms: None,
 			cwd: std::env::current_dir().unwrap_or_else(|_| root.to_path_buf()),
 			local_extras: false,
+			skip_recorded: false,
 		}
 	}
 }
@@ -484,7 +487,7 @@ pub fn load_inputs(opts: &Options, log: &dyn Fn(&str)) -> Result<Inputs, String>
 		atlasloot,
 		rarescanner,
 		local_extras: opts.local_extras,
-		recorded: recorded::load(&lib.join(recorded::FILE))?,
+		recorded: if opts.skip_recorded { V::obj() } else { recorded::load(&lib.join(recorded::FILE))? },
 		client: Some(cl),
 		web,
 		curated: curated_collects(&texts),
@@ -526,7 +529,7 @@ fn sources_meta(inputs: &Inputs) -> V {
 	}
 	if !inputs.store_xp.is_empty() {
 		out.push(source(
-			"Polestar's open Forever database (forever-db): quest XP",
+			"Northstar's open Forever database (forever-db): quest XP",
 			V::from(format!("{} quests; forever-db/data/quest.jsonl", inputs.store_xp.len())),
 			V::from("See forever-db/NOTICE.md and datapackage.json"),
 		));
@@ -768,7 +771,7 @@ fn build_from(opts: &Options, inputs: &Inputs, t0: Instant, log: &dyn Fn(&str)) 
 	let mem = if opts.measure {
 		log("measuring pack memory");
 		let order = pack::pack_order(&pack_files);
-		Some(memory::measure(&opts.root.join("addon").join("Polestar").join("Lookup").join("Codex.lua"), &order, &pack_files)?)
+		Some(memory::measure(&opts.root.join("addon").join("Northstar").join("Lookup").join("Codex.lua"), &order, &pack_files)?)
 	} else {
 		None
 	};

@@ -20,7 +20,7 @@ const noLua = lua ? false : 'no luajit or lua5.1';
 
 // Map 0 with two clusters side by side (x 0..T, y 0..2T), every cell open
 // ground joined to its neighbours; only the maps (Nav/): the router comes
-// from the repository's addon/Polestar_Nav.
+// from the repository's addon/Northstar_Nav.
 function twoClusterFolder() {
 	const C = 16;
 	const cg = new CellGrid({ C, NX: 1, NY: 2, CX0: 0, CY0: 0 });
@@ -36,7 +36,7 @@ function twoClusterFolder() {
 	}
 	cg.finish();
 	const maps = encodeMaps(cg, buildHpa(cg));
-	const { files } = packFiles({ map: 0, cg, maps, global: 'PolestarPathData', gen: '-- nav-eval test map' });
+	const { files } = packFiles({ map: 0, cg, maps, global: 'NorthstarPathData', gen: '-- nav-eval test map' });
 	const dir = tmpdir('polestar-eval-');
 	fs.mkdirSync(path.join(dir, 'Nav'));
 	for (const [name, text] of files) fs.writeFileSync(path.join(dir, 'Nav', name), text);
@@ -80,12 +80,12 @@ test('eval harness: an error reported during a query makes that query not ok and
 	const navDir = twoClusterFolder();
 	// The folder's own .toc: the repository's files, then Boom.lua, which reports an error through the client's
 	// error handler on a route from x 111 (answered all the same) and from x 222 (never answered).
-	const toc = fs.readFileSync(path.join(ROOT, 'addon', 'Polestar_Nav', 'Polestar_Nav.toc'), 'utf8');
-	fs.writeFileSync(path.join(navDir, 'Polestar_Nav.toc'), `${toc.trimEnd()}\nBoom.lua\n`);
+	const toc = fs.readFileSync(path.join(ROOT, 'addon', 'Northstar_Nav', 'Northstar_Nav.toc'), 'utf8');
+	fs.writeFileSync(path.join(navDir, 'Northstar_Nav.toc'), `${toc.trimEnd()}\nBoom.lua\n`);
 	fs.writeFileSync(
 		path.join(navDir, 'Boom.lua'),
 		[
-			'local Path = Polestar_NavEngine',
+			'local Path = Northstar_NavEngine',
 			'local find = Path.Find',
 			'Path.Find = function(map, from, to, cb, opts)',
 			'\tif from.x == 111 or from.x == 222 then geterrorhandler()("boom " .. from.x) end',
@@ -130,7 +130,7 @@ function zonedFolder() {
 	cg.finish();
 	const maps = encodeMaps(cg, buildHpa(cg));
 	assert.ok(maps.zone && maps.zone.size === 6, 'the zone field');
-	const { files } = packFiles({ map: 0, cg, maps, global: 'PolestarPathData', gen: '-- nav-eval test map' });
+	const { files } = packFiles({ map: 0, cg, maps, global: 'NorthstarPathData', gen: '-- nav-eval test map' });
 	const dir = tmpdir('polestar-eval-');
 	fs.mkdirSync(path.join(dir, 'Nav'));
 	for (const [name, text] of files) fs.writeFileSync(path.join(dir, 'Nav', name), text);

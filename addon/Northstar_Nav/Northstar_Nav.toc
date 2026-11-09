@@ -1,0 +1,36 @@
+## Interface: 16001
+## Title: Northstar Nav
+## Notes: Part of Northstar: walking routes for the arrow, by Northstar's walking router, started from Shortest Path Forever's pathing (Cillian Berragan, github.com/cjber/shortest-path-forever, used with his permission). Loaded on demand.
+## Title-deDE: Northstar Navigation
+## Notes-deDE: Teil von Northstar: Laufwege für den Pfeil, mit Northstars eigener Wegfindung, entstanden aus der Wegfindung von Shortest Path Forever (Cillian Berragan, github.com/cjber/shortest-path-forever, mit seiner Erlaubnis verwendet). Wird bei Bedarf geladen.
+## Title-esES: Northstar: navegación
+## Notes-esES: Parte de Northstar: rutas a pie para la flecha, con el cálculo de rutas propio de Northstar, que partió del de Shortest Path Forever (Cillian Berragan, github.com/cjber/shortest-path-forever, usado con su permiso). Se carga bajo demanda.
+## Title-esMX: Northstar: navegación
+## Notes-esMX: Parte de Northstar: rutas a pie para la flecha, con el cálculo de rutas propio de Northstar, que partió del de Shortest Path Forever (Cillian Berragan, github.com/cjber/shortest-path-forever, usado con su permiso). Se carga bajo demanda.
+## Title-frFR: Northstar : navigation
+## Notes-frFR: Fait partie de Northstar : itinéraires à pied pour la flèche, calculés par le routeur de Northstar, issu de celui de Shortest Path Forever (Cillian Berragan, github.com/cjber/shortest-path-forever, utilisé avec sa permission). Chargé à la demande.
+## Title-koKR: Northstar 길찾기
+## Notes-koKR: Northstar의 일부: 화살표용 도보 경로. Shortest Path Forever의 길찾기(Cillian Berragan, github.com/cjber/shortest-path-forever, 허락을 받아 사용)에서 출발한 Northstar 자체 길찾기를 씁니다. 필요할 때 불러옵니다.
+## Title-ptBR: Northstar: navegação
+## Notes-ptBR: Parte do Northstar: rotas a pé para a seta, com o cálculo de rotas próprio do Northstar, que partiu do Shortest Path Forever (Cillian Berragan, github.com/cjber/shortest-path-forever, usado com permissão dele). Carregado sob demanda.
+## Title-ruRU: Northstar: навигация
+## Notes-ruRU: Часть Northstar: пешие маршруты для стрелки, построенные собственным алгоритмом Northstar, выросшим из алгоритма Shortest Path Forever (Cillian Berragan, github.com/cjber/shortest-path-forever, используется с его разрешения). Загружается по требованию.
+## Title-zhCN: Northstar 导航
+## Notes-zhCN: Northstar 的组成部分：为箭头提供步行路线，采用 Northstar 自己的寻路，源自 Shortest Path Forever 的寻路（Cillian Berragan，github.com/cjber/shortest-path-forever，经其许可使用）。按需加载。
+## Title-zhTW: Northstar 導航
+## Notes-zhTW: Northstar 的一部分：為箭頭提供步行路線，採用 Northstar 自己的尋路，源自 Shortest Path Forever 的尋路（Cillian Berragan，github.com/cjber/shortest-path-forever，經其許可使用）。按需載入。
+## Author: Northstar; router started from Cillian Berragan's Shortest Path Forever
+## Version: 0.3.5
+## Category: Northstar
+## Group: Northstar
+## LoadOnDemand: 1
+## Dependencies: Northstar
+## X-License: GPL-3.0-or-later
+## X-Website: https://github.com/fitzforge/polestar
+
+Nav\Nav.xml
+Routing\Costs.lua
+Routing\PathGrid.lua
+Routing\Path.lua
+Routing\PathJobs.lua
+API.lua

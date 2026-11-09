@@ -2,7 +2,7 @@
   "name": "polestar-client",
   "version": "0.1.4",
   "private": true,
-  "description": "Polestar Client: sends the Polestar Recorder's data from your PC to the Polestar project",
+  "description": "Polestar Client: sends the Northstar Recorder's data from your PC to the Northstar project",
   "license": "GPL-3.0-only",
   "type": "module",
   "packageManager": "pnpm@12.4.1",

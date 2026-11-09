@@ -3,7 +3,7 @@
 //! A port of tools/lib/nav/nav4/pack.js, itself a port of Leffe's format-4 reader (his Routing/Motion.lua: Decode,
 //! Graph, Traces, Bind, and the decoders of Routing/PathGrid.lua: decodeGrid, decodeHeights, decodeFloors,
 //! decodeClasses, filterMotionMoves). PathGrid.lua started from Shortest Path Forever v1.16.0 by Cillian Berragan.
-//! Copyright (C) 2026 Cillian Berragan; Copyright (c) 2026 The Polestar authors (Leffe's reader). GPL-3.0-or-later.
+//! Copyright (C) 2026 Cillian Berragan; Copyright (c) 2026 The Northstar authors (Leffe's reader). GPL-3.0-or-later.
 //!
 //! Node indexes are 0-based where the Lua is 1-based. The decoders keep the JS port's arithmetic (f64 heights while
 //! decoding, f32 once typed), so a cluster here is the JS port's cluster value for value.

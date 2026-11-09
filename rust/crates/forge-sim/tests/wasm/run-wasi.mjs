@@ -8,7 +8,7 @@ const dataDir = fileURLToPath(new URL('../../../../../data', import.meta.url));
 const wasi = new WASI({
 	version: 'preview1',
 	args: ['sim-hash', '/sim', `/seeds/${seedFile}`, ...rest],
-	env: { POLESTAR_ROUTE_FIXES: '/data/route-fixes.json' },
+	env: { NORTHSTAR_ROUTE_FIXES: '/data/route-fixes.json' },
 	preopens: { '/sim': simDir, '/seeds': seedDir, '/data': dataDir },
 });
 const mod = await WebAssembly.compile(await readFile(wasmFile));

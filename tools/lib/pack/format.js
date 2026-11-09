@@ -3,33 +3,33 @@
 
 const { header } = require('../generated');
 
-// The pack format the compiler writes, and the first Polestar version that
-// reads each format (written into the TOC as X-Polestar-Needs). Format 2
+// The pack format the compiler writes, and the first Northstar version that
+// reads each format (written into the TOC as X-Northstar-Needs). Format 2
 // adds `group` (docs/PACK_FORMAT.md, "Format 2"); format 4 adds a step's
 // `when`, `label` and `along`, a level goal's `frac` and a `next` option's
 // `when` (`nextWhen`); format 5 adds the `money`, `task`, `enter`, `cast`, `abandon`, `destroy` and `die` goals, the
 // `money`, `dungeon`, `upgrade`, `done`, `skill`, `cooldown`, `group` and `knows` when predicates and a step's `skipto`; a pack is written in the first format its guides
-// need (formatFor): a pack without any stays readable by Polestar 0.2.5.
+// need (formatFor): a pack without any stays readable by Northstar 0.2.5.
 const FORMAT = 3;
 const WHEN_FORMAT = 4;
 const MONEY_TASK_FORMAT = 5;
 // Format 6 (read, no longer written): a guide's baked legs inline (`legs`). Format 7: baked
-// legs in the race parts' Legs.lua (Polestar.RegisterLegs; legs.json, forge guide bake).
+// legs in the race parts' Legs.lua (Northstar.RegisterLegs; legs.json, forge guide bake).
 const LEGS_FORMAT = 7;
 const NEEDS = { 1: '0.1.0', 2: '0.2.4', 3: '0.2.5', 4: '0.2.6', 5: '0.3.0', 6: '0.3.0', 7: '0.3.0' };
 
-// A step with `label` or `along` (an older Polestar would stop at an along step).
+// A step with `label` or `along` (an older Northstar would stop at an along step).
 const usesAlong = (s) => s.label !== undefined || s.along !== undefined;
 
 // A `level` goal with `frac` (a point inside the level) needs format 4:
-// an older Polestar would count it done at the start of the level.
+// an older Northstar would count it done at the start of the level.
 const usesLevelFrac = (g) => (g.steps || []).some((s) => (s.goals || []).some((goal) => goal.t === 'level' && goal.frac));
 
 // The `money`, `task`, `enter`, `cast`, `abandon`, `destroy` and `die` goals, the `money`, `dungeon`, `upgrade`, `done`,
 // `skill`, `cooldown`, `group` and `knows` when predicates (on a step or a `next` option) and a
 // step's `skipto` need format 5: a 0.2.6 client would accept a format-4 pack
 // but refuse these with "unknown verb" or "bad when" rather than "needs
-// Polestar 0.3.0", and would never take a `skipto` jump.
+// Northstar 0.3.0", and would never take a `skipto` jump.
 const MONEY_TASK_VERBS = new Set(['money', 'task', 'enter', 'cast', 'abandon', 'destroy', 'die']);
 const FORMAT5_WHEN = new Set(['money', 'dungeon', 'upgrade', 'done', 'skill', 'cooldown', 'group', 'knows']);
 const needs5 = (list) => (list || []).some((p) => FORMAT5_WHEN.has(p.k));
@@ -68,8 +68,8 @@ const TOC_MARKER = header('guide', 'forge guide compile', 'pack.json and the .gu
 // What a community addon's TOC Title starts with, so the AddOns list reads it
 // as one (Core/Guides.lua drops it again for the Community guides page).
 // Community addons built before the rename carry the legacy prefix.
-const TOC_TITLE_PREFIX = 'Polestar Community: ';
-const LEGACY_TOC_TITLE_PREFIX = 'Polestar Pack: ';
+const TOC_TITLE_PREFIX = 'Northstar Community: ';
+const LEGACY_TOC_TITLE_PREFIX = 'Northstar Pack: ';
 
 // Our pack `guides` owns forever/ and draft/; every other pack owns `<id>/`.
 function ownsGuideId(packId, guideId) {
@@ -78,8 +78,8 @@ function ownsGuideId(packId, guideId) {
 	return id.startsWith(`${packId}/`);
 }
 
-// "Joe's Routes" -> "PolestarPack_JoesRoutes"; a title with no letters or
-// digits falls back to the id ("joe-routes" -> "PolestarPack_JoeRoutes").
+// "Joe's Routes" -> "NorthstarPack_JoesRoutes"; a title with no letters or
+// digits falls back to the id ("joe-routes" -> "NorthstarPack_JoeRoutes").
 function defaultFolder(title, id) {
 	const camel = (s) =>
 		String(s || '')
@@ -89,7 +89,7 @@ function defaultFolder(title, id) {
 			.map((w) => w[0].toUpperCase() + w.slice(1))
 			.join('');
 	const name = camel(title) || camel(id);
-	return `PolestarPack_${name}`.slice(0, 64);
+	return `NorthstarPack_${name}`.slice(0, 64);
 }
 
 // The line `new` writes into LICENSE for a licence it has no text for; lint

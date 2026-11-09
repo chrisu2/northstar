@@ -1,6 +1,6 @@
 'use strict';
 // The interface's translation keys: every literal L["..."] and ns.LC("context",
-// "text") in addon/Polestar (docs/ARCHITECTURE.md, "Localisation"), read with
+// "text") in addon/Northstar (docs/ARCHITECTURE.md, "Localisation"), read with
 // a small Lua tokenizer so strings in comments and inside other strings never
 // count, plus the keys code looks up from data (L[category], L[race], ...),
 // listed below where they come from. Adapted from Ding! by Yendi (@moust4ki),
@@ -206,7 +206,7 @@ function luaFiles(dir, skip) {
 	return out;
 }
 
-// The order addon/Polestar loads its files (TOC, XML manifests): keys group
+// The order addon/Northstar loads its files (TOC, XML manifests): keys group
 // by the file that first uses them, in that order. A folder without a TOC
 // (a test's) is read in name order.
 function loadOrder(addonDir) {

@@ -146,14 +146,14 @@ pub struct RevokedView {
 	pub action: RevokeAction,
 }
 
-/// The game's TOC Interface and the installed Polestar's version: what packs are checked against.
+/// The game's TOC Interface and the installed Northstar's version: what packs are checked against.
 fn game(state: &State) -> (Option<u32>, Option<String>) {
 	let interface = state.install.as_ref().and_then(|i| i.version.as_deref()).and_then(packs::interface_of);
 	let polestar = state.install.as_ref().and_then(|i| addons::product("polestar").and_then(|p| addons::installed_version(&i.addons_dir(), p)));
 	(interface, polestar)
 }
 
-/// Why `entry` can't go in: the site pulled that version, or the game or Polestar don't fit.
+/// Why `entry` can't go in: the site pulled that version, or the game or Northstar don't fit.
 fn why_blocked(index: &Index, entry: &Entry, site: &str, interface: Option<u32>, polestar: Option<&str>) -> Option<String> {
 	match index.revocation(&entry.id, entry.uid.as_deref(), Some(&entry.version)) {
 		Some((r, _)) => Some(format!("{site} pulled this version: {}", r.reason)),

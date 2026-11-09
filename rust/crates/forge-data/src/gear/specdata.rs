@@ -1,5 +1,5 @@
-//! tools/lib/gear/specdata.js: addon/Polestar/Gear/SpecData.lua, stat weight bands per spec and
-//! level (Polestar's authored weights blended with wowsims) and racial gear traits.
+//! tools/lib/gear/specdata.js: addon/Northstar/Gear/SpecData.lua, stat weight bands per spec and
+//! level (Northstar's authored weights blended with wowsims) and racial gear traits.
 
 use std::path::Path;
 
@@ -74,7 +74,7 @@ pub fn authored_weights(weights_lua: &Path) -> Result<V, String> {
 	crate::lua::lua_to_value(
 		&[],
 		"local ns = { Gear = {} }; __ns = ns",
-		&format!("local chunk = assert(loadfile({path}))\nchunk(\"Polestar\", __ns)\nreturn {{ weights = __ns.Gear.WEIGHTS, classes = __ns.Gear.CLASSES }}"),
+		&format!("local chunk = assert(loadfile({path}))\nchunk(\"Northstar\", __ns)\nreturn {{ weights = __ns.Gear.WEIGHTS, classes = __ns.Gear.CLASSES }}"),
 	)
 }
 
@@ -159,7 +159,7 @@ pub fn weight_bands(wowsims: Option<&Wowsims>, authored: &V) -> (Bands, V) {
 						up_to: band.up_to,
 						weights: w,
 						source: format!("wowsims:{}@{}:{}", sim.repo, &sim.commit[..9], sim.file),
-						label: format!("Polestar leveling {}% + wowsims {phase} {}%", num_str(math_round(band.alpha * 100.0)), num_str(math_round((1.0 - band.alpha) * 100.0))),
+						label: format!("Northstar leveling {}% + wowsims {phase} {}%", num_str(math_round(band.alpha * 100.0)), num_str(math_round((1.0 - band.alpha) * 100.0))),
 						note: if sim.rune_influenced() {
 							"Simulated with Season of Discovery runes; Forever has none, so the sim share is directional.".into()
 						} else {
@@ -181,7 +181,7 @@ pub fn weight_bands(wowsims: Option<&Wowsims>, authored: &V) -> (Bands, V) {
 						w2.set(&k, base.get(&k));
 					}
 					authored_only += 1;
-					BandRec { up_to: band.up_to, weights: w2, source: "polestar".into(), label: "Polestar leveling".into(), note: "Authored from Classic stat formulas; no sim for this band.".into() }
+					BandRec { up_to: band.up_to, weights: w2, source: "polestar".into(), label: "Northstar leveling".into(), note: "Authored from Classic stat formulas; no sim for this band.".into() }
 				};
 				match list.last_mut() {
 					Some(prev) if prev.source == rec.source && stringify(&V::Obj(prev.weights.clone()), None) == stringify(&V::Obj(rec.weights.clone()), None) => prev.up_to = rec.up_to,
@@ -268,8 +268,8 @@ fn lua(v: &V) -> String {
 /// emitSpecData -> SpecData.lua text.
 pub fn emit_spec_data(bands: &Bands, rac: &Obj, wowsims_meta: bool, flb_version: &V) -> String {
 	let mut l: Vec<String> = vec![
-		forge_guide::emit::header("lua", "forge data gear", "Polestar's leveling weights, wowsims and ForeverLevelingBiS"),
-		"-- Stat weight bands: Polestar's leveling weights (Weights.lua) blended with wowsims".into(),
+		forge_guide::emit::header("lua", "forge data gear", "Northstar's leveling weights, wowsims and ForeverLevelingBiS"),
+		"-- Stat weight bands: Northstar's leveling weights (Weights.lua) blended with wowsims".into(),
 		format!("-- simulations (MIT, https://github.com/wowsims; {}).", if wowsims_meta { "see each band's source" } else { "not available" }),
 		format!("-- Racial gear traits: ForeverLevelingBiS {} by Thunder (MIT), Racials.lua.", flb_version.to_js_string()),
 		"-- See THIRD_PARTY.md.".into(),

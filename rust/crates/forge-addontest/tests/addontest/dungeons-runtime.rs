@@ -1,5 +1,5 @@
 //! The Dungeons section's data: the builder (tools/lib/codex/journal.js, ported as forge_data::codex::journal) on
-//! the synthetic fixture tests/fixtures/codex/dungeons.json, and the runtime (addon/Polestar/Dungeons/Dungeons.lua)
+//! the synthetic fixture tests/fixtures/codex/dungeons.json, and the runtime (addon/Northstar/Dungeons/Dungeons.lua)
 //! reading its pack file inside a Codex pack, the way the client loads it.
 
 use forge_addontest::codex::{fixture, write_codex_pack, CodexOpts, CodexPack};
@@ -354,6 +354,75 @@ fn buildjournal_a_stray_drop_only_the_forever_item_lists_record_it_under_5_a_que
 	assert!(dm.contains(&json!(90013)), "and a common one only Forever's lists record");
 }
 
+// The #1380 sweep: a quest an object inside the instance starts (Gnomeregan's Sparklematic 5200, Uldaman's
+// Discs of Norgannon) came out with `inside` false, so its card never said "Picked up inside the dungeon".
+// Forever's objects list the instance maps they stand in: an unplaced one of this instance's map starts it
+// inside; one with a place outside stays as it was.
+#[test]
+fn buildjournal_a_quest_an_unplaced_object_of_the_instance_starts_is_picked_up_inside() {
+	let (mut c, mut i) = (codex(), inputs());
+	c["objects"]["90020"] = json!({ "id": 90020, "name": "Sparklematic", "spawns": [] });
+	c["objects"]["90021"] = json!({ "id": 90021, "name": "Wanted Poster", "spawns": [{ "map": 1413, "x": 46, "y": 36, "f": "e" }] });
+	let quest = |id: i64, title: &str, object: i64| {
+		json!({
+			"id": id, "title": title, "level": 20, "minLevel": 15, "faction": null, "races": null, "classes": null,
+			"start": { "npc": [], "object": [object], "item": [] }, "end": { "npc": [], "object": [object] },
+			"objectives": [], "pre": [], "preAny": [], "rewards": [], "choices": [],
+		})
+	};
+	c["quests"]["90022"] = quest(90022, "Sparkle", 90020);
+	c["quests"]["90023"] = quest(90023, "Wanted", 90021);
+	i["forever"]["quests"]["90022"] = json!({ "area": 718 });
+	i["forever"]["quests"]["90023"] = json!({ "area": 718 });
+	i["forever"]["objects"] = json!({ "90020": { "instances": [43] }, "90021": { "instances": [43] } });
+	let j = journal_json(&i, &c);
+	let wc = &j["dungeons"]["wailing-caverns"];
+	let sparkle = page_quest(wc, 90022);
+	assert_eq!(json!([sparkle["inside"], sparkle["start"]["inside"]]), json!([true, true]), "{sparkle}");
+	let wanted = page_quest(wc, 90023);
+	assert_eq!(json!([wanted["inside"], wanted["start"]["inside"]]), json!([false, false]), "placed outside: {wanted}");
+}
+
+// SweepDungeons' 'handin-missed' / 'quest-dropped' findings: turn-ins at NPCs and objects that stand only inside
+// an instance (Commander Gor'shak in Blackrock Depths, the Altar of Hakkar in the Sunken Temple) and a giver
+// inside (the Hall of Thanes' Ghostly Attendant) carried no `inside`, so the hand-in guide filed them as turned
+// in nowhere known. An unplaced NPC the Codex puts in this instance, or an unplaced object listing its map,
+// marks the start or the finish inside; an NPC of another instance does not.
+#[test]
+fn buildjournal_a_giver_or_turn_in_npc_or_object_that_stands_inside_the_instance_is_marked_inside() {
+	let (mut c, mut i) = (codex(), inputs());
+	c["npcs"]["90030"] = json!({ "id": 90030, "name": "Ghostly Attendant", "level": 20, "faction": null, "instance": "wailing-caverns", "roles": [], "spawns": [] });
+	c["npcs"]["90031"] = json!({ "id": 90031, "name": "Gor'shak", "level": 20, "faction": null, "instance": "wailing-caverns", "roles": [], "spawns": [] });
+	c["npcs"]["90032"] = json!({ "id": 90032, "name": "Elsewhere", "level": 20, "faction": null, "instance": "deadmines", "roles": [], "spawns": [] });
+	c["npcs"]["90033"] = json!({ "id": 90033, "name": "Outside Giver", "level": 20, "faction": null, "instance": null, "roles": [], "spawns": [{ "map": 1413, "x": 46, "y": 36, "f": "e" }] });
+	c["objects"]["90034"] = json!({ "id": 90034, "name": "Altar", "spawns": [] });
+	let quest = |id: i64, title: &str, start: Value, end: Value| {
+		json!({
+			"id": id, "title": title, "level": 20, "minLevel": 15, "faction": null, "races": null, "classes": null,
+			"start": start, "end": end, "objectives": [], "pre": [], "preAny": [], "rewards": [], "choices": [],
+		})
+	};
+	let npc = |n: i64| json!({ "npc": [n], "object": [], "item": [] });
+	c["quests"]["90035"] = quest(90035, "An Ancient Grudge", npc(90030), json!({ "npc": [90030], "object": [] }));
+	c["quests"]["90036"] = quest(90036, "Gor'shak", npc(90033), json!({ "npc": [90031], "object": [] }));
+	c["quests"]["90037"] = quest(90037, "Into the Depths", npc(90033), json!({ "npc": [], "object": [90034] }));
+	c["quests"]["90038"] = quest(90038, "Elsewhere", npc(90033), json!({ "npc": [90032], "object": [] }));
+	for id in [90035, 90036, 90037, 90038] {
+		i["forever"]["quests"][id.to_string()] = json!({ "area": 718 });
+	}
+	i["forever"]["objects"] = json!({ "90034": { "instances": [43] } });
+	let j = journal_json(&i, &c);
+	let wc = &j["dungeons"]["wailing-caverns"];
+	let at = |id: i64| {
+		let q = page_quest(wc, id);
+		json!([q["inside"], q["start"]["inside"], q["finish"]["inside"]])
+	};
+	assert_eq!(at(90035), json!([true, true, true]), "given and turned in inside");
+	assert_eq!(at(90036), json!([false, false, true]), "turned in inside");
+	assert_eq!(at(90037), json!([false, false, true]), "an object of the instance's map");
+	assert_eq!(at(90038), json!([false, false, false]), "an NPC of another instance");
+}
+
 #[test]
 fn buildjournal_tolerates_missing_inputs_emitjournal_writes_one_file_of_summaries_and_page_sources() {
 	assert_eq!(journal_json(&json!({}), &json!({}))["dungeons"], json!({}));
@@ -362,7 +431,7 @@ fn buildjournal_tolerates_missing_inputs_emitjournal_writes_one_file_of_summarie
 	// lists it among the pack's files.
 	let p = write_codex_pack(&codex(), &CodexOpts { extra_files: vec![("Dungeons1.lua".into(), file.clone())], ..Default::default() });
 	assert!(p.files.iter().any(|f| f.ends_with("Dungeons1.lua")));
-	assert!(is_match(&file, r"(?m)^local D = Polestar and Polestar\.Dungeons$"));
+	assert!(is_match(&file, r"(?m)^local D = Northstar and Northstar\.Dungeons$"));
 	assert!(is_match(&file, r#"\["wailing-caverns"\]="return \{"#));
 	let empty = emit_journal(&journal(&json!({}), &json!({})));
 	let p = write_codex_pack(&codex(), &CodexOpts { extra_files: vec![("Dungeons1.lua".into(), empty)], ..Default::default() });
@@ -385,8 +454,8 @@ fn run_with(script: &str, with_pack: bool) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: pack.as_ref().map(|p| p.stub_lua.clone()).unwrap_or_default(),
-		addons: vec![Addon::files("Polestar", &FILES)],
-		script: format!("stub.login()\nlocal D = Polestar.Dungeons\n{script}"),
+		addons: vec![Addon::files("Northstar", &FILES)],
+		script: format!("stub.login()\nlocal D = Northstar.Dungeons\n{script}"),
 		..Default::default()
 	})
 	.remove(0)
@@ -459,14 +528,14 @@ fn runtime_another_language_reads_the_objective_line_in_its_own_words_and_names(
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{}\n{}", pack.stub_lua, fake_locale("itIT", &[("Collect %s", "Raccogli %s")])),
-		addons: vec![Addon::files("Polestar", &FILES)],
+		addons: vec![Addon::files("Northstar", &FILES)],
 		script: r#"stub.login()
-local D = Polestar.Dungeons
-Polestar.Names.AddChunk("itIT", "item", 5423, 5423, "\n5423\tGemma di Cobrahn\n")
+local D = Northstar.Dungeons
+Northstar.Names.AddChunk("itIT", "item", 5423, 5423, "\n5423\tGemma di Cobrahn\n")
 local fang = D.Quest("wailing-caverns", 914)
 local ids = {}
 for i, o in ipairs(fang.objectives) do ids[i] = o.id end
-Polestar.Names.AddChunk("itIT", "objective", 777, 777, "\n777\tScorta$B$Bil mercante%2C $N.\n")
+Northstar.Names.AddChunk("itIT", "objective", 777, 777, "\n777\tScorta$B$Bil mercante%2C $N.\n")
 emit({ D.ObjectiveText(fang), ids, D.ObjectiveText({ id = 777, objectives = { { k = "event", name = "Escort the merchant" } } }) })"#
 			.into(),
 		..Default::default()
@@ -481,15 +550,15 @@ emit({ D.ObjectiveText(fang), ids, D.ObjectiveText({ id = 777, objectives = { { 
 fn runtime_open_fires_show_dungeon_guideto_and_guidetopoint_set_the_arrow_the_setting_stops_it_without_the_pack_it_says_why() {
 	let out = run(r#"
 local nav = {}
-Polestar.Nav = { SetTarget = function(map, x, y, label) nav[#nav + 1] = { map, x, y, label } return true end }
+Northstar.Nav = { SetTarget = function(map, x, y, label) nav[#nav + 1] = { map, x, y, label } return true end }
 local fired = {}
-Polestar.On("SHOW_DUNGEON", function(key) fired[#fired + 1] = key or "home" end)
+Northstar.On("SHOW_DUNGEON", function(key) fired[#fired + 1] = key or "home" end)
 D.Open("deadmines")
 D.Open()
 local g1 = D.GuideTo("wailing-caverns")
 local g2 = D.GuideToPoint(D.Quest("wailing-caverns", 1486).start)
 local g3 = D.GuideTo("blackmaw-hold")
-Polestar.Set("dungeons.enabled", false)
+Northstar.Set("dungeons.enabled", false)
 local opened = D.Open("deadmines")
 local ok, reason = D.Load()
 emit({ fired = fired, nav = nav, g = { g1, g2, g3 }, opened = opened, reason = reason, list = #D.List() })"#);
@@ -540,7 +609,7 @@ emit({ old, none })"#);
 fn runtime_an_entrance_in_the_other_faction_s_land_warns_that_faction_only_and_the_arrow_carries_it() {
 	let out = run(r#"
 local nav = {}
-Polestar.Nav = { SetTarget = function(map, x, y, label, f, stop, z, warning) nav[#nav + 1] = { label, stop, warning or false } return true end }
+Northstar.Nav = { SetTarget = function(map, x, y, label, f, stop, z, warning) nav[#nav + 1] = { label, stop, warning or false } return true end }
 local e = {
 	rolA = D.EnemyEntrance("ruins-of-lordaeron", "A") or false, rolH = D.EnemyEntrance("ruins-of-lordaeron", "H") or false,
 	hotH = D.EnemyEntrance("the-hall-of-thanes", "H") or false, hotA = D.EnemyEntrance("the-hall-of-thanes", "A") or false,

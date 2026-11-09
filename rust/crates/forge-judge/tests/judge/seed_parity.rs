@@ -21,7 +21,7 @@ fn seed_tests_match_the_reference_on_the_slice() {
 	let repo = common::golden().join("../../..").canonicalize().unwrap();
 	let root = Path::new(env!("CARGO_TARGET_TMPDIR")).join("seed-root");
 	let _ = std::fs::remove_dir_all(&root);
-	for f in ["forever-db/corrections/quests.json", "forever-db/corrections/npcs.json", "addon/Polestar_Nav/Nav/Nav1.lua"] {
+	for f in ["forever-db/corrections/quests.json", "forever-db/corrections/npcs.json", "addon/Northstar_Nav/Nav/Nav1.lua"] {
 		std::fs::create_dir_all(root.join(f).parent().unwrap()).unwrap();
 		std::fs::copy(repo.join(f), root.join(f)).unwrap();
 	}

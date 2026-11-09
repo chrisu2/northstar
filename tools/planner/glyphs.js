@@ -7,7 +7,7 @@
 // page tints them with CSS masks.
 //
 //   renderGlyph(name, px) -> PNG Buffer (px x px), or null for no such glyph
-//   renderEmblem(px)      -> PNG of the Polestar emblem (px x px)
+//   renderEmblem(px)      -> PNG of the Northstar emblem (px x px)
 //   renderBand()          -> { band, stars }: the night-sky header layers, 1024x128 PNGs
 //
 // Added here: play, pause, step-back, step-forward, edit, minus, eye,
@@ -17,7 +17,7 @@
 // filter, swap, lift.
 //
 //   mediaPng(group, name) -> PNG of the addon's committed texture
-//                            addon/Polestar/Media/<UI|Nav>/<name>.tga, or null
+//                            addon/Northstar/Media/<UI|Nav>/<name>.tga, or null
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -219,7 +219,7 @@ function decodeTga(buf) {
 	return { width: w, height: h, rgba: out };
 }
 
-const MEDIA = path.join(__dirname, '..', '..', 'addon', 'Polestar', 'Media');
+const MEDIA = path.join(__dirname, '..', '..', 'addon', 'Northstar', 'Media');
 const MEDIA_GROUPS = new Set(['UI', 'Nav']);
 const media = new Map(); // `${group}/${name}` -> PNG | null
 function mediaPng(group, name) {

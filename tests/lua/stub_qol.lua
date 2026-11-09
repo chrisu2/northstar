@@ -1,4 +1,4 @@
--- A fake world for Quality of Life tests (addon/Polestar/QoL), loaded after
+-- A fake world for Quality of Life tests (addon/Northstar/QoL), loaded after
 -- wow_stub.lua. It installs contract-faithful fakes for the Engine, Nav and
 -- Pins (just before ADDON_LOADED, after the addon files ran), overrides the
 -- map half of Compat with one flat test map, and provides the client APIs QoL
@@ -51,7 +51,7 @@ local q = {
 	loot = 0,
 	specialItems = {}, -- questID -> itemID (quest log special item)
 	engine = { step = nil, view = nil, guide = nil, waypoint = nil },
-	nav = { target = nil, sets = {}, releases = 0, clears = 0, route = nil, ci = 1, boundInn = nil },
+	nav = { target = nil, sets = {}, releases = 0, clears = 0, unholds = 0, route = nil, ci = 1, boundInn = nil },
 	pins = {},
 	cooldowns = {},
 	inRange = nil,
@@ -109,19 +109,45 @@ function UnitXPMax(unit) if unit == "player" then return q.xpMax end end
 function GetXPExhaustion() return q.rested end
 function GetMaxPlayerLevel() return q.maxLevel end
 function UnitIsGhost(unit) return unit == "player" and q.ghost end
-function UnitExists(unit) if unit == "target" then return q.target end return unit == "player" end
--- q.target as a table { name, npc, dead, hostile, player }: the target the
--- step key's interact stage reads.
-local function targetOf(unit) return unit == "target" and type(q.target) == "table" and q.target or nil end
+function UnitExists(unit)
+	if unit == "target" then return q.target end
+	if q.units[unit] then return true end
+	return unit == "player"
+end
+-- q.target as a table { name, npc, dead, hostile, player, class }: the target the
+-- step key's interact stage reads. q.units[token]: other units the same way
+-- (mouseover, nameplateN).
+q.units = {}
+local function targetOf(unit)
+	if unit == "target" then return type(q.target) == "table" and q.target or nil end
+	return q.units[unit]
+end
 function UnitIsDead(unit) local t = targetOf(unit) return t and t.dead or false end
 function UnitIsPlayer(unit) local t = targetOf(unit) return t and t.player or false end
 function UnitCanAttack(_, unit) local t = targetOf(unit) return t and t.hostile or false end
 function UnitIsFriend(_, unit) local t = targetOf(unit) return t and t.friend or false end
+function UnitClassification(unit) local t = targetOf(unit) return t and t.class or "normal" end
 local unitName = UnitName
 function UnitName(unit)
 	local t = targetOf(unit)
 	if t then return t.name end
 	return unitName(unit)
+end
+-- Portraits: the texture keeps the name of the unit it was drawn from;
+-- q.portraits lists every draw.
+q.portraits = {}
+function SetPortraitTexture(tex, unit)
+	local t = targetOf(unit)
+	tex.portraitOf = t and t.name
+	q.portraits[#q.portraits + 1] = { unit = unit, name = t and t.name }
+end
+C_NamePlate = C_NamePlate or {}
+function C_NamePlate.GetNamePlates()
+	local out = {}
+	for token in pairs(q.units) do
+		if token:find("^nameplate") then out[#out + 1] = { namePlateUnitToken = token } end
+	end
+	return out
 end
 -- Key bindings: q.bindings[command] = { key, ... }; override bindings land in
 -- q.overrides[key] = command ("CLICK <button>:LeftButton" for a click).
@@ -180,7 +206,7 @@ end
 C_DeathInfo = {}
 function C_DeathInfo.GetCorpseMapPosition(map)
 	if not q.corpse then return nil end
-	local C = Polestar.Compat
+	local C = Northstar.Compat
 	local c, wx, wy = C.MapToWorld(9000, q.corpse[1], q.corpse[2])
 	local x, y = C.WorldToMap(c, wx, wy, map)
 	if not x then return nil end
@@ -721,11 +747,11 @@ function q.step(goals, index)
 	q.engine.step = index
 	q.engine.view = { index = index, status = "current", goals = views }
 	q.engine.guide = { id = "test", pack = q.guidePack or "guides", steps = steps }
-	Polestar.Fire("STEP_CHANGED", index)
+	Northstar.Fire("STEP_CHANGED", index)
 	stub.runTimers()
 end
 
--- The registry's packs (Core/Guides.lua Guides.Pack): Polestar's own, the
+-- The registry's packs (Core/Guides.lua Guides.Pack): Northstar's own, the
 -- Import page's, and a community pack. q.guidePack picks the step's guide's.
 local Guides = {}
 q.packs = { guides = { id = "guides", official = true }, imported = { id = "imported", imported = true }, yendi = { id = "yendi" } }
@@ -737,7 +763,21 @@ function Nav.SetTarget(map, x, y, label, f)
 	local t = { map = map, x = x, y = y, label = label, f = f, kind = "manual" }
 	q.nav.target = t
 	table.insert(q.nav.sets, t)
-	return true
+	return t
+end
+-- Nav.Hold (the death helper): the target until Nav.Unhold, which brings back
+-- the one from before (q.nav.under).
+function Nav.Hold(map, x, y, label, f)
+	local t = { map = map, x = x, y = y, label = label, f = f, kind = "manual" }
+	if not q.nav.held then q.nav.under = q.nav.target end
+	q.nav.held, q.nav.target = t, t
+	table.insert(q.nav.sets, t)
+	return t
+end
+function Nav.Unhold()
+	if not q.nav.held then return end
+	q.nav.unholds = q.nav.unholds + 1
+	q.nav.target, q.nav.held, q.nav.under = q.nav.under, nil, nil
 end
 function Nav.GetTarget() return q.nav.target end
 function Nav.ReleaseTarget()
@@ -800,12 +840,12 @@ end
 
 local addonLoaded = stub.addonLoaded
 function stub.addonLoaded(name)
-	if name == "Polestar" and Polestar then
-		Polestar.Engine = Engine
-		Polestar.Nav = Nav
-		Polestar.Pins = Pins
-		Polestar.Guides = Polestar.Guides or Guides
-		local C = Polestar.Compat
+	if name == "Northstar" and Northstar then
+		Northstar.Engine = Engine
+		Northstar.Nav = Nav
+		Northstar.Pins = Pins
+		Northstar.Guides = Northstar.Guides or Guides
+		local C = Northstar.Compat
 		function C.MapToWorld(map, x, y, frame)
 			if frame == "e" then return nil end
 			return mapToWorld(map, x, y)

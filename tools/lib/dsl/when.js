@@ -1,7 +1,7 @@
 'use strict';
 // `when` on a step (docs/GUIDE_FORMAT.md, "Conditions checked during play"):
 // the step applies only while each of its predicates holds when the route
-// reaches it. The addon checks them (addon/Polestar/Core/Engine.lua,
+// reaches it. The addon checks them (addon/Northstar/Core/Engine.lua,
 // Own.whenFails) and keeps the outcome once the route has moved past the step.
 //
 // parseWhen(rest) -> { value } | { error }
@@ -13,7 +13,7 @@
 //   [!]turnedin <quest>                       the quest is handed in
 //   [!]available <quest>                      the quest can be taken now
 //   [!]has <item> [xN]                        the bags hold N (default 1) or more
-//   [!]upgrade <item>                         Polestar's gear advice rates the item an upgrade
+//   [!]upgrade <item>                         Northstar's gear advice rates the item an upgrade
 //   [!]zone "<Name>"  [!]subzone "<Name>"     the zone or subzone text reads so
 //   [!]bound "<Location>"                     the hearthstone is bound there
 //   [!]dungeon "<Name>"                       the player chose to run that dungeon

@@ -1,6 +1,6 @@
 # Route simulation
 
-Polestar's routes are now made by **Polestar Forge**, the Rust pipeline: start at
+Northstar's routes are now made by **Northstar Forge**, the Rust pipeline: start at
 [FORGE.md](FORGE.md).
 
 | Was here | Now |

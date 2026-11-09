@@ -1,5 +1,5 @@
 //! The Codex's recorded item sources: `data/codex/recorded.json`, a snapshot of what players'
-//! Polestar Recorder sessions saw, exported from a recordings folder with
+//! Northstar Recorder sessions saw, exported from a recordings folder with
 //! `forge data codex --recordings <dir>` and committed, so a build reads only the snapshot and gives
 //! the same Codex on every machine.
 //!
@@ -215,7 +215,7 @@ pub fn source_meta(rec: &V) -> Option<V> {
 	}
 	let m = rec.get("meta");
 	let o = Obj::new();
-	o.set("name", "Polestar Recorder sessions (data/codex/recorded.json): loot, merchant and quest reward windows");
+	o.set("name", "Northstar Recorder sessions (data/codex/recorded.json): loot, merchant and quest reward windows");
 	o.set(
 		"version",
 		V::str(&format!(
@@ -228,7 +228,7 @@ pub fn source_meta(rec: &V) -> Option<V> {
 			rec.get("rewards").len()
 		)),
 	);
-	o.set("licence", "Polestar's own recordings: CC BY 4.0; facts only, no player data");
+	o.set("licence", "Northstar's own recordings: CC BY 4.0; facts only, no player data");
 	Some(V::Obj(o))
 }
 

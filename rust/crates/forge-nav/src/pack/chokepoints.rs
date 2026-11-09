@@ -563,9 +563,9 @@ fn lua_str(s: &str) -> String {
 	format!("\"{}\"", s.replace('\\', "\\\\").replace('"', "\\\""))
 }
 
-/// { c: entries } -> Chokepoints.lua (global PolestarNavChokepoints); `gen` is its first line.
+/// { c: entries } -> Chokepoints.lua (global NorthstarNavChokepoints); `gen` is its first line.
 pub fn chokepoints_lua(by_map: &[(u32, Vec<Choke>)], gen: &str) -> String {
-	let global = "PolestarNavChokepoints";
+	let global = "NorthstarNavChokepoints";
 	let mut lines = vec![
 		gen.to_string(),
 		"-- Chokepoints a walk passes, for its named steps (tools/lib/nav/chokepoints.js; Nav/Walk.lua reads them).".into(),

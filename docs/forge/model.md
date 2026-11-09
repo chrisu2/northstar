@@ -241,7 +241,7 @@ graveyard the game sends that death to, and go on from its Spirit Healer. The gh
   travel on from the healer (walks, flights and boats as any leg). The cheapest is taken when it beats
   the leg (or the hearth) by `DEATHSKIP_GAIN_SEC` (30 s, v1's own margin for a hearth), never on
   a leg walked for an escort or a timed quest.
-- **Resurrection sickness** follows Polestar's death helper (QoL/Death.lua, #390): none through
+- **Resurrection sickness** follows Northstar's death helper (QoL/Death.lua, #390): none through
   level 10, then 600 s. A route deathskips only up to `deathskipLevel` (10: no sickness); raised,
   each second of sickness costs `sicknessSlow` (0.5) seconds.
 
@@ -406,7 +406,7 @@ the browser.
 `sim-hash` (a binary of forge-sim: `src/bin/sim-hash.rs`) prints a hash of a route's every step and
 its hours, for v1's Orc order and after a short search. `tests/wasm/run.sh` (run from `rust/`) builds it
 natively and for `wasm32-wasip1`, runs both (the wasm under node's WASI), and compares: on the goldens
-with walks off, camps off and on; with `POLESTAR_SIMDIR` and `POLESTAR_SIM_JS` on a local sim dir and
+with walks off, camps off and on; with `NORTHSTAR_SIMDIR` and `NORTHSTAR_SIM_JS` on a local sim dir and
 seed, walks on too. The hashes are equal. The library also builds for the browser:
 
 ```sh

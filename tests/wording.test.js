@@ -88,9 +88,9 @@ function scan() {
 
 const where = (file, text, index) => `${path.relative(ROOT, file)}:${text.slice(0, index).split('\n').length}`;
 
-// The language folders' Names.lua hold the game's own names in each language, not Polestar's
+// The language folders' Names.lua hold the game's own names in each language, not Northstar's
 // words: a Portuguese NPC may share a first name with a product.
-const GAME_NAMES = /[/\\]addon[/\\]Polestar_[a-z]{2}[A-Z]{2}[/\\]Names\.lua$/;
+const GAME_NAMES = /[/\\]addon[/\\]Northstar_[a-z]{2}[A-Z]{2}[/\\]Names\.lua$/;
 
 test('no other guide product is named', () => {
 	const files = scan();
@@ -116,8 +116,8 @@ test('nothing invites bringing or converting other guides', () => {
 function trackedFiles() {
 	const git = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 28 });
 	assert.equal(git.status, 0, 'the guide-comparison check runs in a git checkout');
-	const self = path.relative(ROOT, __filename);
-	return git.stdout.split('\0').filter((rel) => rel && rel !== self && !/^addon\/Polestar_Nav/.test(rel))
+	const self = path.relative(ROOT, __filename).split(path.sep).join('/');
+	return git.stdout.split('\0').filter((rel) => rel && rel !== self && !/^addon\/Northstar_Nav/.test(rel))
 		.map((rel) => path.join(ROOT, rel)).filter((f) => fs.existsSync(f) && fs.statSync(f).isFile()).map(textFile).filter(Boolean);
 }
 
@@ -141,7 +141,7 @@ test('the checks catch what they are for, and the game\'s rested XP passes', () 
 	assert.deepEqual(namedTokens('You have rested XP; Rested XP doubles kill XP', NAME_HASHES), []);
 	assert.match('Import your existing guides here', INVITE);
 	assert.match('converting paid guides is easy', INVITE);
-	assert.match('Bring your paid guides into Polestar', INVITE);
+	assert.match('Bring your paid guides into Northstar', INVITE);
 	assert.doesNotMatch('Guide packs are addons made by other players.', INVITE);
 	assert.doesNotMatch('Report other guides\' problems to their authors', INVITE);
 	for (const s of ['as both speedrun benchmarks play it', 'the benchmark order marks it a group of 3', 'a benchmark addon does this', 'as the benchmark does', 'the route benchmark\'s rule 2', 'in a benchmark guide', 'start-zone speed-run order']) assert.match(s, COMPARED, s);

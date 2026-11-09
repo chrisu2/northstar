@@ -1,6 +1,6 @@
 'use strict';
 // Import strings (docs/PACK_FORMAT.md, "Import strings"): one compiled guide
-// as one line of text a player pastes into Polestar's Import page, no addon
+// as one line of text a player pastes into Northstar's Import page, no addon
 // to install.
 //
 //   !PS1!<checksum>!<body>
@@ -146,7 +146,7 @@ function encodeImport(payload) {
 // tools and tests; the addon has its own reader.
 function decodeImport(text) {
 	const s = String(text).replace(/\s+/g, '');
-	if (!s.startsWith(PREFIX)) throw new Error(`not a Polestar import string: it starts with ${PREFIX}`);
+	if (!s.startsWith(PREFIX)) throw new Error(`not a Northstar import string: it starts with ${PREFIX}`);
 	const m = /^!PS1!([0-9a-f]{8})!([A-Za-z0-9+/]+={0,2})$/.exec(s);
 	if (!m) throw new Error('the string is damaged');
 	let bytes;
@@ -161,13 +161,13 @@ function decodeImport(text) {
 
 // One compiled guide of a pack (buildPack's guides; manifest its pack.json,
 // data its reference data) as an import string. -> { text, steps } or
-// { error } when the guide cannot go in one: one of Polestar's own guides,
+// { error } when the guide cannot go in one: one of Northstar's own guides,
 // too many steps, a text longer than the addon reads, or a string or payload
 // bigger than it reads.
 function importString(guide, { manifest, data }) {
 	const prefix = String(guide.id).split('/')[0];
 	if (!manifest || manifest.id === 'guides' || RESERVED_IDS.has(prefix)) {
-		return { error: `${guide.id} is one of Polestar's own guides; an import string carries a community guide, under its pack's id` };
+		return { error: `${guide.id} is one of Northstar's own guides; an import string carries a community guide, under its pack's id` };
 	}
 	const steps = (guide.steps || []).length;
 	if (steps > LIMITS.steps) return { error: `${guide.id} has ${steps} steps; an import string holds a guide of ${LIMITS.steps} steps at most (a longer guide goes in a community addon: forge release pack)` };
@@ -175,16 +175,16 @@ function importString(guide, { manifest, data }) {
 	const frames = data ? framesData(referencedFrames([guide], data)) : {};
 	if (Object.keys(frames).length) payload.frames = frames;
 	const long = longText(payload);
-	if (long !== null) return { error: `${guide.id}: ${long} is longer than ${LIMITS.text} bytes, the most Polestar reads in one text of an import string` };
+	if (long !== null) return { error: `${guide.id}: ${long} is longer than ${LIMITS.text} bytes, the most Northstar reads in one text of an import string` };
 	const full = crowded(payload.guide);
 	if (full) return { error: `${guide.id}: ${full.at} has ${full.n} entries; an import string holds ${full.cap} there at most (a guide this big goes in a community addon: forge release pack)` };
 	const bytes = Buffer.byteLength(JSON.stringify(payload));
 	if (bytes > LIMITS.payload) {
-		return { error: `${guide.id} holds ${bytes} bytes of guide data; Polestar reads ${LIMITS.payload} at most (a guide this big goes in a community addon: forge release pack)` };
+		return { error: `${guide.id} holds ${bytes} bytes of guide data; Northstar reads ${LIMITS.payload} at most (a guide this big goes in a community addon: forge release pack)` };
 	}
 	const text = encodeImport(payload);
 	if (text.length > LIMITS.length) {
-		return { error: `${guide.id} makes a string of ${text.length} characters; Polestar reads ${LIMITS.length} at most (a guide this big goes in a community addon: forge release pack)` };
+		return { error: `${guide.id} makes a string of ${text.length} characters; Northstar reads ${LIMITS.length} at most (a guide this big goes in a community addon: forge release pack)` };
 	}
 	return { text, steps };
 }

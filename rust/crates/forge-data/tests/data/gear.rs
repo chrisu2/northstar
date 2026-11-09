@@ -1,6 +1,6 @@
-//! `gear build` (Polestar_ItemDB's Forever.lua, TOC and notice, SpecData.lua and its notice,
+//! `gear build` (Northstar_ItemDB's Forever.lua, TOC and notice, SpecData.lua and its notice,
 //! report.json, stdout) against the JavaScript's output on a synthetic MIT ForeverLevelingBiS, an
-//! Items.lua cut, Polestar's Weights.lua and a wowsims (MIT) cache slice: rust/tests/golden/gear (README
+//! Items.lua cut, Northstar's Weights.lua and a wowsims (MIT) cache slice: rust/tests/golden/gear (README
 //! there). A ForeverLevelingBiS that is not MIT-licensed is refused.
 
 use crate::common;

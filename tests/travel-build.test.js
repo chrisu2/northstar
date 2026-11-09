@@ -185,7 +185,7 @@ test('the CLI writes byte-identical travel.json, TravelData.lua and FlightPaths.
 
 test('with --lua and no --flight-lua the CLI writes FlightPaths.lua beside it, never into the addon', () => {
 	const dir = tmp();
-	const committed = path.join(ROOT, 'addon', 'Polestar', 'Maps', 'FlightPaths.lua');
+	const committed = path.join(ROOT, 'addon', 'Northstar', 'Maps', 'FlightPaths.lua');
 	const before = fs.readFileSync(committed, 'utf8');
 	try {
 		const r = spawnSync(process.execPath, [
@@ -261,10 +261,10 @@ test('generated TravelData.lua loads under Lua 5.1 and the addon planner routes 
 function committedInns() {
 	return runAddon({
 		stubs: ['stub_nav.lua'],
-		addons: [{ name: 'Polestar', files: ['Core/Init.lua', 'Nav/Nav.xml'] }],
+		addons: [{ name: 'Northstar', files: ['Core/Init.lua', 'Nav/Nav.xml'] }],
 		script: `
 			local out = {}
-			for _, inn in ipairs(Polestar.Nav.GetTravelData().inns) do out[#out + 1] = { npc = inn.npc, area = inn.area or false, names = inn.names } end
+			for _, inn in ipairs(Northstar.Nav.GetTravelData().inns) do out[#out + 1] = { npc = inn.npc, area = inn.area or false, names = inn.names } end
 			emit(out)`,
 	}).emitted[0];
 }
@@ -401,10 +401,10 @@ const GRID = path.join(ROOT, 'data', 'local', 'nav4');
 test('every boat end of the committed TravelData.lua is boarded on dry ground within 30 yd of its stop', () => {
 	const [ends] = runAddon({
 		stubs: ['stub_nav.lua'],
-		addons: [{ name: 'Polestar', files: ['Core/Init.lua', 'Nav/Nav.xml'] }],
+		addons: [{ name: 'Northstar', files: ['Core/Init.lua', 'Nav/Nav.xml'] }],
 		script: `
 			local out = {}
-			for _, t in ipairs(Polestar.Nav.GetTravelData().transports) do
+			for _, t in ipairs(Northstar.Nav.GetTravelData().transports) do
 				if t.kind == "boat" then
 					for _, s in ipairs({ "a", "b" }) do
 						local e, b = t[s], t[s].board

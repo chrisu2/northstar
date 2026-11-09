@@ -1,5 +1,5 @@
 <script lang="ts">
-	// The Polestar emblem (docs/assets/emblem.svg), in the accent.
+	// The Northstar emblem (docs/assets/emblem.svg), in the accent.
 	// `target`: where the launch intro's star lands (lib/intro.svelte.ts).
 	let { size = 36, glow = false, target = false }: { size?: number; glow?: boolean; target?: boolean } = $props();
 </script>

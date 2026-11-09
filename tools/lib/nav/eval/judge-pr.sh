@@ -5,11 +5,11 @@
 #
 # 1. checks the PR out in a temp worktree on disk (../lodestar-pr-<n>; removed at the end unless --keep), with
 #    data/forever, data/sources, data/sim and data/local/{nav3,nav4,nav-layers} linked from the main checkout;
-# 2. the shipped size: addon/Polestar_Nav and every addon folder the PR adds (MB, files, the largest files), against
+# 2. the shipped size: addon/Northstar_Nav and every addon folder the PR adds (MB, files, the largest files), against
 #    next's;
 # 3. the nav eval corpus (routes.json, the 21 expectations, with A1-A8 against the baseline) and the acceptance set
 #    (acceptance.json: the reported walks, the underworld caves, the chokepoint walks) through the eval harness on the
-#    PR's Polestar_Nav: per route pass/fail against today's, the harness's load ms and Lua KB after loading both
+#    PR's Northstar_Nav: per route pass/fail against today's, the harness's load ms and Lua KB after loading both
 #    continents (packed) and during searches; today's maps are measured again in the same session, so the times
 #    compare;
 # 4. the broad sample (broad.js: 2,000 random quest-point pairs, both continents): routed %, detour median/p95, drops,
@@ -68,7 +68,7 @@ link_data() { # <tree>
 	for d in nav3 nav4 nav-layers; do [ -e "$t/data/local/$d" ] || ln -s "$MAIN/data/local/$d" "$t/data/local/$d"; done
 }
 
-# Baselines (today's nav: the TOOLS tree's addon/Polestar_Nav, next plus the acceptance tooling).
+# Baselines (today's nav: the TOOLS tree's addon/Northstar_Nav, next plus the acceptance tooling).
 baseline() {
 	link_data "$TOOLS"
 	cd "$TOOLS" || exit 1
@@ -76,7 +76,7 @@ baseline() {
 	if [ $REBASE = 1 ] || [ ! -s "$BASE/base-accept.json" ]; then node tools/polestar.js nav eval --routes tools/lib/nav/eval/acceptance.json --out "$BASE/base-accept.json" >"$BASE/base-accept.txt" 2>&1; fi
 	if [ $SKIP_BROAD = 0 ]; then
 		[ -s "$BASE/pairs.json" ] || node tools/lib/nav/eval/broad.js sample --per 1000 --out "$BASE/pairs.json"
-		if [ $REBASE = 1 ] || [ ! -s "$BASE/base-broad.json" ]; then $LIGHT node tools/lib/nav/eval/broad.js run --nav addon/Polestar_Nav --pairs "$BASE/pairs.json" --workers 4 --out "$BASE/base-broad.json" >"$BASE/base-broad.txt" 2>&1; fi
+		if [ $REBASE = 1 ] || [ ! -s "$BASE/base-broad.json" ]; then $LIGHT node tools/lib/nav/eval/broad.js run --nav addon/Northstar_Nav --pairs "$BASE/pairs.json" --workers 4 --out "$BASE/base-broad.json" >"$BASE/base-broad.txt" 2>&1; fi
 	fi
 	if [ $SKIP_TESTS = 0 ] && { [ $REBASE = 1 ] || [ ! -s "$BASE/base-tests.txt" ]; }; then
 		navtests "$BASE/base-tests.txt"
@@ -115,7 +115,7 @@ say ""
 NEW_ADDONS=$(git diff --name-only --diff-filter=A "$MB" HEAD -- addon | cut -d/ -f2 | sort -u | while read -r d; do git cat-file -e "origin/next:addon/$d" 2>/dev/null || echo "$d"; done)
 say "| folder | next MB | PR MB | PR files |"
 say "|---|---|---|---|"
-for d in Polestar_Nav $NEW_ADDONS; do
+for d in Northstar_Nav $NEW_ADDONS; do
 	say "| addon/$d | $(mb "$TOOLS/addon/$d" || echo 0) | $(mb "$WT/addon/$d") | $(find "$WT/addon/$d" -type f 2>/dev/null | wc -l) |"
 done
 say "| addon/ (all) | $(mb "$TOOLS/addon") | $(mb "$WT/addon") | $(find "$WT/addon" -type f | wc -l) |"
@@ -125,12 +125,12 @@ say "New files outside addon/ (by folder): $(echo "$NEW_DATA" | awk '{printf "%s
 say ""
 say "Largest files in the PR's addon folders:"
 say '```'
-for d in Polestar_Nav $NEW_ADDONS; do find "$WT/addon/$d" -type f -printf '%s %p\n' 2>/dev/null; done | sort -rn | head -12 | awk -v wt="$WT/" '{sub(wt, "", $2); printf "%8.1f MB  %s\n", $1 / 1048576, $2}' | tee -a "$REPORT"
+for d in Northstar_Nav $NEW_ADDONS; do find "$WT/addon/$d" -type f -printf '%s %p\n' 2>/dev/null; done | sort -rn | head -12 | awk -v wt="$WT/" '{sub(wt, "", $2); printf "%8.1f MB  %s\n", $1 / 1048576, $2}' | tee -a "$REPORT"
 say '```'
-say "Polestar_Nav.toc: $(grep -E '^## (LoadOnDemand|SavedVariables|Dependencies|RequiredDeps|Interface)' "$WT/addon/Polestar_Nav/Polestar_Nav.toc" 2>/dev/null | tr '\n' ' ')"
+say "Northstar_Nav.toc: $(grep -E '^## (LoadOnDemand|SavedVariables|Dependencies|RequiredDeps|Interface)' "$WT/addon/Northstar_Nav/Northstar_Nav.toc" 2>/dev/null | tr '\n' ' ')"
 say ""
 
-# Which tools judge it: ours (on the PR's Polestar_Nav), or the PR's tree with the acceptance changes applied.
+# Which tools judge it: ours (on the PR's Northstar_Nav), or the PR's tree with the acceptance changes applied.
 RUN=$TOOLS
 if [ -n "$(git diff --name-only "$MB" HEAD -- tools/lib/nav/eval)" ]; then
 	note "the PR changes tools/lib/nav/eval: applying the acceptance branch onto its tree"
@@ -142,7 +142,7 @@ if [ -n "$(git diff --name-only "$MB" HEAD -- tools/lib/nav/eval)" ]; then
 fi
 say "Judged with the eval tools of: $RUN"
 say ""
-NAV=$WT/addon/Polestar_Nav
+NAV=$WT/addon/Northstar_Nav
 NAVMB=$(mb "$NAV")
 LANE=$LIGHT
 [ "${NAVMB:-0}" -gt 200 ] && LANE=$HEAVY
@@ -150,9 +150,9 @@ LANE=$LIGHT
 # 3. The eval corpus and the acceptance set.
 cd "$RUN" || exit 1
 note "nav eval on today's maps and on the PR (routes.json, acceptance.json)"
-$LANE sh -c "node tools/polestar.js nav eval --nav '$TOOLS/addon/Polestar_Nav' --out '$OUT/base-eval.json' >'$OUT/base-eval.txt' 2>&1; \
+$LANE sh -c "node tools/polestar.js nav eval --nav '$TOOLS/addon/Northstar_Nav' --out '$OUT/base-eval.json' >'$OUT/base-eval.txt' 2>&1; \
 	node tools/polestar.js nav eval --nav '$NAV' --baseline '$OUT/base-eval.json' --out '$OUT/eval.json' >'$OUT/eval.txt' 2>&1; \
-	node tools/polestar.js nav eval --nav '$TOOLS/addon/Polestar_Nav' --routes tools/lib/nav/eval/acceptance.json --out '$OUT/base-accept.json' >'$OUT/base-accept.txt' 2>&1; \
+	node tools/polestar.js nav eval --nav '$TOOLS/addon/Northstar_Nav' --routes tools/lib/nav/eval/acceptance.json --out '$OUT/base-accept.json' >'$OUT/base-accept.txt' 2>&1; \
 	node tools/polestar.js nav eval --nav '$NAV' --routes tools/lib/nav/eval/acceptance.json --out '$OUT/accept.json' >'$OUT/accept.txt' 2>&1"
 [ -s "$OUT/base-eval.json" ] || cp "$BASE/base-eval.json" "$OUT/base-eval.json"
 [ -s "$OUT/base-accept.json" ] || cp "$BASE/base-accept.json" "$OUT/base-accept.json"
@@ -180,7 +180,7 @@ if [ $SKIP_BROAD = 0 ]; then
 	W=$(node tools/lib/nav/eval/broad.js workers --nav "$NAV")
 	[ "$LANE" = "$LIGHT" ] && [ "$W" -gt 4 ] && W=4 # the light lane: at most 4 workers
 	note "broad sample on today's maps then the PR, $W harness processes each (lane $(basename "$LANE"))"
-	$LANE sh -c "node tools/lib/nav/eval/broad.js run --nav '$TOOLS/addon/Polestar_Nav' --pairs '$BASE/pairs.json' --workers $W --out '$OUT/base-broad.json' >'$OUT/base-broad.txt' 2>&1; \
+	$LANE sh -c "node tools/lib/nav/eval/broad.js run --nav '$TOOLS/addon/Northstar_Nav' --pairs '$BASE/pairs.json' --workers $W --out '$OUT/base-broad.json' >'$OUT/base-broad.txt' 2>&1; \
 		node tools/lib/nav/eval/broad.js run --nav '$NAV' --pairs '$BASE/pairs.json' --workers $W --out '$OUT/broad.json' >'$OUT/broad.txt' 2>&1"
 	[ -s "$OUT/base-broad.json" ] || cp "$BASE/base-broad.json" "$OUT/base-broad.json"
 	say "## Broad sample: $(node -e 'const p=require(process.argv[1]);console.log(`${p.pairs.length} quest-point pairs, ${p.min}-${p.max} yd apart, seed ${p.seed}`)' "$BASE/pairs.json")"
@@ -194,7 +194,7 @@ say "## Chokepoints (Nav/Chokepoints.lua)"
 say ""
 LINES="$OUT/accept.json,$OUT/eval.json"
 [ -s "$OUT/broad.json" ] && LINES="$LINES,$OUT/broad.json"
-node tools/lib/nav/eval/chokecheck.js --nav "$NAV" --ref "$TOOLS/addon/Polestar_Nav" --lines "$LINES" 2>&1 | tee -a "$REPORT" >/dev/null
+node tools/lib/nav/eval/chokecheck.js --nav "$NAV" --ref "$TOOLS/addon/Northstar_Nav" --lines "$LINES" 2>&1 | tee -a "$REPORT" >/dev/null
 say ""
 
 # 6. Tests.

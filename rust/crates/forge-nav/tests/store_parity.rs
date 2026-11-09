@@ -4,7 +4,7 @@
 //!
 //! Golden: rust/tests/golden/nav-store (walks-<f>.bin from walktables.js routerWalks + walks.js
 //! writeWalks, lookup-<f>.bin from lookup-sample.js's logic) and nav-walks (world-<f>.json, horde/
-//! asks-<band>.{bin,json}, horde/ends.json, walktable/<key>.bin); POLESTAR_REF reads the old local
+//! asks-<band>.{bin,json}, horde/ends.json, walktable/<key>.bin); NORTHSTAR_REF reads the old local
 //! references (tests/common/mod.rs).
 //! cargo test --release -p forge-nav --test store_parity -- --nocapture --test-threads=1
 

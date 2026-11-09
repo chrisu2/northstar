@@ -1,4 +1,4 @@
-//! `when skill` during play (addon/Polestar/Core/Engine.lua): the step applies while the character's rank in the
+//! `when skill` during play (addon/Northstar/Core/Engine.lua): the step applies while the character's rank in the
 //! profession (Compat.GetSkillRank, by skill line, else by name) is N or more; one not learned is rank 0, so
 //! `!skill X 1` is "has no X". A skill-up re-evaluates the guide (SKILL_LINES_CHANGED, CHAT_MSG_SKILL); a step
 //! the route has passed keeps its stored outcome. Real Core manifest, stub world (a level 1 Human Warrior in
@@ -18,7 +18,7 @@ w.onQuest(783, {})
 // Step 2 is the conditional one, between taking and handing in A Threat Within: @WHEN@ is Lua for its
 // predicates.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/skill", pack = "test", title = "Skill", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Deputy Willem", goals = {
@@ -35,7 +35,7 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 function state() local v = E.GetStepView(2); return { live = E.GetLiveStep(), status = v.status } end
 "#;
@@ -44,7 +44,7 @@ const COOKING_50: &str = r#"{ { k = "skill", name = "Cooking", skillLine = 185, 
 const NO_HERBALISM: &str = r#"{ { k = "skill", name = "Herbalism", skillLine = 182, n = 1, neg = true } }"#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 fn run(when: &str, login: &str, script: &str) -> Vec<Value> {
@@ -53,7 +53,7 @@ fn run(when: &str, login: &str, script: &str) -> Vec<Value> {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/skill" }"#.into())],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/skill" }"#.into())],
 		script: [TEST_PACK, TEST_SOURCE, &guide, HELPERS, "stub.login()", login, r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"#, script].join("\n"),
 		..Default::default()
 	})
@@ -95,7 +95,7 @@ fn guides_validate_takes_a_skill_predicate_with_a_name_and_rank_and_refuses_one_
 		stubs: vec!["stub_world.lua"],
 		addons: vec![core()],
 		script: r#"
-			local V = Polestar.Guides.Validate
+			local V = Northstar.Guides.Validate
 			local function g(pred) return { id = "t/v", pack = "test", title = "V", minLevel = 1, maxLevel = 10, steps = { { when = { pred }, goals = { { t = "note", text = "x" } } } } } end
 			emit({
 				ok = V(g({ k = "skill", name = "Cooking", skillLine = 185, n = 50 })) or "ok",

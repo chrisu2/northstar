@@ -1,12 +1,12 @@
 //! The JS-written files of the golden grid (rust/tests/golden/nav-grid: tiles, walls, the continent's
-//! graph) decode and re-encode to the same bytes. POLESTAR_NAV4=<grid dir> with POLESTAR_NAV4_C=<map>
+//! graph) decode and re-encode to the same bytes. NORTHSTAR_NAV4=<grid dir> with NORTHSTAR_NAV4_C=<map>
 //! checks another JS-built grid instead (the old reference: the v1 checkout's data/local/nav4, map 2991).
 use forge_navbuild::format::*;
 use std::path::PathBuf;
 
 fn grid() -> (PathBuf, String) {
-	match std::env::var("POLESTAR_NAV4") {
-		Ok(d) => (d.into(), std::env::var("POLESTAR_NAV4_C").unwrap_or_else(|_| "2991".into())),
+	match std::env::var("NORTHSTAR_NAV4") {
+		Ok(d) => (d.into(), std::env::var("NORTHSTAR_NAV4_C").unwrap_or_else(|_| "2991".into())),
 		Err(_) => (PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/golden/nav-grid/nav4"), "0".into()),
 	}
 }

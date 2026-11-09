@@ -15,7 +15,7 @@ const { compileRun, makeTables, K_ACCEPT, K_TURNIN } = require('../tools/lib/sim
 const { Evaluator } = require('../tools/lib/sim/evaluate');
 const { compileSequence } = require('../tools/lib/sim/sequence');
 const { effective, means } = require('../tools/lib/sim/params');
-const { loadPolestarRoutes } = require('../tools/lib/sim/baselines/polestar');
+const { loadNorthstarRoutes } = require('../tools/lib/sim/baselines/polestar');
 const syn = require('./fixtures/sim/synthetic');
 const { tmpdir } = require('./helpers/tmp');
 
@@ -86,7 +86,7 @@ test('polestar: accept and turn-in events carry the npc the guide names', () => 
 		.replace('  accept 90001 "Synthetic Task"\n', '  accept 90001 "Synthetic Task" npc 99010\n')
 		.replace('  turnin 90001 "Synthetic Task"\n', '  turnin 90001 "Synthetic Task" npc 99011\n');
 	fs.writeFileSync(file, text);
-	const r = loadPolestarRoutes({ guidesDir: dir, dataDir: path.join(FIX, 'data'), race: 'Orc' });
+	const r = loadNorthstarRoutes({ guidesDir: dir, dataDir: path.join(FIX, 'data'), race: 'Orc' });
 	const ev = r.default.events.filter((e) => e.q === 90001 && e.t !== 'complete');
 	assert.deepEqual(ev, [{ t: 'accept', q: 90001, npc: 99010 }, { t: 'turnin', q: 90001, npc: 99011 }]);
 });

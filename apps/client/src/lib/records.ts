@@ -70,7 +70,7 @@ const FIELDS: Record<string, string> = {
 	region: 'region',
 	ruleset: 'ruleset',
 	recorderVersion: 'Recorder',
-	polestarVersion: 'Polestar',
+	polestarVersion: 'Northstar',
 	packs: 'guides',
 	map: 'map',
 	x: 'x',

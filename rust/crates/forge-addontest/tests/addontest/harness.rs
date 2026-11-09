@@ -32,14 +32,14 @@ fn a_lua_error_is_err_with_its_place_and_the_output_so_far() {
 fn an_addon_loads_by_its_toc_with_its_name_and_namespace_and_is_marked_as_addon_code() {
 	let out = run_addon(&RunAddon {
 		stubs: vec!["stub_recorder.lua"],
-		addons: vec![Addon::name("Polestar_Recorder")],
-		script: r#"local n = 0; for src, name in pairs(stub.addonSources) do if name == "Polestar_Recorder" and src:find("/addon/Polestar_Recorder/", 1, true) then n = n + 1 end end; emit(n > 0)"#
+		addons: vec![Addon::name("Northstar_Recorder")],
+		script: r#"local n = 0; for src, name in pairs(stub.addonSources) do if name == "Northstar_Recorder" and src:find("/addon/Northstar_Recorder/", 1, true) then n = n + 1 end end; emit(n > 0)"#
 			.into(),
 		..Default::default()
 	})
 	.unwrap();
 	assert_eq!(out, vec![json!(true)]);
-	let missing = run_addon(&RunAddon { addons: vec![Addon::files("Polestar", &["Nope.lua"])], ..Default::default() }).unwrap_err();
+	let missing = run_addon(&RunAddon { addons: vec![Addon::files("Northstar", &["Nope.lua"])], ..Default::default() }).unwrap_err();
 	assert!(missing.contains("missing Nope.lua"), "{missing}");
 }
 

@@ -1,20 +1,20 @@
-//! The guide pack registry (addon/Polestar/Core/Guides.lua): pack ids and ownership, clashes, formats, problems
+//! The guide pack registry (addon/Northstar/Core/Guides.lua): pack ids and ownership, clashes, formats, problems
 //! recorded per pack, map frames and author text escaped once at registration.
 
 use forge_addontest::{emitted, is_match, Addon, RunAddon};
 use serde_json::{json, Value};
 
 const PRELUDE: &str = r#"
-G = Polestar.Guides
+G = Northstar.Guides
 function pack(id, addon, extra)
 	local m = { addon = addon or "JoeAddon", id = id, format = 1, title = "Joe's Routes", author = "Joe", version = "1.0.0", license = "MIT" }
 	for k, v in pairs(extra or {}) do m[k] = v end
-	return { Polestar.RegisterPack(m) }
+	return { Northstar.RegisterPack(m) }
 end
 function guide(id, packId, extra)
 	local g = { id = id, pack = packId, title = "Guide " .. id, steps = { { goals = { { t = "level", level = 2 } } } } }
 	for k, v in pairs(extra or {}) do g[k] = v end
-	return { Polestar.RegisterGuide(g) }
+	return { Northstar.RegisterGuide(g) }
 end
 function messages(r)
 	local out = {}
@@ -24,7 +24,7 @@ end
 "#;
 
 fn run_before(script: &str, before: &str) -> Value {
-	emitted(&RunAddon { before: before.into(), addons: vec![Addon::files("Polestar", &["Core/Core.xml"])], login: false, script: format!("{PRELUDE}{script}"), ..Default::default() }).remove(0)
+	emitted(&RunAddon { before: before.into(), addons: vec![Addon::files("Northstar", &["Core/Core.xml"])], login: false, script: format!("{PRELUDE}{script}"), ..Default::default() }).remove(0)
 }
 
 fn run(script: &str) -> Value {
@@ -105,9 +105,9 @@ fn a_pack_id_already_taken_refuses_the_second_pack_whole_the_guides_it_registers
 #[test]
 fn a_pack_refused_for_a_reserved_id_drops_the_guides_it_registers_while_loading() {
 	let out = run(r#"
-		pack("guides", "Polestar_Guides")
+		pack("guides", "Northstar_Guides")
 		guide("forever/a", "guides")
-		stub.addonLoaded("Polestar_Guides")
+		stub.addonLoaded("Northstar_Guides")
 		pack("guides", "Imposter")
 		local g = guide("forever/a", "guides", { title = "Not ours" })
 		local refused
@@ -116,7 +116,7 @@ fn a_pack_refused_for_a_reserved_id_drops_the_guides_it_registers_while_loading(
 	"#);
 	assert_eq!(out["g"], false);
 	assert_eq!(out["title"], "Guide forever/a");
-	assert_eq!(out["problems"], json!(["pack-refused: Pack id guides is reserved for Polestar. 1 guide dropped."]));
+	assert_eq!(out["problems"], json!(["pack-refused: Pack id guides is reserved for Northstar. 1 guide dropped."]));
 }
 
 #[test]
@@ -147,7 +147,7 @@ fn a_pack_of_a_format_the_core_does_not_read_is_refused_whole_with_the_version_i
 		local r = G.Pack("joe")
 		emit({ p = p[1], g = g1[1] or g2[1], status = r.status, needs = r.needs, problems = messages(r), got = G.Get("joe/a") ~= nil })
 	"#,
-		r#"stub.addonMeta.JoeAddon = { ["X-Polestar-Needs"] = "0.3.0" }"#,
+		r#"stub.addonMeta.JoeAddon = { ["X-Northstar-Needs"] = "0.3.0" }"#,
 	);
 	assert_eq!(out["p"], false);
 	assert_eq!(out["g"], false);
@@ -199,12 +199,12 @@ fn reserved_internal_and_malformed_pack_ids_are_refused() {
 		res.draft = pack("draft")[1]
 		res.guidesElsewhere = pack("guides", "NotOurs")[1]
 		res.lookupPlain = pack("lookup")[1]
-		res.internalOther = Polestar.RegisterPack({ id = "joe", title = "Joe", internal = true })
+		res.internalOther = Northstar.RegisterPack({ id = "joe", title = "Joe", internal = true })
 		res.upper = pack("Joe")[1]
 		res.short = pack("x")[1]
 		res.long = pack(string.rep("a", 33))[1]
 		res.ok = pack("joe")[1]
-		res.internalLookup = Polestar.RegisterPack({ id = "lookup", title = "Lookup", internal = true })
+		res.internalLookup = Northstar.RegisterPack({ id = "lookup", title = "Lookup", internal = true })
 		local listed = {}
 		for _, r in ipairs(G.Packs()) do listed[#listed + 1] = r.id .. ":" .. r.status end
 		emit({ res = res, listed = listed, lookupInternal = G.Pack("lookup").internal, guidesHeld = G.Pack("guides").status })
@@ -227,7 +227,7 @@ fn reserved_internal_and_malformed_pack_ids_are_refused() {
 fn our_pack_is_only_ours_from_polestar_guides_and_comes_first_in_the_list() {
 	let out = run(r#"
 		pack("aaa", "Aaa", { title = "Aardvark" })
-		local ours = pack("guides", "Polestar_Guides", { title = "Polestar Guides" })
+		local ours = pack("guides", "Northstar_Guides", { title = "Northstar Guides" })
 		pack("zed", "Zed", { title = "beta" })
 		guide("forever/a", "guides")
 		guide("draft/b", "guides")
@@ -251,11 +251,11 @@ const MAP_FRAMES: &str = r#"
 		local B = { c = 0, left = 2, right = -2, top = 2, bottom = -2 }
 		local C = { c = 1, left = 3, right = -3, top = 3, bottom = -3 }
 		local calls = {
-			joe = function() Polestar.RegisterMapFrames({ era = { [1429] = A, [9999] = C } }, "joe") end,
-			guides = function() Polestar.RegisterMapFrames({ era = { [1429] = B } }, "guides") end,
+			joe = function() Northstar.RegisterMapFrames({ era = { [1429] = A, [9999] = C } }, "joe") end,
+			guides = function() Northstar.RegisterMapFrames({ era = { [1429] = B } }, "guides") end,
 		}
 		calls.{first}(); calls.{second}()
-		local era = Polestar.MapFrames.era
+		local era = Northstar.MapFrames.era
 		emit({ era[1429] == B, era[9999] == C })
 	"#;
 
@@ -276,7 +276,7 @@ fn author_text_prints_literally_every_doubled_once_at_registration_ids_unchanged
 		local r = G.Pack("joe")
 		emit({ title = g.title, header = G.List()[1].title, step = g.steps[1].title, text = g.steps[1].goals[1].text,
 			note = g.steps[1].goals[2].note, text2 = g.steps[1].goals[2].text, id = g.id, next = g.next, pack = g.pack,
-			packTitle = r.title, packNotes = r.notes, esc = Polestar.EscapeText("a|b|c"), plain = Polestar.EscapeText("abc") })
+			packTitle = r.title, packNotes = r.notes, esc = Northstar.EscapeText("a|b|c"), plain = Northstar.EscapeText("abc") })
 	"#);
 	assert_eq!(
 		out,
@@ -290,7 +290,7 @@ fn author_text_prints_literally_every_doubled_once_at_registration_ids_unchanged
 #[test]
 fn a_pack_missing_a_required_field_is_refused_and_the_problem_names_the_field() {
 	let out = run(r#"
-		local p = Polestar.RegisterPack({ addon = "JoeAddon", id = "joe", format = 1, title = "Joe", version = "1", license = "MIT" })
+		local p = Northstar.RegisterPack({ addon = "JoeAddon", id = "joe", format = 1, title = "Joe", version = "1", license = "MIT" })
 		local g = guide("joe/a", "joe")
 		local r = G.Pack("joe")
 		emit({ p = p, g = g[1], status = r.status, problems = messages(r) })
@@ -306,16 +306,16 @@ fn a_pack_missing_a_required_field_is_refused_and_the_problem_names_the_field() 
 fn a_pack_misusing_internal_or_the_lookup_id_is_refused_listed_with_its_problem_and_never_reported_broken() {
 	let out = run_before(
 		r#"
-		local a = { Polestar.RegisterPack({ addon = "IntlAddon", id = "intl", format = 1, title = "Intl", author = "I", version = "1", license = "MIT", internal = true }) }
-		local b = { Polestar.RegisterPack({ addon = "LookAddon", id = "lookup", format = 1, title = "Look", author = "L", version = "1", license = "MIT" }) }
+		local a = { Northstar.RegisterPack({ addon = "IntlAddon", id = "intl", format = 1, title = "Intl", author = "I", version = "1", license = "MIT", internal = true }) }
+		local b = { Northstar.RegisterPack({ addon = "LookAddon", id = "lookup", format = 1, title = "Look", author = "L", version = "1", license = "MIT" }) }
 		G.ScanInstalled()
 		local rows = {}
 		for _, r in ipairs(G.Packs()) do rows[r.addon] = { id = r.id, status = r.status, problems = messages(r) } end
 		emit({ a = a[1], b = b[1], rows = rows, count = G.ProblemCount() })
 	"#,
 		r#"stub.addons = { { name = "IntlAddon", loaded = true }, { name = "LookAddon", loaded = true } }
-		stub.addonMeta.IntlAddon = { ["X-Polestar-Pack"] = "intl", ["X-Polestar-Format"] = "1" }
-		stub.addonMeta.LookAddon = { ["X-Polestar-Pack"] = "lookup", ["X-Polestar-Format"] = "1" }"#,
+		stub.addonMeta.IntlAddon = { ["X-Northstar-Pack"] = "intl", ["X-Northstar-Format"] = "1" }
+		stub.addonMeta.LookAddon = { ["X-Northstar-Pack"] = "lookup", ["X-Northstar-Format"] = "1" }"#,
 	);
 	assert_eq!(out["a"], false);
 	assert_eq!(out["b"], false);
@@ -328,7 +328,7 @@ fn a_pack_misusing_internal_or_the_lookup_id_is_refused_listed_with_its_problem_
 	assert!(is_match(p0, r"^pack-refused: .*internal"));
 	assert!(!is_match(p0, r"reserved"));
 	assert_eq!(out["rows"]["LookAddon"]["status"], "refused");
-	assert_eq!(out["rows"]["LookAddon"]["problems"], json!(["pack-refused: Pack id lookup is reserved for Polestar."]));
+	assert_eq!(out["rows"]["LookAddon"]["problems"], json!(["pack-refused: Pack id lookup is reserved for Northstar."]));
 	assert_eq!(out["count"], 2);
 }
 
@@ -341,8 +341,8 @@ fn an_internal_pack_whose_id_is_taken_or_reserved_is_refused_whole_its_guides_st
 		pack("joe", "B", { internal = true })
 		local taken = guide("joe/b", "joe")
 		stub.addonLoaded("B")
-		pack("guides", "Polestar_Guides")
-		stub.addonLoaded("Polestar_Guides")
+		pack("guides", "Northstar_Guides")
+		stub.addonLoaded("Northstar_Guides")
 		pack("guides", "C", { internal = true })
 		local reserved = guide("forever/x", "guides")
 		emit({ taken = taken[1], reserved = reserved[1], hasB = G.Get("joe/b") ~= nil, hasX = G.Get("forever/x") ~= nil, guides = G.Pack("joe").guides })
@@ -358,12 +358,12 @@ fn map_frames_of_a_refused_pack_are_ignored_even_under_the_holder_s_id() {
 		pack("joe", "A")
 		stub.addonLoaded("A")
 		pack("joe", "B")
-		Polestar.RegisterMapFrames({ era = { [9999] = B } }, "joe")
+		Northstar.RegisterMapFrames({ era = { [9999] = B } }, "joe")
 		pack("guides", "C")
-		Polestar.RegisterMapFrames({ era = { [8888] = B } }, "guides")
+		Northstar.RegisterMapFrames({ era = { [8888] = B } }, "guides")
 		stub.addonLoaded("C")
-		Polestar.RegisterMapFrames({ era = { [7777] = A } }, "joe")
-		local era = Polestar.MapFrames.era
+		Northstar.RegisterMapFrames({ era = { [7777] = A } }, "joe")
+		local era = Northstar.MapFrames.era
 		emit({ era[9999] == nil, era[8888] == nil, era[7777] == A })
 	"#);
 	assert_eq!(out, json!([true, true, true]));
@@ -372,7 +372,7 @@ fn map_frames_of_a_refused_pack_are_ignored_even_under_the_holder_s_id() {
 #[test]
 fn a_step_picture_is_a_file_in_the_pack_s_addon_folder_its_texture_path_comes_from_the_addon_that_registered_the_pack() {
 	let out = run(r#"
-		pack("joe", "PolestarPack_Joe")
+		pack("joe", "NorthstarPack_Joe")
 		local ok = guide("joe/a", "joe", { steps = {
 			{ note = "The mouth is behind the farm.", image = { file = "media\\fargodeep-mine", w = 512, h = 256 }, goals = { { t = "level", level = 2 } } },
 			{ image = { file = "media/shots/gate.blp" }, goals = { { t = "level", level = 3 } } },
@@ -382,8 +382,8 @@ fn a_step_picture_is_a_file_in_the_pack_s_addon_folder_its_texture_path_comes_fr
 		emit({ ok = ok[1], first = s[1].image, second = s[2].image.texture, third = s[3].image == nil })
 	"#);
 	assert_eq!(out["ok"], true);
-	assert_eq!(out["first"], json!({ "file": r"media\fargodeep-mine", "w": 512, "h": 256, "texture": r"Interface\AddOns\PolestarPack_Joe\media\fargodeep-mine" }));
-	assert_eq!(out["second"], r"Interface\AddOns\PolestarPack_Joe\media\shots\gate.blp");
+	assert_eq!(out["first"], json!({ "file": r"media\fargodeep-mine", "w": 512, "h": 256, "texture": r"Interface\AddOns\NorthstarPack_Joe\media\fargodeep-mine" }));
+	assert_eq!(out["second"], r"Interface\AddOns\NorthstarPack_Joe\media\shots\gate.blp");
 	assert_eq!(out["third"], true, "a step without a picture gets none");
 }
 

@@ -1,5 +1,5 @@
 'use strict';
-// `polestar sim compare`: score a leveling chain against Polestar's under the
+// `polestar sim compare`: score a leveling chain against Northstar's under the
 // earlier JS route model (docs/legacy/SIMULATION-js.md). Every other `sim`
 // subcommand was retired for Forge; each prints its replacement.
 
@@ -32,7 +32,7 @@ const RETIRED = {
 const usage = `usage: node tools/polestar.js sim compare [options]
 
   sim compare --faction F [--race R] [--class C] [--guides DIR] [--pack DIR | DIR] [--to 10,20,30] [--with-optional]
-              [--objective O]   Polestar's routes vs a pack's chain (and earlier best-found results), same model
+              [--objective O]   Northstar's routes vs a pack's chain (and earlier best-found results), same model
 
 Without --race, compare covers every start of the faction (Horde: Orc, Tauren,
 Undead, Skyborne; Alliance: Human, Dwarf, NightElf, Skyborne). Class defaults
@@ -42,7 +42,7 @@ options:
   --data <dir>       reference data (default data/forever)
   --sim <dir>        sim world and walks (default data/sim; forge walks world / forge walks walks)
   --band <levels>    level width of the world's quest packages (default 5)
-  --guides <dir>     Polestar guides folder to score (default guides/), e.g. an old copy
+  --guides <dir>     Northstar guides folder to score (default guides/), e.g. an old copy
   --pack <dir>       also score this pack's chain (or name the pack folder as the one
                      argument; default: the nearest pack.json); written to
                      data/bench/compare-<faction>-<race>-<pack id>.json
@@ -131,4 +131,4 @@ async function run(argv) {
 	}
 }
 
-module.exports = { name: 'sim', summary: "score a leveling chain against Polestar's under the route model (sim compare)", usage, run, parseArgs };
+module.exports = { name: 'sim', summary: "score a leveling chain against Northstar's under the route model (sim compare)", usage, run, parseArgs };

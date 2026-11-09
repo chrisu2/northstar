@@ -133,7 +133,7 @@ fn changelog_link(version: &str) -> String {
 }
 
 fn beta() -> String {
-	format!("Polestar is still a beta. If something's off, tell us on [Discord]({DISCORD}) or [GitHub Issues]({REPO}/issues).")
+	format!("Northstar is still a beta. If something's off, tell us on [Discord]({DISCORD}) or [GitHub Issues]({REPO}/issues).")
 }
 
 /// The GitHub release's notes: the players' and guide authors' entries.
@@ -146,11 +146,11 @@ pub fn github(rel: &Release) -> String {
 		String::new(),
 		"## Install or update".into(),
 		String::new(),
-		format!("- **With the CurseForge app:** update [Polestar Guides]({CURSEFORGE})."),
-		format!("- **By hand:** download `Polestar-{v}.zip` below (not \"Source code\"). Delete every old `Polestar` folder from `World of Warcraft/_classic_beta_/Interface/AddOns/` (`_forever_` from launch), then unzip this one there."),
+		format!("- **With the CurseForge app:** update [Northstar Guides]({CURSEFORGE})."),
+		format!("- **By hand:** download `Northstar-{v}.zip` below (not \"Source code\"). Delete every old `Northstar` folder from `World of Warcraft/_classic_beta_/Interface/AddOns/` (`_forever_` from launch), then unzip this one there."),
 		"- **Then quit the game completely and start it again** if the release adds an addon folder: a `/reload` doesn't load new addon folders.".into(),
 		String::new(),
-		format!("`Polestar_Recorder-{v}.zip` is optional. `SHA256SUMS` holds the checksums."),
+		format!("`Northstar_Recorder-{v}.zip` is optional. `SHA256SUMS` holds the checksums."),
 	];
 	for (text, heading) in [(&rel.players, "## For players"), (&rel.authors, "## For guide authors")] {
 		if !text.is_empty() {
@@ -165,7 +165,7 @@ pub fn github(rel: &Release) -> String {
 pub fn curseforge(rel: &Release) -> String {
 	let v = &rel.version;
 	let mut out = vec![
-		format!("# Polestar {v}"),
+		format!("# Northstar {v}"),
 		String::new(),
 		intro(v),
 		String::new(),
@@ -260,14 +260,14 @@ pub fn discord_posts(rel: &Release) -> Vec<String> {
 	let v = &rel.version;
 	let tag = format!("{REPO}/releases/tag/v{v}");
 	let first = [
-		format!("# Polestar {v} Patch Notes"),
+		format!("# Northstar {v} Patch Notes"),
 		format!("-# {}", long_date(&rel.date)),
 		String::new(),
 		intro(v),
 		String::new(),
 		"## How to update".into(),
-		format!("- **CurseForge app:** update [Polestar Guides](<{CURSEFORGE}>)."),
-		format!("- **By hand:** download `Polestar-{v}.zip` from the [GitHub release](<{tag}>) (not \"Source code\"). Delete every old `Polestar` folder from your AddOns folder, then unzip the new one there."),
+		format!("- **CurseForge app:** update [Northstar Guides](<{CURSEFORGE}>)."),
+		format!("- **By hand:** download `Northstar-{v}.zip` from the [GitHub release](<{tag}>) (not \"Source code\"). Delete every old `Northstar` folder from your AddOns folder, then unzip the new one there."),
 		"- **Restart the game fully** if the release adds an addon folder: a `/reload` won't load it.".into(),
 		String::new(),
 		"Full patch notes below.".into(),
@@ -300,7 +300,7 @@ pub fn discord(rel: &Release) -> String {
 	let n = posts.len();
 	let bar = "====================";
 	let mut out = vec![
-		format!("Polestar {} - Discord announcement, {n} post{}", rel.version, if n == 1 { "" } else { "s" }),
+		format!("Northstar {} - Discord announcement, {n} post{}", rel.version, if n == 1 { "" } else { "s" }),
 		"Post them in order, one message each. Copy only the text between the START and END lines.".into(),
 		format!("Every post is under the {}-character limit for accounts without Nitro.", grouped(DISCORD_LIMIT)),
 	];

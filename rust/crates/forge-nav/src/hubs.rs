@@ -147,7 +147,7 @@ pub fn guard_name(name: &str) -> bool {
 }
 
 /// A creature template -> (side, guard) or None (hubs.js roleOf).
-pub fn role_of(t: &Value, h: &Hostility) -> Option<(&'static str, bool)> {
+pub fn role_of(t: &Value, h: Option<&Hostility>) -> Option<(&'static str, bool)> {
 	if !t.is_object() {
 		return None;
 	}
@@ -156,7 +156,24 @@ pub fn role_of(t: &Value, h: &Hostility) -> Option<(&'static str, bool)> {
 	if extra & EXTRA_INVISIBLE != 0 {
 		return None;
 	}
-	let (a, hh) = h.of(n("faction") as u32)?;
+	// A record built from data/forever/npcs.json already names the side. It has no FactionTemplate id.
+	if let Some(side) = t["side"].as_str() {
+		let side = match side {
+			"Alliance" => "Alliance",
+			"Horde" => "Horde",
+			_ => return None,
+		};
+		let min = n("minLevel");
+		let guard = if extra & EXTRA_GUARD != 0 { min >= MIN_GUARD_LEVEL } else { guard_name(t["name"].as_str().unwrap_or("")) && min >= MIN_NAMED_GUARD_LEVEL };
+		if guard {
+			return Some((side, true));
+		}
+		if (n("npcFlags") as i64) & SERVICE_FLAGS != 0 {
+			return Some((side, false));
+		}
+		return None;
+	}
+	let (a, hh) = h?.of(n("faction") as u32)?;
 	if a == hh {
 		return None;
 	}
@@ -344,9 +361,97 @@ pub struct HubsIn<'a> {
 	pub maps: &'a [u32],
 }
 
+/// `data/forever/npcs.json` and `map-frames.json` -> the spawn and template tables [`build_hubs`]
+/// reads, when the classic-db extract is not in the cache. Spawn points are map percentages.
+/// A frame converts them to world yards (wx north, wy west) on that frame's continent. A record's
+/// `side` is Alliance or Horde from `faction` "A" or "H". Guards are named guards at level 20 or
+/// more. Services are the roles the data build kept (vendor, flight master, trainer, innkeeper,
+/// banker, repair).
+pub fn npcs_to_hub_tables(npcs: &Value, frames: &Value) -> (Value, Value) {
+	let mut spawns = Map::new();
+	let mut templates = Map::new();
+	let Some(obj) = npcs.as_object() else { return (Value::Object(spawns), Value::Object(templates)) };
+	let mut ids: Vec<&String> = obj.keys().collect();
+	ids.sort_by(|a, b| a.parse::<i64>().unwrap_or(0).cmp(&b.parse::<i64>().unwrap_or(0)).then(a.cmp(b)));
+	for id in ids {
+		let rec = &obj[id];
+		let side = match rec.get("faction").and_then(|f| f.as_str()) {
+			Some("A") => "Alliance",
+			Some("H") => "Horde",
+			_ => continue,
+		};
+		let mut pts = Vec::new();
+		if let Some(maps) = rec.get("spawns").and_then(|s| s.as_object()) {
+			for (map, body) in maps {
+				let Ok(map_id) = map.parse::<i64>() else { continue };
+				let live = body.get("f").and_then(|f| f.as_str()) == Some("l");
+				let Some(frame) = hub_frame(frames, map_id, live) else { continue };
+				let c = frame.0;
+				if c != 0.0 && c != 1.0 && c != 2991.0 {
+					continue;
+				}
+				for key in ["pts", "more"] {
+					for p in body.get(key).and_then(|v| v.as_array()).into_iter().flatten() {
+						let x = p.get(0).and_then(|n| n.as_f64()).unwrap_or(f64::NAN);
+						let y = p.get(1).and_then(|n| n.as_f64()).unwrap_or(f64::NAN);
+						if !x.is_finite() || !y.is_finite() {
+							continue;
+						}
+						let wx = frame.3 + (frame.4 - frame.3) * (y / 100.0);
+						let wy = frame.1 + (frame.2 - frame.1) * (x / 100.0);
+						pts.push(json!([c, wx, wy, 0]));
+					}
+				}
+			}
+		}
+		if pts.is_empty() {
+			continue;
+		}
+		let mut flags = 0i64;
+		for role in rec.get("roles").and_then(|r| r.as_array()).into_iter().flatten().filter_map(|r| r.as_str()) {
+			flags |= match role {
+				"vendor" => 0x4,
+				"flightmaster" => 0x8,
+				"trainer" => 0x10,
+				"innkeeper" => 0x80,
+				"banker" => 0x100,
+				"repair" => 0x4000,
+				_ => 0,
+			};
+		}
+		spawns.insert(id.clone(), Value::Array(pts));
+		templates.insert(
+			id.clone(),
+			json!({
+				"name": rec.get("name").and_then(|n| n.as_str()).unwrap_or(""),
+				"side": side,
+				"minLevel": rec.get("level").and_then(|n| n.as_f64()).unwrap_or(0.0),
+				"npcFlags": flags,
+				"extraFlags": 0,
+			}),
+		);
+	}
+	(Value::Object(spawns), Value::Object(templates))
+}
+
+/// (continent, left, right, top, bottom) of uiMap `map` in map-frames.json.
+fn hub_frame(frames: &Value, map: i64, live: bool) -> Option<(f64, f64, f64, f64, f64)> {
+	let key = map.to_string();
+	let pick = |section: &str| frames.get(section).and_then(|s| s.get(&key));
+	let v = if live { pick("forever").or_else(|| pick("era")) } else { pick("era").or_else(|| pick("forever")) };
+	let v = v.filter(|v| v.is_object()).unwrap_or_else(|| frames.get(&key).unwrap_or(&Value::Null));
+	if !v.is_object() {
+		return None;
+	}
+	let n = |k: &str| v.get(k).and_then(|x| x.as_f64()).unwrap_or(f64::NAN);
+	let out = (n("c"), n("left"), n("right"), n("top"), n("bottom"));
+	out.0.is_finite().then_some(out)
+}
+
 /// hubs.js buildHubs -> per map its hubs (JSON, in hubs.json's shape).
 pub fn build_hubs(i: &HubsIn) -> Result<Vec<(u32, Vec<Value>)>, String> {
-	let h = Hostility::new(i.faction_templates)?;
+	let sided = i.templates.as_object().is_some_and(|o| !o.is_empty() && o.values().all(|t| matches!(t.get("side").and_then(|s| s.as_str()), Some("Alliance" | "Horde"))));
+	let h = if sided { None } else { Some(Hostility::new(i.faction_templates)?) };
 	let mut areas: FxHashMap<u32, Area> = FxHashMap::default();
 	for r in i.area_table {
 		let name = r.get("AreaName_lang").map_or("undefined".to_string(), |s| s.trim().to_string());
@@ -356,7 +461,7 @@ pub fn build_hubs(i: &HubsIn) -> Result<Vec<(u32, Vec<Value>)>, String> {
 	let mut entries: Vec<(i64, &Value)> = i.spawns.as_object().into_iter().flatten().filter_map(|(k, v)| Some((k.parse().ok()?, v))).collect();
 	entries.sort_by_key(|e| e.0);
 	for (entry, list) in entries {
-		let Some((side, guard)) = role_of(&i.templates[entry.to_string()], &h) else { continue };
+		let Some((side, guard)) = role_of(&i.templates[entry.to_string()], h.as_ref()) else { continue };
 		for s in list.as_array().into_iter().flatten() {
 			let g = |k: usize| s[k].as_f64().unwrap_or(f64::NAN);
 			if let Some(at) = points.get_mut(&(g(0) as u32)) {

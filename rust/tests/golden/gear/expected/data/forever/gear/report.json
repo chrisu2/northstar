@@ -38,7 +38,7 @@
 			"quests": 4,
 			"skippedSlot": 1
 		},
-		"bytes": 2318
+		"bytes": 2320
 	},
 	"wowsims": {
 		"meta": {
@@ -66,13 +66,13 @@
 			},
 			"fetched": "2026-10-12T18:59:59.219Z",
 			"notes": [
-				"Weights: wowsims default EP (ui/<sim>/sim.ts epWeights), mapped to Polestar keys, zero weights dropped, scaled so the spec main stat (normalizedTo) is 1.",
+				"Weights: wowsims default EP (ui/<sim>/sim.ts epWeights), mapped to Northstar keys, zero weights dropped, scaled so the spec main stat (normalizedTo) is 1.",
 				"Hit/crit/dodge/parry/block weights are per 1% (Classic sims count these stats in percent); defense per point.",
 				"season sod / origin sod-carryover: tuned with SoD runes and set bonuses. origin era: re-derived in the Era fork after 2024-11-21.",
 				"Sets still holding the WotLK per-rating defaults are listed in rejected, not converted.",
 				"sameAs: identical raw weights to an earlier band (not retuned for this level).",
 				"Not read (SoD-only roles): warden_shaman (SoD-only tank shaman), tank_rogue (SoD-only tank rogue), tank_warlock (SoD-only tank warlock).",
-				"Gear sets: Classic Era level 60 raid-phase presets (phase 0 = pre-raid), item ids by Polestar slot; one-sim classes share sets across specs."
+				"Gear sets: Classic Era level 60 raid-phase presets (phase 0 = pre-raid), item ids by Northstar slot; one-sim classes share sets across specs."
 			]
 		},
 		"bands": {
@@ -122,6 +122,6 @@
 		},
 		"rejected": 4
 	},
-	"specDataBytes": 20314,
+	"specDataBytes": 20365,
 	"gaps": []
 }

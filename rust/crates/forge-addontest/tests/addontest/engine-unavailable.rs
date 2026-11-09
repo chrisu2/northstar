@@ -15,7 +15,7 @@ w.titles[871] = "Disrupt the Attacks"; w.titles[872] = "Supplies for the Crossro
 // Quest 872 needs 871 done (pre), 880 needs level 14, 870 is simply not offered (another chain), all from Thork
 // (3429) at the Crossroads.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 	{ title = "Thork", goals = {
 		{ t = "accept", quest = 872, title = "Supplies for the Crossroads", npc = 3429, npcName = "Thork", pre = { 871 }, map = 1413, x = 51, y = 30 },
 		{ t = "accept", quest = 880, title = "Altered Beings", npc = 3429, npcName = "Thork", minLevel = 14 },
@@ -34,7 +34,7 @@ Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", fa
 } })
 "#;
 
-const HELPERS: &str = r#"			E = Polestar.Engine
+const HELPERS: &str = r#"			E = Northstar.Engine
 			function flush() stub.advance(0.25) end
 			function brief(i)
 				local out = {}
@@ -43,14 +43,14 @@ const HELPERS: &str = r#"			E = Polestar.Engine
 			end
 			stub.login()
 			E.SetGuide("test/xr")
-			Polestar.Set("behavior.autoAccept", false) -- the tests take quests themselves
+			Northstar.Set("behavior.autoAccept", false) -- the tests take quests themselves
 			"#;
 
 fn run(before: &str, guides: &str, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: format!("{TEST_PACK}\n{TEST_SOURCE}\n{guides}\n{HELPERS}{script}"),
 		..Default::default()
 	})
@@ -78,13 +78,13 @@ fn accepts_their_giver_does_not_offer_for_a_reason_the_data_gives_are_skipped_wi
 		"#,
 	);
 	// 870 is simply not offered: never a skip (Fitz, #741); the line asks for a report and the guide stays.
-	assert_eq!(out["step1"], json!(["skipped:pre:Requires Disrupt the Attacks first", "skipped:level:Requires level 14", "active:nil:nil", "done:nil:nil",]));
-	assert_eq!(out["notice"], "Not offered by Thork? Report it with /polestar");
+	assert_eq!(out["step1"], json!(["skipped:pre:Requires “Disrupt the Attacks” first", "skipped:level:Requires level 14", "active:nil:nil", "done:nil:nil",]));
+	assert_eq!(out["notice"], "Not offered by Thork? Report it with /northstar");
 	assert_eq!(out["at"], 1); // Gazrog's accept still open
 	assert_eq!(out["atAfter"], 1, "the guide stays at Thork");
 	assert_eq!(out["wp"], 3, "the arrow on Thork's accept");
-	assert_eq!(out["step2"], json!(["skipped:pre:Requires Disrupt the Attacks first", "pending:nil:nil"]));
-	assert_eq!(out["step3"], json!(["skipped:pre:Requires Disrupt the Attacks first", "pending:nil:nil"]));
+	assert_eq!(out["step2"], json!(["skipped:pre:Requires “Disrupt the Attacks” first", "pending:nil:nil"]));
+	assert_eq!(out["step3"], json!(["skipped:pre:Requires “Disrupt the Attacks” first", "pending:nil:nil"]));
 }
 
 #[test]
@@ -100,9 +100,9 @@ fn another_npc_s_window_never_marks_an_accept_and_the_giver_offering_a_quest_cle
 			emit({ other = other, offered = brief(1), at = E.GetStepIndex() })
 		"#,
 	);
-	// 872's prerequisite (871) is missing and the guide never turns it in: known before any visit. Thork's window
-	// offering it has the last word.
-	assert_eq!(out["other"], json!(["skipped:pre:Requires Disrupt the Attacks first", "active:nil:nil", "active:nil:nil", "active:nil:nil"]));
+	// 872's prerequisite (871) is missing and the guide never turns it in, and 880 needs level 14 (#1320): both
+	// known before any visit. Thork's window offering them has the last word.
+	assert_eq!(out["other"], json!(["skipped:pre:Requires “Disrupt the Attacks” first", "skipped:level:Requires level 14", "active:nil:nil", "active:nil:nil"]));
 	assert_eq!(out["offered"], json!(["active:nil:nil", "active:nil:nil", "active:nil:nil", "active:nil:nil"]));
 	assert_eq!(out["at"], 1);
 }
@@ -127,7 +127,7 @@ fn a_detail_window_opened_from_the_giver_s_list_says_nothing_about_the_others_a_
 		"#,
 	);
 	assert_eq!(out["fromList"], json!(["active:nil:nil", "active:nil:nil", "active:nil:nil", "active:nil:nil"]));
-	assert_eq!(out["direct"], json!(["skipped:pre:Requires Disrupt the Attacks first", "skipped:level:Requires level 14", "active:nil:nil", "active:nil:nil",]));
+	assert_eq!(out["direct"], json!(["skipped:pre:Requires “Disrupt the Attacks” first", "skipped:level:Requires level 14", "active:nil:nil", "active:nil:nil",]));
 }
 
 #[test]
@@ -176,10 +176,10 @@ fn t_161_in_a_step_the_guide_has_moved_past_a_level_up_or_a_turn_in_brings_back_
 	assert_eq!(out["before"], 2);
 	assert_eq!(
 		out["level13"],
-		json!([2, ["skipped:pre:Requires Disrupt the Attacks first", "skipped:level:Requires level 14", "done:nil:nil", "done:nil:nil",]]),
+		json!([2, ["skipped:pre:Requires “Disrupt the Attacks” first", "skipped:level:Requires level 14", "done:nil:nil", "done:nil:nil",]]),
 		"still at the raptors: 880 still needs level 14"
 	);
-	assert_eq!(out["level14"], json!([1, ["skipped:pre:Requires Disrupt the Attacks first", "active:nil:nil", "done:nil:nil", "done:nil:nil",]]), "level 14: back to Thork for 880");
+	assert_eq!(out["level14"], json!([1, ["skipped:pre:Requires “Disrupt the Attacks” first", "active:nil:nil", "done:nil:nil", "done:nil:nil",]]), "level 14: back to Thork for 880");
 	assert_eq!(out["taken"], 2);
 	assert_eq!(out["turnIn"], json!([1, ["active:nil:nil", "done:nil:nil", "done:nil:nil", "done:nil:nil",]]), "871 done: back to Thork for 872");
 }
@@ -202,9 +202,9 @@ fn t_161_a_level_up_or_a_turn_in_clears_the_marks_of_the_step_at_hand_so_its_giv
 		"#,
 	);
 	// Gazrog's 869 is still to take: Thork's step is the one at hand. 870, not listed, is never a skip.
-	assert_eq!(out["before"], json!([1, ["skipped:pre:Requires Disrupt the Attacks first", "skipped:level:Requires level 14", "active:nil:nil", "active:nil:nil",]]));
+	assert_eq!(out["before"], json!([1, ["skipped:pre:Requires “Disrupt the Attacks” first", "skipped:level:Requires level 14", "active:nil:nil", "active:nil:nil",]]));
 	// 872 keeps its missing prerequisite (known from the data) until 871 is done.
-	assert_eq!(out["levelUp"], json!([1, ["skipped:pre:Requires Disrupt the Attacks first", "active:nil:nil", "active:nil:nil", "active:nil:nil"]]));
+	assert_eq!(out["levelUp"], json!([1, ["skipped:pre:Requires “Disrupt the Attacks” first", "active:nil:nil", "active:nil:nil", "active:nil:nil"]]));
 	assert_eq!(out["turnIn"], json!([1, ["active:nil:nil", "active:nil:nil", "active:nil:nil", "active:nil:nil"]]));
 }
 
@@ -212,7 +212,7 @@ fn t_161_a_level_up_or_a_turn_in_clears_the_marks_of_the_step_at_hand_so_its_giv
 fn t_161_741_a_quest_the_giver_refused_although_the_data_allows_it_holds_the_guide_at_that_giver_until_offered() {
 	// Dalar (1938) at the Sepulcher: 98299's data says level 9, the server wants more.
 	let guides = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Silverpine", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Silverpine", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 		{ title = "The Sepulcher", goals = {
 			{ t = "accept", quest = 98299, title = "Stop the Spread", npc = 1938, npcName = "Dalar Dawnweaver", minLevel = 9 },
 		} },
@@ -234,7 +234,7 @@ fn t_161_741_a_quest_the_giver_refused_although_the_data_allows_it_holds_the_gui
 			emit(r)
 		"#,
 	);
-	assert_eq!(out["refused"], json!([1, "active:nil:nil", "Not offered by Dalar Dawnweaver? Report it with /polestar"]), "the guide stays at Dalar");
+	assert_eq!(out["refused"], json!([1, "active:nil:nil", "Not offered by Dalar Dawnweaver? Report it with /northstar"]), "the guide stays at Dalar");
 	assert_eq!(out["levelUp"], 1);
 	assert_eq!(out["offered"], false, "his window listing it ends the notice");
 	assert_eq!(out["taken"], 2);
@@ -266,7 +266,7 @@ fn t_127_a_quest_the_giver_s_window_lists_as_active_is_taken_not_refused_before_
 	);
 	assert_eq!(out["refresh"], json!(["active:nil:nil", false]));
 	assert_eq!(out["abandoned"], json!(["active:nil:nil", false]));
-	assert_eq!(out["marked"], json!(["active:nil:nil", "Not offered by Thork? Report it with /polestar"]));
+	assert_eq!(out["marked"], json!(["active:nil:nil", "Not offered by Thork? Report it with /northstar"]));
 	assert_eq!(out["reaccepted"], json!(["active:nil:nil", false]));
 }
 
@@ -274,7 +274,7 @@ fn t_127_a_quest_the_giver_s_window_lists_as_active_is_taken_not_refused_before_
 fn prerequisites_every_preall_must_be_done_one_pre_suffices_the_text_names_the_missing_one() {
 	// 890 needs 871 and 873 (preAll); 891 needs 871 or 873 (pre). Only 871 is done.
 	let guide = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 		{ title = "Thork", goals = {
 			{ t = "accept", quest = 890, title = "Both First", npc = 3429, npcName = "Thork", preAll = { 871, 873 }, preTitles = { [873] = "The Other Errand" } },
 			{ t = "accept", quest = 891, title = "Either First", npc = 3429, npcName = "Thork", pre = { 871, 873 } },
@@ -291,13 +291,13 @@ fn prerequisites_every_preall_must_be_done_one_pre_suffices_the_text_names_the_m
 		"#,
 	);
 	// 891's one prerequisite is done: its refusal the data does not explain, so it stays open.
-	assert_eq!(out, json!(["skipped:pre:Requires The Other Errand first", "active:nil:nil"]));
+	assert_eq!(out, json!(["skipped:pre:Requires “The Other Errand” first", "active:nil:nil"]));
 }
 
 // Issue #70 (The Barrens 19-24, step 9): Sergra Darkthorn's Jorn Skyseer (3261) needs The Angry Scytheclaws
 // (905), the end of her chain in the earlier Barrens guide. Jorn's Ishamuhale (882) follows Jorn Skyseer.
 const CROSSROADS: &str = r#"
-Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 19, maxLevel = 24, steps = {
+Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 19, maxLevel = 24, steps = {
 	{ title = "The Crossroads", goals = {
 		{ t = "accept", quest = 899, title = "Consumed by Hatred", npc = 3432, npcName = "Mankrik", map = 1413, x = 51.95, y = 31.58 },
 		{ t = "accept", quest = 3261, title = "Jorn Skyseer", npc = 3338, npcName = "Sergra Darkthorn", pre = { 905 }, preTitles = { [905] = "The Angry Scytheclaws" }, map = 1413, x = 52.23, y = 31.01 },
@@ -341,9 +341,9 @@ fn t_70_an_accept_whose_prerequisite_is_missing_does_not_hold_the_focus_or_the_a
 	);
 	// Mankrik, Sergra, Gazrog: the focus and the arrow go from Mankrik to Gazrog.
 	assert_eq!(missing["mankrikDone"], json!([1, 3, 3]));
-	assert_eq!(missing["step1"], json!(["done:nil:nil", "skipped:pre:Requires The Angry Scytheclaws first", "active:nil:nil"]));
+	assert_eq!(missing["step1"], json!(["done:nil:nil", "skipped:pre:Requires “The Angry Scytheclaws” first", "active:nil:nil"]));
 	// Jorn Skyseer's turn-in goes with it, and so does the quest after it.
-	assert_eq!(missing["step2"], json!(["skipped:pre:Requires The Angry Scytheclaws first", "skipped:pre:Requires Jorn Skyseer first"]));
+	assert_eq!(missing["step2"], json!(["skipped:pre:Requires “The Angry Scytheclaws” first", "skipped:pre:Requires “Jorn Skyseer” first"]));
 	assert_eq!(missing["gazrogDone"], json!([3, 1, false]));
 	assert_eq!(missing["unrelated"], json!([3, 1, false]));
 	assert_eq!(missing["preDone"], json!([[1, 2, 2], "active:nil:nil"]));
@@ -360,7 +360,7 @@ fn a_missing_prerequisite_the_guide_still_turns_in_before_the_accept_or_after_it
 	// Thork's 872 needs 871 (pre). Taken before 871 is handed in (against lint's order: a data error or a
 	// guide's), then 5041 after it, by the rule.
 	let guide = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 		{ title = "Thork", goals = {
 			{ t = "accept", quest = 871, title = "Disrupt the Attacks", npc = 3429, npcName = "Thork", map = 1413, x = 51, y = 30 },
 			{ t = "accept", quest = 872, title = "Supplies for the Crossroads", npc = 3429, npcName = "Thork", pre = { 871 }, map = 1413, x = 51, y = 30 },
@@ -389,7 +389,7 @@ fn a_missing_prerequisite_the_guide_still_turns_in_before_the_accept_or_after_it
 	assert_eq!(out["step2"], json!(["pending:nil:nil", "pending:nil:nil"]));
 	assert_eq!(out["wp"], 2);
 	// Nothing left to do at Thork: the guide goes past the skipped step.
-	assert_eq!(out["skipped"], json!([3, ["done:nil:nil", "skipped:pre:Requires Disrupt the Attacks first"]]));
+	assert_eq!(out["skipped"], json!([3, ["done:nil:nil", "skipped:pre:Requires “Disrupt the Attacks” first"]]));
 }
 
 #[test]
@@ -398,7 +398,7 @@ fn a_prerequisite_the_guide_has_only_for_other_characters_is_another_version_of_
 	// the Dwarf's (7670) is missing from the data. Here the character is an Orc, and 7670 stands for their own
 	// version.
 	let guide = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Charger", minLevel = 10, maxLevel = 60, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Charger", minLevel = 10, maxLevel = 60, steps = {
 		{ title = "Grayson", goals = {
 			{ t = "accept", quest = 7638, title = "Lord Grayson Shadowbreaker", npc = 1, npcName = "Duthorian Rall", only = { races = { "Human" } }, map = 1413, x = 51, y = 30 },
 			{ t = "turnin", quest = 7638, title = "Lord Grayson Shadowbreaker", npc = 2, npcName = "Lord Grayson", only = { races = { "Human" } }, map = 1413, x = 51, y = 30 },
@@ -415,7 +415,7 @@ fn a_prerequisite_the_guide_has_only_for_other_characters_is_another_version_of_
 fn an_accept_closed_for_good_its_breadcrumb_target_or_an_exclusive_quest_taken_or_done_is_skipped_before_any_visit_with_the_quest_s_later_goals() {
 	// 1483 leads to 1093 (a breadcrumb); 1507 is exclusive with 1472 (the Undercity version of the chain).
 	let guide = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Ratchet", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Ratchet", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
 		{ title = "Givers", goals = {
 			{ t = "accept", quest = 1483, title = "Ziz Fizziks", npc = 3442, npcName = "Sputtervalve", closedBy = { 1093 }, preTitles = { [1093] = "Super Reaper 6000" }, map = 1413, x = 62, y = 37 },
 			{ t = "accept", quest = 1507, title = "Devourer of Souls", npc = 5875, npcName = "Gan'rul Bloodeye", closedBy = { 1472 }, preTitles = { [1472] = "Devourer of Souls" } },
@@ -429,8 +429,8 @@ fn an_accept_closed_for_good_its_breadcrumb_target_or_an_exclusive_quest_taken_o
 		closed,
 		json!({
 			"at": 3,
-			"step1": ["skipped:closed:No longer offered: you took Super Reaper 6000", "skipped:closed:No longer offered: you took Devourer of Souls"],
-			"step2": ["skipped:closed:No longer offered: you took Super Reaper 6000"],
+			"step1": ["skipped:closed:No longer offered: you took “Super Reaper 6000”", "skipped:closed:No longer offered: you took “Devourer of Souls”"],
+			"step2": ["skipped:closed:No longer offered: you took “Super Reaper 6000”"],
 			"wp": false,
 		})
 	);
@@ -442,7 +442,7 @@ fn an_accept_closed_for_good_its_breadcrumb_target_or_an_exclusive_quest_taken_o
 #[test]
 fn when_a_mark_moves_the_guide_on_the_guide_window_says_which_quest_was_skipped_and_why_a_normal_completion_says_nothing() {
 	let guide = r#"
-	Polestar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
+	Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Crossroads", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
 		{ title = "Thork", goals = { { t = "accept", quest = 870, title = "The Forgotten Pools", npc = 3429, npcName = "Thork", closedBy = { 871 }, preTitles = { [871] = "Disrupt the Attacks" }, map = 1413, x = 51.5, y = 30.3 } } },
 		{ title = "Gazrog", goals = { { t = "accept", quest = 869, title = "Raptor Thieves", npc = 3464, npcName = "Gazrog", map = 1413, x = 51.9, y = 30.8 } } },
 		{ goals = { { t = "level", level = 30 } } },
@@ -450,18 +450,18 @@ fn when_a_mark_moves_the_guide_on_the_guide_window_says_which_quest_was_skipped_
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::name("Polestar")],
+		addons: vec![Addon::name("Northstar")],
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,
 			guide,
-			r#"			local E, w = Polestar.Engine, stub.world
-			local B = Polestar.UI.GuideFrame.parts.banner
+			r#"			local E, w = Northstar.Engine, stub.world
+			local B = Northstar.UI.GuideFrame.parts.banner
 			local function banner() return B:IsShown() and B.Text:GetText() or false end
 			stub.login()
 			E.SetGuide("test/xr")
 			stub.fire("QUEST_LOG_UPDATE") -- the client fills the quest log after login
-			Polestar.Set("behavior.autoAccept", false)
+			Northstar.Set("behavior.autoAccept", false)
 			stub.advance(0.5)
 			local r = { before = banner() }
 			w.accept(871, {}); stub.advance(0.5) -- taken elsewhere: Thork never offers 870 again
@@ -477,7 +477,7 @@ fn when_a_mark_moves_the_guide_on_the_guide_window_says_which_quest_was_skipped_
 		out[0],
 		json!({
 			"before": false,
-			"skipped": [2, "Skipped The Forgotten Pools  \u{b7}  No longer offered: you took Disrupt the Attacks"],
+			"skipped": [2, "Skipped “The Forgotten Pools”  \u{b7}  No longer offered: you took “Disrupt the Attacks”"],
 			"completed": [3, false],
 		})
 	);
@@ -485,13 +485,13 @@ fn when_a_mark_moves_the_guide_on_the_guide_window_says_which_quest_was_skipped_
 
 // Farm spots for `collect 2589 x20 nearest` (Linen Cloth).
 const FARM: &str = r#"
-	Polestar.RegisterGuide({ id = "test/farm", pack = "test", title = "Linen", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
+	Northstar.RegisterGuide({ id = "test/farm", pack = "test", title = "Linen", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
 		{ goals = { { t = "collect", item = 2589, itemName = "Linen Cloth", count = 20, candidates = { SPOTS } } } },
 		{ goals = { { t = "level", level = 60 } } },
 	} })
 "#;
 
-const FARM_SCRIPT: &str = r#"			E = Polestar.Engine
+const FARM_SCRIPT: &str = r#"			E = Northstar.Engine
 			stub.login()
 			E.SetGuide("test/farm")
 			local v = E.GetStepView(1).goals[1]
@@ -502,7 +502,7 @@ fn farm_pick(spots: &str, before: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: [TEST_PACK, TEST_SOURCE, &farm, FARM_SCRIPT].join("\n"),
 		..Default::default()
 	})
@@ -538,4 +538,205 @@ fn farm_spots_drop_rate_spawn_density_and_grey_mobs_weigh_against_distance() {
 	let alliance = r#"{ npcName = "Alliance only", map = 1413, x = 51, y = 31, faction = "A", lvl = { 12, 12 }, rate = 0.9, spawns = 8 }"#;
 	let only_red = farm_pick(&format!("{higher}, {alliance}, {high}"), "");
 	assert_eq!(only_red, json!({ "name": "High", "lvl": [18, 20], "alts": 1, "detail": "from High" }));
+}
+
+// #1320 (Fall of Dun Modr): at level 24 the arrow led to an accept that needs level 25 until the player clicked
+// the giver. An accept above the character's level is known in advance ("Requires level 25"): the route reaching it
+// passes it, its objectives and turn-in wait with it, and the level-up brings the guide back to it. With nothing else
+// left a leveling guide finishes (its end is its last step); a guide that is no leveling guide waits at the accept.
+const DUN_MODR: &str = r#"
+Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Wetlands", faction = "Horde", minLevel = 20, maxLevel = 30, steps = {
+	{ title = "Gazrog", goals = { { t = "accept", quest = 869, title = "Raptor Thieves", npc = 3464, npcName = "Gazrog", map = 1413, x = 52, y = 31 } } },
+	{ title = "Dun Modr", goals = {
+		{ t = "accept", quest = 90600, title = "Fall of Dun Modr", npc = 3429, npcName = "Thork", minLevel = 25, map = 1413, x = 51, y = 30 },
+	} },
+	{ title = "Raptors", goals = { { t = "collect", item = 5062, itemName = "Raptor Head", count = 12, quest = 869, oi = 1, map = 1413, x = 45, y = 20 } } },
+	{ title = "Dun Modr's work", goals = { { t = "kill", target = "Dark Iron Raider", count = 8, quest = 90600, oi = 1, map = 1413, x = 40, y = 20 } } },
+	{ title = "Back", goals = { { t = "turnin", quest = 90600, title = "Fall of Dun Modr", npc = 3429, npcName = "Thork", map = 1413, x = 51, y = 30 } } },
+} })"#;
+
+#[test]
+fn an_accept_above_the_character_s_level_is_passed_with_requires_level_its_work_waits_and_the_level_up_brings_it_back_1320() {
+	let script = r#"
+			local w = stub.world
+			local done = 0
+			Northstar.On("GUIDE_COMPLETED", function() done = done + 1 end)
+			local function wp() local p = E.GetWaypoint(); return p and (p.stepIndex .. ":" .. p.goalIndex) or false end
+			local function at() return { E.GetStepIndex(), wp(), brief(2), brief(4), brief(5) } end
+			-- The quest log read: placed (placement passes gated accepts before the start on its own), then played on.
+			stub.fire("QUEST_LOG_UPDATE"); flush()
+			w.accept(869, { 12 }); flush()
+			local r = { low = at() }
+			w.setLevel(25); flush()
+			r.ding = at()
+			w.accept(90600, { 8 }); flush()
+			r.taken = at()
+			r.completed = done
+			emit(r)
+		"#;
+	let out = run("w.level = 24", DUN_MODR, script);
+	let held = json!(["skipped:level:Requires level 25"]);
+	assert_eq!(out["low"], json!([3, "3:1", held, held, held]), "level 24: Thork's accept passed with its level, on to the raptors; its kill and turn-in wait with it");
+	assert_eq!(out["ding"], json!([2, "2:1", ["active:nil:nil"], ["pending:nil:nil"], ["pending:nil:nil"]]), "level 25: back to Thork, the arrow on the accept");
+	assert_eq!(out["taken"][0], json!(3), "taken: on to the raptors");
+	assert_eq!(json!([out["taken"][3], out["taken"][4]]), json!([["pending:nil:nil"], ["pending:nil:nil"]]), "its kill and turn-in still to do");
+	assert_eq!(out["completed"], json!(0));
+
+	// Everything else done at level 24: the leveling guide finishes, and the level-up brings Thork back.
+	let finished = run(
+		"w.level = 24; w.complete({ 869 })",
+		DUN_MODR,
+		r#"flush()
+			local r = { E.GetStepIndex() or false, brief(2) }
+			stub.world.setLevel(25); flush()
+			r[3] = E.GetStepIndex() or false
+			emit(r)"#,
+	);
+	assert_eq!(finished, json!([false, ["skipped:level:Requires level 25"], 2]));
+	// The same guide as no leveling guide (a dungeon's or an attunement's): it waits at Thork, not finished.
+	let wait = run(
+		"w.level = 24; w.complete({ 869 })",
+		&DUN_MODR.replace(r#"title = "Wetlands","#, r#"title = "Wetlands", category = "Lookup","#),
+		r#"local done = 0
+			Northstar.On("GUIDE_COMPLETED", function() done = done + 1 end)
+			flush()
+			emit({ E.GetStepIndex(), brief(2), done })"#,
+	);
+	assert_eq!(wait, json!([2, ["skipped:level:Requires level 25"], 0]));
+
+	// The level reached: the accept leads as before.
+	let level25 = run("w.level = 25", DUN_MODR, r#"stub.world.accept(869, { 12 }); flush(); local p = E.GetWaypoint(); emit({ E.GetStepIndex(), p and p.goalIndex or false, brief(2) })"#);
+	assert_eq!(level25, json!([2, 1, ["active:nil:nil"]]));
+}
+
+// A leveling guide's dungeon run (`when dungeon`) is no step to move on to past an accept waiting for a level: the
+// guide waits at the accept. Without the dungeon chosen the route passes it as above.
+const RUN: &str = r#"
+Northstar.RegisterGuide({ id = "test/xr", pack = "test", title = "Orgrimmar", faction = "Horde", minLevel = 10, maxLevel = 30, steps = {
+	{ title = "Gazrog", goals = { { t = "accept", quest = 869, title = "Raptor Thieves", npc = 3464, npcName = "Gazrog", map = 1413, x = 52, y = 31 } } },
+	{ title = "Thork", goals = {
+		{ t = "accept", quest = 90601, title = "Searching for the Lost Satchel", npc = 3429, npcName = "Thork", minLevel = 25, map = 1413, x = 51, y = 30 },
+	} },
+	{ title = "Ragefire Chasm", when = { { k = "dungeon", map = 389, name = "Ragefire Chasm" } }, goals = {
+		{ t = "goto", map = 1413, x = 20, y = 20, text = "Ragefire Chasm" },
+	} },
+	{ title = "Raptors", goals = { { t = "collect", item = 5062, itemName = "Raptor Head", count = 12, quest = 869, oi = 1, map = 1413, x = 45, y = 20 } } },
+} })"#;
+
+#[test]
+fn a_dungeon_run_is_not_moved_on_to_past_an_accept_waiting_for_a_level_the_guide_waits_at_the_accept_1320() {
+	let script = |chosen: &str| {
+		format!(
+			r#"
+			{chosen}
+			stub.fire("QUEST_LOG_UPDATE"); flush()
+			stub.world.accept(869, {{ 12 }}); flush()
+			emit({{ E.GetStepIndex(), brief(2) }})
+		"#
+		)
+	};
+	let run_chosen = run("w.level = 24", RUN, &script("E.ChooseDungeon(389, true)"));
+	assert_eq!(run_chosen, json!([2, ["skipped:level:Requires level 25"]]), "the run chosen: the guide waits at Thork");
+	let solo = run("w.level = 24", RUN, &script(""));
+	assert_eq!(solo, json!([4, ["skipped:level:Requires level 25"]]), "no run: on to the raptors");
+}
+
+// #1247: Engine.AcceptGate, what an accept's tooltip says the game asks first: the quest's minimum level (and
+// whether the character is below it) and the prerequisites not handed in yet, every missing `preAll` by name and
+// a `pre` list none of which is done as "A or B". Nothing once the quest is taken; nil for a goal that is no
+// accept or an accept with nothing known.
+const GATE_GUIDE: &str = r#"
+Northstar.RegisterGuide({ id = "test/gate", pack = "test", title = "Gate", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+	{ title = "Thork", goals = {
+		{ t = "accept", quest = 872, title = "Supplies for the Crossroads", npc = 3429, npcName = "Thork", pre = { 871 } },
+		{ t = "accept", quest = 880, title = "Altered Beings", npc = 3429, npcName = "Thork", minLevel = 14 },
+		{ t = "accept", quest = 881, title = "Echeyakee", npc = 3429, npcName = "Thork", minLevel = 10, preAll = { 871, 875 }, pre = { 876, 877 } },
+		{ t = "accept", quest = 870, title = "The Forgotten Pools", npc = 3429, npcName = "Thork" },
+		{ t = "accept", quest = 869, title = "Raptor Thieves", npc = 3464, npcName = "Gazrog", minLevel = 1 },
+	} },
+	{ title = "Raptors", goals = {
+		{ t = "kill", target = "Sunscale Lashtail", count = 7, quest = 872, oi = 1, map = 1413, x = 45, y = 20 },
+	} },
+} })
+"#;
+
+const GATE_HELPERS: &str = r#"
+	E = Northstar.Engine
+	function flush() stub.advance(0.25) end
+	function gate(s, g)
+		local x = E.AcceptGate(s, g)
+		if not x then return "nil" end
+		return tostring(x.level) .. ":" .. tostring(x.short) .. ":" .. table.concat(x.needs, " | ")
+	end
+	stub.login()
+	Northstar.Set("behavior.autoAccept", false)
+	E.SetGuide("test/gate")
+	flush()
+"#;
+
+#[test]
+fn an_accept_s_gate_is_its_minimum_level_and_the_prerequisites_not_handed_in_yet() {
+	let out = emitted(&RunAddon {
+		stubs: vec!["stub_world.lua"],
+		before: format!("{WORLD}w.titles[875] = \"Bloodshot\"; w.titles[876] = \"Wharfmaster Dizzywig\"; w.titles[877] = \"Ziz Fizziks\""),
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		script: format!(
+			"{TEST_PACK}\n{TEST_SOURCE}\n{GATE_GUIDE}\n{GATE_HELPERS}{}",
+			r#"
+			local w = stub.world
+			local r = {}
+			r.before = { gate(1, 1), gate(1, 2), gate(1, 3), gate(1, 4), gate(1, 5), gate(2, 1), gate(9, 1) }
+			w.setLevel(14); flush()
+			w.complete({ 871, 877 }); w.accept(880); flush()
+			r.after = { gate(1, 1), gate(1, 2), gate(1, 3) }
+			emit(r)
+		"#
+		),
+		..Default::default()
+	})
+	.remove(0);
+	assert_eq!(
+		out["before"],
+		json!(["nil:false:Disrupt the Attacks", "14:true:", "10:false:Disrupt the Attacks | Bloodshot | Wharfmaster Dizzywig or Ziz Fizziks", "nil", "nil", "nil", "nil",]),
+		"level 12: 880 needs 14, 881 its prerequisites; no data, a level of 1, a kill and no step: nil"
+	);
+	assert_eq!(out["after"], json!(["nil", "14:false:", "10:false:Bloodshot"]), "871 and one of 876/877 handed in, level 14 reached, 880 taken: only Bloodshot is left");
+}
+
+// Xaden's case on #1247: Crimson Crate Delivery's guide goal knows neither its level nor that Crocs of the Sky comes
+// first; the quest database does, once it is loaded (the gate never loads it).
+#[test]
+fn an_accept_the_guide_knows_nothing_about_takes_its_level_and_prerequisites_from_the_loaded_quest_database() {
+	let guide = r#"
+Northstar.RegisterGuide({ id = "test/gate", pack = "test", title = "Wetlands", faction = "Horde", minLevel = 26, maxLevel = 30, steps = {
+	{ title = "Halloran", goals = {
+		{ t = "accept", quest = 98240, title = "Crimson Crate Delivery", npc = 1, npcName = "James Halloran" },
+	} },
+} })
+"#;
+	let script = r#"
+			local w = stub.world
+			local r = { unloaded = gate(1, 1) }
+			-- Layout: title, level, minLevel, races, classes, faction, start, finish, startItem, pre.
+			AddRecords("quests", {
+				[98240] = { "Crimson Crate Delivery", 30, 29, nil, nil, nil, nil, nil, nil, { 98072 } },
+				[98072] = { "Crocs of the Sky", 30, 26 },
+			})
+			Northstar.QuestDB.SetMeta({})
+			r.loaded = gate(1, 1)
+			w.complete({ 98072 })
+			r.done = gate(1, 1)
+			emit(r)
+		"#;
+	let out = emitted(&RunAddon {
+		stubs: vec!["stub_world.lua"],
+		before: format!("{WORLD}w.level = 28"),
+		addons: vec![Addon::name("Northstar")],
+		script: format!("{}\n{TEST_PACK}\n{TEST_SOURCE}\n{guide}\n{GATE_HELPERS}{script}", forge_addontest::questdb::ADD_RECORDS_LUA),
+		..Default::default()
+	})
+	.remove(0);
+	assert_eq!(out["unloaded"], "nil", "not loaded: nothing known, and nothing loaded for it");
+	assert_eq!(out["loaded"], "29:true:Crocs of the Sky");
+	assert_eq!(out["done"], "29:true:", "Crocs of the Sky handed in: the level is left");
 }

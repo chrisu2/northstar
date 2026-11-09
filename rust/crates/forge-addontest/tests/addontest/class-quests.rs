@@ -1,4 +1,4 @@
-//! Class quests (addon/Polestar/QoL/ClassQuests.lua + the UI/GuideFrame.lua banner): when one of the character's
+//! Class quests (addon/Northstar/QoL/ClassQuests.lua + the UI/GuideFrame.lua banner): when one of the character's
 //! Class guides opens, the guide window offers it in a tab, once per guide; "Later" asks again at a higher level.
 //!
 //! Section 1: the banner (stub_ui, like tests/riding.rs).
@@ -11,23 +11,23 @@ const UI_FILES: [&str; 3] = ["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"];
 
 const UI_PRE: &str = r#"uistub.install()
 stub.login()
-local GF = Polestar.UI.GuideFrame
+local GF = Northstar.UI.GuideFrame
 local B = GF.parts.banner
 uistub.openTabs({ { uistub.elwynn, 3 } }, 1)
 local opened, resolved = {}, {}
-Polestar.Engine.OpenTab = function(id) opened[#opened + 1] = id; return 2 end
-Polestar.QoL = { ClassQuests = { Resolve = function(id, later) resolved[#resolved + 1] = { id = id, later = later or false } end } }
+Northstar.Engine.OpenTab = function(id) opened[#opened + 1] = id; return 2 end
+Northstar.QoL = { ClassQuests = { Resolve = function(id, later) resolved[#resolved + 1] = { id = id, later = later or false } end } }
 "#;
 
 fn run_ui(script: &str) -> Vec<Value> {
-	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Polestar", &UI_FILES)], script: format!("{UI_PRE}{script}"), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Northstar", &UI_FILES)], script: format!("{UI_PRE}{script}"), ..Default::default() })
 }
 
 #[test]
 fn class_quest_ready_shows_the_offer_the_guide_why_open_in_a_tab_and_later() {
 	let out = run_ui(
 		r#"
-		Polestar.Fire("CLASS_QUEST_READY", { guideId = "forever/class/shaman/call-of-air-horde", title = "Call of Air", why = "The Air Totem." })
+		Northstar.Fire("CLASS_QUEST_READY", { guideId = "forever/class/shaman/call-of-air-horde", title = "Call of Air", why = "The Air Totem." })
 		emit({ shown = B:IsShown(), text = B.Text:GetText(), jump = B.Jump.Label:GetText(), later = B.Later:IsShown() and B.Later.Label:GetText(), close = B.Close:IsShown() })"#,
 	);
 	let out = &out[0];
@@ -39,17 +39,27 @@ fn class_quest_ready_shows_the_offer_the_guide_why_open_in_a_tab_and_later() {
 }
 
 #[test]
+fn the_banner_shows_the_heads_up_line_between_the_title_and_the_why() {
+	let out = run_ui(
+		r#"
+		Northstar.Fire("CLASS_QUEST_READY", { guideId = "g/storm", title = "Storm", heads = "Long chain: 6 quests across 4 zones", why = "A cloak." })
+		emit(B.Text:GetText())"#,
+	);
+	assert_eq!(out[0], "Class quest ready: Storm\nLong chain: 6 quests across 4 zones\nA cloak.");
+}
+
+#[test]
 fn the_banner_opens_the_guide_in_a_tab_or_asks_again_later_or_is_dismissed_for_good() {
 	let out = run_ui(
 		r#"
 		local n = { guideId = "g/one", title = "One" }
-		Polestar.Fire("CLASS_QUEST_READY", n)
+		Northstar.Fire("CLASS_QUEST_READY", n)
 		B.Jump:Click()
 		emit({ opened = opened, resolved = resolved[1], shown = B:IsShown() })
-		Polestar.Fire("CLASS_QUEST_READY", n)
+		Northstar.Fire("CLASS_QUEST_READY", n)
 		B.Later:Click()
 		emit(resolved[2])
-		Polestar.Fire("CLASS_QUEST_READY", n)
+		Northstar.Fire("CLASS_QUEST_READY", n)
 		B.Close:Click()
 		emit(resolved[3])"#,
 	);
@@ -63,15 +73,15 @@ fn the_banner_opens_the_guide_in_a_tab_or_asks_again_later_or_is_dismissed_for_g
 // ---------------------------------------------------------------------------
 
 fn qol_files() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua", "Core/Compat.lua", "Theme/Theme.xml", "QoL/QoL.xml"])
+	Addon::files("Northstar", &["Core/Init.lua", "Core/Compat.lua", "Theme/Theme.xml", "QoL/QoL.xml"])
 }
 
 // Three Class guides: a Shaman one that is open (no gate), a Shaman one that waits on level 30, and a Rogue one.
 const PRELUDE: &str = r#"
 local q = stub.qol
-local C = Polestar.Compat
-local CQ = Polestar.QoL.ClassQuests
-Polestar.RegisterDefaults("behavior", { offerClassQuests = true })
+local C = Northstar.Compat
+local CQ = Northstar.QoL.ClassQuests
+Northstar.RegisterDefaults("behavior", { offerClassQuests = true })
 local inLog, done = {}, {}
 C.IsOnQuest = function(id) return inLog[id] == true end
 C.IsQuestCompleted = function(id) return done[id] == true end
@@ -84,18 +94,18 @@ local guides = {
 }
 local byId = {}
 for _, g in ipairs(guides) do byId[g.id] = g end
-Polestar.Guides = {
+Northstar.Guides = {
 	List = function() return guides end,
 	Get = function(id) return byId[id] end,
 	GuideMatches = function(g, p) return not g.classes or g.classes[1] == p.class end,
 }
 local gates = { ["c/air"] = { level = 30 } }
-Polestar.Engine = {
+Northstar.Engine = {
 	StartGate = function(id) return gates[id] end,
 	GetGuideState = function() return "new" end,
 }
 local offers = {}
-Polestar.On("CLASS_QUEST_READY", function(n) offers[#offers + 1] = n end)
+Northstar.On("CLASS_QUEST_READY", function(n) offers[#offers + 1] = n end)
 local function levelUp(n)
 	q.level = n
 	stub.fire("PLAYER_LEVEL_UP", n, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -154,13 +164,76 @@ fn the_gated_guide_is_offered_once_its_gate_opens_nothing_with_the_setting_off()
 		gates["c/air"] = nil
 		levelUp(30)
 		emit(offers[#offers].guideId)
-		Polestar.Set("behavior.offerClassQuests", false)
+		Northstar.Set("behavior.offerClassQuests", false)
 		CQ.Resolve("c/air", true)
 		levelUp(31)
 		emit(#offers)"#,
 	);
 	assert_eq!(out[0], "c/air");
 	assert_eq!(out[1], 2);
+}
+
+// A chain shaped like Cloak of the Divine Storm (opens at 22; six quests over four maps; its objective mobs
+// normal, up to level 29) and the same chain with elites at 28-29 among its objectives.
+const CHAINS: &str = r#"
+local function chain(id, elite)
+	local function kill(q, lvl) return { t = "kill", quest = q, npc = 9, map = 1440, lvl = lvl, group = elite and { kind = "elite", rank = 1, lvl = lvl } or nil } end
+	local g = { id = id, title = id, category = "Class", classes = { "SHAMAN" }, minLevel = 22, why = "A cloak.", steps = {
+		{ goals = { { t = "accept", quest = 11, map = 1439 }, kill(11, 28) } },
+		{ goals = { { t = "accept", quest = 12, map = 1453 }, { t = "accept", quest = 13, map = 1453 }, { t = "accept", quest = 14, map = 1453 } } },
+		{ goals = { { t = "collect", quest = 14, item = 5, map = 1433, spotsPacked = "23.5,12,,111,34,,25;29.5,8.2,,78,15,1,25" } } },
+		{ goals = { { t = "accept", quest = 15, map = 1440 }, kill(15, 29), { t = "accept", quest = 16, map = 1440 } } },
+		{ goals = { { t = "kill", quest = 16, npc = 8, map = 1440, optional = true, lvl = 40 } } },
+	} }
+	guides[#guides + 1] = g
+	byId[id] = g
+end
+local function offeredAt(n)
+	local before = #offers
+	levelUp(n)
+	local o = offers[#offers]
+	return #offers > before and { id = o.guideId, heads = o.heads or false } or false
+end
+"#;
+
+#[test]
+fn a_long_normal_chain_is_offered_when_it_opens_with_its_length_and_its_mobs_level() {
+	let out = run_qol(
+		&(CHAINS.to_string()
+			+ r#"
+		levelUp(20)
+		CQ.Resolve("c/fire")
+		chain("c/storm", false)
+		emit(offeredAt(22))"#),
+	);
+	assert_eq!(out[0], json!({ "id": "c/storm", "heads": "Long chain: 6 quests across 4 zones \u{b7} mobs up to level 29" }), "no wait, the optional level-40 kill aside");
+}
+
+#[test]
+fn an_elite_chain_waits_until_two_levels_below_its_highest_elite_and_says_bring_a_group() {
+	let out = run_qol(
+		&(CHAINS.to_string()
+			+ r#"
+		levelUp(20)
+		CQ.Resolve("c/fire")
+		chain("c/storm", true)
+		emit(offeredAt(22))
+		emit(offeredAt(26))
+		emit(offeredAt(27))"#),
+	);
+	assert_eq!(out[0], json!(false), "not at 22");
+	assert_eq!(out[1], json!(false), "not at 26");
+	assert_eq!(out[2], json!({ "id": "c/storm", "heads": "Long chain: 6 quests across 4 zones \u{b7} elite mobs at 28-29: bring a group" }));
+}
+
+#[test]
+fn a_short_chain_with_low_mobs_has_no_heads_up_line() {
+	let out = run_qol(
+		r#"
+		levelUp(20)
+		emit(offers[1].heads == nil)"#,
+	);
+	assert_eq!(out[0], true);
 }
 
 // ---------------------------------------------------------------------------
@@ -171,15 +244,15 @@ fn the_gated_guide_is_offered_once_its_gate_opens_nothing_with_the_setting_off()
 // the class card's data (UI/ClassRewards.lua) and a client whose spell icons name the spell.
 const CARD_PRE: &str = r#"uistub.install()
 stub.login()
-local GF = Polestar.UI.GuideFrame
-local CC = Polestar.UI.ClassCard
+local GF = Northstar.UI.GuideFrame
+local CC = Northstar.UI.ClassCard
 GetSpellTexture = function(id) return "Interface\\Icons\\spell-" .. id end
 GetItemIcon = function(id) return "Interface\\Icons\\item-" .. id end
-Polestar.Compat.GetMapName = function(id) return ({ [1457] = "Darnassus", [1450] = "Moonglade" })[id] end
+Northstar.Compat.GetMapName = function(id) return ({ [1457] = "Darnassus", [1450] = "Moonglade" })[id] end
 local function G(t, f) f.t = t; return f end
 local DRUID = { classes = { "DRUID" } }
 uistub.guides["test/darkshore"] = { id = "test/darkshore", pack = "guides", title = "Darkshore", faction = "Alliance", minLevel = 16, maxLevel = 21,
-	category = "Leveling", zone = 1439, zoneName = "Darkshore", author = "Polestar", version = 1, steps = {
+	category = "Leveling", zone = 1439, zoneName = "Darkshore", author = "Northstar", version = 1, steps = {
 	{ title = "Mathrengyl Bearwalker", only = DRUID, goals = {
 		G("accept", { verb = "Accept", subject = "The Great Cat Spirit", subjectKind = "quest", quest = 98393, npc = 4217, npcName = "Mathrengyl Bearwalker", minLevel = 20, map = 1457, x = 35.4, y = 8.4, status = "active" }),
 	} },
@@ -199,7 +272,7 @@ local function card()
 	local row
 	for _, r in ipairs(GF.rows) do
 		local s = r:IsShown() and r.Text:GetText()
-		if s and s:find("Accept |c", 1, true) then row = r.Text break end
+		if s and s:find("Accept \226\128\156|c", 1, true) then row = r.Text break end
 	end
 	return { shown = on, head = on and f.Head:GetText() or nil, title = on and f.Title:GetText() or nil, learn = on and f.Learn:GetText() or nil,
 		badge = on and f.Badge:IsShown() and f.Badge.Text:GetText() or nil, trip = on and f.Trip:GetText() or nil,
@@ -209,7 +282,7 @@ end
 "#;
 
 fn run_card(script: &str) -> Vec<Value> {
-	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Polestar", &UI_FILES)], script: format!("{CARD_PRE}{script}"), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Northstar", &UI_FILES)], script: format!("{CARD_PRE}{script}"), ..Default::default() })
 }
 
 #[test]
@@ -241,7 +314,7 @@ fn a_druid_on_a_druid_only_accept_sees_the_class_card_with_the_reward_spells_ico
 	assert_eq!(druid["learn"], "Learn |cfffe8f2fCat Form|r");
 	let warrior = &out[1];
 	assert_eq!(warrior["shown"], false, "{warrior}");
-	assert_eq!(warrior["row"], "Accept |cffffd673The Great Cat Spirit|r");
+	assert_eq!(warrior["row"], "Accept “|cffffd673The Great Cat Spirit|r”");
 }
 
 // Only the quest data makes a class quest (UI/ClassRewards.lua's class mask), never a line's
@@ -280,7 +353,7 @@ fn a_druid_only_step_of_an_open_quest_shows_no_card_a_data_limited_druid_quest_d
 	let out = run_card(
 		r#"
 		uistub.guides["test/mulgore"] = { id = "test/mulgore", pack = "guides", title = "Mulgore", faction = "Horde", minLevel = 1, maxLevel = 12,
-			category = "Leveling", zone = 1412, zoneName = "Mulgore", author = "Polestar", version = 1, steps = {
+			category = "Leveling", zone = 1412, zoneName = "Mulgore", author = "Northstar", version = 1, steps = {
 			{ title = "Jahan Hawkwing", only = DRUID, goals = {
 				G("accept", { verb = "Accept", subject = "A Bundle of Hides", subjectKind = "quest", quest = 6361, npc = 3390, npcName = "Jahan Hawkwing", minLevel = 10, map = 1413, x = 44.8, y = 59.1, status = "active" }),
 			} },
@@ -293,7 +366,7 @@ fn a_druid_only_step_of_an_open_quest_shows_no_card_a_data_limited_druid_quest_d
 		emit(card())"#,
 	);
 	assert_eq!(out[0]["shown"], false, "{}", out[0]);
-	assert_eq!(out[0]["row"], "Accept |cffffd673A Bundle of Hides|r");
+	assert_eq!(out[0]["row"], "Accept “|cffffd673A Bundle of Hides|r”");
 	assert_eq!(out[1]["shown"], true, "{}", out[1]);
 	assert_eq!(out[1]["title"], "The Great Cat Spirit");
 }
@@ -304,7 +377,7 @@ fn a_druid_only_step_of_an_open_quest_shows_no_card_a_data_limited_druid_quest_d
 // or not; the accept is a row like any other.
 const ZEPHRAS: &str = r#"
 uistub.guides["test/zephras"] = { id = "test/zephras", pack = "guides", title = "Zephras Isle", faction = "Alliance", minLevel = 1, maxLevel = 10,
-	category = "Leveling", zone = 1416, zoneName = "Alterac Mountains", author = "Polestar", version = 1, steps = {
+	category = "Leveling", zone = 1416, zoneName = "Alterac Mountains", author = "Northstar", version = 1, steps = {
 	{ title = "Denaaris Stargale", goals = {
 		G("accept", { verb = "Accept", subject = "Child of Nature", subjectKind = "quest", quest = 94912, npc = 270459, npcName = "Alfina Nightgaze", minLevel = 10, only = DRUID, status = "active" }),
 		G("accept", { verb = "Accept", subject = "The Skyborne Portal", subjectKind = "quest", quest = 94947, npc = 270458, npcName = "Denaaris Stargale", status = "pending" }),
@@ -332,7 +405,7 @@ fn no_card_for_a_chain_whose_reward_the_character_already_knows() {
 	assert_eq!(out[0]["shown"], true, "{}", out[0]);
 	assert_eq!(out[0]["learn"], "Learn |cfffe8f2fBear Form|r");
 	assert_eq!(out[1]["shown"], false, "{}", out[1]);
-	assert_eq!(out[1]["row"], "Accept |cffffd673Child of Nature|r");
+	assert_eq!(out[1]["row"], "Accept “|cffffd673Child of Nature|r”");
 }
 
 // The same report: ticking the card's box "didn't do anything". The Engine keeps an accept open
@@ -344,7 +417,7 @@ fn the_card_s_tick_box_ticks_the_accept_and_shows_it_ticked_and_why_it_stays_ope
 	let out = run_card(&format!(
 		r#"{ZEPHRAS}
 		local toggled = {{}}
-		Polestar.Engine.ToggleGoal = function(s, g)
+		Northstar.Engine.ToggleGoal = function(s, g)
 			toggled[#toggled + 1] = s .. ":" .. g
 			local goal = uistub.goal(s, g)
 			goal.ticked = not goal.ticked
@@ -376,7 +449,7 @@ fn a_reward_choice_reads_as_one_line_and_the_card_shines_and_chimes_once_per_cha
 		local first = #stub.sounds
 		uistub.setStep(2)
 		uistub.setStep(1)
-		emit({ first = first, again = #stub.sounds, seen = Polestar.CharState().classCardSeen ~= nil })
+		emit({ first = first, again = #stub.sounds, seen = Northstar.CharState().classCardSeen ~= nil })
 		local whirl = { kind = "weapon", show = "item", items = { 6975, 6977, 6976 }, itemNames = { "Whirlwind Axe", "Whirlwind Sword", "Whirlwind Warhammer" }, choice = true }
 		emit({ line = CC.RewardLine(whirl), badge = CC.BadgeText(whirl), icon = CC.Icon(whirl, "WARRIOR") })"#,
 	);
@@ -391,7 +464,7 @@ fn a_reward_choice_reads_as_one_line_and_the_card_shines_and_chimes_once_per_cha
 // Glyphic Memorandum from Sten Stoutarm, A New Threat from Balir Frosthammer next to him, the memorandum
 // to Marryk Nurribit inside Anvilmar. `later` moves the hand-in to the next step.
 const ANVILMAR: &str = r#"
-Polestar.Compat.GetMapName = function(id) return ({ [1426] = "Dun Morogh" })[id] end
+Northstar.Compat.GetMapName = function(id) return ({ [1426] = "Dun Morogh" })[id] end
 local MAGE = { classes = { "MAGE" } }
 local function anvilmar(later)
 	local memo = G("turnin", { verb = "Turn in", subject = "Glyphic Memorandum", subjectKind = "quest", quest = 3114, npc = 944, npcName = "Marryk Nurribit", only = MAGE, map = 1426, status = "active" })
@@ -401,7 +474,7 @@ local function anvilmar(later)
 	}
 	if not later then first[3] = memo end
 	uistub.guides["test/dunmorogh"] = { id = "test/dunmorogh", pack = "guides", title = "Dun Morogh", faction = "Alliance", minLevel = 1, maxLevel = 10,
-		category = "Leveling", zone = 1426, zoneName = "Dun Morogh", author = "Polestar", version = 1, steps = {
+		category = "Leveling", zone = 1426, zoneName = "Dun Morogh", author = "Northstar", version = 1, steps = {
 		{ title = "Anvilmar", goals = first },
 		{ title = "The troggs", goals = { G("kill", { verb = "Kill", subject = "Rockjaw Trogg", subjectKind = "npc", npc = 707, status = "active" }), later and memo or nil } },
 	} }
@@ -490,21 +563,21 @@ fn a_hand_in_in_a_later_step_reads_later_in_this_guide() {
 // takes the Voidwalker chain at its third step.
 const TOAST_PRE: &str = r#"uistub.install()
 stub.login()
-local GF = Polestar.UI.GuideFrame
-local CT = Polestar.UI.ClassToast
+local GF = Northstar.UI.GuideFrame
+local CT = Northstar.UI.ClassToast
 GetSpellTexture = function(id) return "Interface\\Icons\\spell-" .. id end
-Polestar.Compat.GetMapName = function(id) return ({ [1411] = "Durotar", [1454] = "Orgrimmar", [1457] = "Darnassus", [1420] = "Tirisfal Glades" })[id] end
+Northstar.Compat.GetMapName = function(id) return ({ [1411] = "Durotar", [1454] = "Orgrimmar", [1457] = "Darnassus", [1420] = "Tirisfal Glades" })[id] end
 -- What the character already has, and the quests it has done or holds.
 KNOWN, OWNED, DONE, INLOG = {}, {}, {}, {}
 IsPlayerSpell = function(id) return KNOWN[id] == true end
 GetItemCount = function(id) return OWNED[id] or 0 end
-Polestar.Compat.IsQuestCompleted = function(q) return DONE[q] == true end
-Polestar.Compat.IsOnQuest = function(q) return INLOG[q] == true end
+Northstar.Compat.IsQuestCompleted = function(q) return DONE[q] == true end
+Northstar.Compat.IsOnQuest = function(q) return INLOG[q] == true end
 local function G(t, f) f.t = t; return f end
 local function q(t, id, title, npc, status) return G(t, { verb = t == "accept" and "Accept" or "Turn in", subject = title, subjectKind = "quest", quest = id, npcName = npc, status = status or "pending" }) end
 local function add(g) uistub.guides[g.id] = g; table.insert(uistub.order, g.id) end
 add({ id = "test/class/warlock", pack = "guides", title = "Warlock demons", category = "Class", classes = { "WARLOCK" }, minLevel = 1, maxLevel = 30,
-	zone = 1411, zoneName = "Durotar", author = "Polestar", version = 1, steps = {
+	zone = 1411, zoneName = "Durotar", author = "Northstar", version = 1, steps = {
 	{ title = "Ruzan", goals = { q("accept", 1485, "Vile Familiars", "Ruzan", "active") } },
 	{ title = "Vile Familiars", goals = { q("turnin", 1485, "Vile Familiars", "Ruzan") } },
 	{ title = "Ophek", goals = { q("accept", 1506, "Gan'rul's Summons", "Ophek") } },
@@ -513,12 +586,12 @@ add({ id = "test/class/warlock", pack = "guides", title = "Warlock demons", cate
 	{ title = "Blind Cazul", goals = { q("turnin", 1507, "Devourer of Souls", "Blind Cazul") } },
 } })
 add({ id = "test/class/cat-form", pack = "guides", title = "Cat Form", category = "Class", classes = { "DRUID" }, minLevel = 20, maxLevel = 22,
-	zone = 1457, zoneName = "Darnassus", author = "Polestar", version = 1, steps = {
+	zone = 1457, zoneName = "Darnassus", author = "Northstar", version = 1, steps = {
 	{ title = "Mathrengyl Bearwalker", goals = { q("accept", 98393, "The Great Cat Spirit", "Mathrengyl Bearwalker", "active") } },
 	{ title = "To Darnassus", goals = { q("turnin", 98397, "To Darnassus", "Mathrengyl Bearwalker") } },
 } })
 add({ id = "test/durotar", pack = "guides", title = "Durotar", faction = "Horde", category = "Leveling", minLevel = 1, maxLevel = 12,
-	zone = 1411, zoneName = "Durotar", author = "Polestar", version = 1, steps = {
+	zone = 1411, zoneName = "Durotar", author = "Northstar", version = 1, steps = {
 	{ title = "Thunder Ridge", goals = { G("kill", { verb = "Kill", subject = "Thunder Lizard", subjectKind = "npc", npc = 3130, status = "active" }) } },
 	{ title = "Razor Hill", goals = { G("note", { text = "Step 2", status = "pending" }) } },
 	{ title = "Orgrimmar", only = { classes = { "WARLOCK" } }, goals = { q("accept", 1506, "Gan'rul's Summons", "Ophek") } },
@@ -534,7 +607,7 @@ local function who(class, race, faction, level) uistub.player.class, uistub.play
 "#;
 
 fn run_toast(script: &str) -> Vec<Value> {
-	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Polestar", &UI_FILES)], script: format!("{TOAST_PRE}{script}"), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Northstar", &UI_FILES)], script: format!("{TOAST_PRE}{script}"), ..Default::default() })
 }
 
 #[test]
@@ -549,7 +622,7 @@ fn a_druid_reaching_20_gets_the_cat_form_heads_up_once_a_warrior_does_not() {
 		stub.fire("PLAYER_LEVEL_UP", 20)
 		emit({ again = CT.frame:IsShown(), sounds = #stub.sounds })
 		uistub.player.class, uistub.player.race, uistub.player.level = "WARRIOR", "Human", 19
-		Polestar.CharState().classToastSeen = nil
+		Northstar.CharState().classToastSeen = nil
 		CT.Hide()
 		stub.fire("PLAYER_LEVEL_UP", 20)
 		emit(toast())"#,
@@ -575,17 +648,17 @@ fn open_in_a_new_tab_lands_each_chain_on_its_own_section_of_the_class_guide() {
 		r#"
 		uistub.player.class, uistub.player.race, uistub.player.faction, uistub.player.level = "WARLOCK", "Orc", "Horde", 10
 		uistub.openTabs({ { "test/durotar", 1 } }, 1)
-		local E = Polestar.Engine
+		local E = Northstar.Engine
 		CT.Show(1506)
 		emit(toast())
 		CT.Open()
 		local tabs, active = E.GetTabs()
 		emit({ tabs = #tabs, guide = E.GetGuide().id, step = E.GetStepIndex(), toast = CT.frame:IsShown(),
-			back = Polestar.CharState().classReturn and Polestar.CharState().classReturn["test/class/warlock"] })
+			back = Northstar.CharState().classReturn and Northstar.CharState().classReturn["test/class/warlock"] })
 		-- The card on the landing step folds the accept in: no row of its own repeats the quest.
-		local CC = Polestar.UI.ClassCard
+		local CC = Northstar.UI.ClassCard
 		emit({ card = CC.frame:IsShown(), accept = CC.frame.Accept:IsShown() and CC.frame.Accept.Text:GetText() or false,
-			row = uistub.findText(GF.parts.card, "Accept |c") ~= nil })
+			row = uistub.findText(GF.parts.card, "Accept \226\128\156|c") ~= nil })
 		for _, quest in ipairs({ 1485, 1507 }) do
 			E.SelectTab(1)
 			CT.Show(quest)
@@ -622,7 +695,7 @@ fn a_finished_class_guide_offers_to_close_its_tab_and_go_back_to_the_leveling_ta
 		r#"
 		uistub.player.class, uistub.player.race, uistub.player.faction, uistub.player.level = "WARLOCK", "Orc", "Horde", 10
 		uistub.openTabs({ { "test/durotar", 2 } }, 1)
-		local E = Polestar.Engine
+		local E = Northstar.Engine
 		CT.Show(1506)
 		CT.Open()
 		uistub.complete()
@@ -686,7 +759,7 @@ fn no_heads_up_for_a_reward_already_known_or_owned_or_a_chain_already_taken() {
 		OWNED[6977] = 1
 		local whirl = false
 		for _, q in ipairs(CT.Candidates(30, "any")) do
-			local r = Polestar.ClassRewards.rewards[Polestar.ClassRewards.quests[q][3]]
+			local r = Northstar.ClassRewards.rewards[Northstar.ClassRewards.quests[q][3]]
 			if r.items and r.items[1] == 6975 then whirl = true end
 		end
 		emit({ whirlwind = whirl, known = CT.RewardKnown({ items = { 6975, 6977, 6976 } }) })
@@ -709,7 +782,7 @@ fn login_tells_only_of_chains_opened_in_the_last_two_levels_and_never_of_level_1
 		local seen = {}
 		for _, lvl in ipairs({ 20, 22, 23 }) do
 			who("DRUID", "NightElf", "Alliance", lvl)
-			Polestar.CharState().classToastSeen = nil
+			Northstar.CharState().classToastSeen = nil
 			local list = CT.Candidates(lvl, "login")
 			local has = false
 			for _, q in ipairs(list) do if q == 98393 then has = true end end
@@ -718,7 +791,7 @@ fn login_tells_only_of_chains_opened_in_the_last_two_levels_and_never_of_level_1
 		-- The Undead Warlock of the report: level 7 after login. The Imp (level 1) is learned at
 		-- the start; nothing else has opened.
 		who("WARLOCK", "Scourge", "Horde", 7)
-		Polestar.CharState().classToastSeen = nil
+		Northstar.CharState().classToastSeen = nil
 		emit({ cat = seen, warlock7 = #CT.Candidates(7, "login"), any = #CT.Candidates(7, "any") })"#,
 	);
 	assert_eq!(out[0], json!({ "cat": [true, true, false], "warlock7": 0, "any": 0 }));

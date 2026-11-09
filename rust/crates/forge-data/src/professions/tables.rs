@@ -348,7 +348,7 @@ impl Rec for ItemXItemEffect {
 	}
 }
 
-/// The tables extract.js reads, Era's rows filled in.
+/// The tables extract.js reads. Era rows are added only when a Classic Era cache is already present.
 pub struct Tables {
 	pub skill_line: Vec<SkillLine>,
 	pub abilities: Vec<Ability>,
@@ -436,8 +436,10 @@ fn fill<T>(mut own: Vec<T>, era: Vec<T>, keep: impl Fn(&T) -> bool) -> Vec<T> {
 	own
 }
 
-/// loadTables({ product: 'forever', eraFill: true, offline: true }): `build` the Forever wago
-/// build (default: the newest cached one holding its own tables).
+/// loadTables({ product: 'forever', offline: true }): `build` the Forever wago build (default:
+/// the newest cached one holding its own tables). A missing SpellTotems, SpellCastingRequirements,
+/// SpellFocusObject or ItemXItemEffect does not require a Classic Era cache. Era rows are read
+/// only when that cache is already on disk.
 pub fn load(sources: &Path, build: Option<&str>) -> Result<Loaded, String> {
 	let root = sources.join("wago");
 	let fb = match build {
@@ -445,27 +447,28 @@ pub fn load(sources: &Path, build: Option<&str>) -> Result<Loaded, String> {
 		None => newest_cached(&root, forever_family, &OWN).ok_or_else(|| format!("--offline: no cached wago.tools build under {} (wow_classic_beta)", super::absolute(&root).display()))?,
 	};
 	let mut warnings = Vec::new();
-	let mut era: Option<String> = None;
-	let era_build = |era: &mut Option<String>| -> Result<String, String> {
-		if era.is_none() {
-			*era = Some(newest_cached(&root, era_family, &ERA_NEEDED).ok_or_else(|| format!("--offline: no cached wago.tools build under {} (wow_classic_era)", super::absolute(&root).display()))?);
-		}
-		Ok(era.clone().unwrap())
-	};
+	let era_cached = newest_cached(&root, era_family, &ERA_NEEDED);
 	let mut whole: Vec<&str> = Vec::new();
-	// A table Forever's build lacks among SpellTotems, SpellCastingRequirements and
-	// SpellFocusObject comes whole from Era.
-	macro_rules! fallback {
+	// A gap table the Forever build lacks stays empty unless a Classic Era cache is already present.
+	macro_rules! gap {
 		($t:ty, $name:expr) => {
 			match cached(&root, &fb, $name) {
 				Ok(text) => parse::<$t>(&text).map_err(|e| format!("{} {fb}: {e}", $name))?,
-				Err(e) => {
-					let b = era_build(&mut era)?;
-					let rows = read::<$t>(&root, &b, $name)?;
-					whole.push($name);
-					warnings.push(format!("{}: no Forever {fb} table ({e}); read Classic Era {b}", $name));
-					rows
-				}
+				Err(e) => match &era_cached {
+					Some(b) => {
+						let rows = read::<$t>(&root, b, $name)?;
+						whole.push($name);
+						warnings.push(format!("{}: no Forever {fb} table ({e}); read Classic Era {b}", $name));
+						rows
+					}
+					None => {
+						warnings.push(format!(
+							"{}: no Forever {fb} table ({e}); not filled from Classic Era. Public CSV: https://wago.tools/db2/{}/csv?build={fb}",
+							$name, $name
+						));
+						Vec::new()
+					}
+				},
 			}
 		};
 	}
@@ -474,16 +477,26 @@ pub fn load(sources: &Path, build: Option<&str>) -> Result<Loaded, String> {
 	let spell_name = read::<SpellName>(&root, &fb, "SpellName")?;
 	let effects = read::<SpellEffect>(&root, &fb, "SpellEffect")?;
 	let reagents = read::<SpellReagents>(&root, &fb, "SpellReagents")?;
-	let totems = fallback!(SpellTotems, "SpellTotems");
-	let casting = fallback!(SpellCasting, "SpellCastingRequirements");
-	let focus = fallback!(SpellFocus, "SpellFocusObject");
+	let totems = gap!(SpellTotems, "SpellTotems");
+	let casting = gap!(SpellCasting, "SpellCastingRequirements");
+	let focus = gap!(SpellFocus, "SpellFocusObject");
 	let sparse = read::<ItemSparse>(&root, &fb, "ItemSparse")?;
 	let item = read::<Item>(&root, &fb, "Item")?;
 	let item_effect = read::<ItemEffect>(&root, &fb, "ItemEffect")?;
-	let item_x = read::<ItemXItemEffect>(&root, &fb, "ItemXItemEffect")?;
+	let item_x = gap!(ItemXItemEffect, "ItemXItemEffect");
 
-	// eraFill: Era's rows, in TABLES order, of the tables not already read whole from Era.
-	let eb = era_build(&mut era)?;
+	// Era row fill only when that cache is already present. It is not fetched and not required.
+	let Some(eb) = era_cached.clone() else {
+		warnings.push(format!("no Classic Era cache under {}; Forever build {fb} only, no Era rows added", super::absolute(&root).display()));
+		return Ok(Loaded {
+			build: fb,
+			era_build: String::new(),
+			tables: Tables { skill_line, abilities, spell_name, effects, reagents, totems, casting, focus, sparse, item, item_effect, item_x },
+			season: FxHashSet::default(),
+			era_yellow: FxHashMap::default(),
+			warnings,
+		});
+	};
 	let own = |t: &str| !whole.contains(&t);
 	let era_abilities = read::<Ability>(&root, &eb, "SkillLineAbility")?;
 	let era_names = read::<SpellName>(&root, &eb, "SpellName")?;
@@ -567,5 +580,21 @@ mod tests {
 		assert!(forever_family("1.60.1.70450") && !forever_family("1.15.9.1"));
 		assert!(era_family("1.15.9.70003") && !era_family("1.16.0.1") && !era_family("5.5.1.1"));
 		assert!(is_build("1.2") && !is_build("1") && !is_build("1..2"));
+	}
+
+	#[test]
+	fn a_forever_build_without_an_era_cache_loads() {
+		let root = std::env::temp_dir().join(format!("ns-prof-{}", std::process::id()));
+		let dir = root.join("wago").join("1.60.1.70862");
+		std::fs::create_dir_all(&dir).unwrap();
+		for name in ["SkillLine", "SkillLineAbility", "SpellName", "SpellEffect", "SpellReagents", "ItemSparse", "Item", "ItemEffect"] {
+			std::fs::write(dir.join(format!("{name}.csv")), "ID\n").unwrap();
+		}
+		let loaded = load(&root, Some("1.60.1.70862")).unwrap();
+		assert_eq!(loaded.build, "1.60.1.70862");
+		assert!(loaded.era_build.is_empty(), "{}", loaded.era_build);
+		assert!(loaded.warnings.iter().any(|w| w.contains("no Classic Era cache") && !w.contains("wow_classic_era)")));
+		assert!(loaded.warnings.iter().any(|w| w.contains("SpellTotems") && w.contains("https://wago.tools/db2/SpellTotems/csv?build=1.60.1.70862")));
+		let _ = std::fs::remove_dir_all(&root);
 	}
 }

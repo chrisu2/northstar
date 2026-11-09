@@ -1,4 +1,4 @@
-//! Travel planner (addon/Polestar/Nav/Travel.lua): Dijkstra over walking, known flights, transports, the
+//! Travel planner (addon/Northstar/Nav/Travel.lua): Dijkstra over walking, known flights, transports, the
 //! Hearthstone and learned paths, and how the arrow follows the route. Runs the real Core/Init.lua + Nav/Nav.xml
 //! against tests/lua/stub_nav.lua with a small fixture travel world (stub.nav.useTravelWorld).
 
@@ -6,7 +6,7 @@ use forge_addontest::{emitted, fake_locale, is_match, text, Addon, RunAddon};
 use serde_json::{json, Value};
 
 const PRELUDE: &str = r#"
-local N = Polestar.Nav
+local N = Northstar.Nav
 local A = N.arrow
 local nav = stub.nav
 local function target(wx, wy, label)
@@ -23,14 +23,29 @@ local function route()
 	return out
 end
 local function known(...)
-	local flags = Polestar.CharState().flags
+	local flags = Northstar.CharState().flags
 	flags.taxi = {}
 	for _, id in ipairs({ ... }) do flags.taxi[id] = true end
 end
 "#;
 
+/// nav() loads no Core/Locale.lua, and Nav/Travel.lua reads its captions at load: the language folder is
+/// asked for right after Core/Init.lua, where Locale.lua (before Nav in Core.xml) would have asked.
+const ASK_FOR_THE_FOLDER: &str = r#"
+do
+	local load = loadfile
+	function loadfile(file)
+		local chunk, err = load(file)
+		if not chunk or not file:match("[/\\]Northstar[/\\]Core[/\\]Init%.lua$") then return chunk, err end
+		return function(...)
+			chunk(...)
+			C_AddOns.LoadAddOn("Northstar_" .. GetLocale())
+		end
+	end
+end"#;
+
 fn nav() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])
+	Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])
 }
 
 fn run_with(script: &str, flight_yards: Option<i32>, before: String) -> Value {
@@ -77,7 +92,7 @@ fn every_leg_caption_is_in_the_client_language_flight_boat_and_tram() {
 				("Take the boat to %s", "Nimm das Schiff nach %s"),
 				("Take the tram to %s", "Nimm die Tiefenbahn nach %s"),
 			],
-		),
+		) + ASK_FOR_THE_FOLDER,
 	);
 	assert_eq!(
 		out,
@@ -313,7 +328,7 @@ fn learned_walking_paths_change_the_route() {
 fn the_arrow_follows_the_legs_walk_act_at_the_flight_master_re_plan_on_landing() {
 	let out = run(r#"
 		local r, changes = {}, 0
-		Polestar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
+		Northstar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
 		known(1, 2)
 		nav.place(0, 600)
 		target(0, -780, "Kobolds")
@@ -352,7 +367,7 @@ fn opening_the_flight_map_records_known_nodes_and_re_plans() {
 		local before = route()
 		nav.taxiMap = { mapID = 1415, nodes = { 1, 2 } }
 		stub.fire("TAXIMAP_OPENED", 1)
-		local saved = Polestar.CharState().flags.taxi
+		local saved = Northstar.CharState().flags.taxi
 		emit({ before = before, after = route(), saved = { saved[1] == true, saved[2] == true, saved[3] == true } })"#);
 	assert_eq!(out["before"], json!(["walk|Target"]));
 	assert_eq!(out["after"], json!(["fly|Fly to East Hold", "walk|Target"]));
@@ -372,7 +387,7 @@ fn binding_at_an_innkeeper_teaches_nav_what_the_bind_location_means() {
 		stub.fire("HEARTHSTONE_BOUND")
 		nav.place(0, 0, 1)
 		target(-520, -690, "Q")
-		emit({ before = before, after = route()[1], learned = Polestar.CharState().flags.inn })"#);
+		emit({ before = before, after = route()[1], learned = Northstar.CharState().flags.inn })"#);
 	assert_eq!(out["before"], "walk|Walk to the boat");
 	assert_eq!(out["after"], "hearth|Hearth to Lion's Den Tavern: saves 10 min");
 	assert_eq!(out["learned"], json!({ "lion's den tavern": 900 }));
@@ -389,10 +404,10 @@ fn a_target_change_re_plans_nav_travel_off_falls_back_to_the_direct_arrow() {
 		target(0, 500)
 		r.second = route()
 		target(0, -780)
-		Polestar.Set("nav.travel", false)
+		Northstar.Set("nav.travel", false)
 		stub.advance(0.2)
 		r.off = { N.GetRoute() == nil, A.GetMode(), A.labelText:GetText() }
-		Polestar.Set("nav.travel", true)
+		Northstar.Set("nav.travel", true)
 		r.on = #route()
 		emit(r)"#);
 	assert_eq!(out["first"], 3);
@@ -422,7 +437,7 @@ fn world_map_shows_the_final_target_pin_plus_the_route_waypoints() {
 fn estimatetravel_prices_trips_with_the_planner_caches_briefly_and_leaves_the_route_alone() {
 	let out = run(r#"
 		local r, changes = {}, 0
-		Polestar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
+		Northstar.On("ROUTE_CHANGED", function() changes = changes + 1 end)
 		nav.place(0, 600)
 		local m, x, y = nav.mapPoint(0, -780)
 		local far = { map = m, x = x, y = y }
@@ -457,12 +472,12 @@ fn estimatetravel_stays_cheap_for_a_burst_of_candidates_on_the_real_network() {
 		addons: vec![nav()],
 		login: true,
 		script: r#"
-			local N, nav = Polestar.Nav, stub.nav
+			local N, nav = Northstar.Nav, stub.nav
 			nav.faction = "Alliance"
-			Polestar.RegisterMapFrames({ era = { [1436] = { c = 0, left = 3016.667, right = -483.333, top = -9400, bottom = -11733.333 },
+			Northstar.RegisterMapFrames({ era = { [1436] = { c = 0, left = 3016.667, right = -483.333, top = -9400, bottom = -11733.333 },
 				[1433] = { c = 0, left = -1570.833, right = -3741.667, top = -8575, bottom = -10022.916 } } })
 			nav.place(-10500, 1046, 0)
-			Polestar.CharState().flags.taxi = { [2] = true, [4] = true, [5] = true }
+			Northstar.CharState().flags.taxi = { [2] = true, [4] = true, [5] = true }
 			local t0 = os.clock()
 			local first
 			for i = 1, 10 do
@@ -488,7 +503,7 @@ fn only_discovered_flight_masters_are_recorded_from_the_flight_map() {
 		-- Current (0) here, East Hold listed as Unreachable (2): a pass-through node, not discovered.
 		nav.taxiMap = { mapID = 1415, nodes = { { 1, 0 }, { 2, 2 } } }
 		stub.fire("TAXIMAP_OPENED", 1)
-		local saved = Polestar.CharState().flags.taxi
+		local saved = Northstar.CharState().flags.taxi
 		local r = { saved = { saved[1] == true, saved[2] == true }, route = route() }
 		nav.taxiMap = { mapID = 1415, nodes = { { 1, 0 }, { 2, 1 } } }
 		stub.fire("TAXIMAP_OPENED", 1)
@@ -617,7 +632,7 @@ fn walk_legs_are_priced_unmounted_so_a_fast_mount_never_swaps_a_flight_for_a_str
 fn estimatetravel_takes_a_live_frame_start_and_an_era_frame_destination_on_a_re_framed_map() {
 	let out = run(r#"
 		-- Map 9000's Era frame is shifted from the live one (like Mulgore 1412).
-		Polestar.RegisterMapFrames({ era = { [9000] = { c = 0, top = 1030, bottom = -970, left = 960, right = -1040 } } })
+		Northstar.RegisterMapFrames({ era = { [9000] = { c = 0, top = 1030, bottom = -970, left = 960, right = -1040 } } })
 		nav.place(0, 0)
 		local fm, fx, fy = nav.mapPoint(0, 0)            -- the player's live map position, no f
 		local here = { map = fm, x = fx, y = fy }
@@ -646,7 +661,7 @@ fn a_class_flight_node_flies_that_class_alone_with_no_path_learnt() {
 			flights = { 4, 2, 1400 }, inns = {} }, true)
 		nav.place(0, 600)
 		known(2)
-		local C = Polestar.Compat
+		local C = Northstar.Compat
 		C.GetPlayerInfo = function() return { faction = "Alliance", class = "WARRIOR" } end
 		target(0, -780, "Kobolds")
 		local warrior = route()

@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: Northstar Travel (local)
+## Notes: Zone crossings for Northstar's travel planner, built from an optional local crossings file. Local use only.
+## Author: Northstar
+## Version: 0.2.6
+## Category: Northstar
+## Group: Northstar
+## Dependencies: Northstar
+
+Crossings.lua

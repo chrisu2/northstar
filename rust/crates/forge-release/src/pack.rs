@@ -1,15 +1,15 @@
-//! The release archives' contents: our release's Polestar-<version>.zip and Polestar_Recorder-<version>.zip
-//! (addon folders at the top level, the GPL and the players' README.txt in Polestar/), and another
+//! The release archives' contents: our release's Northstar-<version>.zip and Northstar_Recorder-<version>.zip
+//! (addon folders at the top level, the GPL and the players' README.txt in Northstar/), and another
 //! pack's <folder>-<version>.zip.
 
 use crate::zip::{directory_entries, Entry};
 use sha2::{Digest, Sha256};
 use std::path::Path;
 
-/// The players' install steps, Polestar/README.txt in the zip; CRLF so Notepad shows it as written.
+/// The players' install steps, Northstar/README.txt in the zip; CRLF so Notepad shows it as written.
 pub fn readme(version: &str, names: &[String]) -> String {
 	let mut lines: Vec<String> = vec![
-		format!("Polestar {version}"),
+		format!("Northstar {version}"),
 		"Leveling guides for World of Warcraft: Forever.".into(),
 		String::new(),
 		"Install".into(),
@@ -20,28 +20,28 @@ pub fn readme(version: &str, names: &[String]) -> String {
 	lines.extend(names.iter().map(|n| format!("     {n}")));
 	lines.extend(
 		[
-			"   They are all part of Polestar: Polestar_Codex holds what Lookup,",
-			"   Dungeons and Rares show; Polestar_Nav the arrow's walking routes",
+			"   They are all part of Northstar: Northstar_Codex holds what Lookup,",
+			"   Dungeons and Rares show; Northstar_Nav the arrow's walking routes",
 			"   (Shortest Path Forever's pathing, by Cillian Berragan, GPL-3.0 or",
 			"   later: see its LICENSE and CREDITS.md); the language folders",
-			"   (Polestar_deDE, Polestar_frFR, ...) the guide texts and the game's",
+			"   (Northstar_deDE, Northstar_frFR, ...) the guide texts and the game's",
 			"   quest, NPC, object and item names in each language (the game loads",
-			"   only its own). To update, delete the old Polestar folders there",
-			"   first, the Polestar_Guides_deDE and Polestar_Names_deDE kind too",
-			"   (one of each per language): Polestar no longer uses them.",
+			"   only its own). To update, delete the old Northstar folders there",
+			"   first, the Northstar_Guides_deDE and Northstar_Names_deDE kind too",
+			"   (one of each per language): Northstar no longer uses them.",
 			"2. Quit the game completely and start it again. A /reload does not",
 			"   load new addon folders.",
 			"",
-			"Polestar_Recorder (a separate zip) is optional: it records your sessions",
+			"Northstar_Recorder (a separate zip) is optional: it records your sessions",
 			"to improve the routes and stays off until you turn it on.",
 			"",
 			"Source, issues and documentation: https://github.com/fitzforge/polestar",
-			"Polestar is free software under the GNU General Public License, version 3",
+			"Northstar is free software under the GNU General Public License, version 3",
 			"only (LICENSE). The data folders carry their own notices (LICENSE-DATA.txt).",
 			"Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever),",
 			"GPL-3.0 or later, adapted with his permission: the route lines, journey",
-			"panel, transit times, travel prompts and alerts in Polestar/ (LICENSE",
-			"names the files) and the walking routes in Polestar_Nav/.",
+			"panel, transit times, travel prompts and alerts in Northstar/ (LICENSE",
+			"names the files) and the walking routes in Northstar_Nav/.",
 			"",
 		]
 		.iter()
@@ -112,16 +112,16 @@ mod tests {
 
 	#[test]
 	fn the_readme_names_every_folder_shipped_in_crlf_lines() {
-		let names: Vec<String> = ["Polestar", "Polestar_Guides", "Polestar_Nav", "Polestar_Codex"].iter().map(|s| s.to_string()).collect();
+		let names: Vec<String> = ["Northstar", "Northstar_Guides", "Northstar_Nav", "Northstar_Codex"].iter().map(|s| s.to_string()).collect();
 		let text = readme("0.2.0", &names);
-		assert!(text.starts_with("Polestar 0.2.0\r\n"));
+		assert!(text.starts_with("Northstar 0.2.0\r\n"));
 		assert!(text.contains("_forever_/Interface/AddOns/"));
 		assert!(text.contains("/reload does not"));
 		for n in &names {
 			assert!(text.contains(&format!("\r\n     {n}\r\n")), "{n}");
 		}
-		assert!(!text.contains("     Polestar_Recorder\r\n"));
-		assert!(text.contains("Polestar_Nav the arrow's walking routes\r\n   (Shortest Path Forever's pathing, by Cillian Berragan"));
+		assert!(!text.contains("     Northstar_Recorder\r\n"));
+		assert!(text.contains("Northstar_Nav the arrow's walking routes\r\n   (Shortest Path Forever's pathing, by Cillian Berragan"));
 		assert!(text.contains("\r\nPortions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever),\r\n"));
 		assert!(!text.replace("\r\n", "").contains('\n'), "CRLF line endings throughout");
 	}

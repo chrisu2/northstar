@@ -4,6 +4,7 @@ category Class
 class Mage
 folder Mage
 faction Alliance
+race Human,Gnome
 levels 26-30
 zone Stormwind City
 keywords High Sorcerer Andromath, Ur's Treatise on Shadow Magic, Tower of Ilgalar, Redridge Mountains, Pristine Spider Silk, Carrion Recluse, Duskwood, Wynne Larson, Astral Knot Robe, Astral Knot Blouse, Mage, class robe
@@ -19,13 +20,10 @@ why A robe or a blouse for Alliance mages in their late 20s.
 # (data/local/quest-audit/, all four unchanged) and
 # quest data (quests 1939, 1938, 1940 and 1942,
 # checked 2026-10-14 and 2026-10-29) for the races and the reward choice:
-# Forever opened Ur's Treatise (1938) and Pristine Spider Silk (1940) to
-# Skyborne mages too (reqrace 4294967361; corrections-private), while the
-# breadcrumb High Sorcerer Andromath (1939) is Human and Gnome in quests.json
-# and the quest page (the server sets no race limit on it, so Jennea may
-# offer it to Skyborne too); Skyborne mages go to Andromath directly
-# (Forever's page and the Classic database show no hard prerequisite on
-# 1938); the quest texts for the
+# The published quest row is races 65 (Human and Gnome) and class Mage.
+# A private note that added Skyborne is not in the public corrections, and a
+# Questie-sourced data build does not offer 1938 to Skyborne, so this guide
+# is Human and Gnome. The quest texts for the
 # tower's library and the carrion recluses; the KB drops table for the silk
 # (Carrion Recluse 100%, Black Widow Hatchling 18%) and npcs.json for their
 # spawns (6 recluses in Raven Hill Cemetery, 24 hatchlings to the east);
@@ -33,11 +31,6 @@ why A robe or a blouse for Alliance mages in their late 20s.
 # Morganth on the tower's top floor, the dogs' Mana Burn, the book's 2 second
 # respawn, the recluses' 5 minute respawn and Mor'Ladim in the cemetery.
 # Bink in Ironforge and Jennea Cannon in Stormwind give the breadcrumb.
-# Skyborne without the breadcrumb: the server's own quest answers in players'
-# caches (EG Link, builds 1.60.1.70205-70450) set no race limit on 1938, and
-# the Forever TrinityCore world data (quest_template_addon) gives it no
-# previous quest, like the Classic database: Andromath offers it at 26 to any
-# Alliance mage.
 
 step Bink (Ironforge)
   only Gnome
@@ -52,13 +45,6 @@ step Jennea Cannon (Stormwind)
   tip Jennea Cannon stands at the top of the Wizard's Sanctum, the violet tower of the Mage Quarter; the portal near the top of the spiral ramp takes you to her.
   level 26
   accept 1939 npc 5497                        -- Jennea Cannon
-
-step High Sorcerer Andromath (Skyborne)
-  only Skyborne
-  zone Stormwind City
-  tip You do not need a letter: at 26 climb the Wizard's Sanctum, the violet tower of Stormwind's Mage Quarter. High Sorcerer Andromath waits on the spiral walkway, just past the door of the portal room near the top, and has the quest for you. (Jennea Cannon may also offer you High Sorcerer Andromath, the pointer quest; it is only a pointer and you can skip it.)
-  level 26
-  accept 1938 npc 5694                        -- High Sorcerer Andromath
 
 step High Sorcerer Andromath
   only Human,Gnome

@@ -1,4 +1,4 @@
-//! Travel prompts (addon/Polestar/Nav/Prompts.lua), transport alerts (Nav/Alerts.lua) and the flight map's route
+//! Travel prompts (addon/Northstar/Nav/Prompts.lua), transport alerts (Nav/Alerts.lua) and the flight map's route
 //! highlight (QoL/Flight.lua). Prompts and alerts run the real Core/Init.lua + Theme + Nav/Nav.xml against
 //! tests/lua/stub_nav.lua with the route, Nav.travel and ns.Transit replaced by fakes in the script, and secure
 //! frames enforced as the client does (SetAttribute, Show, Hide, SetPoint, ClearAllPoints, SetScale error in
@@ -8,7 +8,7 @@ use forge_addontest::{emitted, Addon, RunAddon};
 use serde_json::{json, Value};
 
 fn nav_addon() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua", "Theme/Theme.xml", "Nav/Nav.xml"])
+	Addon::files("Northstar", &["Core/Init.lua", "Theme/Theme.xml", "Nav/Nav.xml"])
 }
 
 // Secure frames: the client refuses protected changes in combat.
@@ -32,7 +32,7 @@ function FlashClientIcon() flashes = flashes + 1 end
 "#;
 
 const PRELUDE: &str = r#"
-local N = Polestar.Nav
+local N = Northstar.Nav
 local P = N.prompts
 local nav = stub.nav
 local route = { legs = nil, ci = 1 }
@@ -42,18 +42,18 @@ N.travel.Active = function() return route.legs ~= nil and #route.legs > 1 and ro
 N.travel.SkipLeg = function()
 	skipped = skipped + 1
 	route.ci = route.ci + 1
-	Polestar.Fire("ROUTE_ADVANCED", route.legs, route.ci)
+	Northstar.Fire("ROUTE_ADVANCED", route.legs, route.ci)
 	return true
 end
 local function setRoute(legs, ci)
 	route.legs, route.ci = legs, ci or 1
-	Polestar.Fire("ROUTE_CHANGED", legs)
+	Northstar.Fire("ROUTE_CHANGED", legs)
 end
 local function combat(on)
 	stub.inCombat = on
 	stub.fire(on and "PLAYER_REGEN_DISABLED" or "PLAYER_REGEN_ENABLED")
 end
-local function btn() return _G.PolestarTravelButton end
+local function btn() return _G.NorthstarTravelButton end
 local function state()
 	local b = btn()
 	if not b then return { exists = false } end
@@ -82,7 +82,7 @@ fn travel_button_a_hearth_leg_gets_a_secure_item_button_under_the_arrow_out_of_c
 		emit({ rel == UIParent, relPoint })
 		-- the leg ends: hidden and emptied
 		route.ci = 2
-		Polestar.Fire("ROUTE_ADVANCED", route.legs, 2)
+		Northstar.Fire("ROUTE_ADVANCED", route.legs, 2)
 		emit(state())
 		-- no Hearthstone in the bags: no button
 		nav.items[6948] = 0
@@ -90,7 +90,7 @@ fn travel_button_a_hearth_leg_gets_a_secure_item_button_under_the_arrow_out_of_c
 		emit(state())
 		-- switched off
 		nav.items[6948] = 1
-		Polestar.Set("nav.castPrompt", false)
+		Northstar.Set("nav.castPrompt", false)
 		setRoute({ HEARTH, WALK })
 		emit(state())
 	"#,
@@ -118,11 +118,11 @@ fn travel_button_issues_6_never_changed_in_combat_the_last_request_lands_when_co
 		-- the leg ends mid-fight: the button keeps its action until the fight ends
 		combat(true)
 		route.ci = 2
-		Polestar.Fire("ROUTE_ADVANCED", route.legs, 2)
+		Northstar.Fire("ROUTE_ADVANCED", route.legs, 2)
 		emit({ state(), P.Pending() })
 		-- back to the hearth, still in combat: the last request wins
 		route.ci = 1
-		Polestar.Fire("ROUTE_ADVANCED", route.legs, 1)
+		Northstar.Fire("ROUTE_ADVANCED", route.legs, 1)
 		combat(false)
 		emit({ state(), P.Pending() })
 	"#,
@@ -148,7 +148,7 @@ fn travel_button_issues_c1_a_route_cleared_or_replaced_while_a_change_waits_on_c
 		combat(true)
 		setRoute({ WALK, { kind = "walk", to = {} } })
 		route.legs = nil
-		Polestar.Fire("ROUTE_CHANGED", nil)
+		Northstar.Fire("ROUTE_CHANGED", nil)
 		combat(false)
 		emit(state())
 		-- ticks after the cancel stay quiet
@@ -166,7 +166,7 @@ fn travel_button_a_teleport_leg_casts_its_spell_when_known_an_item_leg_uses_its_
 	let out = run_nav(
 		r#"
 		local known = {}
-		Polestar.Compat.IsSpellKnown = function(id) return known[id] == true end
+		Northstar.Compat.IsSpellKnown = function(id) return known[id] == true end
 		function C_Spell_name(id) return "Teleport: Darnassus" end
 		GetSpellInfo = function(id) if id == 3565 then return "Teleport: Darnassus" end end
 		local TELE = { kind = "teleport", spell = 3565, label = "Teleport to Darnassus", to = { c = 1, wx = 0, wy = 0 } }
@@ -198,13 +198,13 @@ fn skip_leg_issues_11_the_hearth_and_the_flight_offer_a_skip_class_teleports_sti
 		items[1].onClick(items[1])
 		emit({ skipped, route.ci, state().shown })
 		emit(P.MenuItems()[1].text)
-		SlashCmdList.POLESTAR("skipleg")
+		SlashCmdList.NORTHSTAR("skipleg")
 		emit({ skipped, route.ci, P.MenuItems() == nil })
 		-- the final walk is the arrow's own target
-		SlashCmdList.POLESTAR("skipleg")
+		SlashCmdList.NORTHSTAR("skipleg")
 		emit(skipped)
 		-- a skipped Hearthstone leaves teleports alone
-		Polestar.Compat.IsSpellKnown = function(id) return id == 3565 end
+		Northstar.Compat.IsSpellKnown = function(id) return id == 3565 end
 		setRoute({ { kind = "teleport", spell = 3565, label = "Teleport", to = { c = 1, wx = 0, wy = 0 } }, WALK })
 		emit(state().type1)
 	"#,
@@ -248,7 +248,7 @@ fn alerts_issues_c5_30_s_before_a_timed_boat_at_the_dock_20_s_before_the_next_st
 	let out = run_nav(
 		r#"
 		local arrive, riding = nil, nil
-		Polestar.Transit = {
+		Northstar.Transit = {
 			Now = function() return 1000 end,
 			NextArrival = function(kind, id, now, side) if id == "boat-test" and side == "a" then return arrive, (arrive or 0) + 60, true end end,
 			Riding = function() return riding end,
@@ -288,12 +288,12 @@ fn alerts_issues_c5_30_s_before_a_timed_boat_at_the_dock_20_s_before_the_next_st
 		-- each part has its own switch
 		riding = nil
 		stub.advance(200)
-		Polestar.Set("nav.alertSound", false)
-		Polestar.Set("nav.alertFlash", false)
+		Northstar.Set("nav.alertSound", false)
+		Northstar.Set("nav.alertFlash", false)
 		local before, flashed = #stub.sounds, flashes
 		emit({ check(30), #stub.sounds - before, flashes - flashed })
 		stub.advance(200)
-		Polestar.Set("nav.alerts", false)
+		Northstar.Set("nav.alerts", false)
 		emit(check(30))
 	"#,
 	);
@@ -311,17 +311,55 @@ fn alerts_issues_c5_30_s_before_a_timed_boat_at_the_dock_20_s_before_the_next_st
 	assert_eq!(out[11], false);
 }
 
+// Polestar's own notices (the window hiding in an instance) take the same banner: the emblem in the ring, a
+// fixed line that wraps and grows the banner by its extra lines, no countdown; a click or HideNotice takes it
+// down, a transport's countdown after it is one line again.
+#[test]
+fn alerts_a_notice_wraps_its_line_grows_the_banner_and_goes_on_hide_a_transport_banner_after_it_is_one_line() {
+	let out = run_nav(
+		r#"
+		local A = N.alerts
+		local line = "Click the minimap button or press Ctrl-Shift-P to show it. It comes back when you leave."
+		A.ShowNotice("Polestar is hidden here", line, 12)
+		local b = NorthstarAlert
+		local notice = { shown = b:IsShown(), title = b.Title:GetText(), line = b.When:GetText(), wraps = b.When:GetWordWrap(),
+			multi = b.When:GetNumLines() >= 2, grown = b:GetHeight() == 56 + (b.When:GetNumLines() - 1) * b.When:GetLineHeight(),
+			glyph = b.Glyph:GetTexture():match("logo$") ~= nil }
+		stub.advance(5)
+		local still = b:IsShown() and b.When:GetText() == line
+		stub.advance(8)
+		local gone = not b:IsShown()
+		A.ShowNotice("Polestar is hidden here", line, 12)
+		A.HideNotice()
+		local hidden = not b:IsShown()
+		A.ShowBanner("Boat to Farland Pier", "Arrives in %s", 30)
+		A.HideNotice()
+		emit({ notice = notice, still = still, gone = gone, hidden = hidden, transit = { shown = b:IsShown(), height = b:GetHeight(),
+			wraps = b.When:GetWordWrap(), when = b.When:GetText(), boat = b.Glyph:GetTexture():match("icon%-boat$") ~= nil } })
+	"#,
+	);
+	assert_eq!(
+		out[0]["notice"],
+		json!({ "shown": true, "title": "Polestar is hidden here", "line": "Click the minimap button or press Ctrl-Shift-P to show it. It comes back when you leave.",
+			"wraps": true, "multi": true, "grown": true, "glyph": true })
+	);
+	assert_eq!(out[0]["still"], true, "a fixed line, no countdown");
+	assert_eq!(out[0]["gone"], true, "gone after its time, without the transport's linger");
+	assert_eq!(out[0]["hidden"], true);
+	assert_eq!(out[0]["transit"], json!({ "shown": true, "height": 56, "wraps": false, "when": "Arrives in 0:30", "boat": true }), "HideNotice leaves a countdown up");
+}
+
 // ---------------------------------------------------------------------------
 // Flight map (QoL harness)
 // ---------------------------------------------------------------------------
 
 fn qol_addon() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua", "Core/Compat.lua", "Theme/Theme.xml", "QoL/QoL.xml"])
+	Addon::files("Northstar", &["Core/Init.lua", "Core/Compat.lua", "Theme/Theme.xml", "QoL/QoL.xml"])
 }
 
 const TAXI: &str = r#"
 local q = stub.qol
-local QoL = Polestar.QoL
+local QoL = Northstar.QoL
 -- The flight master's own map: node IDs by slot, the hops to each slot, button anchors.
 taxiIDs, taxiHops, types = {}, {}, {}
 function GetTaxiMapID() return 1415 end
@@ -422,7 +460,7 @@ fn flight_map_review_p3_12_the_chat_fallback_for_an_unmarkable_node_is_said_once
 		q.nav.ci = 1
 		openWithout({ "Stormwind, Elwynn", "Lakeshire, Redridge", "Sentinel Hill, Westfall" }, 3)
 		emit({ QoL.Flight.node, said() })
-		for _ = 1, 3 do Polestar.Fire("ROUTE_CHANGED", q.nav.route) end
+		for _ = 1, 3 do Northstar.Fire("ROUTE_CHANGED", q.nav.route) end
 		emit(said())
 		stub.fire("TAXIMAP_CLOSED")
 		TaxiFrame:Hide()

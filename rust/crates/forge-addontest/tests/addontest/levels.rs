@@ -1,4 +1,4 @@
-//! What a list of quests is worth in levels (addon/Polestar/Core/Levels.lua): the quests still to do in turn-in
+//! What a list of quests is worth in levels (addon/Northstar/Core/Levels.lua): the quests still to do in turn-in
 //! order, with the client's reduction for quests far below, against the tools' own XP rules
 //! (tools/lib/game/xp.js); and a guide's turn-ins for this character, their XP from the Codex.
 //! ui-dungeons.rs and ui-picker-levels.rs cover the chips and their tooltip.
@@ -10,13 +10,13 @@ use serde_json::{json, Value};
 const FILES: &[&str] = &["Core/Core.xml"];
 
 fn lua(script: &str) -> Vec<Value> {
-	emitted(&RunAddon { stubs: vec!["stub_world.lua"], addons: vec![Addon::files("Polestar", FILES)], script: format!("stub.login()\nlocal Lv = Polestar.Levels\n{script}"), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_world.lua"], addons: vec![Addon::files("Northstar", FILES)], script: format!("stub.login()\nlocal Lv = Northstar.Levels\n{script}"), ..Default::default() })
 }
 
 // quests: { id, level, xp (null: none known), classes } in turn-in order; done: the ids done.
 fn run(player: Value, quests: Value, done: &[i64]) -> Value {
 	let script = format!(
-		"local done = {{}}\nfor _, id in ipairs({}) do done[id] = true end\nPolestar.Compat.IsQuestCompleted = function(id) return done[id] or false end\nemit(Lv.Run({}, {}))",
+		"local done = {{}}\nfor _, id in ipairs({}) do done[id] = true end\nNorthstar.Compat.IsQuestCompleted = function(id) return done[id] or false end\nemit(Lv.Run({}, {}))",
 		lua_value(&json!(done)),
 		lua_value(&quests),
 		lua_value(&player)
@@ -133,9 +133,9 @@ local guide = { id = "sample", steps = {
 	{ only = { classes = { "WARRIOR" } }, goals = { { t = "turnin", quest = 3 } } },
 	{ goals = { { t = "turnin", quest = 4 }, { t = "turnin", quest = 1 }, { t = "turnin", quest = 9 } } },
 } }
-Polestar.Guides.Get = function(id) return id == "sample" and guide or nil end
+Northstar.Guides.Get = function(id) return id == "sample" and guide or nil end
 local CODEX = { [1] = { level = 10, xp = 1000 }, [2] = { level = 10, xp = 2000 }, [3] = { level = 10, xp = 4000 }, [4] = { level = 12, xp = 500 }, [9] = { level = 12 } }
-Polestar.Codex = { IsLoaded = function() return true end, Load = function() return true end, Quest = function(id) return CODEX[id] end }
+Northstar.Codex = { IsLoaded = function() return true end, Load = function() return true end, Quest = function(id) return CODEX[id] end }
 "#;
 
 #[test]
@@ -148,8 +148,8 @@ emit(brief(Lv.ForGuide("sample", p("Orc", "SHAMAN"))))
 emit(brief(Lv.ForGuide("sample", p("Tauren", "DRUID"))))
 emit(brief(Lv.ForGuide("sample", p("Orc", "WARRIOR"))))
 emit(Lv.ForGuide("nowhere", p("Orc", "SHAMAN")) == nil)
-Polestar.Codex.IsLoaded = function() return false end
-Polestar.Codex.Load = function() return false, "missing" end
+Northstar.Codex.IsLoaded = function() return false end
+Northstar.Codex.Load = function() return false, "missing" end
 emit(Lv.ForGuide("sample", p("Orc", "SHAMAN")) == nil)"#,
 	]
 	.join("\n"));
@@ -222,15 +222,15 @@ local guide = { id = "hunt", minLevel = 10, steps = {
 	{ goals = { { t = "collect", quest = 23, oi = 1, item = 501, count = 6 } } },
 	{ goals = { { t = "kill", quest = 24, oi = 1, npc = 999, count = 2 } } },
 } }
-Polestar.Guides.Get = function(id) return id == "hunt" and guide or nil end
+Northstar.Guides.Get = function(id) return id == "hunt" and guide or nil end
 local NPCS = { [100] = { level = 10, levelMax = 12 }, [101] = { level = 10, elite = true }, [102] = { level = 10 } }
 local ITEMS = {
 	[500] = { sources = { { type = "drop", npc = 102, chance = 90 }, { type = "drop", npc = 101, chance = 50 } } },
 	[501] = { sources = { { type = "drop", npc = 102, chance = 50 }, { type = "object", object = 7 } } },
 }
-Polestar.Codex = { IsLoaded = function() return true end, Quest = function() return nil end,
+Northstar.Codex = { IsLoaded = function() return true end, Quest = function() return nil end,
 	Npc = function(id) return NPCS[id] end, Item = function(id) return ITEMS[id] end }
-Polestar.Compat.IsQuestCompleted = function(id) return id == 21 end
+Northstar.Compat.IsQuestCompleted = function(id) return id == 21 end
 "#;
 
 #[test]
@@ -257,7 +257,7 @@ emit({ below = s.below, from = s.from.level, now = s.now.level })"#,
 fn pace_the_route_from_the_live_step_to_the_next_level_target_says_how_many_bars_short_or_on_pace() {
 	let out = lua(&[
 		GUIDE,
-		r#"local E = Polestar.Engine
+		r#"local E = Northstar.Engine
 local target, frac = 11, nil
 E.GetGuide = function() return { id = "sample" } end
 E.GetLiveStep = function() return 1 end
@@ -289,10 +289,10 @@ local guide = { id = "ridge", category = "Leveling", minLevel = 20, maxLevel = 2
 	{ goals = { { t = "accept", quest = 25, qlvl = 25, title = "Missing In Action" }, { t = "complete", quest = 25, title = "Missing In Action" } } },
 	{ goals = { { t = "turnin", quest = 25 } } },
 } }
-Polestar.Guides.Get = function(id) return id == "ridge" and guide or nil end
+Northstar.Guides.Get = function(id) return id == "ridge" and guide or nil end
 local CODEX = { [11] = { level = 20, xp = 2000 }, [12] = { level = 21, xp = 2500 }, [25] = { level = 25, xp = 3000 } }
-Polestar.Codex = { IsLoaded = function() return true end, Load = function() return true end, Quest = function(id) return CODEX[id] end }
-local E = Polestar.Engine
+Northstar.Codex = { IsLoaded = function() return true end, Load = function() return true end, Quest = function(id) return CODEX[id] end }
+local E = Northstar.Engine
 local target, frac
 E.GetGuide = function() return guide end
 E.GetLiveStep = function() return 1 end
@@ -300,7 +300,7 @@ E.LevelTarget = function() if target then return target, 4, frac end end
 E.Applies = function() return true end
 E.StepNumber = function(i) return i, false end
 local done = {}
-Polestar.Compat.IsQuestCompleted = function(id) return done[id] or false end
+Northstar.Compat.IsQuestCompleted = function(id) return done[id] or false end
 local p = { level = 19, xp = 14550, xpMax = 19400, class = "WARRIOR", race = "Human", faction = "Alliance" }
 "#;
 
@@ -389,4 +389,32 @@ emit(Lv.StepHint(4, p) == nil)"#,
 	assert_eq!(out[0]["two"], true, "a level 21 quest is 2 over a level 19: no hint");
 	assert_eq!(out[0]["handIn"], true, "handing a quest in is never hard");
 	assert_eq!(out[1], true, "a done quest: no hint");
+}
+
+// #1333: Calling in the Reserves (level 28) is a delivery: taken at Sun Rock, handed in at the Great Lift. Its step
+// said "Level 28 quest" in red to everyone. A quest with no work (no objective goal in the guide, none in the
+// Codex) gives no hint; one taken here whose work the Codex lists (done in another guide) still does.
+#[test]
+fn a_delivery_s_level_gives_no_hint_a_quest_with_work_elsewhere_still_does_1333() {
+	let out = lua(&[
+		RIDGE,
+		r#"table.insert(guide.steps[2].goals, { t = "accept", quest = 26, qlvl = 28, title = "Calling in the Reserves" })
+table.insert(guide.steps[5].goals, { t = "turnin", quest = 26 })
+table.insert(guide.steps[3].goals, { t = "accept", quest = 27, qlvl = 23, title = "Work Elsewhere" })
+CODEX[26] = { level = 28, xp = 1000, objectives = {} }
+CODEX[27] = { level = 23, xp = 1000, objectives = { { type = "monster", id = 1, count = 8 } } }
+local d, w = Lv.StepHint(2, p), Lv.StepHint(3, p)
+emit({ delivery = d and d.quest or false, elsewhere = w and w.quest or false, pace = Lv.Pace(p).hard.quest })"#,
+	]
+	.join("\n"))
+	.remove(0);
+	assert_eq!(out, json!({ "delivery": false, "elsewhere": 27, "pace": 25 }), "no hint for the delivery; the quest with work hints; the pace line still points at the escort");
+}
+
+#[test]
+fn pace_at_or_past_the_guide_s_top_is_on_pace_and_reaches_beyond_it() {
+	// Level 24 in the 20-24 guide (a Barrens 15-21 at 21): no `level` goal, the end target is the top the character
+	// already has, so on pace; the route's XP takes it past 24, which the guide window shows (ui.rs).
+	let out = lua(&[RIDGE, "p.level, p.xp, p.xpMax = 24, 0, 30000\nlocal s = Lv.Pace(p)\nemit({ kind = s.kind, target = s.target, bars = s.bars, past = s.reach > 24 })"].join("\n")).remove(0);
+	assert_eq!(out, json!({ "kind": "end", "target": 24, "bars": 0, "past": true }));
 }

@@ -1,4 +1,4 @@
-//! The `die` goal (addon/Polestar/Core/Engine.lua): a deathskip's step points at the graveyard's Spirit Healer
+//! The `die` goal (addon/Northstar/Core/Engine.lua): a deathskip's step points at the graveyard's Spirit Healer
 //! and is done once the player is back alive beside him (PLAYER_UNGHOST / PLAYER_ALIVE there), never by a
 //! ghost standing there, never by a resurrection elsewhere. Only with the player's "Use deathskips"
 //! (behavior.deathskips, off by default) and never on a Hardcore character: otherwise the step passes. Real Core
@@ -19,7 +19,7 @@ C_GameRules = { IsHardcoreActive = function() return hardcore end }
 "#;
 
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/die", pack = "test", title = "Die", minLevel = 1, maxLevel = 10,
 	steps = {
 		{ title = "Deathskip to Sen'jin Village", goals = {
@@ -36,13 +36,13 @@ fn run(script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/die" }"#.into())],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/die" }"#.into())],
 		script: format!(
 			r#"{TEST_PACK}
 {TEST_SOURCE}
 {GUIDE}
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(1.1) end
 function state() local g = E.GetStepView(1).goals[1]; return {{ step = E.GetStepIndex(), status = g.status, text = g.text, verb = g.verb }} end
 stub.login(); stub.fire("QUEST_LOG_UPDATE"); flush()
@@ -55,7 +55,7 @@ stub.login(); stub.fire("QUEST_LOG_UPDATE"); flush()
 #[test]
 fn a_die_goal_is_open_with_its_place_holds_while_a_ghost_stands_at_the_healer_and_is_done_back_alive_beside_him() {
 	let out = run(r#"
-		Polestar.Set("behavior.deathskips", true); flush()
+		Northstar.Set("behavior.deathskips", true); flush()
 		emit(state())
 		dead = true; stub.fire("PLAYER_DEAD"); stub.world.moveTo(1411, 57.2, 73.3); flush()
 		emit(state())
@@ -73,7 +73,7 @@ fn a_die_goal_is_open_with_its_place_holds_while_a_ghost_stands_at_the_healer_an
 #[test]
 fn a_resurrection_elsewhere_leaves_the_die_goal_open() {
 	let out = run(r#"
-		Polestar.Set("behavior.deathskips", true); flush()
+		Northstar.Set("behavior.deathskips", true); flush()
 		dead = true; stub.fire("PLAYER_DEAD"); stub.world.moveTo(1411, 44.2, 69.4); flush()
 		dead = false; stub.fire("PLAYER_UNGHOST"); flush()
 		emit(state())
@@ -85,9 +85,9 @@ fn a_resurrection_elsewhere_leaves_the_die_goal_open() {
 fn a_die_step_is_passed_unless_the_player_chose_deathskips_and_always_on_a_hardcore_character() {
 	let out = run(r#"
 		emit(E.GetStepIndex())
-		Polestar.Set("behavior.deathskips", true); flush()
+		Northstar.Set("behavior.deathskips", true); flush()
 		emit(E.GetStepIndex())
-		hardcore = true; Polestar.Set("behavior.deathskips", false); Polestar.Set("behavior.deathskips", true); flush()
+		hardcore = true; Northstar.Set("behavior.deathskips", false); Northstar.Set("behavior.deathskips", true); flush()
 		emit(E.GetStepIndex())
 	"#);
 	assert_eq!(out[0], 2, "off by default: the deathskip step is passed, the next step's travel takes over");

@@ -28,7 +28,7 @@ const TRAINERS: &str = r#"{
 }"#;
 
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({ id = "test/fa", pack = "test", title = "First Aid", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
+Northstar.RegisterGuide({ id = "test/fa", pack = "test", title = "First Aid", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
 	{ goals = { { t = "train", skill = "First Aid", skillLine = 129, rank = 2, candidates = ${TRAINERS} } } },
 	{ goals = { { t = "train", class = true, candidates = {
 		{ npc = 4568, npcName = "Anastasia Hartwell", map = 1420, x = 40, y = 40, faction = "H", classes = { "MAGE" } },
@@ -53,9 +53,9 @@ fn run(before: &str, guides: &str, saved: Option<&str>, script: &str, login: boo
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		saved: saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
-		script: format!("{TEST_PACK}\n{TEST_SOURCE}\n{guides}\n\t\t\tE = Polestar.Engine\n\t\t\tfunction flush() stub.advance(0.25) end\n\t\t\t{login}\n\t\t\t{script}"),
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		saved: saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
+		script: format!("{TEST_PACK}\n{TEST_SOURCE}\n{guides}\n\t\t\tE = Northstar.Engine\n\t\t\tfunction flush() stub.advance(0.25) end\n\t\t\t{login}\n\t\t\t{script}"),
 		..Default::default()
 	})
 	.remove(0)
@@ -103,7 +103,7 @@ fn candidates_are_re_picked_on_zone_change_and_landing_not_on_every_move_nav_est
 			w.setZone("Tirisfal Glades", "Brill"); flush()
 			at[3] = npc()
 			-- A flight lands in Orgrimmar; Nav's travel model prefers it.
-			Polestar.Nav = { EstimateTravel = function(from, to) return to.map == 1454 and 10 or 1000 end }
+			Northstar.Nav = { EstimateTravel = function(from, to) return to.map == 1454 and 10 or 1000 end }
 			w.moveTo(1454, 45, 45)
 			stub.fire("PLAYER_CONTROL_GAINED"); flush()
 			at[4] = npc()
@@ -180,7 +180,7 @@ fn scourge_and_undead_are_the_same_race_in_only_guide_races_and_candidates() {
 	let out = run(
 		"",
 		r#"
-			Polestar.RegisterGuide({ id = "test/u", pack = "test", title = "Undead", faction = "Horde", races = { "Undead" }, minLevel = 1, maxLevel = 60, steps = {
+			Northstar.RegisterGuide({ id = "test/u", pack = "test", title = "Undead", faction = "Horde", races = { "Undead" }, minLevel = 1, maxLevel = 60, steps = {
 				{ only = { races = { "Undead" } }, goals = { { t = "level", level = 30 } } },
 				{ goals = { { t = "level", level = 60, only = { races = { "!Undead" } } }, { t = "level", level = 50 } } },
 			} })
@@ -188,8 +188,8 @@ fn scourge_and_undead_are_the_same_race_in_only_guide_races_and_candidates() {
 		None,
 		r#"
 			local v1 = E.GetStepView(1)
-			emit({ suggest = Polestar.Guides.Suggest(), s1 = v1.status, g2 = E.GetStepView(2).goals[1].status,
-				m = { Polestar.Guides.Matches({ races = { "Scourge" } }, { race = "Undead" }), Polestar.Guides.Matches({ races = { "Undead" } }, { race = "Scourge" }) } })
+			emit({ suggest = Northstar.Guides.Suggest(), s1 = v1.status, g2 = E.GetStepView(2).goals[1].status,
+				m = { Northstar.Guides.Matches({ races = { "Scourge" } }, { race = "Undead" }), Northstar.Guides.Matches({ races = { "Undead" } }, { race = "Scourge" }) } })
 		"#,
 		true,
 	);
@@ -200,7 +200,7 @@ fn scourge_and_undead_are_the_same_race_in_only_guide_races_and_candidates() {
 fn suggest_prefers_the_current_zone_then_the_nearest_by_travel_race_chains_win_ties() {
 	let guides = r#"
 		local function g(id, zone, x, races)
-			Polestar.RegisterGuide({ id = id, pack = "test", title = id, faction = "Horde", races = races, minLevel = 15, maxLevel = 25, zone = zone, steps = {
+			Northstar.RegisterGuide({ id = id, pack = "test", title = id, faction = "Horde", races = races, minLevel = 15, maxLevel = 25, zone = zone, steps = {
 				{ goals = { { t = "goto", map = zone, x = x, y = 50 } } },
 			} })
 		end
@@ -209,11 +209,11 @@ fn suggest_prefers_the_current_zone_then_the_nearest_by_travel_race_chains_win_t
 		g("test/barrens", 1413, 50, nil)               -- the player's zone
 		g("test/barrens-undead", 1413, 52, { "Scourge" })
 	"#;
-	let in_zone = run("", guides, None, "emit(Polestar.Guides.Suggest())", false);
+	let in_zone = run("", guides, None, "emit(Northstar.Guides.Suggest())", false);
 	assert_eq!(in_zone, "test/barrens-undead"); // in zone; travel tie; race chain first
-	let nearest = run(r#"stub.world.moveTo(1454, 50, 100); stub.world.zone = "Orgrimmar""#, guides, None, "emit(Polestar.Guides.Suggest())", false);
+	let nearest = run(r#"stub.world.moveTo(1454, 50, 100); stub.world.zone = "Orgrimmar""#, guides, None, "emit(Northstar.Guides.Suggest())", false);
 	assert_eq!(nearest, "test/stonetalon");
-	let home = run(r#"stub.world.moveTo(1420, 50, 50); stub.world.zone = "Tirisfal Glades""#, guides, None, "emit(Polestar.Guides.Suggest())", false);
+	let home = run(r#"stub.world.moveTo(1420, 50, 50); stub.world.zone = "Tirisfal Glades""#, guides, None, "emit(Northstar.Guides.Suggest())", false);
 	assert_eq!(home, "test/silverpine");
 }
 
@@ -222,13 +222,13 @@ fn guide_outleveled_fires_once_per_guide_when_the_level_passes_maxlevel_2() {
 	let out = run(
 		"stub.world.level = 5",
 		r#"
-			Polestar.RegisterGuide({ id = "test/low", pack = "test", title = "Low", faction = "Horde", minLevel = 1, maxLevel = 6, steps = { { goals = { { t = "level", level = 60 } } } } })
-			Polestar.RegisterGuide({ id = "test/mid", pack = "test", title = "Mid", faction = "Horde", minLevel = 7, maxLevel = 20, steps = { { goals = { { t = "level", level = 60 } } } } })
+			Northstar.RegisterGuide({ id = "test/low", pack = "test", title = "Low", faction = "Horde", minLevel = 1, maxLevel = 6, steps = { { goals = { { t = "level", level = 60 } } } } })
+			Northstar.RegisterGuide({ id = "test/mid", pack = "test", title = "Mid", faction = "Horde", minLevel = 7, maxLevel = 20, steps = { { goals = { { t = "level", level = 60 } } } } })
 		"#,
 		None,
 		r#"
 			local fired = {}
-			Polestar.On("GUIDE_OUTLEVELED", function(id, s) fired[#fired + 1] = id .. ">" .. tostring(s) end)
+			Northstar.On("GUIDE_OUTLEVELED", function(id, s) fired[#fired + 1] = id .. ">" .. tostring(s) end)
 			local w = stub.world
 			w.setLevel(7); flush()
 			local at7 = #fired
@@ -241,7 +241,7 @@ fn guide_outleveled_fires_once_per_guide_when_the_level_passes_maxlevel_2() {
 	assert_eq!(out, json!({ "at7": 0, "fired": ["test/low>test/mid"], "guide": "test/low" }));
 }
 
-const SKIP_GREY_ON: Option<&str> = Some("PolestarDB = { schema = 1, settings = { behavior = { skipGrey = true } } }");
+const SKIP_GREY_ON: Option<&str> = Some("NorthstarDB = { schema = 1, settings = { behavior = { skipGrey = true } } }");
 
 // Wogi's report: a Human at 20 in Darkshore (16-21) was sent to grey quests. With the setting on, a grey quest
 // turned in later in the guide is left out with its turn-in; a grey quest stays when a quest down the chain that
@@ -249,7 +249,7 @@ const SKIP_GREY_ON: Option<&str> = Some("PolestarDB = { schema = 1, settings = {
 #[test]
 fn skipgrey_skips_grey_accepts_and_their_turn_ins_unless_a_quest_worth_doing_needs_them_and_never_auto_accepts_them() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/g1", pack = "test", title = "G1", faction = "Horde", minLevel = 1, maxLevel = 30, next = "test/g2", steps = {
+		Northstar.RegisterGuide({ id = "test/g1", pack = "test", title = "G1", faction = "Horde", minLevel = 1, maxLevel = 30, next = "test/g2", steps = {
 			{ goals = { { t = "accept", quest = 101, title = "Grey alone", qlvl = 2 } } },
 			{ goals = { { t = "accept", quest = 102, title = "Grey turned in", qlvl = 3 } } },
 			{ goals = { { t = "accept", quest = 103, title = "Grey prerequisite", qlvl = 4 } } },
@@ -262,7 +262,7 @@ fn skipgrey_skips_grey_accepts_and_their_turn_ins_unless_a_quest_worth_doing_nee
 			{ goals = { { t = "accept", quest = 110, title = "Grey dead end", qlvl = 6, preAll = { 109 } } } },
 			{ goals = { { t = "turnin", quest = 110, title = "Grey dead end" } } },
 		} })
-		Polestar.RegisterGuide({ id = "test/g2", pack = "test", title = "G2", faction = "Horde", minLevel = 20, maxLevel = 30, steps = {
+		Northstar.RegisterGuide({ id = "test/g2", pack = "test", title = "G2", faction = "Horde", minLevel = 20, maxLevel = 30, steps = {
 			{ goals = { { t = "accept", quest = 105, title = "Follow-up", qlvl = 20, pre = { 103 } } } },
 		} })
 	"#;
@@ -305,7 +305,7 @@ fn skipgrey_skips_grey_accepts_and_their_turn_ins_unless_a_quest_worth_doing_nee
 #[test]
 fn skipgrey_a_grey_accept_kept_for_its_chain_names_the_nearest_open_quest_it_leads_to() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/buzz", pack = "test", title = "Buzzbox", faction = "Horde", minLevel = 16, maxLevel = 21, steps = {
+		Northstar.RegisterGuide({ id = "test/buzz", pack = "test", title = "Buzzbox", faction = "Horde", minLevel = 16, maxLevel = 21, steps = {
 			{ goals = { { t = "accept", quest = 983, title = "Buzzbox 827", qlvl = 10 } } },
 			{ goals = { { t = "turnin", quest = 983, title = "Buzzbox 827" }, { t = "accept", quest = 1001, title = "Buzzbox 411", qlvl = 12, pre = { 983 } } } },
 			{ goals = { { t = "turnin", quest = 1001, title = "Buzzbox 411" }, { t = "accept", quest = 1002, title = "Buzzbox 323", qlvl = 14, pre = { 1001 } } } },
@@ -334,9 +334,9 @@ fn skipgrey_a_grey_accept_kept_for_its_chain_names_the_nearest_open_quest_it_lea
 		on,
 		json!([
 			// 1002 still worth doing: 827 and 411 lead to it.
-			{ "level": 20, "kept": 1002, "text": "Grey, kept: opens Buzzbox 323", "skipped": false, "accepts": [1002, "open", "open"] },
+			{ "level": 20, "kept": 1002, "text": "Grey, kept: opens “Buzzbox 323”", "skipped": false, "accepts": [1002, "open", "open"] },
 			// Only 525 left: the grey chain before it names it.
-			{ "level": 22, "kept": 1003, "text": "Grey, kept: opens Buzzbox 525", "skipped": false, "accepts": [1003, 1003, "open"] },
+			{ "level": 22, "kept": 1003, "text": "Grey, kept: opens “Buzzbox 525”", "skipped": false, "accepts": [1003, 1003, "open"] },
 			// All grey: the chain is left out, nothing to explain.
 			{ "level": 23, "kept": false, "text": false, "skipped": true, "accepts": ["skipped", "skipped", "skipped"] },
 		])
@@ -347,7 +347,7 @@ fn skipgrey_a_grey_accept_kept_for_its_chain_names_the_nearest_open_quest_it_lea
 }
 
 const LEARN: &str = r#"
-			Polestar.RegisterGuide({ id = "test/lr", pack = "test", title = "Learn", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
+			Northstar.RegisterGuide({ id = "test/lr", pack = "test", title = "Learn", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
 				{ goals = { { t = "learn", spell = 3275, spellName = "Linen Bandage", skillLine = 129, candidates = ${TRAINERS} } } },
 				{ goals = { { t = "level", level = 60 } } },
 			} })
@@ -373,7 +373,7 @@ fn learn_goals_with_candidates_point_at_the_nearest_usable_trainer_and_complete_
 }
 
 const CRAFT: &str = r#"
-	Polestar.RegisterGuide({ id = "test/cook", pack = "test", title = "Cooking", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
+	Northstar.RegisterGuide({ id = "test/cook", pack = "test", title = "Cooking", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
 		{ goals = { { t = "collect", item = 769, itemName = "Chunk of Boar Meat", count = 4 } } },
 		{ goals = {
 			{ t = "collect", item = 2672, itemName = "Stringy Wolf Meat", count = 10 },
@@ -415,7 +415,7 @@ fn the_in_step_latch_survives_a_reload_and_is_cleared_when_the_step_is_left_back
 		r#"
 			E.SetGuide("test/cook")
 			stub.world.addItem(2672, 10); flush()
-			emit(PolestarCharDB.manual["test/cook"])
+			emit(NorthstarCharDB.manual["test/cook"])
 		"#,
 		true,
 	);
@@ -425,12 +425,12 @@ fn the_in_step_latch_survives_a_reload_and_is_cleared_when_the_step_is_left_back
 		// Reloaded with the meat already cooked away.
 		r#"stub.world.learnSkill(185, "Cooking", 30, 75); stub.world.items[769] = 4"#,
 		CRAFT,
-		Some(r#"PolestarCharDB = { schema = 1, tabs = { "test/cook" }, activeTab = 1, manual = { ["test/cook"] = { ["2:1"] = true } } }"#),
+		Some(r#"NorthstarCharDB = { schema = 1, tabs = { "test/cook" }, activeTab = 1, manual = { ["test/cook"] = { ["2:1"] = true } } }"#),
 		r#"
 			local r = { at = E.GetStepIndex(), collect = E.GetStepView(2).goals[1].status }
 			E.Prev(); flush()
 			r.prev = E.GetStepIndex()
-			r.latch = PolestarCharDB.manual["test/cook"]["2:1"] or false
+			r.latch = NorthstarCharDB.manual["test/cook"]["2:1"] or false
 			E.Next(); flush()
 			r.back = { E.GetStepIndex(), E.GetStepView(2).goals[1].status }
 			emit(r)
@@ -456,7 +456,7 @@ w.addMap(1438, { name = "Teldrassil", c = 1, top = 11000, bottom = 9000, left = 
 "#;
 
 const FIRST_AID: &str = r#"
-		Polestar.RegisterGuide({ id = "test/fa2", pack = "test", title = "First Aid", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/fa2", pack = "test", title = "First Aid", category = "Professions", minLevel = 1, maxLevel = 60, steps = {
 			{ goals = { { t = "train", skill = "First Aid", skillLine = 129, rank = 1, candidates = {
 				{ npc = 3373, npcName = "Rawrk", map = 1411, x = 54, y = 42, faction = "H"${f} },
 				{ npc = 4211, npcName = "Byancie", map = 1438, x = 55, y = 57, faction = "A"${f} },
@@ -507,8 +507,8 @@ const DARKSHORE_BEFORE: &str = r#"
 			w.level = ${level}
 			w.moveTo(1439, 41.77, 83.55)"#;
 
-const DARKSHORE_SCRIPT: &str = r#"			Polestar.Maps.RegisterZoneLevels({ [1439] = { 10, 20, 50, 50 }, [2482] = { 56, 60, 50, 50 } })
-			Polestar.RegisterGuide({ id = "test/darkshore", pack = "test", title = "Darkshore", faction = "Alliance", minLevel = 10, maxLevel = 20, steps = {
+const DARKSHORE_SCRIPT: &str = r#"			Northstar.Maps.RegisterZoneLevels({ [1439] = { 10, 20, 50, 50 }, [2482] = { 56, 60, 50, 50 } })
+			Northstar.RegisterGuide({ id = "test/darkshore", pack = "test", title = "Darkshore", faction = "Alliance", minLevel = 10, maxLevel = 20, steps = {
 				{ goals = { { t = "vendor", candidates = {
 					{ npc = 4183, npcName = "Naram Longclaw", map = 1439, x = 37.57, y = 40.35, faction = "A" },
 					{ npc = 265883, npcName = "Chagrak Hammerstrike", map = 2482, x = 13.4, y = 52.4, faction = "AH" },
@@ -516,7 +516,7 @@ const DARKSHORE_SCRIPT: &str = r#"			Polestar.Maps.RegisterZoneLevels({ [1439] =
 				{ goals = { { t = "level", level = 60 } } },
 			} })
 			stub.login()
-			local E = Polestar.Engine
+			local E = Northstar.Engine
 			E.SetGuide("test/darkshore")
 			local first = E.GetStepView(1).goals[1].npcName
 			E.CycleCandidate(1, 1)
@@ -530,7 +530,7 @@ fn a_vendor_in_a_zone_far_above_the_character_comes_after_every_other_choice_sti
 		emitted(&RunAddon {
 			stubs: vec!["stub_world.lua"],
 			before: DARKSHORE_BEFORE.replace("${level}", &level.to_string()),
-			addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Maps/Maps.lua", "Maps/WorldMap.lua"])],
+			addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Maps/Maps.lua", "Maps/WorldMap.lua"])],
 			script: format!("{TEST_PACK}\n{TEST_SOURCE}\n{DARKSHORE_SCRIPT}"),
 			..Default::default()
 		})
@@ -538,4 +538,54 @@ fn a_vendor_in_a_zone_far_above_the_character_comes_after_every_other_choice_sti
 	};
 	assert_eq!(pick(18), json!({ "first": "Naram Longclaw", "cycled": "Chagrak Hammerstrike" }));
 	assert_eq!(pick(50), json!({ "first": "Chagrak Hammerstrike", "cycled": "Naram Longclaw" }));
+}
+
+// #1357 (MrBackus, Skyborne Shaman 30): Orgrimmar's training step came up while he stood in the Barrens by
+// Ratchet, and the nearest Shaman trainer by line was Shikrik in the Valley of Trials, a starter village.
+// A `train class` goal carries its step's zone: that map's trainers come first wherever the player stands,
+// unless one stands within 100 yards of them (the Skyborne camp's trainers below Thunder Bluff).
+const ZONE_FIRST: &str = r#"
+	Northstar.RegisterGuide({ id = "test/tc", pack = "test", title = "Train", minLevel = 1, maxLevel = 60, steps = {
+		{ goals = { { t = "train", class = true, zone = 1454, candidates = ${SHIKRIK_KARDRIS} } } },
+		{ goals = { { t = "train", class = true, candidates = ${SHIKRIK_KARDRIS} } } },
+		{ goals = { { t = "train", class = true, zone = 1454, candidates = {
+			{ npc = 262558, npcName = "Palah Thunderhoof", map = 1413, x = 61, y = 30, faction = "H", classes = { "SHAMAN" } },
+			{ npc = 3344, npcName = "Kardris Dreamseeker", map = 1454, x = 50, y = 50, faction = "H", classes = { "SHAMAN" } },
+		} } } },
+		{ goals = { { t = "train", class = true, zone = 1454, candidates = {
+			{ npc = 3157, npcName = "Shikrik", map = 1411, x = 10, y = 10, faction = "H", classes = { "SHAMAN" } },
+			{ npc = 3344, npcName = "Kardris Dreamseeker", map = 1454, x = 50, y = 50, faction = "H", classes = { "MAGE" } },
+		} } } },
+		{ goals = { { t = "level", level = 60 } } },
+	} })
+"#;
+
+#[test]
+fn train_class_ranks_its_step_s_zone_first_wherever_the_player_stands_unless_a_trainer_is_right_there_1357() {
+	let cands = r#"{
+			{ npc = 3157, npcName = "Shikrik", map = 1411, x = 10, y = 10, faction = "H", classes = { "SHAMAN" } },
+			{ npc = 3344, npcName = "Kardris Dreamseeker", map = 1454, x = 50, y = 50, faction = "H", classes = { "SHAMAN" } },
+		}"#;
+	let out = run(
+		r#"stub.world.race, stub.world.raceName, stub.world.class, stub.world.className = "Skyborne", "Skyborne", "SHAMAN", "Shaman""#,
+		&ZONE_FIRST.replace("${SHIKRIK_KARDRIS}", cands),
+		None,
+		r#"
+			E.SetGuide("test/tc")
+			local function npc(s) return E.GetStepView(s).goals[1].npcName end
+			local first = { npc(1), npc(2), npc(3), npc(4) }
+			E.CycleCandidate(1, 1)
+			emit({ first = first, cycled = npc(1) })
+		"#,
+		true,
+	);
+	// The Barrens at 60,30: Shikrik (Durotar) is about 1,000 yd away, Kardris (Orgrimmar) about 2,500.
+	assert_eq!(
+		out,
+		json!({
+			"first": ["Kardris Dreamseeker", "Shikrik", "Palah Thunderhoof", "Shikrik"],
+			"cycled": "Shikrik",
+		}),
+		"the step's zone first; no zone: the nearest; a trainer by the player stays first; a zone with no trainer of the class: the nearest"
+	);
 }

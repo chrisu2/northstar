@@ -10,7 +10,7 @@
 //
 // trainers.json = { "<npcId>": { id, name, classes: [classFile], sources: [...] } }
 //
-// Written for Polestar from general game knowledge (trainer names and where
+// Written for Northstar from general game knowledge (trainer names and where
 // they stand); ids always come from npcs.json.
 
 const fs = require('node:fs');

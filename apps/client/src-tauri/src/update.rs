@@ -1,5 +1,5 @@
 //! App updates through tauri-plugin-updater. Client releases are tagged
-//! `client-v<version>` in the Polestar repository, beside the addon's own
+//! `client-v<version>` in the Northstar repository, beside the addon's own
 //! `v*` releases, so "the latest release" is not ours: the newest published
 //! `client-v*` release is looked up first and its `latest.json` (written by
 //! the release workflow and signed with the key whose public half is in

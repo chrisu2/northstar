@@ -1,20 +1,20 @@
 'use strict';
-// Recorded trails against each walking backend: per walk the trail (a /psrec trail export: map x,y and
+// Recorded trails against each walking backend: per walk the trail (a /nsrec trail export: map x,y and
 // world wx,wy, no height), its ends, and each backend's walk between them (grid: router.js on
 // data/local/nav4, bit-equal to forge-nav; Leffe: the format-4 Node reader, tolerant, bit-equal to
 // forge-nav f4; hybrid: Leffe when his cost <= 1.2x the grid's; in-game engines: batch.lua jsonl
 // results). Per backend: found, yards, seconds (cost / 7), points, height range, and how far the
 // trail strays from its line (2D: each trail point's distance to the polyline; max and mean).
-// POLESTAR_CHECKOUT=<checkout: tools/lib/nav/router.js, data/local/nav4> POLESTAR_JS=<checkout with the format-4
-// Node reader> POLESTAR_LEFFE_NAV=<pack> node trailcmp.js <walks.json> <out.json>
+// NORTHSTAR_CHECKOUT=<checkout: tools/lib/nav/router.js, data/local/nav4> NORTHSTAR_JS=<checkout with the format-4
+// Node reader> NORTHSTAR_LEFFE_NAV=<pack> node trailcmp.js <walks.json> <out.json>
 //   walks.json: [{ id, title, map, profile, trail: <trail json>, label, from: [wx, wy, z], to: [wx, wy, z],
 //                  ingame: { name: <jsonl> } }]
 const fs = require('node:fs');
 const path = require('node:path');
-const { POLESTAR_CHECKOUT: OURS, POLESTAR_JS: NODE4, POLESTAR_LEFFE_NAV: PACK } = process.env;
+const { NORTHSTAR_CHECKOUT: OURS, NORTHSTAR_JS: NODE4, NORTHSTAR_LEFFE_NAV: PACK } = process.env;
 const [WALKS, OUT] = process.argv.slice(2);
 if (!OURS || !NODE4 || !PACK || !WALKS || !OUT) {
-	console.error('usage: POLESTAR_CHECKOUT=<dir> POLESTAR_JS=<dir> POLESTAR_LEFFE_NAV=<dir> node trailcmp.js <walks.json> <out.json>');
+	console.error('usage: NORTHSTAR_CHECKOUT=<dir> NORTHSTAR_JS=<dir> NORTHSTAR_LEFFE_NAV=<dir> node trailcmp.js <walks.json> <out.json>');
 	process.exit(2);
 }
 const walks = JSON.parse(fs.readFileSync(WALKS, 'utf8'));

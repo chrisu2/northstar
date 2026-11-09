@@ -19,7 +19,7 @@ jobs:
           node-version: 24
       - name: Install Lua 5.1
         run: sudo apt-get update && sudo apt-get install -y lua5.1
-      - name: Install Polestar
+      - name: Install Northstar
         run: |
           git clone --depth 1 "{{repo}}" "$RUNNER_TEMP/polestar"
           cd "$RUNNER_TEMP/polestar"

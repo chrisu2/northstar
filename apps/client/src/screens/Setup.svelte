@@ -72,7 +72,7 @@
 			<div class="polaris"><Emblem size={56} glow target /></div>
 			<div class="titles">
 				<h1 in:rise={{ y: 10, duration: 420 }}>Find World of Warcraft: Forever</h1>
-				<p class="note" in:rise={{ y: 8, delay: 60, duration: 420 }}>Polestar Client installs and updates Polestar's addons in the game folder. It reads nothing outside it.</p>
+				<p class="note" in:rise={{ y: 8, delay: 60, duration: 420 }}>Polestar Client installs and updates Northstar's addons in the game folder. It reads nothing outside it.</p>
 			</div>
 		</div>
 	</Band>

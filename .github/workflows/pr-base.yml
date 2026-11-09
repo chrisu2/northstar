@@ -60,7 +60,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   generated:
-    # The leveling guides are written by Polestar Forge on the maintainer's machine and listed in
+    # The leveling guides are written by Northstar Forge on the maintainer's machine and listed in
     # guides/GENERATED.json; forge/seed is what Forge starts from. tests/generated-guides.test.js
     # fails a hand edit to a listed guide; this fails a pull request that changes the list or the
     # seed, so the two cannot be edited together. docs/FORGE.md, "Fixing a generated guide".

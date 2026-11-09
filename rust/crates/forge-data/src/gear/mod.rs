@@ -1,13 +1,13 @@
-//! `gear build` (tools/lib/gear/build.js): the inputs of Polestar's upgrade advice -> the addon's
+//! `gear build` (tools/lib/gear/build.js): the inputs of Northstar's upgrade advice -> the addon's
 //! data, byte for byte as `node tools/polestar.js gear build` writes it:
-//!   addon/Polestar_ItemDB/Forever.lua      ForeverLevelingBiS: Forever item stats over the Era
+//!   addon/Northstar_ItemDB/Forever.lua      ForeverLevelingBiS: Forever item stats over the Era
 //!                                          table, quest reward choices
-//!   addon/Polestar_ItemDB/Polestar_ItemDB.toc, LICENSE-DATA.txt
-//!   addon/Polestar/Gear/SpecData.lua       weight bands (Polestar + wowsims), racials
-//!   addon/Polestar/Gear/LICENSE-DATA.txt
+//!   addon/Northstar_ItemDB/Northstar_ItemDB.toc, LICENSE-DATA.txt
+//!   addon/Northstar/Gear/SpecData.lua       weight bands (Northstar + wowsims), racials
+//!   addon/Northstar/Gear/LICENSE-DATA.txt
 //!   data/forever/gear/report.json          counts and provenance (`builtAt` from Options)
-//! Reads the installed ForeverLevelingBiS, addon/Polestar_ItemDB/Items.lua (`forge data itemdb`),
-//! addon/Polestar/Gear/Weights.lua and the wowsims cache (data/sources/wowsims). Offline.
+//! Reads the installed ForeverLevelingBiS, addon/Northstar_ItemDB/Items.lua (`forge data itemdb`),
+//! addon/Northstar/Gear/Weights.lua and the wowsims cache (data/sources/wowsims). Offline.
 
 pub mod addonlua;
 pub mod flb;
@@ -19,7 +19,7 @@ use std::path::{Path, PathBuf};
 
 use forge_guide::js::{stringify, to_fixed, Arr, Obj, V};
 
-pub const ITEMDB: &str = "Polestar_ItemDB";
+pub const ITEMDB: &str = "Northstar_ItemDB";
 
 pub struct Options {
 	/// The checkout: addon/, package.json, data/sources/wowsims.
@@ -45,16 +45,16 @@ pub struct Output {
 
 /// itemdb/build.js `emitToc(version, files)`.
 pub fn emit_toc(version: &str, files: &[&str]) -> String {
-	let mut l: Vec<String> = vec!["## Interface: 16001".into(), "## Title: Polestar Item Data".into(), "## Notes: Item stats for Polestar's gear advice. Loaded on demand.".into()];
+	let mut l: Vec<String> = vec!["## Interface: 16001".into(), "## Title: Northstar Item Data".into(), "## Notes: Item stats for Northstar's gear advice. Loaded on demand.".into()];
 	l.extend(forge_guide::toc::toc_lines(ITEMDB));
 	l.extend([
-		"## Author: Polestar".into(),
+		"## Author: Northstar".into(),
 		"## X-License: GPL-3.0-only".into(),
 		format!("## Version: {version}"),
-		"## Category: Polestar".into(),
-		"## Group: Polestar".into(),
+		"## Category: Northstar".into(),
+		"## Group: Northstar".into(),
 		"## LoadOnDemand: 1".into(),
-		"## Dependencies: Polestar".into(),
+		"## Dependencies: Northstar".into(),
 		String::new(),
 	]);
 	l.extend(files.iter().map(|f| f.to_string()));
@@ -100,7 +100,7 @@ pub fn build(opts: &Options) -> Result<Output, String> {
 		return Err(format!("addon/{ITEMDB}/Items.lua missing: run `forge data itemdb` first"));
 	}
 
-	// 1. ForeverLevelingBiS -> Polestar_ItemDB/Forever.lua
+	// 1. ForeverLevelingBiS -> Northstar_ItemDB/Forever.lua
 	let addons_root = resolve_addons_dir(opts.addons.as_deref());
 	let flb_dir = addons_root.clone().unwrap_or_default().join(flb::ADDON);
 	let flb = flb::read_forever_leveling_bis(&flb_dir)?;
@@ -115,14 +115,14 @@ pub fn build(opts: &Options) -> Result<Output, String> {
 	let ws = match wowsims::read_wowsims(&sim_cache) {
 		Ok(w) => Some(w),
 		Err(e) => {
-			gaps.push(format!("wowsims: {e}; the bands are Polestar's own weights"));
+			gaps.push(format!("wowsims: {e}; the bands are Northstar's own weights"));
 			warnings.push(format!("wowsims: not used ({e})"));
 			None
 		}
 	};
 
 	// 3. SpecData.lua and its notices
-	let authored = specdata::authored_weights(&root.join("addon").join("Polestar").join("Gear").join("Weights.lua"))?;
+	let authored = specdata::authored_weights(&root.join("addon").join("Northstar").join("Gear").join("Weights.lua"))?;
 	let (bands, band_counts) = specdata::weight_bands(ws.as_ref(), &authored);
 	let spec_data = specdata::emit_spec_data(&bands, &specdata::racials(&flb.racials), ws.is_some(), &flb.meta.get("version"));
 	let mut parts = vec![notice("SpecData.lua: racial gear traits derived from ForeverLevelingBiS by Thunder:", &flb_licence)];
@@ -191,8 +191,8 @@ pub fn build(opts: &Options) -> Result<Output, String> {
 			(format!("addon/{ITEMDB}/Forever.lua"), pack.lua),
 			(format!("addon/{ITEMDB}/{ITEMDB}.toc"), toc),
 			(format!("addon/{ITEMDB}/LICENSE-DATA.txt"), item_licence),
-			("addon/Polestar/Gear/SpecData.lua".into(), spec_data),
-			("addon/Polestar/Gear/LICENSE-DATA.txt".into(), gear_licence),
+			("addon/Northstar/Gear/SpecData.lua".into(), spec_data),
+			("addon/Northstar/Gear/LICENSE-DATA.txt".into(), gear_licence),
 			("data/forever/gear/report.json".into(), report_text),
 		],
 		report,
@@ -208,7 +208,7 @@ mod tests {
 	#[test]
 	fn toc_lists_both_files() {
 		let t = emit_toc("1.2.3", &["Items.lua", "Forever.lua"]);
-		assert!(t.starts_with("## Interface: 16001\n## Title: Polestar Item Data\n"));
-		assert!(t.ends_with("## Version: 1.2.3\n## Category: Polestar\n## Group: Polestar\n## LoadOnDemand: 1\n## Dependencies: Polestar\n\nItems.lua\nForever.lua\n"));
+		assert!(t.starts_with("## Interface: 16001\n## Title: Northstar Item Data\n"));
+		assert!(t.ends_with("## Version: 1.2.3\n## Category: Northstar\n## Group: Northstar\n## LoadOnDemand: 1\n## Dependencies: Northstar\n\nItems.lua\nForever.lua\n"));
 	}
 }

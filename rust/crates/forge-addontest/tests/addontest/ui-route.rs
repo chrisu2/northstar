@@ -1,4 +1,4 @@
-//! The route choice window (addon/Polestar/UI/RouteChoice.lua) against the real Core + Theme + UI manifests and
+//! The route choice window (addon/Northstar/UI/RouteChoice.lua) against the real Core + Theme + UI manifests and
 //! the fake Engine of tests/lua/stub_ui.lua, given the choice data Engine.GetRouteChoice returns.
 
 use forge_addontest::{emitted, is_match, text, Addon, RunAddon};
@@ -7,7 +7,7 @@ use serde_json::{json, Value};
 const FILES: [&str; 3] = ["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"];
 
 const CHOICE: &str = r#"
-local E = Polestar.Engine
+local E = Northstar.Engine
 CHOSEN = nil
 E.GetRouteChoice = function(id)
 	if id ~= "tirisfal" then return nil end
@@ -21,22 +21,22 @@ E.GetRouteChoice = function(id)
 end
 E.ChooseRoute = function(from, to) CHOSEN = from .. ">" .. to; return true end
 E.PendingRouteChoice = function() return "tirisfal" end
-RC = Polestar.UI.RouteChoice
+RC = Northstar.UI.RouteChoice
 function cardFor(id)
 	for _, f in ipairs(stub.frames) do if f.psId == id and f:IsShown() then return f end end
 end
 "#;
 
 fn run(script: &str) -> Value {
-	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Polestar", &FILES)], script: ["uistub.install()", "stub.login()", CHOICE, script].join("\n"), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], addons: vec![Addon::files("Northstar", &FILES)], script: ["uistub.install()", "stub.login()", CHOICE, script].join("\n"), ..Default::default() })
 		.remove(0)
 }
 
 #[test]
 fn route_choice_opens_one_card_per_zone_a_stat_row_on_one_line_across_cards_capped_pros_and_cons_the_recommended_one_leads() {
 	let out = run(r#"
-		Polestar.Fire("ROUTE_CHOICE", "tirisfal")
-		local F = PolestarRouteChoice
+		Northstar.Fire("ROUTE_CHOICE", "tirisfal")
+		local F = NorthstarRouteChoice
 		local s, b = cardFor("silverpine"), cardFor("barrens")
 		local function y(region) local _, _, _, _, py = region:GetPoint(1) return py end
 		local function shown(list) local n = 0 for _, l in ipairs(list) do if l.Text:IsShown() then n = n + 1 end end return n end
@@ -45,7 +45,7 @@ fn route_choice_opens_one_card_per_zone_a_stat_row_on_one_line_across_cards_capp
 		emit({
 			shown = F:IsShown(), subtitle = F.Subtitle:GetText(),
 			names = { s.Name:GetText(), b.Name:GetText() },
-			stats = s.Stats:GetText(), textHex = Polestar.Theme.Hex("text"),
+			stats = s.Stats:GetText(), textHex = Northstar.Theme.Hex("text"),
 			statsY = { y(s.Stats), y(b.Stats) }, ruleY = { y(s.Rule), y(b.Rule) }, consY = { y(s.Cons[1].Text), y(b.Cons[1].Text) },
 			tag = s.Tag:IsShown() and s.Tag.Text:GetText(), otherTag = b.Tag:IsShown(),
 			pros = { s.Pros[1].Text:GetText(), s.Pros[2].Text:GetText() }, cons = b.Cons[2].Text:GetText(),
@@ -79,13 +79,13 @@ fn route_choice_opens_one_card_per_zone_a_stat_row_on_one_line_across_cards_capp
 #[test]
 fn choosing_a_card_calls_engine_chooseroute_and_closes_decide_later_only_closes() {
 	let out = run(r#"
-		Polestar.Fire("ROUTE_CHOICE", "tirisfal")
+		Northstar.Fire("ROUTE_CHOICE", "tirisfal")
 		stub.RunScript(cardFor("barrens").Go, "OnClick", "LeftButton")
-		local r = { chosen = CHOSEN, shown = PolestarRouteChoice:IsShown() }
+		local r = { chosen = CHOSEN, shown = NorthstarRouteChoice:IsShown() }
 		CHOSEN = nil
-		Polestar.Fire("ROUTE_CHOICE", "tirisfal")
-		stub.RunScript(PolestarRouteChoice.Later, "OnClick", "LeftButton")
-		r.later = { chosen = CHOSEN, shown = PolestarRouteChoice:IsShown() }
+		Northstar.Fire("ROUTE_CHOICE", "tirisfal")
+		stub.RunScript(NorthstarRouteChoice.Later, "OnClick", "LeftButton")
+		r.later = { chosen = CHOSEN, shown = NorthstarRouteChoice:IsShown() }
 		emit(r)"#);
 	assert_eq!(out, json!({ "chosen": "tirisfal>barrens", "shown": false, "later": { "shown": false } }));
 }
@@ -94,15 +94,15 @@ fn choosing_a_card_calls_engine_chooseroute_and_closes_decide_later_only_closes(
 fn in_combat_the_window_waits_for_the_fight_to_end_the_checkbox_sets_behavior_routechoice() {
 	let out = run(r#"
 		stub.inCombat = true
-		Polestar.Fire("ROUTE_CHOICE", "tirisfal")
-		local r = { during = PolestarRouteChoice ~= nil and PolestarRouteChoice:IsShown() or false }
+		Northstar.Fire("ROUTE_CHOICE", "tirisfal")
+		local r = { during = NorthstarRouteChoice ~= nil and NorthstarRouteChoice:IsShown() or false }
 		stub.inCombat = false
 		stub.fire("PLAYER_REGEN_ENABLED")
-		r.after = PolestarRouteChoice:IsShown()
-		local box = PolestarRouteChoice.Always
+		r.after = NorthstarRouteChoice:IsShown()
+		local box = NorthstarRouteChoice.Always
 		box:SetChecked(true)
 		stub.RunScript(box, "OnClick", "LeftButton")
-		r.setting = Polestar.Get("behavior.routeChoice")
+		r.setting = Northstar.Get("behavior.routeChoice")
 		r.unknown = RC.Show("elsewhere")
 		emit(r)"#);
 	assert_eq!(out, json!({ "during": false, "after": true, "setting": "recommended", "unknown": false }));
@@ -122,8 +122,8 @@ fn each_card_shows_its_zone_painting_from_the_client_framed_on_the_route_start_u
 			for i = 1, 12 do t[i] = 100000 + i end
 			return t
 		end
-		local real = Polestar.Engine.GetRouteChoice
-		Polestar.Engine.GetRouteChoice = function(id)
+		local real = Northstar.Engine.GetRouteChoice
+		Northstar.Engine.GetRouteChoice = function(id)
 			local c = real(id)
 			if c then
 				c.options[1].zone, c.options[1].focusX, c.options[1].focusY = 1421, 45, 42
@@ -131,7 +131,7 @@ fn each_card_shows_its_zone_painting_from_the_client_framed_on_the_route_start_u
 			end
 			return c
 		end
-		Polestar.Fire("ROUTE_CHOICE", "tirisfal")
+		Northstar.Fire("ROUTE_CHOICE", "tirisfal")
 		local s, b = cardFor("silverpine"), cardFor("barrens")
 		local a = s.Art
 		local tiles = {}

@@ -1,7 +1,7 @@
-//! A pack's race parts and retired guides (forge-guide's build_pack_files; addon/Polestar/Core/Guides.lua,
+//! A pack's race parts and retired guides (forge-guide's build_pack_files; addon/Northstar/Core/Guides.lua,
 //! Engine.lua): leveling guides for one class and named races ship in <folder>_<race file>, a load-on-demand
-//! addon Polestar loads for the player's race once the pack is in; the ids in the pack's retired.json become
-//! Polestar.RetireGuides, and a saved tab of a retired guide opens its successor, the pack's leveling guide for
+//! addon Northstar loads for the player's race once the pack is in; the ids in the pack's retired.json become
+//! Northstar.RetireGuides, and a saved tab of a retired guide opens its successor, the pack's leveling guide for
 //! the player now.
 
 use forge_addontest::dsl::{build_pack, write_pack_dir};
@@ -20,7 +20,7 @@ fn pack_dir(retired: Option<&str>, mage: bool) -> TempDir {
 	let tmp = TempDir::new("polestar-parts-");
 	let dir = tmp.path();
 	let write = |rel: &str, text: &str| std::fs::write(dir.join(rel), text).unwrap();
-	write("pack.json", r#"{"id":"parts","title":"Parts Pack","author":"Ann","version":"1.0.0","license":"CC0-1.0","folder":"PolestarPack_Parts"}"#);
+	write("pack.json", r#"{"id":"parts","title":"Parts Pack","author":"Ann","version":"1.0.0","license":"CC0-1.0","folder":"NorthstarPack_Parts"}"#);
 	std::fs::create_dir(dir.join("guides")).unwrap();
 	write("guides/plain.guide", &guide("parts/plain", ""));
 	write("guides/human-warrior.guide", &guide("parts/human-warrior/01", "race Human\nclass Warrior"));
@@ -54,18 +54,18 @@ fn class_chains_go_into_a_load_on_demand_part_per_race_the_retired_ids_into_the_
 	let dir = pack_dir(OLD, true);
 	let r = build(dir.path());
 	let files: Vec<&str> = r.files.as_ref().unwrap().iter().map(|(n, _)| n.as_str()).collect();
-	assert!(files.contains(&"../PolestarPack_Parts_Human/PolestarPack_Parts_Human.toc"));
-	assert!(files.contains(&"../PolestarPack_Parts_Dwarf/Guides.lua"));
+	assert!(files.contains(&"../NorthstarPack_Parts_Human/NorthstarPack_Parts_Human.toc"));
+	assert!(files.contains(&"../NorthstarPack_Parts_Dwarf/Guides.lua"));
 	let main = text(&r, "Guides.lua");
 	assert!(is_match(main, r"parts/plain"));
 	assert!(!is_match(main, r"parts/human-warrior/01"));
-	assert!(is_match(main, r#"Polestar\.RetireGuides\("parts", \{\n\t"parts/old-elwynn",\n\}\)"#));
-	let human = text(&r, "../PolestarPack_Parts_Human/Guides.lua");
+	assert!(is_match(main, r#"Northstar\.RetireGuides\("parts", \{\n\t"parts/old-elwynn",\n\}\)"#));
+	let human = text(&r, "../NorthstarPack_Parts_Human/Guides.lua");
 	assert!(is_match(human, r"parts/human-warrior/01"));
 	assert!(is_match(human, r"parts/human-dwarf-mage/01"));
-	assert!(!is_match(text(&r, "../PolestarPack_Parts_Dwarf/Guides.lua"), r"human-warrior"));
-	let toc = text(&r, "../PolestarPack_Parts_Human/PolestarPack_Parts_Human.toc");
-	assert!(is_match(toc, r"## LoadOnDemand: 1\n## Dependencies: Polestar, PolestarPack_Parts\n## X-Polestar-Part: parts\n## X-Polestar-Race: Human"));
+	assert!(!is_match(text(&r, "../NorthstarPack_Parts_Dwarf/Guides.lua"), r"human-warrior"));
+	let toc = text(&r, "../NorthstarPack_Parts_Human/NorthstarPack_Parts_Human.toc");
+	assert!(is_match(toc, r"## LoadOnDemand: 1\n## Dependencies: Northstar, NorthstarPack_Parts\n## X-Northstar-Part: parts\n## X-Northstar-Race: Human"));
 }
 
 #[test]
@@ -82,7 +82,7 @@ fn a_retired_json_that_is_no_list_of_ids_is_an_error_a_retired_id_still_in_the_p
 // character's saved state.
 fn play(saved: &str) -> Vec<Value> {
 	let addons = TempDir::new("polestar-parts-play-");
-	let out = addons.path().join("PolestarPack_Parts");
+	let out = addons.path().join("NorthstarPack_Parts");
 	let dir = pack_dir(OLD, true);
 	write_pack_dir(&out, build(dir.path()).files.as_ref().unwrap());
 	let part = |name: &str| format!("stub.packs[{}] = {{ {} }}", serde_json::to_string(name).unwrap(), serde_json::to_string(&addons.path().join(name).join("Guides.lua")).unwrap());
@@ -90,26 +90,26 @@ fn play(saved: &str) -> Vec<Value> {
 		stubs: vec!["stub_world.lua", "stub_packs.lua"],
 		before: format!(
 			"{}\n{}\n{}",
-			part("PolestarPack_Parts_Human"),
-			part("PolestarPack_Parts_Dwarf"),
+			part("NorthstarPack_Parts_Human"),
+			part("NorthstarPack_Parts_Dwarf"),
 			r#"local w = stub.world
 w.race, w.raceName, w.class, w.className, w.faction, w.level = "Human", "Human", "WARRIOR", "Warrior", "Alliance", 1
 w.addMap(1429, { name = "Elwynn Forest", c = 0, left = 1500, right = -1500, top = 500, bottom = -1500 })
 w.moveTo(1429, 48, 42)"#
 		),
-		addons: vec![Addon::name("Polestar"), Addon::dir("PolestarPack_Parts", &out)],
-		saved: vec![("Polestar".into(), format!("PolestarCharDB = {saved}"))],
+		addons: vec![Addon::name("Northstar"), Addon::dir("NorthstarPack_Parts", &out)],
+		saved: vec![("Northstar".into(), format!("NorthstarCharDB = {saved}"))],
 		script: r#"stub.login()
-local G = Polestar.Guides
-emit({ human = stub.packLoads.PolestarPack_Parts_Human or 0, dwarf = stub.packLoads.PolestarPack_Parts_Dwarf or 0,
+local G = Northstar.Guides
+emit({ human = stub.packLoads.NorthstarPack_Parts_Human or 0, dwarf = stub.packLoads.NorthstarPack_Parts_Dwarf or 0,
 	warrior = G.Get("parts/human-warrior/01") ~= nil, retired = G.IsRetired("parts/old-elwynn"),
-	guide = Polestar.Engine.GetGuide() and Polestar.Engine.GetGuide().id or false,
+	guide = Northstar.Engine.GetGuide() and Northstar.Engine.GetGuide().id or false,
 	mage = G.Get("parts/human-dwarf-mage/01") ~= nil,
 	open = rawget(G.Get("parts/human-warrior/01"), "steps") ~= nil,
 	other = rawget(G.Get("parts/human-warrior/02"), "steps") ~= nil })
-Polestar.Engine.SetGuide("parts/human-warrior/02")
+Northstar.Engine.SetGuide("parts/human-warrior/02")
 emit({ first = rawget(G.Get("parts/human-warrior/01"), "steps") ~= nil, second = rawget(G.Get("parts/human-warrior/02"), "steps") ~= nil,
-	title = Polestar.Engine.GetStepView(1).title })"#
+	title = Northstar.Engine.GetStepView(1).title })"#
 			.into(),
 		..Default::default()
 	})
@@ -135,9 +135,9 @@ fn the_player_s_race_part_loads_with_the_pack_the_other_race_s_does_not_a_saved_
 fn a_race_part_keeps_each_guide_s_steps_as_one_source_string_with_its_count_the_class_decides_what_registers() {
 	let dir = pack_dir(OLD, true);
 	let r = build(dir.path());
-	let part = text(&r, "../PolestarPack_Parts_Human/Guides.lua");
+	let part = text(&r, "../NorthstarPack_Parts_Human/Guides.lua");
 	assert!(is_match(part, r"stepCount = 1,\n\t\t\tstepsSrc = \x22return \{"));
 	assert!(!is_match(part, r"\tsteps = \{"));
-	assert!(is_match(part, r#"if Polestar\.PartWants\(\{ "WARRIOR" \}\) then register\(\) end"#));
+	assert!(is_match(part, r#"if Northstar\.PartWants\(\{ "WARRIOR" \}\) then register\(\) end"#));
 	assert!(is_match(text(&r, "Guides.lua"), r"\t\t\tsteps = \{"), "the pack's own guides are as before");
 }

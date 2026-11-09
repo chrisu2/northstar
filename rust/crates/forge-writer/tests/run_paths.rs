@@ -48,7 +48,7 @@ fn a_tree_the_pack_check_refuses_is_an_error() {
 	std::fs::remove_dir_all(&dir).unwrap();
 }
 
-/// Hearth advice is the arrow's (Polestar 0.3.3): the route still plans its hearth leg, but the
+/// Hearth advice is the arrow's (Northstar 0.3.3): the route still plans its hearth leg, but the
 /// written guide has no `hearth` goal; the step it shared with other work keeps that work under the
 /// place's name, and a tip's "Hearth to ..." sentence goes. `sethome` stays.
 #[test]

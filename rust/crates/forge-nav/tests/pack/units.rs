@@ -125,7 +125,7 @@ fn pack_into(grid: &Path, out: &Path, cells: usize) -> Result<forge_nav::pack::P
 #[test]
 fn ship_writes_files_pack_json_and_nav_xml_and_check_finds_changed_missing_unlisted() {
 	let grid = golden_dir().join("nav-grid/nav4");
-	let out = tmp("ship").join("Polestar_Nav");
+	let out = tmp("ship").join("Northstar_Nav");
 	std::fs::create_dir_all(out.join("Nav")).unwrap();
 	std::fs::write(out.join("Nav/Nav0_9.lua"), "stale\n").unwrap();
 	std::fs::write(out.join("Nav/Nav2991_1.lua"), "his old map\n").unwrap();

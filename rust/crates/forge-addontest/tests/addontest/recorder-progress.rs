@@ -1,4 +1,4 @@
-//! The recorder's character progress (addon/Polestar_Recorder/Progress.lua): reputation, skills, exploration,
+//! The recorder's character progress (addon/Northstar_Recorder/Progress.lua): reputation, skills, exploration,
 //! crafts from the trade skill window only, learned spells, achievements; plus quest givers that are game
 //! objects or items, against tests/lua/stub_recorder.lua.
 

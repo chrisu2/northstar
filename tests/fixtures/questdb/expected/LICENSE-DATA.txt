@@ -1,7 +1,7 @@
-Polestar quest database: third-party notices
+Northstar quest database: third-party notices
 ============================================
 
-The data in this folder was generated for Polestar from the reference data
+The data in this folder was generated for Northstar from the reference data
 sources below (quest, NPC, object and item facts, spawn positions, map frames).
 
 Fixture

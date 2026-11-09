@@ -1,7 +1,7 @@
 # gear build golden
 
 JS: this checkout's tools/ (rust-retire, a8f669093).
-Command: `sh regen.sh <this checkout>`. The JS reads package.json, Weights.lua, Polestar_ItemDB and the wowsims cache from its own checkout. So regen.sh copies `<checkout>/tools` and `input/root` into a scratch root and runs the `gear build` command module there with `--addons input/AddOns`. `pin-date.js` pins `builtAt` to 2026-10-22T00:00:00.000Z.
+Command: `sh regen.sh <this checkout>`. The JS reads package.json, Weights.lua, Northstar_ItemDB and the wowsims cache from its own checkout. So regen.sh copies `<checkout>/tools` and `input/root` into a scratch root and runs the `gear build` command module there with `--addons input/AddOns`. `pin-date.js` pins `builtAt` to 2026-10-22T00:00:00.000Z.
 
 Inputs:
 - `AddOns/ForeverLevelingBiS/`: synthetic, MIT, written for this golden (see its LICENSE). It copies the addon's file layout (Data/{Items,Quests,Tables,Overrides}.lua, Racials.lua, TOC) but no content. ForeverLevelingBiS is now "All rights reserved"; only its MIT versions may be read, and no MIT copy was at hand. The items and quests are real ids from the slice zones, with invented values. They cover:
@@ -10,10 +10,10 @@ Inputs:
   - quest, drop and crafted sources, plus an unknown source type and an unknown profession;
   - a non-equippable item;
   - racial stat multipliers and weapon crit.
-- `root/addon/Polestar_ItemDB/Items.lua`: this checkout's file (`itemdb build`, Blizzard client tables as facts), cut to 15 items (the count in its header says so).
-- `root/addon/Polestar/Gear/Weights.lua`: Polestar's own, copied from this checkout.
+- `root/addon/Northstar_ItemDB/Items.lua`: this checkout's file (`itemdb build`, Blizzard client tables as facts), cut to 15 items (the count in its header says so).
+- `root/addon/Northstar/Gear/Weights.lua`: Northstar's own, copied from this checkout.
 - `root/package.json`: the version (0.2.6) that goes into the TOC.
-- `root/data/sources/wowsims/`: the wowsims cache (MIT; LICENSE kept). It keeps manifest.json and the warrior, mage and rogue files of every cached commit. The other specs are absent, so their bands are Polestar's own weights.
+- `root/data/sources/wowsims/`: the wowsims cache (MIT; LICENSE kept). It keeps manifest.json and the warrior, mage and rogue files of every cached commit. The other specs are absent, so their bands are Northstar's own weights.
 
 expected/: the six files it writes, by path under the root, plus `stdout.txt`.
 

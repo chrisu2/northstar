@@ -1,4 +1,4 @@
-//! Import strings in the addon (addon/Polestar/Core/Import.lua and the registry's `imported` pack in
+//! Import strings in the addon (addon/Northstar/Core/Import.lua and the registry's `imported` pack in
 //! Core/Guides.lua): a guide compiled by the real compiler, written by the real writer (forge_guide's port of
 //! tools/lib/pack/importstring.js), read back under Lua 5.1 with the client's decoders faked in plain Lua
 //! (tests/lua/stub_encoding.lua). Round trip, refusals that leave SavedVariables untouched, update in place,
@@ -191,11 +191,11 @@ end
 fn run_saved(script: &str, saved: Option<String>) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_encoding.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		before: WORLD.into(),
-		saved: saved.map(|s| ("Polestar".to_string(), s)).into_iter().collect(),
+		saved: saved.map(|s| ("Northstar".to_string(), s)).into_iter().collect(),
 		login: true,
-		script: format!("I = Polestar.Import\nG = Polestar.Guides\n{SAVE}\n{script}"),
+		script: format!("I = Northstar.Import\nG = Northstar.Guides\n{SAVE}\n{script}"),
 	})
 }
 
@@ -245,6 +245,31 @@ fn the_caps_the_checksum_and_the_key_lists_are_the_writer_s() {
 	}
 }
 
+// The keys 0.3.7's compiler adds: a grind step's mob (`level N grind <npc>`: `grind`, its `npcName` and the mob's
+// spawn `spots` with their levels) and an elite's level on a goal's `group` (the class-quest heads-up). A string
+// carrying them previews and imports; without them in Import.lua's shape the whole string was refused.
+#[test]
+fn a_grind_step_s_mob_and_an_elite_s_level_ride_along_in_a_string() {
+	let mut p = payload();
+	p["guide"]["steps"][2]["goals"].as_array_mut().unwrap().push(json!({
+		"t": "level", "level": 3, "grind": 6, "npcName": "Kobold Vermin", "map": 1429, "x": 47.6, "y": 35.1,
+		"spots": [{ "x": 47.6, "y": 35.1, "r": 30, "n": 4, "lvl": 2 }],
+	}));
+	p["guide"]["steps"][2]["goals"][1]["group"] = json!({ "kind": "elite", "rank": 1, "lvl": 30 });
+	let out = run(&r#"
+		local info, why = I.Preview(@S@)
+		emit({ ok = info ~= nil, why = why and tostring(why) or nil })
+		if info then
+			assert(I.Save(info.entry))
+			local goals = G.Get("yendi/northshire").steps[3].goals
+			emit({ grind = goals[3].grind, name = goals[3].npcName, lvl = goals[2].group.lvl })
+		end
+	"#
+	.replace("@S@", &js(&encode(&p))));
+	assert_eq!(out[0], json!({ "ok": true }), "previewed");
+	assert_eq!(out[1], json!({ "grind": 6, "name": "Kobold Vermin", "lvl": 30 }));
+}
+
 #[test]
 fn a_step_picture_rides_along_in_a_string_but_an_imported_guide_has_no_addon_folder_holding_the_file_so_it_shows_none() {
 	let mut p = payload();
@@ -274,8 +299,8 @@ fn round_trip_guide_string_preview_import_registers_the_guide_a_community_addon_
 	let entry = V::obj();
 	entry.set("guide", localised(&guide()));
 	let theirs = run(&r#"
-			assert(Polestar.RegisterPack({ addon = "PolestarPack_Yendi", id = "yendi", format = 3, title = "Yendi", author = "Yendi", version = "1", license = "CC-BY-4.0" }))
-			stub.addonLoaded("PolestarPack_Yendi")
+			assert(Northstar.RegisterPack({ addon = "NorthstarPack_Yendi", id = "yendi", format = 3, title = "Yendi", author = "Yendi", version = "1", license = "CC-BY-4.0" }))
+			stub.addonLoaded("NorthstarPack_Yendi")
 			assert(loadstring(@L@))()
 			emit({ guide = G.Get("yendi/northshire") })
 		"#
@@ -317,6 +342,29 @@ fn a_guide_with_when_steps_goes_into_a_format_4_string_and_imports_with_its_cond
 	assert_eq!(out["when"], json!([{ "k": "onquest", "q": [7] }, { "k": "level", "op": "<", "n": 6 }]));
 }
 
+// #1364 gave a compiled `train class` goal its step's zone (a uiMapID the Engine ranks trainers by). A shared string
+// carries it like any other goal key: the import takes the guide, and the goal keeps its zone.
+#[test]
+fn a_guide_with_a_train_class_step_imports_and_its_goal_keeps_the_step_s_zone_1364() {
+	let src = GUIDE.replacen("step Back to the abbey\n", "step Training\n  train class\n\nstep Back to the abbey\n", 1);
+	let g = compile_guide(&src);
+	let r = import_of(&g);
+	let out = run(&r#"
+		local info, why = I.Preview(@S@)
+		assert(info, why)
+		assert(I.Save(info.entry))
+		local train
+		for _, s in ipairs(G.Get("yendi/northshire").steps) do
+			for _, goal in ipairs(s.goals or {}) do if goal.t == "train" then train = goal end end
+		end
+		emit({ class = train and train.class, zone = train and train.zone })
+	"#
+	.replace("@S@", &js(&r)))
+	.remove(0);
+	assert_eq!(out["class"], true);
+	assert!(out["zone"].as_f64().is_some_and(|z| z > 0.0), "the train goal keeps its step's zone: {}", out["zone"]);
+}
+
 #[test]
 fn a_damaged_truncated_oversized_foreign_or_code_carrying_string_is_refused_with_a_reason_and_savedvariables_stay_untouched() {
 	let good = string();
@@ -352,7 +400,7 @@ fn a_damaged_truncated_oversized_foreign_or_code_carrying_string_is_refused_with
 			local info, why = I.Preview(text)
 			out[name] = info and "accepted" or why
 		end
-		emit({ reasons = out, imports = PolestarDB.imports == nil, registered = G.Get("yendi/northshire") == nil and G.Get("yendi/x") == nil })
+		emit({ reasons = out, imports = NorthstarDB.imports == nil, registered = G.Get("yendi/northshire") == nil and G.Get("yendi/x") == nil })
 	"#
 	.replace("@CASES@", &lua_value(&cases)))
 	.remove(0);
@@ -360,17 +408,17 @@ fn a_damaged_truncated_oversized_foreign_or_code_carrying_string_is_refused_with
 	for name in ["tampered", "truncated", "checksum"] {
 		assert!(is_match(text(&r[name]), r"damaged or incomplete"), "{name}");
 	}
-	assert!(is_match(text(&r["oversized"]), r"too long: Polestar reads up to 50000 characters"));
-	assert!(is_match(text(&r["notOurs"]), r"not a Polestar import string"));
-	assert!(is_match(text(&r["newer"]), r"needs a newer Polestar"));
-	assert!(is_match(text(&r["newerFormat"]), r"needs a newer Polestar"));
+	assert!(is_match(text(&r["oversized"]), r"too long: Northstar reads up to 50000 characters"));
+	assert!(is_match(text(&r["notOurs"]), r"not a Northstar import string"));
+	assert!(is_match(text(&r["newer"]), r"needs a newer Northstar"));
+	assert!(is_match(text(&r["newerFormat"]), r"needs a newer Northstar"));
 	assert!(is_match(text(&r["luaChunk"]), r"damaged or incomplete"));
-	assert!(is_match(text(&r["unknownField"]), r"field Polestar does not read \(guide\.onLoad\)"));
+	assert!(is_match(text(&r["unknownField"]), r"field Northstar does not read \(guide\.onLoad\)"));
 	assert!(is_match(text(&r["noGuide"]), r"holds no guide"));
 	assert!(is_match(text(&r["nullValue"]), r"damaged or incomplete"));
 	assert!(is_match(text(&r["deep"]), r"damaged or incomplete"));
 	assert!(is_match(text(&r["badType"]), r"does not read \(guide\.steps\)"));
-	assert_eq!(out["imports"], true, "PolestarDB.imports never made");
+	assert_eq!(out["imports"], true, "NorthstarDB.imports never made");
 	assert_eq!(out["registered"], true);
 }
 
@@ -426,7 +474,7 @@ fn the_guide_must_fit_the_caps_and_the_id_rules_and_lead_only_to_polestar_s_guid
 #[test]
 fn a_guide_id_under_an_installed_community_addon_s_id_stays_the_addon_s() {
 	let out = run(&r#"
-		assert(Polestar.RegisterPack({ addon = "PolestarPack_Yendi", id = "yendi", format = 3, title = "Yendi's Guides", author = "Yendi", version = "1", license = "MIT" }))
+		assert(Northstar.RegisterPack({ addon = "NorthstarPack_Yendi", id = "yendi", format = 3, title = "Yendi's Guides", author = "Yendi", version = "1", license = "MIT" }))
 		local info, why = I.Preview(@S@)
 		emit({ info = info ~= nil, why = why })
 	"#
@@ -447,16 +495,16 @@ fn a_newer_version_updates_the_guide_in_place_the_open_tab_keeps_its_progress_wh
 	p0["guide"]["version"] = json!(0);
 	let out = run(&r#"
 		save(@V1@)
-		local E = Polestar.Engine
+		local E = Northstar.Engine
 		E.SetGuide("yendi/northshire")
 		assert(E.ToggleGoal(1, 1))
 		E.Goto(2)
 		local before = E.GetGuide()
 		local same, older, newer = I.Preview(@V1@), I.Preview(@V0@), I.Preview(@V2@)
 		assert(I.Save(newer.entry))
-		local s = Polestar.CharState()
+		local s = Northstar.CharState()
 		emit({ states = { same.state, older.state, newer.state }, have = newer.have, title = E.GetGuide().title, replaced = E.GetGuide() ~= before,
-			step = E.GetStepIndex(), tick = s.manual["yendi/northshire"]["1:1"], version = PolestarDB.imports["yendi/northshire"].guide.version, tabs = #E.GetTabs() })
+			step = E.GetStepIndex(), tick = s.manual["yendi/northshire"]["1:1"], version = NorthstarDB.imports["yendi/northshire"].guide.version, tabs = #E.GetTabs() })
 	"#
 	.replace("@V1@", &js(&v1))
 	.replace("@V0@", &js(&encode(&p0)))
@@ -476,10 +524,10 @@ fn a_newer_version_updates_the_guide_in_place_the_open_tab_keeps_its_progress_wh
 fn delete_takes_the_guide_out_of_the_store_the_registry_and_the_open_tabs() {
 	let out = run(&r#"
 		save(@S@)
-		Polestar.Engine.SetGuide("yendi/northshire")
+		Northstar.Engine.SetGuide("yendi/northshire")
 		local deleted = I.Delete("yendi/northshire")
-		emit({ deleted = deleted, stored = PolestarDB.imports["yendi/northshire"] == nil, got = G.Get("yendi/northshire") == nil, list = #I.List(),
-			record = #G.Pack("imported").guides, open = Polestar.Engine.GetGuide() == nil, again = I.Delete("yendi/northshire") })
+		emit({ deleted = deleted, stored = NorthstarDB.imports["yendi/northshire"] == nil, got = G.Get("yendi/northshire") == nil, list = #I.List(),
+			record = #G.Pack("imported").guides, open = Northstar.Engine.GetGuide() == nil, again = I.Delete("yendi/northshire") })
 	"#
 	.replace("@S@", &js(&string())))
 	.remove(0);
@@ -492,10 +540,10 @@ fn at_login_the_stored_guides_register_through_the_same_checks_one_that_fails_st
 	let mut bad = payload();
 	bad["guide"]["id"] = json!("yendi/broken");
 	bad["guide"]["steps"][0]["goals"][0]["sneaky"] = json!(true);
-	let saved = format!("PolestarDB = {{ schema = 1, settings = {{}}, imports = {{ [\"yendi/northshire\"] = {}, [\"yendi/broken\"] = {} }} }}", lua_value(&good), lua_value(&bad));
+	let saved = format!("NorthstarDB = {{ schema = 1, settings = {{}}, imports = {{ [\"yendi/northshire\"] = {}, [\"yendi/broken\"] = {} }} }}", lua_value(&good), lua_value(&bad));
 	let out = run_saved(
 		r#"
-		emit({ got = G.Get("yendi/northshire") and G.Get("yendi/northshire").pack, broken = G.Get("yendi/broken") == nil, list = I.List(), stored = PolestarDB.imports["yendi/broken"] ~= nil })
+		emit({ got = G.Get("yendi/northshire") and G.Get("yendi/northshire").pack, broken = G.Get("yendi/broken") == nil, list = I.List(), stored = NorthstarDB.imports["yendi/broken"] ~= nil })
 	"#,
 		Some(saved),
 	)
@@ -510,17 +558,17 @@ fn at_login_the_stored_guides_register_through_the_same_checks_one_that_fails_st
 	want.sort_by_key(key);
 	assert_eq!(got, want);
 	let broken = list.iter().find(|e| e["id"] == "yendi/broken").unwrap();
-	assert!(is_match(text(&broken["problem"]), r"field Polestar does not read \(guide\.steps\[1\]\.goals\[1\]\.sneaky\)"));
+	assert!(is_match(text(&broken["problem"]), r"field Northstar does not read \(guide\.steps\[1\]\.goals\[1\]\.sneaky\)"));
 }
 
 #[test]
 fn suggestions_never_pick_an_imported_guide_and_the_imported_pack_is_never_a_suggestion_source() {
 	let out = run(&r#"
 		save(@S@)
-		Polestar.Set("behavior.suggestFrom", "imported")
+		Northstar.Set("behavior.suggestFrom", "imported")
 		local has = false
 		for _, id in ipairs(G.Suggestions()) do if id == "yendi/northshire" then has = true end end
-		emit({ has = has, sources = G.SuggestSources(), from = G.SuggestSource(), fits = G.GuideMatches(G.Get("yendi/northshire"), Polestar.Compat.GetPlayerInfo()) })
+		emit({ has = has, sources = G.SuggestSources(), from = G.SuggestSource(), fits = G.GuideMatches(G.Get("yendi/northshire"), Northstar.Compat.GetPlayerInfo()) })
 	"#
 	.replace("@S@", &js(&string())))
 	.remove(0);
@@ -533,12 +581,12 @@ fn suggestions_never_pick_an_imported_guide_and_the_imported_pack_is_never_a_sug
 #[test]
 fn no_community_addon_can_take_the_imported_pack_s_id() {
 	let out = run(r#"
-		local ok, err = Polestar.RegisterPack({ addon = "Sneaky", id = "imported", imported = true, format = 3, title = "x", author = "x", version = "1", license = "MIT" })
+		local ok, err = Northstar.RegisterPack({ addon = "Sneaky", id = "imported", imported = true, format = 3, title = "x", author = "x", version = "1", license = "MIT" })
 		emit({ ok = ok, err = err, holder = G.Pack("imported").imported })
 	"#)
 	.remove(0);
 	assert_eq!(out["ok"], false);
-	assert!(is_match(text(&out["err"]), r"reserved for Polestar"));
+	assert!(is_match(text(&out["err"]), r"reserved for Northstar"));
 	assert_eq!(out["holder"], true);
 }
 
@@ -558,17 +606,17 @@ fn a_text_over_the_cap_is_refused_at_once_naming_it_before_any_of_it_is_filled_i
 			local info, reason = I.Preview(text)
 			return { reason = info and "accepted" or reason, seconds = os.clock() - t0 }
 		end
-		emit({ long = why(@LONG@), key = why(@KEY@), ns = why(@NS@), imports = PolestarDB.imports == nil })
+		emit({ long = why(@LONG@), key = why(@KEY@), ns = why(@NS@), imports = NorthstarDB.imports == nil })
 	"#
 	.replace("@LONG@", &js(&encode(&long)))
 	.replace("@KEY@", &js(&encode(&key)))
 	.replace("@NS@", &js(&encode(&ns))))
 	.remove(0);
-	assert!(is_match(text(&out["long"]["reason"]), r"holds a text longer than Polestar reads \(guide\.title\): 4096 characters at most"));
+	assert!(is_match(text(&out["long"]["reason"]), r"holds a text longer than Northstar reads \(guide\.title\): 4096 characters at most"));
 	let seconds = out["long"]["seconds"].as_f64().unwrap();
 	assert!(seconds < 0.2, "refused in {seconds} s");
-	assert!(is_match(text(&out["key"]["reason"]), r"text longer than Polestar reads \(guide\.written\)"));
-	assert!(is_match(text(&out["ns"]["reason"]), r"text longer than Polestar reads \(guide\.steps\[1\]\.goals\[1\]\.qlvl\)"));
+	assert!(is_match(text(&out["key"]["reason"]), r"text longer than Northstar reads \(guide\.written\)"));
+	assert!(is_match(text(&out["ns"]["reason"]), r"text longer than Northstar reads \(guide\.steps\[1\]\.goals\[1\]\.qlvl\)"));
 	assert_eq!(out["imports"], true);
 }
 
@@ -577,12 +625,12 @@ fn a_payload_over_the_cap_is_refused_with_its_own_message() {
 	let big = envelope(&format!(r#"{{"format":3,"license":"MIT","guide":{{"id":"yendi/x","title":"{}"}}}}"#, " ".repeat(LIMITS.payload)));
 	assert!(big.len() < LIMITS.length, "the string itself is short");
 	let out = run(&"local info, why = I.Preview(@BIG@) emit({ why = why })".replace("@BIG@", &js(&big))).remove(0);
-	assert_eq!(out["why"], "This import string holds too much: Polestar reads up to 256 KB of guide data.");
+	assert_eq!(out["why"], "This import string holds too much: Northstar reads up to 256 KB of guide data.");
 }
 
 #[test]
 fn a_string_adds_era_frames_only_for_the_maps_its_guide_uses_and_never_over_a_frame_someone_registered() {
-	// A goal on a map Polestar has no frame for (9998), and a frame for a map no goal uses (9999).
+	// A goal on a map Northstar has no frame for (9998), and a frame for a map no goal uses (9999).
 	let mut p = payload();
 	let (si, gi) =
 		p["guide"]["steps"].as_array().unwrap().iter().enumerate().find_map(|(si, st)| st["goals"].as_array().unwrap().iter().position(|g| g.get("map").is_some()).map(|gi| (si, gi))).unwrap();
@@ -591,16 +639,16 @@ fn a_string_adds_era_frames_only_for_the_maps_its_guide_uses_and_never_over_a_fr
 	p["frames"] = json!({ "9998": mine.clone(), "9999": mine.clone() });
 	let text = js(&encode(&p));
 	let free = run(&r#"
-			local before = Polestar.MapFrames.era[9998]
+			local before = Northstar.MapFrames.era[9998]
 			save(@T@)
-			emit({ before = before == nil, got = Polestar.MapFrames.era[9998], stray = Polestar.MapFrames.era[9999] == nil })
+			emit({ before = before == nil, got = Northstar.MapFrames.era[9998], stray = Northstar.MapFrames.era[9999] == nil })
 		"#
 	.replace("@T@", &text));
 	let taken = run(&r#"
-			assert(Polestar.RegisterPack({ addon = "PolestarPack_Joe", id = "joe", format = 3, title = "Joe", author = "Joe", version = "1", license = "MIT" }))
-			Polestar.RegisterMapFrames({ era = { [9998] = { c = 0, left = 10, right = 20, top = 30, bottom = 40 } } }, "joe")
+			assert(Northstar.RegisterPack({ addon = "NorthstarPack_Joe", id = "joe", format = 3, title = "Joe", author = "Joe", version = "1", license = "MIT" }))
+			Northstar.RegisterMapFrames({ era = { [9998] = { c = 0, left = 10, right = 20, top = 30, bottom = 40 } } }, "joe")
 			save(@T@)
-			emit({ left = Polestar.MapFrames.era[9998].left, stray = Polestar.MapFrames.era[9999] == nil })
+			emit({ left = Northstar.MapFrames.era[9998].left, stray = Northstar.MapFrames.era[9999] == nil })
 		"#
 	.replace("@T@", &text));
 	assert_eq!(free[0]["before"], true);

@@ -1,5 +1,5 @@
 //! The release version: kept in package.json, in our guides' pack manifest (guides/pack.json: compile
-//! writes its version into Polestar_Guides.toc) and in the `## Version` line of every addon TOC.
+//! writes its version into Northstar_Guides.toc) and in the `## Version` line of every addon TOC.
 
 use std::path::{Path, PathBuf};
 use std::sync::LazyLock;

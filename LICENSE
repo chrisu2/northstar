@@ -29,8 +29,8 @@ rust/crates/forge-nav/src/pack/mod.rs with its modules (forge nav pack, the
 port of tools/lib/nav/pack.js) and
 rust/crates/forge-data/src/travel/timetable.rs (the port of
 tools/lib/travel/timetable.js). The Polestar_Nav folder
-holds, with its own LICENSE and CREDITS.md, Polestar's walking router started
-from Shortest Path Forever v1.16.0 by Cillian Berragan, with thanks; Polestar
+holds, with its own LICENSE and CREDITS.md, Northstar's walking router started
+from Shortest Path Forever v1.16.0 by Cillian Berragan, with thanks; Northstar
 maintains it since 2026-10-16 (the three routing files that began as his keep
 his copyright and the GPL notice); and Polestar's own walking maps of
 Eastern Kingdoms, Kalimdor and Zephras Isle in a format grown from his map

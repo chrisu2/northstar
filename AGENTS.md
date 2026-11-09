@@ -1,8 +1,8 @@
-# Polestar: for coding agents
+# Northstar: for coding agents
 
-Polestar is a leveling guide addon for WoW: Forever: a Lua 5.1 addon in
+Northstar is a leveling guide addon for WoW: Forever: a Lua 5.1 addon in
 `addon/`, guides in `guides/`, Node tools in `tools/`
-(`node tools/polestar.js help`) and Polestar Forge, the Rust route builder
+(`node tools/polestar.js help`) and Northstar Forge, the Rust route builder
 in `rust/` (`forge --help`, docs/FORGE.md). Before you work here, read the
 skill for your task:
 

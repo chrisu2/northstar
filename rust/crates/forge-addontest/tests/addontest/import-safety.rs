@@ -83,11 +83,11 @@ end
 fn run(script: &str, saved: Option<&str>) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_encoding.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		before: WORLD.into(),
-		saved: saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		saved: saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		login: true,
-		script: format!("I = Polestar.Import\nG = Polestar.Guides\n{SAVE}\n{script}"),
+		script: format!("I = Northstar.Import\nG = Northstar.Guides\n{SAVE}\n{script}"),
 	})
 	.remove(0)
 }
@@ -172,7 +172,7 @@ fn finding_1_a_names_written_value_over_128_bytes_is_refused_by_the_writer() {
 			None,
 		);
 		assert_eq!(out["refused"], true, "addon must refuse a names value over 128 bytes");
-		assert!(is_match(text(&out["why"]), r"longer than Polestar reads"));
+		assert!(is_match(text(&out["why"]), r"longer than Northstar reads"));
 	}
 }
 
@@ -348,14 +348,14 @@ fn finding_4_guide_ids_with_uppercase_spaces_or_slashes_beyond_the_slug_are_refu
 #[test]
 fn finding_5_import_list_returns_a_title_for_a_failed_entry_without_calling_prepare() {
 	// A stored entry whose steps is a string rather than a table – it was hand-edited or saved by a newer
-	// Polestar version then downgraded. build() refuses it at login, so it never registers; List() must show
+	// Northstar version then downgraded. build() refuses it at login, so it never registers; List() must show
 	// a title without calling Prepare (which walks steps and errors).
 	let good = payload();
 	let mut bad = payload()["guide"].clone();
 	bad["id"] = json!("yendi/broken");
 	bad["steps"] = json!("oops");
 	let saved = format!(
-		r#"PolestarDB = {{ schema = 1, settings = {{}}, imports = {{ [{}] = {}, ["yendi/broken"] = {{ format = 3, license = "CC-BY-4.0", guide = {} }} }} }}"#,
+		r#"NorthstarDB = {{ schema = 1, settings = {{}}, imports = {{ [{}] = {}, ["yendi/broken"] = {{ format = 3, license = "CC-BY-4.0", guide = {} }} }} }}"#,
 		str(ID),
 		lua_value(&good),
 		lua_value(&bad)
@@ -383,8 +383,8 @@ fn finding_5_import_clear_removes_all_imported_guides() {
 			r#"
 		save({})
 		assert(#I.List() == 1)
-		Polestar.RunCommand("import clear")
-		emit({{ count = #I.List(), stored = PolestarDB.imports[{}] == nil }})
+		Northstar.RunCommand("import clear")
+		emit({{ count = #I.List(), stored = NorthstarDB.imports[{}] == nil }})
 	"#,
 			str(&string()),
 			str(ID)
@@ -401,8 +401,8 @@ fn finding_5_import_delete_removes_one_guide_by_id() {
 		&format!(
 			r#"
 		save({})
-		Polestar.RunCommand("import delete {}")
-		emit({{ count = #I.List(), stored = PolestarDB.imports[{}] == nil }})
+		Northstar.RunCommand("import delete {}")
+		emit({{ count = #I.List(), stored = NorthstarDB.imports[{}] == nil }})
 	"#,
 			str(&string()),
 			ID,

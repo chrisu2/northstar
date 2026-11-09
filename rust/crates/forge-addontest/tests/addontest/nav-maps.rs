@@ -1,8 +1,8 @@
-//! addon/Polestar_Nav: Polestar's walking router (Routing/, started from Shortest Path Forever v1.16.0 by
-//! Cillian Berragan, GPL-3.0-or-later, and Polestar's since 2026-10-16) and Polestar's walking maps of Eastern
+//! addon/Northstar_Nav: Northstar's walking router (Routing/, started from Shortest Path Forever v1.16.0 by
+//! Cillian Berragan, GPL-3.0-or-later, and Northstar's since 2026-10-16) and Northstar's walking maps of Eastern
 //! Kingdoms, Kalimdor and Zephras Isle (maps format 3, `forge nav pack`). The maps match PACK.json, the router
 //! keeps his copyright and the GPL notice, and the addon loads and finds real walking routes on its own
-//! PolestarPathData. Checks from docs/NAV_QA.md name their row (C2, C6, C17, and the shared-tables hazard at
+//! NorthstarPathData. Checks from docs/NAV_QA.md name their row (C2, C6, C17, and the shared-tables hazard at
 //! its top). (Ported from tests/nav-maps.test.js.)
 
 use std::io::Read;
@@ -15,7 +15,7 @@ use regex::Regex;
 use serde_json::{json, Value};
 
 fn nav() -> PathBuf {
-	addons_dir().join("Polestar_Nav")
+	addons_dir().join("Northstar_Nav")
 }
 fn read(p: &Path) -> String {
 	std::fs::read_to_string(p).unwrap_or_else(|e| panic!("{}: {e}", p.display()))
@@ -32,7 +32,7 @@ fn run(script: &str, before: &str, addons: Vec<Addon>) -> Value {
 
 #[test]
 fn the_walking_router_is_polestars_started_from_his_his_three_files_keep_his_copyright_and_the_gpl_notice() {
-	let header = "Polestar's walking router. Started from Shortest Path Forever v1.16.0 (b1ad5bd) by Cillian Berragan (GPL-3.0-or-later); modified for Polestar since 2026-10-16.";
+	let header = "Northstar's walking router. Started from Shortest Path Forever v1.16.0 (b1ad5bd) by Cillian Berragan (GPL-3.0-or-later); modified for Northstar since 2026-10-16.";
 	for name in ["PathGrid.lua", "Path.lua", "PathJobs.lua"] {
 		let text = read(&nav().join("Routing").join(name));
 		let lines: Vec<&str> = text.split('\n').collect();
@@ -43,15 +43,15 @@ fn the_walking_router_is_polestars_started_from_his_his_three_files_keep_his_cop
 			notice.contains("GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version."),
 			"{name}: the GPL notice"
 		);
-		assert!(!text.contains("ShortestPathForeverPathData"), "{name}: reads only PolestarPathData");
+		assert!(!text.contains("ShortestPathForeverPathData"), "{name}: reads only NorthstarPathData");
 	}
-	assert!(Regex::new(r"(?m)^-- Copyright \(c\) 2026 The Polestar authors\. GPL-3\.0-or-later").unwrap().is_match(&read(&nav().join("Routing/Costs.lua"))));
+	assert!(Regex::new(r"(?m)^-- Copyright \(c\) 2026 The Northstar authors\. GPL-3\.0-or-later").unwrap().is_match(&read(&nav().join("Routing/Costs.lua"))));
 	let license = ws(&read(&nav().join("LICENSE")));
-	assert!(license.contains("Polestar's walking router started from Shortest Path Forever v1.16.0 by Cillian Berragan, with thanks; Polestar maintains it since 2026-10-16"));
+	assert!(license.contains("Northstar's walking router started from Shortest Path Forever v1.16.0 by Cillian Berragan, with thanks; Northstar maintains it since 2026-10-16"));
 	assert!(Regex::new(r"Routing/PathGrid\.lua, Routing/Path\.lua and Routing/PathJobs\.lua .*Copyright \(C\) 2026 Cillian Berragan").unwrap().is_match(&license));
 	for doc in [nav().join("CREDITS.md"), root().join("LICENSE"), root().join("THIRD_PARTY.md"), root().join("README.md")] {
 		assert!(
-			ws(&read(&doc)).contains("Polestar's walking router started from Shortest Path Forever v1.16.0 by Cillian Berragan, with thanks; Polestar maintains it since 2026-10-16"),
+			ws(&read(&doc)).contains("Northstar's walking router started from Shortest Path Forever v1.16.0 by Cillian Berragan, with thanks; Northstar maintains it since 2026-10-16"),
 			"{}",
 			doc.display()
 		);
@@ -84,9 +84,9 @@ fn the_walking_maps_pack_json_names_the_grid_the_cells_the_format_and_every_file
 	for (map, part) in forge_nav::pack::PARTS {
 		let files: Vec<String> = keys.iter().filter_map(|r| r.strip_prefix(&format!("{part}/")).map(str::to_string)).collect();
 		assert!(files.len() > 10 && files.iter().all(|f| f.starts_with(&format!("Nav{map}_"))), "{part}: {files:?}");
-		assert!(names.contains(&format!("Nav{map}.lua")) && !names.iter().any(|n| n.starts_with(&format!("Nav{map}_"))), "map {map}: only its metadata in Polestar_Nav");
+		assert!(names.contains(&format!("Nav{map}.lua")) && !names.iter().any(|n| n.starts_with(&format!("Nav{map}_"))), "map {map}: only its metadata in Northstar_Nav");
 		let toc = read(&addons_dir().join(part).join(format!("{part}.toc")));
-		assert!(toc.lines().any(|l| l == "## LoadOnDemand: 1") && toc.lines().any(|l| l == "## Dependencies: Polestar_Nav"), "{part}: loads on demand after Polestar_Nav");
+		assert!(toc.lines().any(|l| l == "## LoadOnDemand: 1") && toc.lines().any(|l| l == "## Dependencies: Northstar_Nav"), "{part}: loads on demand after Northstar_Nav");
 		assert_eq!(toc_entries(&addons_dir().join(part)).unwrap(), files, "{part}: its TOC loads its parts in order");
 		assert_eq!(p["maps"][map.to_string()]["part"], json!(part));
 	}
@@ -116,7 +116,7 @@ fn the_walking_maps_pack_json_names_the_grid_the_cells_the_format_and_every_file
 		assert!(text.lines().any(|l| l == "\tarea = {},") && text.lines().any(|l| l == "\tareaNames = {"), "map {map}: the area field packed, its rows named");
 		assert!(text.lines().any(|l| l == "\tarc = {},"), "map {map}: the jumps and drops packed");
 	}
-	assert!(meta.lines().any(|l| l == "-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Polestar, 2026-10-15."), "his notice on one line");
+	assert!(meta.lines().any(|l| l == "-- Portions Copyright (C) 2026 Cillian Berragan (Shortest Path Forever, GPL-3.0-or-later); adapted for Northstar, 2026-10-15."), "his notice on one line");
 	assert!(meta.lines().any(|l| l == "\tcells = 128,"));
 }
 
@@ -131,7 +131,7 @@ fn security_l12_the_license_names_cillian_berragans_copyright_and_every_file_tha
 	let named: Vec<String> = Regex::new(r"([\w/]+\.lua|[\w/-]+\.js|[\w/-]+\.rs)\b").unwrap().captures_iter(&flat).map(|c| c[1].to_string()).collect();
 	let repo_rel = Regex::new(r"^(tools|tests|rust)/").unwrap();
 	for rel in &named {
-		let file = if repo_rel.is_match(rel) { root().join(rel) } else { addons_dir().join("Polestar").join(rel) };
+		let file = if repo_rel.is_match(rel) { root().join(rel) } else { addons_dir().join("Northstar").join(rel) };
 		assert!(file.exists(), "LICENSE names {rel}, which does not exist");
 	}
 	// Every file carrying the dated notice as its own comment is named.
@@ -147,7 +147,7 @@ fn security_l12_the_license_names_cillian_berragans_copyright_and_every_file_tha
 			}
 		}
 	}
-	let polestar = addons_dir().join("Polestar");
+	let polestar = addons_dir().join("Northstar");
 	for d in [polestar.clone(), root().join("tools/lib"), root().join("tests/helpers"), root().join("rust/crates")] {
 		walk(&d, &marked, &mut found);
 	}
@@ -176,7 +176,7 @@ const FARGODEEP: &str = "{ x = -9791.249, y = 164.438, z = 27.373 }";
 fn route_script() -> String {
 	format!(
 		r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local frames = {{}}
 Path.after = function(fn) frames[#frames + 1] = fn end
 local function drain() while #frames > 0 do table.remove(frames, 1)() end end
@@ -203,7 +203,7 @@ emit({{
 
 #[test]
 fn polestar_nav_loads_its_own_maps_and_walks_goldshire_to_the_fargodeep_mine_mouth() {
-	let got = run(&route_script(), "", vec![Addon::name("Polestar_Nav")]);
+	let got = run(&route_script(), "", vec![Addon::name("Northstar_Nav")]);
 	let cost = got["cost"].as_f64().unwrap();
 	assert!(cost > 400.0 && cost < 700.0, "cost {cost}");
 	let len = got["length"].as_f64().unwrap();
@@ -223,13 +223,13 @@ fn polestar_nav_loads_its_own_maps_and_walks_goldshire_to_the_fargodeep_mine_mou
 fn shared_tables_hazard_with_shortest_path_forever_installed_our_engine_reads_only_polestarpathdata() {
 	let files = xml_files(&nav().join("Nav/Nav.xml")).unwrap();
 	let spf_copy = format!(
-		"local spf = {{}}\n{}\nShortestPathForeverPathData, PolestarPathData = PolestarPathData, nil",
+		"local spf = {{}}\n{}\nShortestPathForeverPathData, NorthstarPathData = NorthstarPathData, nil",
 		files.iter().map(|f| format!("assert(loadfile({}))(\"ShortestPathForever\", spf)", lua_string(&f.to_string_lossy()))).collect::<Vec<_>>().join("\n")
 	);
 	let got = run(
 		&format!(
 			r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 Path.clock = function() return os.clock() * 1000 end
 Path.budget = 0.05
 local frames = {{}}
@@ -247,13 +247,13 @@ while #frames > 0 do
 	trimTheirs()
 end
 local distinct = true
-for map, D in pairs(PolestarPathData) do
+for map, D in pairs(NorthstarPathData) do
 	if D == ShortestPathForeverPathData[map] then distinct = false end
 end
-emit({{ cost = got.cost, n = got.points and #got.points, frames = n, distinct = distinct, maps = (function() local k = {{}} for m in pairs(PolestarPathData) do k[#k + 1] = m end table.sort(k) return k end)() }})"#
+emit({{ cost = got.cost, n = got.points and #got.points, frames = n, distinct = distinct, maps = (function() local k = {{}} for m in pairs(NorthstarPathData) do k[#k + 1] = m end table.sort(k) return k end)() }})"#
 		),
 		&spf_copy,
-		vec![Addon::name("Polestar_Nav")],
+		vec![Addon::name("Northstar_Nav")],
 	);
 	let cost = got["cost"].as_f64().unwrap();
 	assert!(cost > 400.0 && cost < 700.0, "cost {cost}");
@@ -267,7 +267,7 @@ fn c2_a_search_cancelled_mid_way_never_calls_back_and_the_queue_empties() {
 	let got = run(
 		&format!(
 			r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 Path.clock = function() return os.clock() * 1000 end
 Path.budget = 0.05
 local frames = {{}}
@@ -285,7 +285,7 @@ Path.Busy()
 emit({{ called = called, started = started, cancelled = job.cancelled == true, busy = Path.Busy(), left = #frames }})"#
 		),
 		"",
-		vec![Addon::name("Polestar_Nav")],
+		vec![Addon::name("Northstar_Nav")],
 	);
 	assert_eq!(got["started"], true, "cancelled while the search was under way");
 	assert_eq!(got["called"], 0);
@@ -298,7 +298,7 @@ emit({{ called = called, started = started, cancelled = job.cancelled == true, b
 fn c6_stormwind_flight_master_to_the_mage_quarter_never_doubles_back_and_a_rooftop_endpoint_still_routes() {
 	let got = run(
 		r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local pts = Path.FindSync(0, { x = -8840.56, y = 489.7, z = 109.61 }, { x = -9100, y = 1200 })
 local reversals = {}
 for i = 2, #pts - 1 do
@@ -311,7 +311,7 @@ end
 local roof = Path.FindSync(0, { x = -9010, y = 870 }, { x = -8840.56, y = 489.7 })
 emit({ n = #pts, reversals = table.concat(reversals, " "), roof = roof ~= nil })"#,
 		"",
-		vec![Addon::name("Polestar_Nav")],
+		vec![Addon::name("Northstar_Nav")],
 	);
 	assert!(got["n"].as_i64().unwrap() >= 2);
 	assert_eq!(got["reversals"], "");
@@ -323,7 +323,7 @@ fn c17_searches_are_sliced_over_frames_within_path_budget_and_give_the_synchrono
 	let got = run(
 		&format!(
 			r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local sync, syncCost = Path.FindSync(0, {GOLDSHIRE}, {FARGODEEP})
 Path.ClearCaches()
 Path.clock = function() return os.clock() * 1000 end
@@ -337,12 +337,12 @@ while #frames > 0 do n = n + 1; table.remove(frames, 1)() end
 emit({{ frames = n, cost = got.cost, syncCost = syncCost, points = #got.points, syncPoints = #sync, cacheKB = Path.cacheKB, graphKB = Path.graphKB }})"#
 		),
 		"",
-		vec![Addon::name("Polestar_Nav")],
+		vec![Addon::name("Northstar_Nav")],
 	);
 	assert!(got["frames"].as_i64().unwrap() > 1);
 	assert!((got["cost"].as_f64().unwrap() - got["syncCost"].as_f64().unwrap()).abs() < 1e-6);
 	assert_eq!(got["points"], got["syncPoints"]);
-	let toc = read(&nav().join("Polestar_Nav.toc"));
+	let toc = read(&nav().join("Northstar_Nav.toc"));
 	assert!(toc.lines().any(|l| l == "## LoadOnDemand: 1"), "not loaded at startup");
 	let grid = read(&nav().join("Routing/PathGrid.lua"));
 	assert_eq!(Regex::new(r"(?m)^Path\.budget = (\d+)").unwrap().captures(&grid).unwrap()[1].to_string(), "3", "the 3 ms frame budget");
@@ -359,7 +359,7 @@ emit({{ frames = n, cost = got.cost, syncCost = syncCost, points = #got.points, 
 fn c17_no_frame_of_router_work_runs_past_path_budget_at_any_frame_rate_decoding_included() {
 	let got = run(
 		r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 GetFramerate = function() return 240 end
 local ticks, STEP = 0, 100
 local function hook() ticks = ticks + STEP end
@@ -390,7 +390,7 @@ end
 debug.sethook()
 emit({ worst = worst / 100000, budget = Path.budget, pumps = pumps, decodes = (Path.decodes or 0) - d0 })"#,
 		"",
-		vec![Addon::name("Polestar_Nav")],
+		vec![Addon::name("Northstar_Nav")],
 	);
 	let (worst, budget) = (got["worst"].as_f64().unwrap(), got["budget"].as_f64().unwrap());
 	assert!(got["decodes"].as_i64().unwrap() >= 40, "the clusters decoded: {got}");
@@ -405,7 +405,7 @@ emit({ worst = worst / 100000, budget = Path.budget, pumps = pumps, decodes = (P
 fn a_search_s_clusters_stay_decoded_for_the_next_search_until_the_router_has_rested_path_restseconds() {
 	let got = run(
 		r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local frames = {}
 Path.after = function(fn) frames[#frames + 1] = fn end
 local function drain() while #frames > 0 do table.remove(frames, 1)() end end
@@ -422,7 +422,7 @@ stub.advance(Path.restSeconds + 1)
 local rested = walk()
 emit({ first = first, again = again, rested = rested, restSeconds = Path.restSeconds })"#,
 		"",
-		vec![Addon::name("Polestar_Nav")],
+		vec![Addon::name("Northstar_Nav")],
 	);
 	assert_eq!(got["restSeconds"], 60);
 	for k in ["first", "again", "rested"] {
@@ -441,7 +441,7 @@ fn memory_at_rest_a_search_may_decode_graph_up_to_path_graphkb_the_rest_trims_it
 	let mut files = toc_entries(&nav()).unwrap();
 	files.push(keep.to_string_lossy().into_owned());
 	let got = run(
-		r#"local Path, G = Polestar_NavEngine, stub.navNs.PathGrid
+		r#"local Path, G = Northstar_NavEngine, stub.navNs.PathGrid
 local function kb() local i = 1 while true do local k, v = debug.getupvalue(G.Reset, i) if k == "graphKB" then return v end i = i + 1 end end
 local rest = Path.graphRestKB
 Path.graphRestKB = 512
@@ -451,7 +451,7 @@ local searching = kb()
 G.Rest()
 emit({ found = pts ~= nil, searching = searching, resting = kb(), rest = rest, ceiling = Path.graphKB })"#,
 		"",
-		vec![Addon::Files("Polestar_Nav".into(), files)],
+		vec![Addon::Files("Northstar_Nav".into(), files)],
 	);
 	assert_eq!(got["found"], true);
 	assert_eq!((got["rest"].as_i64().unwrap(), got["ceiling"].as_i64().unwrap()), (1024, 16 * 1024), "API.lua's ceilings");
@@ -465,7 +465,7 @@ fn keep_ns() -> (TempDir, Addon) {
 	std::fs::write(&keep, "local _, ns = ...\nstub.navNs = ns\n").unwrap();
 	let mut files = toc_entries(&nav()).unwrap();
 	files.push(keep.to_string_lossy().into_owned());
-	(tmp, Addon::Files("Polestar_Nav".into(), files))
+	(tmp, Addon::Files("Northstar_Nav".into(), files))
 }
 
 // 0.3.5: a finished search's scratch stays for the next search Path.spareSeconds after the queue emptied, then goes
@@ -475,7 +475,7 @@ fn keep_ns() -> (TempDir, Addon) {
 fn a_finished_search_s_scratch_stays_path_spareseconds_after_the_last_search_then_goes() {
 	let (_tmp, addon) = keep_ns();
 	let got = run(
-		r#"local Path, S = Polestar_NavEngine, stub.navNs.PathSearch
+		r#"local Path, S = Northstar_NavEngine, stub.navNs.PathSearch
 local function spare() local i = 1 while true do local k, v = debug.getupvalue(S.Spare, i) if not k then return nil end if k == "spare" then return v end i = i + 1 end end
 local frames = {}
 Path.after = function(fn) frames[#frames + 1] = fn end
@@ -503,7 +503,7 @@ emit({ found = got ~= nil, drained = drained, resting = resting, gone = spare() 
 #[test]
 fn a_walk_asked_again_30_yd_along_reuses_the_last_search_s_scratch() {
 	let got = run(
-		r#"local Path = Polestar_NavEngine
+		r#"local Path = Northstar_NavEngine
 local frames = {}
 Path.after = function(fn) frames[#frames + 1] = fn end
 local function drain() while #frames > 0 do table.remove(frames, 1)() end end
@@ -535,7 +535,7 @@ for _, name in ipairs({ "DecodeBase64", "DecompressString" }) do
 		return r
 	end
 end"#,
-		vec![Addon::name("Polestar_Nav")],
+		vec![Addon::name("Northstar_Nav")],
 	);
 	eprintln!("re-search KiB: first {} again {}", got["first"]["kib"], got["again"]["kib"]);
 	assert_eq!(got["first"]["found"], true, "{got}");
@@ -547,9 +547,9 @@ const MAX_AGAIN: f64 = 4000.0;
 
 #[test]
 fn polestar_nav_ships_in_the_release_credits_shortest_path_forever_and_carries_the_gpl() {
-	assert!(forge_release::addons::release_addons(&addons_dir()).names.iter().any(|n| n == "Polestar_Nav"));
-	let toc = read(&nav().join("Polestar_Nav.toc"));
-	for line in ["## LoadOnDemand: 1", "## Dependencies: Polestar", "## X-License: GPL-3.0-or-later"] {
+	assert!(forge_release::addons::release_addons(&addons_dir()).names.iter().any(|n| n == "Northstar_Nav"));
+	let toc = read(&nav().join("Northstar_Nav.toc"));
+	for line in ["## LoadOnDemand: 1", "## Dependencies: Northstar", "## X-License: GPL-3.0-or-later"] {
 		assert!(toc.lines().any(|l| l == line), "{line}");
 	}
 	assert!(Regex::new(r"(?m)^## Notes: .*Shortest Path Forever.*Cillian Berragan").unwrap().is_match(&toc));
@@ -561,7 +561,7 @@ fn polestar_nav_ships_in_the_release_credits_shortest_path_forever_and_carries_t
 }
 
 const ENGINE: &str = r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local function d(ax, ay, bx, by) return math.sqrt((ax - bx) ^ 2 + (ay - by) ^ 2) end
 local function near(p, x, y, upto)
 	local best, walked = math.huge, 0
@@ -591,7 +591,7 @@ emit(r)"#;
 
 #[test]
 fn polestars_maps_on_the_engine_the_inn_is_left_by_its_door_the_undercity_by_an_undervator_open_sea_never_swum() {
-	let got = run(ENGINE, "", vec![Addon::name("Polestar_Nav")]);
+	let got = run(ENGINE, "", vec![Addon::name("Northstar_Nav")]);
 	let door = got["door"].as_f64().unwrap();
 	assert!(door < 3.0, "the walk out of the inn passes {door:.1} yd from the door");
 	let (top, bottom, walk) = (got["lift"]["top"].as_f64().unwrap(), got["lift"]["bottom"].as_f64().unwrap(), got["lift"]["walk"].as_f64().unwrap());
@@ -605,7 +605,7 @@ fn polestars_maps_on_the_engine_the_inn_is_left_by_its_door_the_undercity_by_an_
 fn a_horde_walk_into_southshore_on_the_shipped_maps_reports_the_town_with_its_area_id() {
 	let got = run(
 		r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local frames = {}
 Path.after = function(fn) frames[#frames + 1] = fn end
 local got = {}
@@ -613,7 +613,7 @@ Path.Find(0, { x = -500, y = -560 }, { x = -850, y = -540 }, function(points, co
 while #frames > 0 do table.remove(frames, 1)() end
 emit(got)"#,
 		"",
-		vec![Addon::name("Polestar_Nav")],
+		vec![Addon::name("Northstar_Nav")],
 	);
 	assert_eq!(got["found"], true);
 	assert_eq!(got["hubs"], json!([{ "id": "alliance-southshore", "name": "Southshore", "areaId": 271 }]));
@@ -627,7 +627,7 @@ emit(got)"#,
 fn a_walk_from_ground_joined_only_far_away_gives_up_past_8x_the_straight_line_the_street_still_routes() {
 	let got = run(
 		r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local frames = {}
 Path.after = function(fn) frames[#frames + 1] = fn end
 local got = {}
@@ -639,7 +639,7 @@ for _, z in ipairs({ 59, false }) do
 end
 emit(got)"#,
 		"",
-		vec![Addon::name("Polestar_Nav")],
+		vec![Addon::name("Northstar_Nav")],
 	);
 	assert_eq!(got["buried"]["found"], false, "from the buried terrain: no 20 km walk ({})", got["buried"]);
 	assert_eq!(got["street"]["found"], true, "with no height: the walk to the harbour ({})", got["street"]);
@@ -647,7 +647,7 @@ emit(got)"#,
 }
 
 /// The packed graph strings of a map (Nav<map>_*.lua's data.packed.graph[k] blocks: zlib, as base64 or, with the
-/// metadata's `blocks = "zlib"`, as the bytes themselves; in Polestar_Nav/Nav or the map's part addon).
+/// metadata's `blocks = "zlib"`, as the bytes themselves; in Northstar_Nav/Nav or the map's part addon).
 fn graph_fields(map: u32) -> Vec<(usize, Vec<u8>)> {
 	let zlib = read(&nav().join(format!("Nav/Nav{map}.lua"))).lines().any(|l| l == "\tblocks = \"zlib\",");
 	let line = regex::bytes::Regex::new(r#"(?m-u)^data\.packed\.graph\[(\d+)\] = \{(.*)\}$"#).unwrap();

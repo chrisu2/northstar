@@ -178,8 +178,8 @@ test('the built world carries its areas and a plain pointArea', () => {
 	assert.deepEqual(W.pointArea, [...buildAreas(W).pointArea]);
 });
 
-// Real worlds (POLESTAR_SIM_DIR, default data/sim): skipped only when there is no world.
-const REAL_SIM = process.env.POLESTAR_SIM_DIR || path.join(__dirname, '..', 'data', 'sim');
+// Real worlds (NORTHSTAR_SIM_DIR, default data/sim): skipped only when there is no world.
+const REAL_SIM = process.env.NORTHSTAR_SIM_DIR || path.join(__dirname, '..', 'data', 'sim');
 for (const faction of ['horde', 'alliance']) {
 	const file = path.join(REAL_SIM, `world-${faction}.json`);
 	test(`real ${faction} world: every giver, ender and camp has an area; no area beyond its span`, { skip: !fs.existsSync(file) && `no ${file}` }, () => {

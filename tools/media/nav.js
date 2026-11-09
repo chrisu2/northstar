@@ -79,7 +79,7 @@ function glow(size) {
 	return c;
 }
 
-// Four-pointed star: Polestar's mark, used at the centre of map pins; `turn`
+// Four-pointed star: Northstar's mark, used at the centre of map pins; `turn`
 // radians round from upright.
 function star(cx, cy, outer, inner, turn = 0) {
 	const pts = [];
@@ -103,6 +103,17 @@ function sparkle(size) {
 	c.fill(star(m, m, 15 * k, 2.2 * k, Math.PI / 4), [...WHITE, 0.45], { feather: 2 * k });
 	c.fill(star(m, m, 29 * k, 2.6 * k), [...WHITE, 1], { feather: 2.5 * k });
 	c.fill(sdf.circle(m, m, 3.2 * k), [...WHITE, 1], { feather: 2 * k });
+	return c;
+}
+
+// The line style's soft shadow (Maps/RouteLines.lua, nav.lineStyle "line"):
+// a client Line stretches its texture along its length and across its
+// thickness, so this is even along x and feathered across y, full at the
+// middle and nothing at either edge. Tinted with the theme's scrim.
+function lineSoft(size) {
+	const c = new Canvas(size, size);
+	const m = size / 2;
+	c.fill((x, y) => Math.abs(y - m) - m / 2, [...WHITE, 1], { feather: m });
 	return c;
 }
 
@@ -176,6 +187,7 @@ const TEXTURES = [
 	['area', () => area(128)],
 	['ring', () => ring(64)],
 	['sparkle', () => sparkle(64)],
+	['line-soft', () => lineSoft(32)],
 ];
 
 function generate(addonRoot) {

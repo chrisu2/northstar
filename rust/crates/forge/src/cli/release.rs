@@ -7,14 +7,14 @@ use std::process::ExitCode;
 pub const USAGE: &str = "usage: forge release <command> [options]
 
 Building and releasing the addon (docs/RELEASING.md):
-  pack [<dir>]       the release zips dist/Polestar-<version>.zip, dist/Polestar_Recorder-<version>.zip and
+  pack [<dir>]       the release zips dist/Northstar-<version>.zip, dist/Northstar_Recorder-<version>.zip and
                      dist/SHA256SUMS; given another pack, <pack>/dist/<folder>-<version>.zip
   version [<x.y.z>]  print the version (exit 1 when guides/pack.json or an addon TOC disagrees), or set it
                      in package.json, guides/pack.json and every addon TOC
   notes <x.y.z>      the version's release notes from CHANGELOG.md: dist/notes-<v>.md (GitHub),
                      dist/notes-curseforge-<v>.md and dist/notes-discord-<v>.txt
-  credits            rewrite addon/Polestar/Core/Credits.lua (the Guiding Stars page) from data/credits.json
-                     and the repository's merged pull requests (needs the GitHub CLI, gh, logged in)
+  credits            rewrite addon/Northstar/Core/Credits.lua (the Guiding Stars page) from data/credits.json
+                     and the repository's merged or folded pull requests and its issues (needs the GitHub CLI, gh, logged in)
 
 forge release <command> --help shows the command's options. The changelog fragments: forge changelog.";
 
@@ -30,32 +30,40 @@ most 2,000 characters), each paragraph and list item joined onto one line. Each 
 
 const CREDITS_USAGE: &str = "usage: forge release credits [--root <dir>]
 
-Rewrites addon/Polestar/Core/Credits.lua, the names on the Guiding Stars page (Options > Guiding Stars,
+Rewrites addon/Northstar/Core/Credits.lua, the names on the Guiding Stars page (Options > Guiding Stars,
 and \"Special thanks to\" in the windows' headers):
 
-  supporters    data/credits.json \"supporters\": Ko-fi supporters' names, highest total first.
-                Amounts are never stored.
-  contributors  everyone with a merged pull request on fitzforge/polestar, most first, fetched with
-                the GitHub CLI (gh, logged in). \"exclude\" lists logins left out (the maintainer);
-                \"names\" maps a login to the name shown.
+  supporters     data/credits.json \"supporters\": Ko-fi supporters' names, highest total first.
+                 Amounts are never stored.
+  contributors   everyone with a merged pull request on fitzforge/polestar, most first, fetched with
+                 the GitHub CLI (gh, logged in).
+  bug reporters  the top 40 reporters of fitzforge/polestar's issues by useful reports, most first: the
+                 Discord name the bot filed it under, else the GitHub login that opened it. A report
+                 counts when it is labelled confirmed or fix-merged, or closed as completed by a fix (a
+                 pull request, a released:* label, a maintainer's comment saying fixed); never a
+                 duplicate, not planned, invalid, wontfix, resolution:* or needs-info one, nor a
+                 feature request (enhancement without bug).
+
+\"exclude\" lists logins and names left out (the maintainer, anyone who asked not to be listed);
+\"names\" maps a login or Discord name to the name shown.
 
 Run it before a release.
   --root <dir>   the checkout (default: the one above here, else above the forge binary)";
 
-/// The Polestar checkout: `--root`, else the nearest folder above the working directory, else above
-/// the forge binary, holding addon/Polestar/Polestar.toc and package.json.
+/// The Northstar checkout: `--root`, else the nearest folder above the working directory, else above
+/// the forge binary, holding addon/Northstar/Northstar.toc and package.json.
 pub(super) fn checkout(root: Option<String>) -> Result<PathBuf, super::Fail> {
 	if let Some(r) = root {
 		return Ok(forge_release::absolute(Path::new(&r)));
 	}
-	let is_root = |d: &&Path| d.join("addon/Polestar/Polestar.toc").is_file() && d.join("package.json").is_file();
+	let is_root = |d: &&Path| d.join("addon/Northstar/Northstar.toc").is_file() && d.join("package.json").is_file();
 	let cwd = std::env::current_dir().unwrap_or_default();
 	let exe = std::env::current_exe().unwrap_or_default();
 	cwd.ancestors()
 		.find(is_root)
 		.or_else(|| exe.ancestors().find(is_root))
 		.map(Path::to_path_buf)
-		.ok_or_else(|| super::usage("no Polestar checkout (addon/Polestar/Polestar.toc and package.json) above here or the forge binary: pass --root <checkout>"))
+		.ok_or_else(|| super::usage("no Northstar checkout (addon/Northstar/Northstar.toc and package.json) above here or the forge binary: pass --root <checkout>"))
 }
 
 /// The value of option `k` (`k v` or `k=v`).
@@ -131,11 +139,18 @@ fn notes(args: &[String]) -> Result<(), super::Fail> {
 fn credits(args: &[String]) -> Result<(), super::Fail> {
 	super::check_args(args, &["--root"], &[], 0).map_err(super::usage)?;
 	let root = checkout(opt(args, "--root"))?;
-	use forge_release::credits::{fetch_merged, rank_contributors, read_source, render, OUT, REPO, SOURCE};
+	use forge_release::credits::{fetch_closed, fetch_issues, fetch_merged, folded, rank_contributors, rank_reporters, read_source, ref_commits, render, OUT, REPO, REPORTERS_SHOWN, SOURCE};
 	let src = read_source(&root.join(SOURCE))?;
-	let contributors = rank_contributors(&fetch_merged(REPO)?, &src);
+	// Merged pull requests, plus closed ones whose commits were folded into this checkout's HEAD with
+	// their authorship kept (contributors' PRs carried by cherry-pick into a maintainer's branch).
+	let mut prs = fetch_merged(REPO)?;
+	let folded_in = folded(&fetch_closed(REPO, &src.exclude)?, &ref_commits(&root, "HEAD")?);
+	let n_folded = folded_in.len();
+	prs.extend(folded_in);
+	let contributors = rank_contributors(&prs, &src);
+	let reporters = rank_reporters(&fetch_issues(REPO)?, &src, REPORTERS_SHOWN);
 	let out = root.join(OUT);
-	std::fs::write(&out, render(&src.supporters, &contributors)).map_err(|e| format!("{}: {e}", out.display()))?;
-	println!("credits: {} supporters, {} contributors -> {}", src.supporters.len(), contributors.len(), out.display());
+	std::fs::write(&out, render(&src.supporters, &contributors, &reporters)).map_err(|e| format!("{}: {e}", out.display()))?;
+	println!("credits: {} supporters, {} contributors ({n_folded} folded pull requests counted), {} bug reporters -> {}", src.supporters.len(), contributors.len(), reporters.len(), out.display());
 	Ok(())
 }

@@ -40,7 +40,7 @@ fn same_tree(got: &Path, want: &Path) {
 
 #[test]
 fn golden_pack_matches_the_js_at_128_and_32_cells() {
-	for (cells, dir) in [(128, "Polestar_Nav"), (32, "Polestar_Nav-32")] {
+	for (cells, dir) in [(128, "Northstar_Nav"), (32, "Northstar_Nav-32")] {
 		let out = tmp(&format!("golden-{cells}"));
 		pack_golden(cells, &out, JS);
 		same_tree(&out, &golden_dir().join("nav-pack").join(dir));
@@ -60,7 +60,7 @@ fn forge_names_itself_in_the_headers_pack_json_and_nav_xml() {
 }
 
 /// PACK_GRID=<grid> PACK_ROOT=<checkout: data/forever, data/sources/wago> PACK_LAYERS=<nav-layers>
-/// PACK_REF=<the JS's Polestar_Nav of that grid> PACK_DATE=<its date> cargo test --profile quick -p forge-nav
+/// PACK_REF=<the JS's Northstar_Nav of that grid> PACK_DATE=<its date> cargo test --profile quick -p forge-nav
 /// --test pack -- --ignored real_grid (Eastern Kingdoms, Kalimdor, Zephras Isle: about 2 min; every file
 /// identical on 2026-10-23's 1.60.1.70532 grid). A grid with area sidecars (maps format 3) differs from the last
 /// JS writer (baked-legs 73e0ebbc8) by design: forge packs only the rows with a name (pack_nav's `named`).

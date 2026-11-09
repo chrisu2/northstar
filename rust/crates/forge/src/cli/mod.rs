@@ -103,21 +103,23 @@ The data builders, one at a time (forge build's data stage runs the ones it need
   sources       fill data/sources: client tables, pfQuest, EG Link, forever-vo, CMaNGOS, web XP, WoWDBDefs
                 [--only LIST --root --sources --build --forever-build --forever-tables --wow --defs --data]
   check         data/forever's statistics against its last good ones  [--root --data --sources --accept --all]
-  itemdb        addon/Polestar_ItemDB (Items.lua + TOC)  [--root --sources --build --out --offline]
-  questdb       addon/Polestar_QuestDB from data/forever  [--root --data --out --radius --droppers --json]
-  names         Names.lua in addon/Polestar_<locale>, the data's names per language  [<locale>... --offline --no-questie
+  itemdb        addon/Northstar_ItemDB (Items.lua + TOC)  [--root --sources --build --out --offline]
+  questdb       addon/Northstar_QuestDB from data/forever  [--root --data --out --radius --droppers --json]
+  names         Names.lua in addon/Northstar_<locale>, the data's names per language  [<locale>... --offline --no-questie
                 --no-tables --build --sources --ding --pfquest --guides --questdb --codex --travel
                 --chokepoints --out --root --json]
-  talents       build|check addon/Polestar/Talents/Builds.lua  [--root --plans --out --sources --build --offline]
+  talents       build|check addon/Northstar/Talents/Builds.lua  [--root --plans --out --sources --build --offline]
   maps          build: Maps/ZoneLevels.lua [--data --lua]; overlays: UI/ZoneArtOverlays.lua
                 [--build --sources --offline --lua]
+  newquests     Quests/NewQuestIds.lua: the quests Forever added (the \"New in Forever\" mark)
+                [--root --data --sources --offline --check --lua]
   check-corrections  check an edit of forever-db/corrections, mechanics-public.json or route-fixes.json
                 [--root --data --corrections --mechanics --route-fixes --json]
   trainers      trainers.json and Core/ClassTrainers.lua  [--data --guides --recordings --out --lua]
   dungeons      dungeons.json from the installed dungeon journal addon  [--source --data --out]
   travel        travel.json, TravelData.lua, FlightPaths.lua  [--root --data --recordings --sources --grid <dir>|none
                 --crossings --build --forever-build --json --lua --flight-lua --travel-addon]
-  codex         data/forever/codex and the Polestar_Codex pack  [--root --data --sources --addons --build --out --pack
+  codex         data/forever/codex and the Northstar_Codex pack  [--root --data --sources --addons --build --out --pack
                 --local-extras --recordings <dir> (rewrites data/codex/recorded.json first)]
   gear          Forever.lua, SpecData.lua and gear/report.json  [--root --addons --wowsims --built-at]
   professions   professions.json  [--root --data --sources --build --out]
@@ -145,7 +147,7 @@ parent), else our guides/. Another pack is checked with our guides as context an
 
 options (compile and lint):
   <dir>, --pack <dir>   the pack folder (holding pack.json)
-  --root <dir>          the Polestar checkout (default: the one above here, else above the forge binary)
+  --root <dir>          the Northstar checkout (default: the one above here, else above the forge binary)
   --guides <dir>        our pack's guide sources in another folder (default guides/)
   --data <dir>          reference data (default data/forever/)
   --context <dir>       our guides, read as context for another pack (default guides/)
@@ -208,7 +210,7 @@ const SIM_HELP: &str = "usage: forge sim <command> [options]
 --seed guides (default): the order of the guides in --guides (default <root>/guides), as forge build
 makes it; --seed <file>: a chain document. --guard: a kept change may not raise the seed's guard counts
 (seed), the current order's (current), or is unguarded (off). The route fixes are <root>/data/route-fixes.json
-($POLESTAR_ROUTE_FIXES names another file); $POLESTAR_ROUTES the routes dir for why and skips. --edits: the
+($NORTHSTAR_ROUTE_FIXES names another file); $NORTHSTAR_ROUTES the routes dir for why and skips. --edits: the
 edit descent's cap; --budget: keep that many of its edits; else --cut: every edit (all, the default) or
 the knee's (knee). --search: the edit descent, the free search (--tries over --members) or both, the
 free search first (default: edits when --edits is given, else free). --deathskips (off by default): the route
@@ -220,8 +222,8 @@ const WALKS_HELP: &str = "usage: forge walks <command> ...
 
   world <root> <grid> <simDir> <faction>                         world-<faction>.json from root's data
   walks <root> <grid> <simDir> <faction> <store> <navFp> [bands] the walks (default: the hybrid when
-                                                                  POLESTAR_LEFFE_NAV=<Leffe's Nav folder>,
-                                                                  else our grid; POLESTAR_NAV=grid|leffe|hybrid)
+                                                                  NORTHSTAR_LEFFE_NAV=<Leffe's Nav folder>,
+                                                                  else our grid; NORTHSTAR_NAV=grid|leffe|hybrid)
   hybrid <grid walks.bin> <Leffe walks.bin> <out.bin> [slack]    the hybrid of two walks files
 ";
 

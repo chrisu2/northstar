@@ -73,7 +73,7 @@ async function runMcp({ port = 8078, start, input = process.stdin, output = proc
 					protocolVersion: PROTOCOLS.includes(asked) ? asked : PROTOCOLS[0],
 					capabilities: { tools: { listChanged: false } },
 					serverInfo: { name: 'polestar-planner', version },
-					instructions: 'Polestar route planner: read and edit .guide leveling guides (edits are written to the files at once), play a route as a timeline, look up quests/NPCs/spawns. Start with planner_info and guides_list; guide_get gives the hash every edit needs.',
+					instructions: 'Northstar route planner: read and edit .guide leveling guides (edits are written to the files at once), play a route as a timeline, look up quests/NPCs/spawns. Start with planner_info and guides_list; guide_get gives the hash every edit needs.',
 				};
 			} else if (method === 'ping') result = {};
 			else if (method === 'tools/list') {

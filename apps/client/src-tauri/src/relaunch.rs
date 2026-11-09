@@ -1,5 +1,5 @@
 //! A start that finds an older copy of the client still running (Linux). A package upgrade
-//! (`apt install ./Polestar.Client_<version>_amd64.deb`, or rpm) puts the new binary in place of
+//! (`apt install ./Northstar.Client_<version>_amd64.deb`, or rpm) puts the new binary in place of
 //! the old one, but a client running in the tray keeps running the old one, and starting the
 //! client again hands over to it (the single-instance check): the player installs 0.1.3 and still
 //! sees 0.1.2. So a running client whose own file was replaced does not take that hand-over: it

@@ -240,18 +240,25 @@ function Methods.GetTextColor(self)
 	return c[1], c[2], c[3], c[4]
 end
 function Methods.SetShadowColor(self, r, g, b, a) self.shadowColor = { r, g, b, a or 1 } end
+function Methods.SetShadowOffset(self, x, y) self.shadowOffset = { x or 0, y or 0 } end
+function Methods.GetShadowOffset(self)
+	local o = self.shadowOffset or { 0, 0 }
+	return o[1], o[2]
+end
 function Methods.GetShadowColor(self)
 	local c = self.shadowColor or { 0, 0, 0, 0 }
 	return c[1], c[2], c[3], c[4]
 end
 -- As in the client: GetStringWidth ignores word wrap but includes
 -- truncation (a single-line string, SetWordWrap(false), is cut at its set
--- width); GetUnboundedStringWidth is the whole text's width.
+-- width); GetUnboundedStringWidth is the whole text's width. Every character
+-- is half the font size wide, a UTF-8 one (“, ·, «) counting once.
+local function chars(s) return #s - select(2, s:gsub("[\128-\191]", "")) end
 function Methods.SetWordWrap(self, on) self.wordWrap = not not on end
 function Methods.GetWordWrap(self) return self.wordWrap ~= false end
 function Methods.GetUnboundedStringWidth(self)
 	local size = (self.font and self.font[2]) or 12
-	return #tostring(self.text or "") * size * 0.5
+	return chars(tostring(self.text or "")) * size * 0.5
 end
 function Methods.GetStringWidth(self)
 	local full = self:GetUnboundedStringWidth()
@@ -269,7 +276,7 @@ function Methods.GetStringHeight(self)
 	if w <= 0 then return size end
 	local lines = 0
 	for line in (tostring(self.text or "") .. "\n"):gmatch("([^\n]*)\n") do
-		lines = lines + math.max(1, math.ceil(#line * size * 0.5 / w))
+		lines = lines + math.max(1, math.ceil(chars(line) * size * 0.5 / w))
 	end
 	if (self.maxLines or 0) > 0 then lines = math.min(lines, self.maxLines) end
 	return lines * size
@@ -286,7 +293,7 @@ function Methods.IsTruncated(self)
 	local size = (self.font and self.font[2]) or 12
 	local lines = 0
 	for line in (tostring(self.text or "") .. "\n"):gmatch("([^\n]*)\n") do
-		lines = lines + math.max(1, math.ceil(#line * size * 0.5 / w))
+		lines = lines + math.max(1, math.ceil(chars(line) * size * 0.5 / w))
 	end
 	return lines > self.maxLines
 end
@@ -599,10 +606,10 @@ function Minimap.GetZoom() return stub.minimapZoom or 0 end
 function Minimap.GetZoomLevels() return 6 end
 ---------------------------------------------------------------------------
 -- Map frames: the shape of Blizzard_MapCanvas (WorldMapFrame, and
--- BattlefieldMapFrame through stub.newMapCanvas) that Polestar reads
+-- BattlefieldMapFrame through stub.newMapCanvas) that Northstar reads
 -- (Core/MapCanvas.lua): a canvas (ScrollContainer.Child) that shows and
--- hides with the map, the getters Polestar may call, and Blizzard's own
--- tables Polestar must never touch (dataProviders, pinPools).
+-- hides with the map, the getters Northstar may call, and Blizzard's own
+-- tables Northstar must never touch (dataProviders, pinPools).
 --   map.mapID (WorldMapFrame: stub.worldMapID), map.ScrollContainer.currentScale,
 --   map.ScrollContainer.zoomPercent, map.globalPinScale, map.globalAlpha
 --   stub.runMapFrame(map, dt)   one frame on the map: its frames' OnUpdate scripts
@@ -780,7 +787,7 @@ end
 -- the next gamepad action there is blocked. The hook walks the parents up to
 -- UIParent. Here, stricter: CreateFrame called from addon code with a parent
 -- that is, or is under, a frame addon code did not make (UIParent ends the
--- walk) raises and is listed in stub.underGameFrames ("Polestar/Nav/Pins.lua:764
+-- walk) raises and is listed in stub.underGameFrames ("Northstar/Nav/Pins.lua:764
 -- under WorldMapFrame (a frame under it)"). Frames the test stubs make for
 -- the game, even when addon code's call makes them, are the game's.
 -- SetParent is not hooked: a frame made with no parent, then set under a
@@ -903,7 +910,7 @@ RAID_CLASS_COLORS = {
 	DRUID = { r = 1.0, g = 0.49, b = 0.04 },
 }
 
--- The client's own words for the game terms Polestar shows as the client
+-- The client's own words for the game terms Northstar shows as the client
 -- writes them (docs/ARCHITECTURE.md, "Localisation"): the English client's
 -- GlobalStrings (build 1.60.1.70425).
 FACTION_STANDING_LABEL1, FACTION_STANDING_LABEL2, FACTION_STANDING_LABEL3, FACTION_STANDING_LABEL4 = "Hated", "Hostile", "Unfriendly", "Neutral"

@@ -34,7 +34,7 @@ pub struct PackOpts {
 	pub walks_from: Option<PathBuf>,
 	/// The grid the walk stores were built on (their key); default <root>/data/local/nav4.
 	pub grid: Option<PathBuf>,
-	/// The walk model fingerprint the stores were built with ($POLESTAR_NAV_FP of that build).
+	/// The walk model fingerprint the stores were built with ($NORTHSTAR_NAV_FP of that build).
 	pub nav_fp: Option<String>,
 	pub out: PathBuf,
 }
@@ -275,7 +275,7 @@ pub fn public_kb(from: &Path, to: &Path, public: &[String], mech_public: &[Strin
 				ins.execute(rusqlite::params![name, tier, label, version]).map_err(e)?;
 			}
 		}
-		ins.execute(rusqlite::params!["kb", 9.0, "Polestar knowledge base: uncertain or disputed, value withheld from the public pack", Option::<String>::None]).map_err(e)?;
+		ins.execute(rusqlite::params!["kb", 9.0, "Northstar knowledge base: uncertain or disputed, value withheld from the public pack", Option::<String>::None]).map_err(e)?;
 	}
 	tx.commit().map_err(e)?;
 	dst.execute("detach database src", []).map_err(|x| format!("{}: {x}", to.display()))?;

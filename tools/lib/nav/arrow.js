@@ -11,7 +11,7 @@
 //     consecutive located goals of every guide (and across `next`), MIN_PAIR yd apart or more
 //   arrowReport({ nav, frames, pairs, aidsLua, set, reference, stats, log }) -> { json, md }
 //
-// Every pair is planned twice, without and with the aids (Polestar_Travel's
+// Every pair is planned twice, without and with the aids (Northstar_Travel's
 // Crossings.lua), by an Alliance or Horde character (the guide's faction;
 // neutral guides: Alliance) that knows no flight master and has no
 // Hearthstone, so the routes measure walking (decided here). A walk leg

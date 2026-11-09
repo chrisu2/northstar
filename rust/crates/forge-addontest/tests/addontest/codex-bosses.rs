@@ -155,7 +155,7 @@ fn buildinstances_forever_s_location_ties_npcs_and_chests_to_the_instance_bosses
 }
 
 fn lua_files() -> Addon {
-	Addon::files("Polestar", &["Core/Init.lua", "Core/Compat.lua", "Core/Data.lua", "Core/LuaChunks.lua", "Core/Names.lua", "Core/GuideTexts.lua", "Core/Guides.lua", "Lookup/Codex.lua"])
+	Addon::files("Northstar", &["Core/Init.lua", "Core/Compat.lua", "Core/Data.lua", "Core/LuaChunks.lua", "Core/Names.lua", "Core/GuideTexts.lua", "Core/Guides.lua", "Lookup/Codex.lua"])
 }
 
 #[test]
@@ -175,9 +175,9 @@ fn the_pack_carries_chest_bosses_and_roles_an_encounter_boss_keeps_the_old_bare_
 	let got = emitted(&RunAddon {
 		before: pack.stub_lua.clone(),
 		addons: vec![lua_files()],
-		script: r#"Polestar.Codex.Load()
+		script: r#"Northstar.Codex.Load()
 local out = {}
-for i, b in ipairs(Polestar.Codex.Instance("stratholme").bosses) do out[i] = { b.name, b.npc or false, b.object or false, b.role or false, #b.items } end
+for i, b in ipairs(Northstar.Codex.Instance("stratholme").bosses) do out[i] = { b.name, b.npc or false, b.object or false, b.role or false, #b.items } end
 emit(out)"#
 			.into(),
 		..Default::default()
@@ -277,11 +277,11 @@ fn boss_rows(before: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: format!("{}\n{before}", pack.stub_lua),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Gear/Gear.xml", "Lookup/Lookup.xml", "Dungeons/Dungeons.xml", "UI/UI.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Gear/Gear.xml", "Lookup/Lookup.xml", "Dungeons/Dungeons.xml", "UI/UI.xml"])],
 		script: r#"uistub.install()
 stub.login()
-local DS = Polestar.UI.DungeonsSection
-Polestar.Dungeons.Open("wailing-caverns")
+local DS = Northstar.UI.DungeonsSection
+Northstar.Dungeons.Open("wailing-caverns")
 DS.SetTab("bosses")
 local out = {}
 for _, r in ipairs(DS.bossRows) do if r:IsShown() then out[#out + 1] = { r.Name:GetText(), r.Level:GetText() } end end

@@ -1,5 +1,5 @@
 'use strict';
-// /psrec trail (addon/Polestar_Recorder/Trail.lua): a dense position trail
+// /nsrec trail (addon/Northstar_Recorder/Trail.lua): a dense position trail
 // sampled at 4 Hz, written after 1 yd of movement (height included), a map
 // change or 2 s, as `pos` records with the trail flag (64) between a
 // "trail on" and a "trail off" `mark` (docs/RECORDING.md).
@@ -15,18 +15,18 @@ const TRAIL = 64;
 test('trail on records a sample per yard moved, height change, map change or 2 s, until trail off, recorder off or 30 min', () => {
 	const { emitted: [out] } = runAddon({
 		stubs: ['stub_recorder.lua'],
-		addons: ['Polestar_Recorder'],
+		addons: ['Northstar_Recorder'],
 		login: true,
 		script: `
-		local cmd = SlashCmdList.POLESTARREC
+		local cmd = SlashCmdList.NORTHSTARREC
 		-- the trail's records so far: marks and trail samples, { kind, dt, fields... }
 		local function trail()
 			stub.fire("PLAYER_LOGOUT") -- writes the open chunk
 			local seqs, out = {}, {}
-			for seq in pairs(PolestarRecorderDB.chunks) do seqs[#seqs + 1] = seq end
+			for seq in pairs(NorthstarRecorderDB.chunks) do seqs[#seqs + 1] = seq end
 			table.sort(seqs)
 			for _, s in ipairs(seqs) do
-				for _, r in ipairs(stub.records(PolestarRecorderDB.chunks[s])) do
+				for _, r in ipairs(stub.records(NorthstarRecorderDB.chunks[s])) do
 					if r[1] == "mark" or (r[1] == "pos" and tonumber(r[6]) >= ${TRAIL}) then out[#out + 1] = r end
 				end
 			end
@@ -71,7 +71,7 @@ test('trail on records a sample per yard moved, height change, map change or 2 s
 		emit({ refused = refused, first = first, messages = messages, afterOff = afterOff, last = all[#all], lastMsg = stub.messages[#stub.messages] })`,
 	});
 
-	assert.match(out.refused.msg, /recording is off; \/psrec on first/);
+	assert.match(out.refused.msg, /recording is off; \/nsrec on first/);
 
 	const recs = out.first;
 	assert.deepEqual(recs.map((r) => r[0]), ['mark', 'pos', 'pos', 'pos', 'pos', 'pos', 'mark']);

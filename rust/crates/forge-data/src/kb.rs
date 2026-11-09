@@ -53,7 +53,7 @@ fn check_only(s: &str) -> bool {
 
 fn label(s: &str) -> &str {
 	match s {
-		"correction" => "Polestar corrections",
+		"correction" => "Northstar corrections",
 		"tdb" => "Forever TrinityCore world DB, sniffed rows",
 		"page" => "web quest-database pages",
 		"foreverdb.seen" => "ForeverDB: players seen data",
@@ -76,7 +76,7 @@ fn label(s: &str) -> &str {
 		"eg" => "EG Link output: players game caches (server quest answers)",
 		"eg.observed" => "EG Link output: observed turn-in XP",
 		"forevervo.seen" => "forever-vo in-game dialog captures",
-		"recorder.gap" => "Polestar recordings: a gap one player filled",
+		"recorder.gap" => "Northstar recordings: a gap one player filled",
 		o => o,
 	}
 }
@@ -3439,9 +3439,9 @@ create table changes(tbl text, id integer, field text, before text, after text, 
 
 pub fn mechanics_source() -> V {
 	let o = Obj::new();
-	o.set("name", "Polestar quest mechanics: kinds, parameters and steps (facts in our own words), checked against the Forever TrinityCore world DB");
+	o.set("name", "Northstar quest mechanics: kinds, parameters and steps (facts in our own words), checked against the Forever TrinityCore world DB");
 	o.set("url", V::Null);
-	o.set("license", "Polestar original work; structured facts from CMaNGOS classic-db (GPL-3.0) and the Forever TrinityCore world DB (GPL-2.0) used as facts");
+	o.set("license", "Northstar original work; structured facts from CMaNGOS classic-db (GPL-3.0) and the Forever TrinityCore world DB (GPL-2.0) used as facts");
 	o.set("copyright", "TrinityCore and the advocaite/TrinityCore `forever` branch; CMaNGOS (https://github.com/cmangos/classic-db)");
 	V::Obj(o)
 }

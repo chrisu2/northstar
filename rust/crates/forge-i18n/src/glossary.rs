@@ -1,4 +1,4 @@
-//! The translators' glossary (port of tools/lib/i18n/glossary.js): about forty game and Polestar
+//! The translators' glossary (port of tools/lib/i18n/glossary.js): about forty game and Northstar
 //! terms, each with one chosen word per locale in data/i18n/glossary/<locale>.json, so a word reads
 //! the same on every page. A value comes from the client's own strings first (the GlobalStrings tag is
 //! kept in `client`), then from the reviewed translators' choices. `i18n check` warns (never fails)

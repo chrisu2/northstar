@@ -16,11 +16,11 @@ const MAX_LENGTH = { title: 64, author: 64, license: 64, website: 200, source: 2
 const DISPLAYED = ['title', 'author', 'license', 'website', 'source', 'notes'];
 const VERSION_RE = /^[0-9A-Za-z][0-9A-Za-z.+-]{0,31}$/;
 const CONTROL_RE = /[\u0000-\u001f\u007f]/;
-const OUR_FOLDER_RE = /^polestar($|_)/i;
+const OUR_FOLDER_RE = /^(polestar|northstar)($|_)/i;
 const ID_HINT = 'pick an id like `<author>-<name>`, e.g. "joe-routes"';
-// Polestar shows author text as written (every `|` escaped), so escape codes
+// Northstar shows author text as written (every `|` escaped), so escape codes
 // do not work; guide lint (tools/lib/dsl/validate.js) gives the same hint.
-const PIPE_HINT = 'drop the `|`: Polestar shows it as written, so colour and link codes like `|cff` do not work';
+const PIPE_HINT = 'drop the `|`: Northstar shows it as written, so colour and link codes like `|cff` do not work';
 // A value for each key, for the hints.
 const EXAMPLE = {
 	id: 'joe-routes',
@@ -31,7 +31,7 @@ const EXAMPLE = {
 	website: 'https://github.com/joe/joe-routes',
 	source: 'https://github.com/joe/joe-routes',
 	notes: 'Leveling routes for Elwynn Forest and Westfall',
-	folder: 'PolestarPack_JoesRoutes',
+	folder: 'NorthstarPack_JoesRoutes',
 };
 const example = (key) => `"${key}": ${JSON.stringify(EXAMPLE[key])}`;
 
@@ -79,7 +79,7 @@ function validateManifest(obj, file, { official = false, text = null } = {}) {
 			if (!PACK_ID_RE.test(v)) {
 				error(key, `pack id "${v}" is malformed: 2 to 32 lowercase letters, digits and dashes, starting with a letter or digit`, ID_HINT);
 			} else if (RESERVED_IDS.has(v) && !(official && v === 'guides')) {
-				error(key, `pack id "${v}" is reserved for Polestar (${[...RESERVED_IDS].map((r) => `"${r}"`).join(', ')} are)`, ID_HINT);
+				error(key, `pack id "${v}" is reserved for Northstar (${[...RESERVED_IDS].map((r) => `"${r}"`).join(', ')} are)`, ID_HINT);
 			}
 		} else if (key === 'version') {
 			if (!VERSION_RE.test(v)) error(key, `version "${v}" is malformed: one word of letters, digits, ".", "+" and "-", at most 32 characters`, 'write a version like "1.2.0"');
@@ -87,9 +87,9 @@ function validateManifest(obj, file, { official = false, text = null } = {}) {
 			if (!/^https?:\/\//.test(v)) error(key, `website "${v}" must start with https:// or http://`, 'write the full address, like "https://github.com/you/your-pack"');
 		} else if (key === 'folder') {
 			if (!FOLDER_RE.test(v)) {
-				error(key, `folder "${v}" is malformed: 1 to 64 letters, digits, "_" and "-"`, 'pick a folder like "PolestarPack_JoesRoutes", or leave `folder` out for the default');
-			} else if (OUR_FOLDER_RE.test(v) && !(official && v === 'Polestar_Guides')) {
-				error(key, `folder "${v}" looks like one of Polestar's own addons`, 'pick a folder that does not start with "Polestar_", like "PolestarPack_JoesRoutes"');
+				error(key, `folder "${v}" is malformed: 1 to 64 letters, digits, "_" and "-"`, 'pick a folder like "NorthstarPack_JoesRoutes", or leave `folder` out for the default');
+			} else if (OUR_FOLDER_RE.test(v) && !(official && v === 'Northstar_Guides')) {
+				error(key, `folder "${v}" looks like one of Northstar's or Polestar's own addons`, 'pick a folder that does not start with "Northstar_" or "Polestar_", like "MyPack_JoesRoutes"');
 			}
 		}
 	}
@@ -116,14 +116,14 @@ function readPackFile(dir, name) {
 	} catch {
 		return {};
 	}
-	if (!st.isFile()) return { error: `${name} is a link or not a plain file; Polestar reads only a plain file in the pack folder` };
+	if (!st.isFile()) return { error: `${name} is a link or not a plain file; Northstar reads only a plain file in the pack folder` };
 	let rel;
 	try {
 		rel = path.relative(fs.realpathSync(dir), fs.realpathSync(file));
 	} catch {
 		return {};
 	}
-	if (rel !== name) return { error: `${name} lies outside the pack folder; Polestar reads only a plain file in the pack folder` };
+	if (rel !== name) return { error: `${name} lies outside the pack folder; Northstar reads only a plain file in the pack folder` };
 	try {
 		return { text: fs.readFileSync(file, 'utf8') };
 	} catch {

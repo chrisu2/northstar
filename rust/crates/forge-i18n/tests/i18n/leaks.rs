@@ -95,8 +95,8 @@ leaks.try("a test window", function()
 	local f = CreateFrame("Frame", nil, UIParent)
 	local fs = f:CreateFontString()
 	fs:SetText("Kill ten wolves near the farm")
-	fs:SetText(Polestar.L["Open settings"])
-	fs:SetText(UnitName("player") .. " · " .. C_Map.GetMapInfo(1429).name .. " · Polestar · /polestar guides")
+	fs:SetText(Northstar.L["Open settings"])
+	fs:SetText(UnitName("player") .. " · " .. C_Map.GetMapInfo(1429).name .. " · Northstar · /polestar guides")
 	GameTooltip:SetOwner(UIParent)
 	GameTooltip:AddLine("Left-click to open")
 end)"#,
@@ -115,11 +115,11 @@ fn author_credits_keep_proper_names_while_their_label_and_prose_are_checked() {
 	let r = planted(
 		"zhCN",
 		r#"
-Polestar.RegisterPack({ addon="Polestar_Test", id="test", format=1, title="Test", author="NorthernScribe", version="1", license="MIT" })
-Polestar.RegisterGuide({ id="test/credits", pack="test", title="署名", author="NorthernScribe", minLevel=1, maxLevel=60, steps={{goals={{t="note",text="说明"}}}}})
+Northstar.RegisterPack({ addon="Northstar_Test", id="test", format=1, title="Test", author="NorthernScribe", version="1", license="MIT" })
+Northstar.RegisterGuide({ id="test/credits", pack="test", title="署名", author="NorthernScribe", minLevel=1, maxLevel=60, steps={{goals={{t="note",text="说明"}}}}})
 leaks.try("author credit", function()
 	local fs=CreateFrame("Frame",nil,UIParent):CreateFontString()
-	fs:SetText(string.format(Polestar.L["By %s"],"NorthernScribe"))
+	fs:SetText(string.format(Northstar.L["By %s"],"NorthernScribe"))
 	fs:SetText("NorthernScribe says kill ten wolves")
 	fs:SetText("Author: NorthernScribe")
 end)"#,
@@ -149,15 +149,15 @@ fn english_is_found_with_its_scene_even_where_a_translation_uses_the_same_words(
 			&format!(
 				r#"
 leaks.try("the accept button", function()
-	rawset(Polestar.L, "Accept", "Accept")
-	CreateFrame("Frame", nil, UIParent):CreateFontString():SetText(Polestar.L["Accept"])
+	rawset(Northstar.L, "Accept", "Accept")
+	CreateFrame("Frame", nil, UIParent):CreateFontString():SetText(Northstar.L["Accept"])
 end)
 leaks.try("a hard-coded label", function() CreateFrame("Frame", nil, UIParent):CreateFontString():SetText("Open the guide path") end)
 leaks.try("a slash hint", function() CreateFrame("Frame", nil, UIParent):CreateFontString():SetText("/polestar guides to pick one") end)
 leaks.try("the Elwynn guide", function()
-	local E = Polestar.Engine
+	local E = Northstar.Engine
 	E.SetGuide({}); stub.advance(0.3)
-	if PolestarGuideFrame then PolestarGuideFrame:Show() end
+	if NorthstarGuideFrame then NorthstarGuideFrame:Show() end
 	for i = 1, E.GetStepCount() do E.Goto(i); stub.advance(0.1) end
 end)"#,
 				leaks::quote(ELWYNN)
@@ -181,7 +181,7 @@ end)"#,
 #[test]
 fn the_allow_list_patterns_compile_and_cut_what_they_allow() {
 	let allow = load_allow(root()).unwrap();
-	let flagged: Vec<String> = ["see", "docs", "Polestar", "guides", "pick"].iter().map(|s| s.to_string()).collect();
-	let left = leaks::leak_words("see docs/TRANSLATING.md · Polestar · https://polestar.gg/x · /polestar guides to pick", &flagged, &allow, "ruRU");
+	let flagged: Vec<String> = ["see", "docs", "Northstar", "guides", "pick"].iter().map(|s| s.to_string()).collect();
+	let left = leaks::leak_words("see docs/TRANSLATING.md · Northstar · https://polestar.gg/x · /polestar guides to pick", &flagged, &allow, "ruRU");
 	assert_eq!(left, ["see", "pick"]);
 }

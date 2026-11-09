@@ -116,9 +116,9 @@ function duplicateLead(repo, of, target) {
 	const { issue, note } = target;
 	const labels = labelNames(issue);
 	const released = labels.find(isReleased);
-	if (released) return `It's the same bug as ${link}, and the fix is out in Polestar ${released.slice('released:'.length).replace(/^v/, '')}: update Polestar to get it.`;
+	if (released) return `It's the same bug as ${link}, and the fix is out in Northstar ${released.slice('released:'.length).replace(/^v/, '')}: update Northstar to get it.`;
 	if (labels.includes('fix-merged') || (issue.state === 'closed' && issue.state_reason === 'completed')) {
-		return `It's the same bug as ${link}, and that's already fixed: it ships in the next Polestar update.`;
+		return `It's the same bug as ${link}, and that's already fixed: it ships in the next Northstar update.`;
 	}
 	if (issue.state === 'closed' && issue.state_reason === 'not_planned') {
 		const why = labels.map((l) => NOT_PLANNED_THERE[l]).find(Boolean) || 'we\'ve decided not to change it';
@@ -151,7 +151,7 @@ function issueMessage({ repo, issue, action, owner, comments, duplicate = null }
 		content += `\nThanks for the report! (${link})`;
 		return { role: 'wontfix', locked: true, content };
 	}
-	return { role: 'fixed', locked: true, content: `${ping}This is fixed and will ship in the next Polestar update. Thanks for the report! (${link})` };
+	return { role: 'fixed', locked: true, content: `${ping}This is fixed and will ship in the next Northstar update. Thanks for the report! (${link})` };
 }
 
 // "The fix is out"; of, for a duplicate, the issue whose fix it is.
@@ -159,7 +159,7 @@ function releaseMessage({ repo, issue, release, owner, of = null }) {
 	const name = release.name || release.tag_name;
 	const ping = owner ? `<@${owner}> ` : '';
 	const what = of ? `The fix for ${issueLink(repo, of)}, the same bug as yours, is out` : 'The fix is out';
-	return `${ping}${what} in **${name}**: update Polestar to get it. ([release notes](<${release.html_url}>), ${issueLink(repo, issue.number)})`;
+	return `${ping}${what} in **${name}**: update Northstar to get it. ([release notes](<${release.html_url}>), ${issueLink(repo, issue.number)})`;
 }
 
 // The thread an issue was filed from, or null (not the bot's issue, no

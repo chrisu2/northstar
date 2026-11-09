@@ -1,17 +1,17 @@
 'use strict';
 // Turns a codex object (the data/forever/codex JSON shape, e.g.
-// tests/fixtures/codex/sample.json) into a loadable Polestar_Codex pack.
+// tests/fixtures/codex/sample.json) into a loadable Northstar_Codex pack.
 //
 //   const { writeCodexPack, sampleCodex } = require('./helpers/codex');
 //   const pack = writeCodexPack(sampleCodex());
 //   runAddon({
-//     before: pack.stubLua,      // C_AddOns.LoadAddOn("Polestar_Codex") dofiles the pack
-//     addons: ['Polestar'],
-//     script: 'emit(Polestar.Codex.Load())',
+//     before: pack.stubLua,      // C_AddOns.LoadAddOn("Northstar_Codex") dofiles the pack
+//     addons: ['Northstar'],
+//     script: 'emit(Northstar.Codex.Load())',
 //   });
 //   pack.cleanup();
 //
-// `loadLua` dofiles the pack directly (run it after Polestar has loaded);
+// `loadLua` dofiles the pack directly (run it after Northstar has loaded);
 // `stubLua` instead makes the stubbed client load it when asked, the way the
 // game does, so Data.Pack / Codex.Load / Search behave as in game.
 

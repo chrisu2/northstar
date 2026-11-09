@@ -1,4 +1,4 @@
-//! `skipto` jumps and the `done <label>` predicate at runtime (addon/Polestar/Core/Engine.lua, Own.jump and
+//! `skipto` jumps and the `done <label>` predicate at runtime (addon/Northstar/Core/Engine.lua, Own.jump and
 //! Own.labelDone; docs/GUIDE_FORMAT.md, "Jumps"). When the route reaches a step whose jump holds, that step and
 //! every step up to the labelled one are skipped for the character, saved as "jump" in CharState().skipped, so
 //! the jump does not undo itself when the predicate turns false later. `done <label>` holds once the labelled
@@ -17,7 +17,7 @@ w.titles[783] = "A Threat Within"; w.titles[7] = "Kobold Camp Cleanup"
 // 1 accept 7, jump to "end" while holding a candle · 2 kill 10 vermin for 7 · 3 "mid": accept 783 ·
 // 4 "end": level 4 · 5 only when "mid" is done: level 5 · 6 level 6
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/jump", pack = "test", title = "Jump", minLevel = 1, maxLevel = 6,
 	steps = {
 		{ title = "McBride", skipto = { { to = "end", when = { k = "has", item = 750, n = 1 } } },
@@ -32,11 +32,11 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 function flush() stub.advance(0.25) end
 -- The saved skips of steps 1-6, "nil" where none.
 function jumps()
-	local sk = Polestar.CharState().skipped["test/jump"] or {}
+	local sk = Northstar.CharState().skipped["test/jump"] or {}
 	local out = {}
 	for s = 1, 6 do out[#out + 1] = tostring(sk[s]) end
 	return table.concat(out, " ")
@@ -44,7 +44,7 @@ end
 "#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 fn run_with(script: &str, before: &str, log: bool) -> Value {
@@ -52,7 +52,7 @@ fn run_with(script: &str, before: &str, log: bool) -> Value {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{before}"),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/jump" }"#.into())],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/jump" }"#.into())],
 		script: [TEST_PACK, TEST_SOURCE, GUIDE, HELPERS, "stub.login()", if log { r#"stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)"# } else { "" }, script].join("\n"),
 		..Default::default()
 	}))
@@ -163,12 +163,12 @@ fn steps_whose_when_done_ask_about_each_other_or_a_step_about_itself_are_not_don
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/loop" }"#.into())],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/loop" }"#.into())],
 		script: [
 			TEST_PACK,
 			TEST_SOURCE,
 			r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/loop", pack = "test", title = "Loop", minLevel = 1, maxLevel = 6,
 	steps = {
 		{ title = "A", label = "a", when = { { k = "done", label = "b" } }, goals = { { t = "level", level = 2 } } },
@@ -177,7 +177,7 @@ Polestar.RegisterGuide({
 	},
 })
 stub.login(); stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)
-emit(Polestar.Engine.GetLiveStep())"#,
+emit(Northstar.Engine.GetLiveStep())"#,
 		]
 		.join("\n"),
 		..Default::default()
@@ -195,17 +195,17 @@ fn guides_validate_checks_skipto_and_done() {
 		end
 		local G = { { t = "level", level = 2 } }
 		local ok = { k = "level", op = ">=", n = 2 }
-		emit(Polestar.Guides.Validate(def({ { skipto = { { to = "b", when = ok } }, goals = G }, { label = "b", goals = G } })) == nil)
-		emit(Polestar.Guides.Validate(def({ { label = "b", goals = G }, { when = { { k = "done", label = "b" } }, goals = G } })) == nil)
-		emit(Polestar.Guides.Validate(def({ { skipto = { { to = "b", when = { k = "bogus" } } }, goals = G }, { label = "b", goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { skipto = { { to = "nowhere", when = ok } }, goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { label = "b", goals = G }, { skipto = { { to = "b", when = ok } }, goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { skipto = "b", goals = G }, { label = "b", goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { skipto = { { to = "b" } }, goals = G }, { label = "b", goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { skipto = { { to = "b", when = { k = "done", label = "x" } } }, goals = G }, { label = "b", goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { when = { { k = "done", label = "x" } }, goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { when = { { k = "done" } }, goals = G } })))
-		emit(Polestar.Guides.Validate(def({ { label = "b", goals = G } }, { next = "test/y", nextChoices = { "test/y" }, nextWhen = { ["test/y"] = { { k = "done", label = "b" } } } })))
+		emit(Northstar.Guides.Validate(def({ { skipto = { { to = "b", when = ok } }, goals = G }, { label = "b", goals = G } })) == nil)
+		emit(Northstar.Guides.Validate(def({ { label = "b", goals = G }, { when = { { k = "done", label = "b" } }, goals = G } })) == nil)
+		emit(Northstar.Guides.Validate(def({ { skipto = { { to = "b", when = { k = "bogus" } } }, goals = G }, { label = "b", goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { skipto = { { to = "nowhere", when = ok } }, goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { label = "b", goals = G }, { skipto = { { to = "b", when = ok } }, goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { skipto = "b", goals = G }, { label = "b", goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { skipto = { { to = "b" } }, goals = G }, { label = "b", goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { skipto = { { to = "b", when = { k = "done", label = "x" } } }, goals = G }, { label = "b", goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { when = { { k = "done", label = "x" } }, goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { when = { { k = "done" } }, goals = G } })))
+		emit(Northstar.Guides.Validate(def({ { label = "b", goals = G } }, { next = "test/y", nextChoices = { "test/y" }, nextWhen = { ["test/y"] = { { k = "done", label = "b" } } } })))
 	"#);
 	assert_eq!(
 		out,

@@ -1,4 +1,4 @@
-//! `codex build --offline` (release build: data/forever/codex/*.json, the Polestar_Codex pack and the
+//! `codex build --offline` (release build: data/forever/codex/*.json, the Northstar_Codex pack and the
 //! warnings) on the world slice (+ the professions golden's professions.json), client table slices and
 //! the guide slice: rust/tests/golden/codex (README there).
 

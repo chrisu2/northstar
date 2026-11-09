@@ -205,7 +205,7 @@ pub fn check_images(guides: &[V], pack_dir: &Path, diag: &mut Diagnostics) {
 					diag.warn(
 						&file,
 						line,
-						format!("image {rel} is not a TGA or BLP picture Polestar can read the size of"),
+						format!("image {rel} is not a TGA or BLP picture Northstar can read the size of"),
 						Some("save it as a .tga file, or give its size: `image <path> <width>x<height>`".into()),
 					);
 				}

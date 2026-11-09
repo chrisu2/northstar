@@ -1,7 +1,7 @@
 'use strict';
 // The tests of the addon alone are rust/crates/forge-addontest/tests/addontest/nav-transit.rs;
 // these need the travel tools (tools/lib/travel).
-// Transport timing (addon/Polestar/Nav/Transit.lua) and its generator
+// Transport timing (addon/Northstar/Nav/Transit.lua) and its generator
 // (tools/lib/travel/timetable.js, cmangos.js), after Shortest Path Forever by
 // Cillian Berragan: departure maths (phase, wrap, boarding), untimed average
 // waits, sightings and the ride observer correcting a drifted one, the
@@ -29,11 +29,11 @@ const FIX = path.join(__dirname, 'fixtures', 'travel');
 
 // --- the addon ---------------------------------------------------------------
 
-const TRANSIT = { name: 'Polestar', files: ['Core/Init.lua', 'Core/Compat.lua', 'Nav/Transit.lua'] };
+const TRANSIT = { name: 'Northstar', files: ['Core/Init.lua', 'Core/Compat.lua', 'Nav/Transit.lua'] };
 
 // A boat loop of 100 s: docked at A 0-20 s, at B 50-70 s; and a lift.
 const DATA = `
-local T = Polestar.Transit
+local T = Northstar.Transit
 T.Register({
 	routes = {
 		r = { kind = "boat", period = 100000, fit = { samples = 10, span = 15000, speed = 12 },
@@ -60,7 +60,7 @@ local function nowMs() return T.Now() * 1000 end
 local function at(p, source) return { epoch = nowMs() - p, seen = math.floor(T.Now()), source = source or "you" } end
 local function round(v) return v and math.floor(v * 10 + 0.5) / 10 end
 -- The sighting held for a route (the store is per realm; there is one here).
-local function held(id) for _, s in pairs(Polestar.DB().transit or {}) do return s[id] end end
+local function held(id) for _, s in pairs(Northstar.DB().transit or {}) do return s[id] end end
 `;
 
 function lua(script, opts = {}) {
@@ -202,11 +202,11 @@ test('`travel build` with timetable sources: Transit data in TravelData.lua, loa
 		fs.writeFileSync(file, one.lua);
 		const [lifts, ferry] = runAddon({
 			stubs: ['stub_nav.lua'],
-			addons: [{ name: 'Polestar', files: ['Core/Init.lua', 'Nav/Nav.xml'] }],
+			addons: [{ name: 'Northstar', files: ['Core/Init.lua', 'Nav/Nav.xml'] }],
 			script: `
 				local chunk = assert(loadfile(${JSON.stringify(file)}))
-				chunk("Polestar", Polestar)
-				local T = Polestar.Transit
+				chunk("Northstar", Northstar)
+				local T = Northstar.Transit
 				emit(T.Lifts())
 				emit({ T.NextDeparture("boat", "boat-feathermoon", T.Now(), "a") })
 			`,
@@ -230,12 +230,12 @@ test('the model reproduces every period CMaNGOS classic-db sniffed (local client
 
 // --- review fixes ---------------------------------------------------------------
 
-const TRAVEL_DATA = path.join(ROOT, 'addon', 'Polestar', 'Nav', 'TravelData.lua');
+const TRAVEL_DATA = path.join(ROOT, 'addon', 'Northstar', 'Nav', 'TravelData.lua');
 
 // Two cars on one lift loop, 20 yd apart: car 1 at x = 0 starts at the top,
 // car 2 at x = 20 at the bottom; each rides 10 s and rests 5 s at each end.
 const TWO_CARS = `
-local T = Polestar.Transit
+local T = Northstar.Transit
 T.Register({
 	routes = {
 		duo = { kind = "lift", period = 30000, fit = { samples = 5, span = 4000, speed = 8 },
@@ -253,15 +253,15 @@ T.Register({
 `;
 
 const SHARE = `${DATA}
-Polestar.Set("nav.shareTransit", true)
+Northstar.Set("nav.shareTransit", true)
 FIRED = {}
-Polestar.On("NAV_TRANSIT", function(changed, own)
+Northstar.On("NAV_TRANSIT", function(changed, own)
 	local ids = {}
 	for id in pairs(changed or {}) do ids[#ids + 1] = id end
 	table.sort(ids)
 	FIRED[#FIRED + 1] = { table.concat(ids, ","), own or false }
 end)
-local function msg(text, chatType, sender) stub.fire("CHAT_MSG_ADDON", "PolestarT1", text, chatType or "GUILD", sender or "Friend") end
+local function msg(text, chatType, sender) stub.fire("CHAT_MSG_ADDON", "NorthstarT1", text, chatType or "GUILD", sender or "Friend") end
 `;
 const SHARE_STUBS = 'SENT = {}; C_ChatInfo = { RegisterAddonMessagePrefix = function() return true end, SendAddonMessage = function(...) SENT[#SENT + 1] = { ... } end }; GetNormalizedRealmName = function() return "TestRealm" end';
 

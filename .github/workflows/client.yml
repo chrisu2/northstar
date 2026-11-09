@@ -5,7 +5,7 @@ name: Client release
 # also runs on Windows on Arm) and macOS (universal dmg for
 # Apple silicon and Intel) and attaches them, with the updater's signatures and
 # latest.json, to a DRAFT release. The maintainer publishes it (not as the
-# repo's "latest", which stays Polestar's); the app's updater only sees
+# repo's "latest", which stays Northstar's); the app's updater only sees
 # published, non-prerelease client-v* releases.
 #
 # The builds hold no secrets: Linux and Windows build unsigned with a read-only

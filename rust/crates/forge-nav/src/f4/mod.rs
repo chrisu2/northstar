@@ -4,7 +4,7 @@
 //! index.js), which port Leffe's format-4 reader (his Routing/Motion.lua, PathGrid.lua, Path.lua, Costs.lua) bit for
 //! bit: same heap and ties, same expansion order, same float arithmetic. Path.lua and PathGrid.lua started from
 //! Shortest Path Forever v1.16.0 by Cillian Berragan. Copyright (C) 2026 Cillian Berragan; Copyright (c) 2026 The
-//! Polestar authors (Leffe's reader). GPL-3.0-or-later.
+//! Northstar authors (Leffe's reader). GPL-3.0-or-later.
 //!
 //! The core is wasm-safe: decoders take bytes through a [`PackSource`]; [`NavDir`] reads a Nav folder (feature
 //! `native`). Decoded clusters live in one byte-bounded LRU shared by every thread; `F4` is `Send + Sync`.

@@ -138,8 +138,8 @@ fn world(c: &Ctx, tail: &str) -> String {
 
 const PLAY: &str = r#"
 stub.login()
-local id, why = Polestar.Lookup.Guide(@KIND@, @ID@, @INDEX@)
-local g = id and Polestar.Guides.Get(id)
+local id, why = Northstar.Lookup.Guide(@KIND@, @ID@, @INDEX@)
+local g = id and Northstar.Guides.Get(id)
 local steps = {}
 if g then
 	for i, s in ipairs(g.steps) do
@@ -148,7 +148,7 @@ if g then
 		steps[i] = { title = s.title, goals = table.concat(verbs, " ") }
 	end
 end
-emit({ id = id or false, why = why or false, active = Polestar.Engine.GetGuide() and Polestar.Engine.GetGuide().id or false, steps = steps })
+emit({ id = id or false, why = why or false, active = Northstar.Engine.GetGuide() and Northstar.Engine.GetGuide().id or false, steps = steps })
 stub.advance(0.6)
 "#;
 
@@ -159,7 +159,7 @@ fn play(c: &Ctx, kind: &str, id: &Value, level: i64, setup: &str) -> (Value, Val
 	let mut out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: world(c, &format!("w.level = {level}\nw.moveTo({}, 50, 50)\n{setup}", c.home)),
-		addons: vec!["Polestar".into()],
+		addons: vec!["Northstar".into()],
 		script: PLAY.replace("@KIND@", &lua_value(&json!(kind))).replace("@ID@", &lua_value(id)).replace("@INDEX@", index) + SIMULATE,
 		..Default::default()
 	});
@@ -246,11 +246,11 @@ fn an_event_objective_explore_report_is_placed_where_the_data_puts_it_not_at_the
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: world(&c, &format!("w.level = 20\nw.moveTo({}, 50, 50)", c.home)),
-		addons: vec!["Polestar".into()],
+		addons: vec!["Northstar".into()],
 		script: r#"
 stub.login()
-local id = Polestar.Lookup.Guide("item", 8001)
-for _, s in ipairs(Polestar.Guides.Get(id).steps) do
+local id = Northstar.Lookup.Guide("item", 8001)
+for _, s in ipairs(Northstar.Guides.Get(id).steps) do
 	for _, g in ipairs(s.goals) do
 		if g.t == "complete" and g.quest == 7002 then emit({ map = g.map or false, x = g.x or false, y = g.y or false, f = g.f or false }) end
 	end
@@ -269,11 +269,11 @@ fn a_beast_to_tame_taming_the_beast_reads_tame_not_kill_and_still_plays_565() {
 		json!(emitted(&RunAddon {
 			stubs: vec!["stub_world.lua"],
 			before: world(&c, &format!("w.level = 20\nw.moveTo({}, 50, 50)", c.home)),
-			addons: vec!["Polestar".into()],
+			addons: vec!["Northstar".into()],
 			script: r#"
 stub.login()
-Polestar.Lookup.Guide("quest", @QUEST@)
-local view = Polestar.Engine.GetStepView(1)
+Northstar.Lookup.Guide("quest", @QUEST@)
+local view = Northstar.Engine.GetStepView(1)
 for _, g in ipairs(view.goals) do
 	if g.t == "kill" then emit(g.text) end
 end"#
@@ -351,18 +351,18 @@ fn tazul_s_report_610_a_lookup_quest_objective_lists_every_place_its_mob_spawns_
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: world(&c, &tail),
-		addons: vec!["Polestar".into()],
+		addons: vec!["Northstar".into()],
 		script: r#"
 stub.login()
-local id = Polestar.Lookup.Guide("quest", 7010)
+local id = Northstar.Lookup.Guide("quest", 7010)
 local kill
-for _, s in ipairs(Polestar.Guides.Get(id).steps) do
+for _, s in ipairs(Northstar.Guides.Get(id).steps) do
 	for _, g in ipairs(s.goals) do
 		if g.t == "kill" and g.npc == 5014 then kill = g end
 	end
 end
 stub.advance(0.6)
-local p = Polestar.Engine.GetWaypoint()
+local p = Northstar.Engine.GetWaypoint()
 local spots = {}
 for i, s in ipairs(kill.spots or {}) do spots[i] = { x = s.x, y = s.y } end
 emit({ x = kill.x, y = kill.y, spread = kill.spread or false, spots = spots, arrow = p and { kind = p.kind, x = p.x, y = p.y } or false })"#

@@ -1,4 +1,4 @@
-//! Quality of Life (addon/Polestar/QoL): action buttons and their combat deferral, XP pace and splits, merchant,
+//! Quality of Life (addon/Northstar/QoL): action buttons and their combat deferral, XP pace and splits, merchant,
 //! quest rewards, flight masters, Hearthstone, death helper, questing toggles and the options page. Runs the real
 //! Core/Init.lua + Compat + Theme + QoL against tests/lua/stub_qol.lua (fake Engine, Nav and Pins; secure frames
 //! refuse changes in combat).
@@ -12,8 +12,8 @@ const FILES: [&str; 4] = ["Core/Init.lua", "Core/Compat.lua", "Theme/Theme.xml",
 
 const PRELUDE: &str = r#"
 local q = stub.qol
-local QoL = Polestar.QoL
-local function set(k, v) Polestar.Set("qol." .. k, v); stub.runTimers() end
+local QoL = Northstar.QoL
+local function set(k, v) Northstar.Set("qol." .. k, v); stub.runTimers() end
 local function calls(name)
 	local out = {}
 	for _, c in ipairs(q.calls) do if c[1] == name then out[#out + 1] = c[2] or true end end
@@ -28,9 +28,9 @@ end
 fn run_with(script: &str, before: &str, saved: Option<&str>) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_qol.lua"],
-		addons: vec![Addon::files("Polestar", &FILES)],
+		addons: vec![Addon::files("Northstar", &FILES)],
 		before: before.into(),
-		saved: saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		saved: saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		login: true,
 		script: format!("{PRELUDE}{script}"),
 	})
@@ -58,7 +58,7 @@ fn near(a: &Value, b: f64, eps: f64) {
 fn options_every_qol_setting_is_registered_on_questing_or_quality_of_life_with_label_and_help() {
 	let out = run(r#"
 		local out = {}
-		for _, spec in ipairs(Polestar.Widgets.OptionsRegistry) do
+		for _, spec in ipairs(Northstar.Widgets.OptionsRegistry) do
 			if spec.page == "Quality of Life" or spec.page == "Questing" then
 				for _, c in ipairs(spec.controls) do
 					out[#out + 1] = { key = c.key, kind = c.kind, label = c.label, help = c.help, page = spec.page, tab = spec.tab, section = spec.section }
@@ -71,7 +71,7 @@ fn options_every_qol_setting_is_registered_on_questing_or_quality_of_life_with_l
 			"rewardHighlight", "rewardAutoPick", "flightAutoOpen", "flightHighlight", "deathHelper", "instantQuestText",
 			"skipGossip", "fastLoot", "declineDuels", "repairGuild", "hideErrors", "autoReleasePvP", "declineGuildInvites",
 			"declinePartyStrangers", "acceptPartyFriends", "acceptSummon", "acceptResurrect", "buyGoals", "trainAll",
-			"rewardEquip", "autoBind", "hideQuestTracker", "restock", "itemMarks", "bagSpace", "bagsLow", "wearOffer" }) do keys[k] = Polestar.GetDefault("qol." .. k) end
+			"rewardEquip", "autoBind", "hideQuestTracker", "restock", "itemMarks", "bagSpace", "bagsLow", "wearOffer" }) do keys[k] = Northstar.GetDefault("qol." .. k) end
 		emit(keys)
 	"#);
 	let (specs, defaults) = (&out[0], &out[1]);
@@ -110,7 +110,7 @@ fn options_every_qol_setting_is_registered_on_questing_or_quality_of_life_with_l
 #[test]
 fn quest_item_button_the_current_use_goal_item_else_a_quest_log_item_else_a_usable_quest_item_one_of_the_step_s_open_quests_handed_over() {
 	let out = run(r#"
-		local b = PolestarQuestItemButton
+		local b = NorthstarQuestItemButton
 		q.items[900] = { name = "Torch", classID = 12, spell = 11 }
 		q.items[901] = { name = "Quest Wand", classID = 12 }
 		q.items[902] = { name = "Bag Quest Thing", classID = 12, spell = 12 }
@@ -133,7 +133,7 @@ fn quest_item_button_the_current_use_goal_item_else_a_quest_log_item_else_a_usab
 		q.addItem(0, 1, 903, 10)
 		q.step({ { t = "kill", target = "Wolf", quest = 5, oi = 1 } })
 		emit({ b:GetAttribute("item") or "nil", b:IsShown() })
-		Polestar.QuestDB = { IsLoaded = function() return true end, HandsOver = function(quest, item) return quest == 5 and item == 902 end }
+		Northstar.QuestDB = { IsLoaded = function() return true end, HandsOver = function(quest, item) return quest == 5 and item == 902 end }
 		q.step({ { t = "kill", target = "Wolf", quest = 5, oi = 1 } })
 		emit({ b:GetAttribute("item") or "nil", b:IsShown() })
 
@@ -164,7 +164,7 @@ fn quest_item_button_the_current_use_goal_item_else_a_quest_log_item_else_a_usab
 #[test]
 fn secure_buttons_changes_during_combat_wait_for_player_regen_enabled_display_still_updates() {
 	let out = run(r#"
-		local b, t = PolestarQuestItemButton, PolestarTargetButton
+		local b, t = NorthstarQuestItemButton, NorthstarTargetButton
 		q.items[900] = { name = "Torch" }
 		q.items[903] = { name = "Bomb" }
 		q.addItem(0, 1, 900, 1)
@@ -188,7 +188,7 @@ fn secure_buttons_changes_during_combat_wait_for_player_regen_enabled_display_st
 fn secure_buttons_the_name_sits_on_the_chosen_side_of_every_button() {
 	let out = run(r#"
 		local function side(b) local p, _, rp, x, y = b.Label:GetPoint(1); return { p, rp, x, y } end
-		local all = { PolestarQuestItemButton, PolestarTargetButton, PolestarHearthButton }
+		local all = { NorthstarQuestItemButton, NorthstarTargetButton, NorthstarHearthButton }
 		for _, v in ipairs({ "right", "left", "above", "below", "nonsense" }) do
 			set("buttonTextSide", v)
 			emit({ side(all[1]), side(all[2]), side(all[3]) })
@@ -207,11 +207,11 @@ fn secure_buttons_the_name_sits_on_the_chosen_side_of_every_button() {
 #[test]
 fn secure_buttons_key_labels_are_short_and_stay_inside_the_button() {
 	let out = run(r#"
-		local K = Polestar.QoL.Buttons.KeyText
+		local K = Northstar.QoL.Buttons.KeyText
 		GetBindingText = function(key) return ({ F = "F", NUMPAD5 = "Num 5" })[key] or key end
-		q.bindings["CLICK PolestarTargetButton:LeftButton"] = { "BUTTON4" }
+		q.bindings["CLICK NorthstarTargetButton:LeftButton"] = { "BUTTON4" }
 		stub.fire("UPDATE_BINDINGS")
-		local h = PolestarTargetButton.Hotkey
+		local h = NorthstarTargetButton.Hotkey
 		local _, _, rp = h:GetPoint(2)
 		emit({ h:GetText(), rp, h:GetWordWrap(), K("SHIFT-BUTTON5"), K("CTRL-ALT-MOUSEWHEELUP"), K("MOUSEWHEELDOWN"),
 			K("F"), K("SHIFT-NUMPAD5"), K(nil) == nil })
@@ -222,7 +222,7 @@ fn secure_buttons_key_labels_are_short_and_stay_inside_the_button() {
 #[test]
 fn secure_buttons_an_above_name_sits_over_a_quest_item_button_shown_above_the_target_button() {
 	let out = run(r#"
-		local t = PolestarTargetButton
+		local t = NorthstarTargetButton
 		local function over() local _, rel = t.Label:GetPoint(1); return rel and rel:GetName() end
 		set("buttonTextSide", "above")
 		q.step({ { t = "kill", target = "Murloc" } })
@@ -234,9 +234,9 @@ fn secure_buttons_an_above_name_sits_over_a_quest_item_button_shown_above_the_ta
 		q.step({ { t = "kill", target = "Gnoll" } })
 		emit({ over() })
 	"#);
-	assert_eq!(out[0], json!(["PolestarTargetButton"]));
-	assert_eq!(out[1], json!(["PolestarQuestItemButton"]), "clear of the quest item button, not in the gap under it");
-	assert_eq!(out[2], json!(["PolestarTargetButton"]), "back on the target button once the item button goes");
+	assert_eq!(out[0], json!(["NorthstarTargetButton"]));
+	assert_eq!(out[1], json!(["NorthstarQuestItemButton"]), "clear of the quest item button, not in the gap under it");
+	assert_eq!(out[2], json!(["NorthstarTargetButton"]), "back on the target button once the item button goes");
 }
 
 #[test]
@@ -246,9 +246,9 @@ fn secure_buttons_a_login_under_combat_lockdown_reload_mid_fight_defers_every_pr
 		q.items[900] = { name = "Torch" }
 		q.addItem(0, 1, 900, 1)
 		q.step({ { t = "use", item = 900, quest = 7 } })
-		emit({ PolestarQuestItemButton:GetAttribute("item") or "nil", QoL.HasQueued("item:PolestarQuestItemButton") })
+		emit({ NorthstarQuestItemButton:GetAttribute("item") or "nil", QoL.HasQueued("item:NorthstarQuestItemButton") })
 		q.combat(false)
-		emit({ PolestarQuestItemButton:GetAttribute("item"), PolestarQuestItemButton:IsShown(), PolestarTargetButton:IsShown() })
+		emit({ NorthstarQuestItemButton:GetAttribute("item"), NorthstarQuestItemButton:IsShown(), NorthstarTargetButton:IsShown() })
 	"#,
 		"stub.inCombat = true",
 		None,
@@ -261,7 +261,7 @@ fn secure_buttons_a_login_under_combat_lockdown_reload_mid_fight_defers_every_pr
 fn quest_item_button_range_tint_and_cooldown_follow_the_item() {
 	let out = run_with(
 		r#"
-		local b = PolestarQuestItemButton
+		local b = NorthstarQuestItemButton
 		q.items[900] = { name = "Torch" }
 		q.addItem(0, 1, 900, 1)
 		q.cooldowns[900] = { 50, 10 }
@@ -287,7 +287,7 @@ fn quest_item_button_range_tint_and_cooldown_follow_the_item() {
 #[test]
 fn target_button_kill_targets_and_questdb_droppers_preferred_name_first_each_click_cycles() {
 	let out = run(r#"
-		local t = PolestarTargetButton
+		local t = NorthstarTargetButton
 		q.step({
 			{ t = "kill", target = "Kobold Vermin", quest = 7, oi = 1 },
 			{ t = "collect", item = 950, itemName = "Candle", quest = 7, oi = 2 },
@@ -295,11 +295,11 @@ fn target_button_kill_targets_and_questdb_droppers_preferred_name_first_each_cli
 		})
 		-- no QuestDB yet: kill targets only
 		emit(t:GetAttribute("macrotext"))
-		Polestar.QuestDB = {
+		Northstar.QuestDB = {
 			IsLoaded = function() return true end,
 			GetObjectiveMobs = function(quest, oi) if quest == 7 and oi == 2 then return { "Kobold Laborer", "Kobold Vermin" } end end,
 		}
-		Polestar.Fire("QUESTDB_LOADED")
+		Northstar.Fire("QUESTDB_LOADED")
 		stub.runTimers()
 		emit({ t:GetAttribute("type"), t:GetAttribute("macrotext"), t.Label:GetText() })
 		q.click(t, true)   -- key down: no change
@@ -326,21 +326,21 @@ fn target_button_kill_targets_and_questdb_droppers_preferred_name_first_each_cli
 #[test]
 fn target_button_a_collect_names_the_mobs_the_arrow_leads_to_first_356_then_the_item_s_droppers() {
 	let out = run(r#"
-		local B = Polestar.QoL.Buttons
-		local t = PolestarTargetButton
+		local B = Northstar.QoL.Buttons
+		local t = NorthstarTargetButton
 		local function names()
 			local out = {}
 			for i, n in ipairs(B.TargetNames()) do out[i] = n end
 			return out
 		end
-		Polestar.QuestDB = {
+		Northstar.QuestDB = {
 			IsLoaded = function() return true end,
 			-- The item's droppers, ranked by drop chance over the whole world:
 			-- none of Small Spider Leg's best five is in Teldrassil.
 			GetObjectiveMobs = function(quest, oi) if quest == 7 and oi == 1 then return { "Mother Fang", "Cliff Lurker", "Mist Creeper" } end end,
 			GetItemDroppers = function(item) if item == 5465 then return { { name = "Mother Fang" }, { name = "Cliff Lurker" } } end end,
 		}
-		Polestar.Fire("QUESTDB_LOADED")
+		Northstar.Fire("QUESTDB_LOADED")
 		stub.runTimers()
 		-- The guide's own sources for this point come first, the one the point
 		-- belongs to leading; the item's droppers follow.
@@ -359,7 +359,7 @@ fn target_button_a_collect_names_the_mobs_the_arrow_leads_to_first_356_then_the_
 			fromNpcs = { { npc = 1998, npcName = "Webwood Lurker\n/run X()" }, { npc = 2001, npcName = "Giant Webwood Spider" } } } })
 		emit({ names(), t:GetAttribute("macrotext") })
 		-- Without the quest database the guide's own sources still name the mobs.
-		Polestar.QuestDB = nil
+		Northstar.QuestDB = nil
 		q.step({ { t = "collect", item = 5465, itemName = "Small Spider Leg", quest = 7, oi = 1,
 			fromNpcs = { { npc = 1998, npcName = "Webwood Lurker" } } } })
 		emit(names())
@@ -375,9 +375,9 @@ fn target_button_a_collect_names_the_mobs_the_arrow_leads_to_first_356_then_the_
 #[test]
 fn target_button_every_open_goal_gets_a_name_one_goal_s_many_mobs_do_not_crowd_out_the_rest_571() {
 	let out = run(r#"
-		local B = Polestar.QoL.Buttons
-		local t = PolestarTargetButton
-		Polestar.QuestDB = {
+		local B = Northstar.QoL.Buttons
+		local t = NorthstarTargetButton
+		Northstar.QuestDB = {
 			IsLoaded = function() return true end,
 			GetObjectiveMobs = function(quest, oi)
 				if quest ~= 488 then return nil end
@@ -386,7 +386,7 @@ fn target_button_every_open_goal_gets_a_name_one_goal_s_many_mobs_do_not_crowd_o
 				if oi == 3 then return { "Webwood Lurker", "Webwood Venomfang", "Webwood Silkspinner", "Giant Webwood Spider" } end
 			end,
 		}
-		Polestar.Fire("QUESTDB_LOADED")
+		Northstar.Fire("QUESTDB_LOADED")
 		stub.runTimers()
 		-- Zenn's Bidding: the fang's five droppers come first in guide order.
 		q.step({
@@ -411,7 +411,7 @@ fn target_button_every_open_goal_gets_a_name_one_goal_s_many_mobs_do_not_crowd_o
 #[test]
 fn step_key_one_binding_does_the_step_s_next_action_the_npc_the_quest_item_the_mobs_or_the_hearthstone_in_guide_order() {
 	let out = run(r#"
-		local s = PolestarStepButton
+		local s = NorthstarStepButton
 		local function now() return { s:GetAttribute("type") or "nil", s:GetAttribute("item") or s:GetAttribute("macrotext") or "nil" } end
 		q.items[900] = { name = "Torch" }
 		q.items[901] = { name = "Quest Wand", classID = 12 }
@@ -479,7 +479,7 @@ fn step_key_one_binding_does_the_step_s_next_action_the_npc_the_quest_item_the_m
 #[test]
 fn step_key_the_route_s_own_goals_come_before_optional_ones_and_an_npc_name_with_a_control_character_is_passed_over_never_put_in_the_macro() {
 	let out = run(r#"
-		local s = PolestarStepButton
+		local s = NorthstarStepButton
 		local function now() return { s:GetAttribute("type") or "nil", s:GetAttribute("item") or s:GetAttribute("macrotext") or "nil" } end
 		-- an optional accept first: the route's kill takes the key
 		q.step({ { t = "accept", quest = 7, npc = 197, npcName = "Marshal McBride", optional = true }, { t = "kill", target = "Kobold Vermin", quest = 8, oi = 1 } })
@@ -507,7 +507,7 @@ fn step_key_the_route_s_own_goals_come_before_optional_ones_and_an_npc_name_with
 #[test]
 fn step_key_interact_stage_talks_to_the_targeted_step_npc_loots_its_mob_and_accepts_or_completes_in_its_quest_window_only_with_the_setting_and_out_of_combat() {
 	let out = run(r#"
-		q.bindings["CLICK PolestarStepButton:LeftButton"] = { "F" }
+		q.bindings["CLICK NorthstarStepButton:LeftButton"] = { "F" }
 		local function key() stub.runTimers(); return q.overrides.F or "step" end
 		q.step({ { t = "accept", quest = 7, npc = 197, npcName = "Marshal McBride" }, { t = "kill", target = "Kobold Vermin", quest = 8, oi = 1 } })
 		q.target = { name = "Marshal McBride", npc = 197 }
@@ -557,11 +557,209 @@ fn step_key_interact_stage_talks_to_the_targeted_step_npc_loots_its_mob_and_acce
 	);
 }
 
+// #1316: the step key also targets the mobs of the While you're here rows (Engine.GetWhileHereList, nearest
+// first; their raw goals by Engine.AlongGoal): after the step's own names, one from each row in turn, no name
+// twice, as many as fit the macro; an item, the Hearthstone or an NPC keeps the key; changed only out of combat;
+// off with behavior.whileHereStepKey. rows(list) puts the rows up (each a goal view, its raw goal as `raw`) and
+// fires WHILE_HERE_CHANGED; names() reads the names the step key's macro tries, in order.
+const HERE_ROWS: &str = r#"
+Northstar.Set("behavior.whileHereStepKey", true)
+local shown = {}
+q.Engine.GetWhileHereList = function()
+	local out = {}
+	for i, r in ipairs(shown) do out[i] = r end
+	return out
+end
+q.Engine.GetWhileHere = function() return shown[1] end
+q.Engine.AlongGoal = function(s, g)
+	for _, r in ipairs(shown) do
+		if r.step == s and r.index == g then return r.raw end
+	end
+end
+local function rows(list)
+	shown = list
+	for i, r in ipairs(shown) do
+		r.step, r.index, r.status, r.raw = r.step or 20 + i, r.index or 1, r.status or "active", r.raw or {}
+	end
+	Northstar.Fire("WHILE_HERE_CHANGED")
+	stub.runTimers()
+end
+local function names()
+	local out = {}
+	for line in (NorthstarStepButton:GetAttribute("macrotext") or ""):gmatch("[^\n]+") do
+		local name = line:match("^/targetexact %[noexists%] (.+)$") or line:match("^/targetexact (.+)$")
+		if name then out[#out + 1] = name end
+	end
+	return table.concat(out, ", ")
+end
+"#;
+
+#[test]
+fn step_key_the_step_s_own_names_first_then_one_mob_from_each_while_you_re_here_row_nearest_first_no_name_twice_1316() {
+	let out = run(&format!(
+		"{HERE_ROWS}{}",
+		r#"
+		q.step({ { t = "kill", target = "Wolf" }, { t = "kill", target = "Boar" } })
+		emit(names())
+		rows({
+			{ t = "kill", subject = "Boar" },
+			{ t = "collect", npc = 7, npcName = "Kobold Miner", raw = { fromNpcs = { { npcName = "Kobold Tunneler" } } } },
+			{ t = "kill", subject = "Murloc" },
+			{ t = "interact", subject = "Cart" },
+			{ t = "kill", subject = "Gnoll", status = "done" },
+		})
+		emit(names())
+		q.click(NorthstarStepButton, true)
+		q.click(NorthstarStepButton, false)
+		emit(names())
+	"#
+	));
+	assert_eq!(out[0], "Wolf, Boar");
+	// Five names, the fifth (Kobold Tunneler, a row's second) past 255 bytes.
+	assert_eq!(out[1], "Wolf, Boar, Kobold Miner, Murloc", "the step's own first; Boar not twice; each row's first name before any row's second; no interact or done row");
+	assert_eq!(out[2], "Boar, Kobold Miner, Murloc, Kobold Tunneler", "a press moves to the next name; the one that fits now comes in, Wolf goes off the end");
+}
+
+#[test]
+fn step_key_with_nothing_else_to_do_it_targets_the_while_you_re_here_mobs_an_item_or_an_npc_keeps_the_key_1316() {
+	let out = run(&format!(
+		"{HERE_ROWS}{}",
+		r#"
+		local s = NorthstarStepButton
+		local function now() return { s:GetAttribute("type") or "nil", s:GetAttribute("item") or names() } end
+		q.items[900] = { name = "Torch" }
+		q.addItem(0, 1, 900, 1)
+		q.step({ { t = "goto", map = 9000, x = 1, y = 1 } })
+		emit(now())
+		rows({ { t = "kill", subject = "Murloc" }, { t = "kill", subject = "Kobold Vermin" } })
+		emit(now())
+		q.step({ { t = "use", item = 900, quest = 9, oi = 1 } })
+		emit(now())
+		q.step({ { t = "talk", npc = 197, npcName = "Marshal McBride" } })
+		emit(now())
+	"#
+	));
+	assert_eq!(out[0], json!(["nil", ""]));
+	assert_eq!(out[1], json!(["macro", "Murloc, Kobold Vermin"]), "no action of its own: the rows' mobs");
+	assert_eq!(out[2], json!(["item", "item:900"]), "a use goal keeps its item");
+	assert_eq!(out[3], json!(["macro", "Marshal McBride"]), "an NPC goal keeps its NPC");
+}
+
+#[test]
+fn step_key_with_nothing_else_to_do_the_nearest_while_you_re_here_row_s_quest_item_keeps_the_key_1316() {
+	let out = run(&format!(
+		"{HERE_ROWS}{}",
+		r#"
+		local s = NorthstarStepButton
+		local function now() return { s:GetAttribute("type") or "nil", s:GetAttribute("item") or names() } end
+		q.items[902] = { name = "Murloc Lure", classID = 12, spell = 12 }
+		q.specialItems[30] = 902
+		q.addItem(0, 1, 902, 1)
+		q.step({ { t = "goto", map = 9000, x = 1, y = 1 } })
+		rows({ { t = "kill", subject = "Murloc", quest = 30 }, { t = "kill", subject = "Kobold Vermin" } })
+		emit(now())
+		q.bags[0].slots[1] = nil
+		rows({ { t = "kill", subject = "Murloc", quest = 30 }, { t = "kill", subject = "Kobold Vermin" } })
+		emit(now())
+	"#
+	));
+	assert_eq!(out[0], json!(["item", "item:902"]), "the nearest row's quest log item (ChooseQuestItem, #1156) keeps the key");
+	assert_eq!(out[1], json!(["macro", "Murloc, Kobold Vermin"]), "not in the bags: the rows' mobs");
+}
+
+#[test]
+fn step_key_while_you_re_here_names_past_the_macro_limit_are_left_out_never_the_step_s_own_1316() {
+	let out = run(&format!(
+		"{HERE_ROWS}{}",
+		r#"
+		-- 31 bytes a name: the macro holds three (240 bytes), not four (316).
+		local long = string.rep("W", 30)
+		q.step({ { t = "kill", target = long .. "1" }, { t = "kill", target = long .. "2" } })
+		rows({ { t = "kill", subject = long .. "3" }, { t = "kill", subject = long .. "4" } })
+		emit({ #NorthstarStepButton:GetAttribute("macrotext"), (names():gsub("W", "")) })
+	"#
+	));
+	assert_eq!(out[0], json!([240, "1, 2, 3"]));
+}
+
+#[test]
+fn step_key_while_you_re_here_rows_that_change_in_a_fight_leave_the_macro_alone_until_it_ends_1316() {
+	let out = run(&format!(
+		"{HERE_ROWS}{}",
+		r#"
+		q.step({ { t = "kill", target = "Wolf" } })
+		rows({ { t = "kill", subject = "Murloc" } })
+		emit(names())
+		q.combat(true)
+		rows({ { t = "kill", subject = "Kobold Vermin" } })
+		emit({ names(), Northstar.QoL.HasQueued("step") })
+		q.combat(false)
+		emit({ names(), Northstar.QoL.HasQueued("step") })
+	"#
+	));
+	assert_eq!(out[0], "Wolf, Murloc");
+	assert_eq!(out[1], json!(["Wolf, Murloc", true]), "in combat the macro stays, the change waits");
+	assert_eq!(out[2], json!(["Wolf, Kobold Vermin", false]), "applied once combat ends");
+}
+
+#[test]
+fn step_key_with_behavior_whileherestepkey_off_it_targets_only_the_step_s_own_1316() {
+	let out = run(&format!(
+		"{HERE_ROWS}{}",
+		r#"
+		q.step({ { t = "kill", target = "Wolf" } })
+		rows({ { t = "kill", subject = "Murloc" } })
+		Northstar.Set("behavior.whileHereStepKey", false)
+		stub.runTimers()
+		emit(names())
+		q.step({ { t = "goto", map = 9000, x = 1, y = 1 } })
+		emit(NorthstarStepButton:GetAttribute("type") or "nil")
+		Northstar.Set("behavior.whileHereStepKey", true)
+		stub.runTimers()
+		emit(names())
+	"#
+	));
+	assert_eq!(out, vec![json!("Wolf"), json!("nil"), json!("Murloc")]);
+}
+
+// #1182: in Forever's combat restrictions the target's name can be a secret value, and comparing one throws
+// ("attempt to compare a secret string value"). The interact stage reads a secret name as unknown and never
+// compares it: the NPC id still matches the step's NPC, and a target known only by a secret name is not matched.
+// Lua 5.1 has no secret type, so the stub marks a name secret through issecretvalue: a stage that matched on it
+// compared it.
+#[test]
+fn step_key_interact_stage_never_compares_a_secret_target_name_the_npc_id_still_matches_1182() {
+	let out = run(r#"
+		local secret = {}
+		function issecretvalue(v) return type(v) == "string" and secret[v] ~= nil end
+		q.bindings["CLICK NorthstarStepButton:LeftButton"] = { "F" }
+		local function key() stub.runTimers(); return q.overrides.F or "step" end
+		set("stepInteract", true)
+		q.step({ { t = "talk", npc = 197, npcName = "Marshal McBride" }, { t = "kill", target = "Kobold Vermin", quest = 8, oi = 1 } })
+		secret["Marshal McBride"], secret["Kobold Vermin"] = true, true
+		local out = {}
+		-- the step's NPC by its id: interact, the secret name unread
+		q.target = { name = "Marshal McBride", npc = 197 }
+		stub.fire("PLAYER_TARGET_CHANGED")
+		out.byId = key()
+		-- no readable id, only the secret name: the step key's own action
+		q.target = { name = "Marshal McBride" }
+		stub.fire("PLAYER_TARGET_CHANGED")
+		out.byName = key()
+		-- a dead mob known only by its secret name: no loot match
+		q.target = { name = "Kobold Vermin", dead = true }
+		stub.fire("PLAYER_TARGET_CHANGED")
+		out.corpse = key()
+		emit(out)
+	"#);
+	assert_eq!(out[0], json!({ "byId": "INTERACTTARGET", "byName": "step", "corpse": "step" }));
+}
+
 #[test]
 fn mark_target_off_by_default_on_the_target_button_and_step_key_put_a_skull_on_a_live_hostile_mob_and_a_star_on_an_npc_friendly_or_neutral_never_take_one_off_and_clear_the_target_only_out_of_combat()
 {
 	let out = run(r#"
-		local t, s = PolestarTargetButton, PolestarStepButton
+		local t, s = NorthstarTargetButton, NorthstarStepButton
 		q.step({ { t = "kill", target = "Kobold Vermin", quest = 7, oi = 1 } })
 		emit({ t:GetAttribute("macrotext"), s:GetAttribute("macrotext") })
 		set("markTarget", true)
@@ -572,7 +770,7 @@ fn mark_target_off_by_default_on_the_target_button_and_step_key_put_a_skull_on_a
 		emit(s:GetAttribute("macrotext"))
 		local long = {}
 		for i = 1, 5 do long[i] = string.rep("N", 50) .. i end
-		emit(Polestar.QoL.Buttons.TargetMacro(long, 1, "/tm [@target,harm,nodead] !8"))
+		emit(Northstar.QoL.Buttons.TargetMacro(long, 1, "/tm [@target,harm,nodead] !8"))
 	"#);
 	let plain = |name: &str| format!("/cleartarget [nocombat]\n/targetexact {name}\n/cleartarget [dead]");
 	assert_eq!(out[0], json!([plain("Kobold Vermin"), plain("Kobold Vermin")]), "off by default");
@@ -591,7 +789,7 @@ fn mark_target_off_by_default_on_the_target_button_and_step_key_put_a_skull_on_a
 #[test]
 fn mark_target_the_icon_for_mobs_and_for_npcs_is_a_setting_a_new_one_each_press_skips_the_other_s_and_leaves_a_marked_npc_as_it_is() {
 	let out = run(r#"
-		local t, s = PolestarTargetButton, PolestarStepButton
+		local t, s = NorthstarTargetButton, NorthstarStepButton
 		set("markTarget", true)
 		set("markMob", "7")
 		q.step({ { t = "kill", target = "Kobold Vermin", quest = 7, oi = 1 } })
@@ -626,18 +824,162 @@ fn mark_target_the_icon_for_mobs_and_for_npcs_is_a_setting_a_new_one_each_press_
 	);
 }
 
+// Mark what they target in a group. A fake group (IsInRaid, IsInGroup, UnitIsGroupLeader/Assistant; SECRET reads
+// as a secret value) and press(macro, unit), which runs the macro's /tm line the way the client's TARGET_MARKER
+// handler does (Blizzard_ChatFrameBase/Shared/SlashCommands.lua): "!n" skips a unit that has icon n, "~n" one that
+// has any icon.
+const MARK_GROUP: &str = r#"
+local B = Northstar.QoL.Buttons
+local SECRET = {}
+function issecretvalue(v) return v == SECRET end
+local group = { raid = false, party = false, lead = false, assist = false }
+function IsInRaid() return group.raid end
+function IsInGroup() return group.party or group.raid end
+function UnitIsGroupLeader(unit) assert(unit == "player") return group.lead end
+function UnitIsGroupAssistant(unit) assert(unit == "player") return group.assist end
+local function regroup(g)
+	for k, v in pairs(g) do group[k] = v end
+	stub.fire("GROUP_ROSTER_UPDATE")
+	stub.runTimers()
+end
+local function press(macro, unit)
+	local cond, marker = (macro or ""):match("\n/tm %[@target,([^%]]*)%] (%S+)$")
+	if not cond then return unit.icon end
+	if cond:find("harm") and not unit.hostile then return unit.icon end
+	if cond:find("nodead") and unit.dead then return unit.icon end
+	local n = tonumber(marker:match("%d+"))
+	if marker:find("^!") then
+		if unit.icon == n then return unit.icon end
+	elseif marker:find("^~") then
+		if unit.icon ~= nil then return unit.icon end
+	end
+	unit.icon = n ~= 0 and n or nil
+	return unit.icon
+end
+local function tm(b) return (b:GetAttribute("macrotext") or ""):match("\n(/tm [^\n]*)$") or false end
+q.step({ { t = "kill", target = "Kobold Vermin", quest = 7, oi = 1 } })
+"#;
+
+fn run_group(script: &str) -> Vec<Value> {
+	run(&format!("{MARK_GROUP}{script}"))
+}
+
+const SKULL: &str = "/tm [@target,harm,nodead] !8";
+const SKULL_FREE: &str = "/tm [@target,harm,nodead] ~8";
+
+#[test]
+fn mark_target_alone_the_skull_goes_on_a_hostile_mob_a_second_press_never_takes_it_off_and_friendlies_and_corpses_are_never_marked() {
+	let out = run_group(
+		r#"
+		local t, s = NorthstarTargetButton, NorthstarStepButton
+		emit({ Northstar.GetDefault("qol.markTarget"), tm(t), tm(s) })
+		set("markTarget", true)
+		emit({ B.MarkRight(), tm(t), tm(s) })
+		local mob, starred = { hostile = true }, { hostile = true, icon = 1 }
+		local m = t:GetAttribute("macrotext")
+		emit({ press(m, mob), press(m, mob), press(s:GetAttribute("macrotext"), mob), press(m, starred) })
+		emit({ press(m, { hostile = false }) or false, press(m, { hostile = true, dead = true }) or false })
+	"#,
+	);
+	assert_eq!(out[0], json!([false, false, false]), "off by default");
+	assert_eq!(out[1], json!(["set", SKULL, SKULL]));
+	assert_eq!(out[2], json!([8, 8, 8, 8]), "a second press keeps the skull");
+	assert_eq!(out[3], json!([false, false]), "a friendly unit fails [harm], a corpse [nodead]");
+}
+
+#[test]
+fn mark_target_a_party_leader_marks_as_alone_another_member_only_marks_a_unit_with_no_icon_yet() {
+	let out = run_group(
+		r#"
+		local t, s = NorthstarTargetButton, NorthstarStepButton
+		set("markTarget", true)
+		set("guideNameTarget", true)
+		regroup({ party = true, lead = true })
+		emit({ B.MarkRight(), tm(t), tm(s) })
+		regroup({ lead = false })
+		emit({ B.MarkRight(), tm(t), tm(s), B.GuideNameMacro({ t = "kill", subject = "Kobold Vermin" }):match("[~!]%d$") })
+		local mine, theirs = { hostile = true }, { hostile = true, icon = 1 }
+		emit({ press(t:GetAttribute("macrotext"), mine), press(t:GetAttribute("macrotext"), mine), press(s:GetAttribute("macrotext"), theirs) })
+	"#,
+	);
+	assert_eq!(out[0], json!(["set", SKULL, SKULL]));
+	assert_eq!(out[1], json!(["free", SKULL_FREE, SKULL_FREE, "~8"]), "objective clicks follow too");
+	assert_eq!(out[2], json!([8, 8, 1]), "someone else's star stays");
+}
+
+#[test]
+fn mark_target_in_a_raid_only_the_leader_and_assistants_mark_and_a_secret_group_value_marks_nothing() {
+	let out = run_group(
+		r#"
+		local t = NorthstarTargetButton
+		set("markTarget", true)
+		for _, g in ipairs({ { raid = true }, { assist = true }, { assist = false, lead = true },
+			{ lead = SECRET }, { raid = SECRET, party = true, lead = false } }) do
+			regroup(g)
+			emit({ B.MarkRight() or false, tm(t) })
+		end
+		regroup({ raid = false, party = false, lead = false })
+		emit({ B.MarkRight(), tm(t) })
+	"#,
+	);
+	assert_eq!(Value::Array(out), json!([[false, false], ["set", SKULL], ["set", SKULL], [false, false], [false, false], ["set", SKULL]]));
+}
+
+#[test]
+fn mark_target_a_group_change_in_combat_leaves_the_macros_alone_and_applies_once_the_fight_ends() {
+	let out = run_group(
+		r#"
+		local t, s = NorthstarTargetButton, NorthstarStepButton
+		set("markTarget", true)
+		q.combat(true)
+		regroup({ party = true })
+		emit({ tm(t), tm(s) })
+		q.combat(false)
+		stub.runTimers()
+		emit({ tm(t), tm(s) })
+	"#,
+	);
+	assert_eq!(out[0], json!([SKULL, SKULL]));
+	assert_eq!(out[1], json!([SKULL_FREE, SKULL_FREE]));
+}
+
+#[test]
+fn mark_target_the_target_button_tooltip_says_what_a_press_marks_while_marking_is_on() {
+	let out = run_group(
+		r#"
+		local t = NorthstarTargetButton
+		local function hint()
+			stub.RunScript(t, "OnEnter")
+			for _, line in ipairs(GameTooltip.lines) do if line:find("^Marks") then return line end end
+			return false
+		end
+		emit(hint())
+		set("markTarget", true)
+		emit(hint())
+		regroup({ party = true })
+		emit(hint())
+		regroup({ party = false, raid = true })
+		emit(hint())
+	"#,
+	);
+	assert_eq!(out[0], json!(false), "nothing while marking is off");
+	assert!(text(&out[1]).starts_with("Marks it with |TInterface\\TargetingFrame\\UI-RaidTargetingIcon_8:0|t "), "{}", out[1]);
+	assert!(text(&out[2]).ends_with("if it has no icon yet: you don't lead the party."), "{}", out[2]);
+	assert_eq!(out[3], "Marks nothing: in a raid only the leader and assistants set icons.");
+}
+
 // Every CLICK binding in Bindings.xml shows its label in the key bindings window, and the step key's button is
 // there from login (the travel button is made with the route's first cast leg: tests/nav-prompts.rs).
 #[test]
 fn key_bindings_each_click_binding_has_its_label_and_the_step_key_its_button_from_login() {
-	let xml = std::fs::read_to_string(addons_dir().join("Polestar").join("Bindings.xml")).unwrap();
+	let xml = std::fs::read_to_string(addons_dir().join("Northstar").join("Bindings.xml")).unwrap();
 	let re = regex::Regex::new(r#"name="CLICK (\w+):LeftButton""#).unwrap();
 	let names: Vec<String> = re.captures_iter(&xml).map(|m| m[1].to_string()).collect();
-	assert!(names.iter().any(|n| n == "PolestarStepButton"));
+	assert!(names.iter().any(|n| n == "NorthstarStepButton"));
 	let list = names.iter().map(|n| format!("'{n}'")).collect::<Vec<_>>().join(", ");
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
-		addons: vec![Addon::name("Polestar")],
+		addons: vec![Addon::name("Northstar")],
 		login: true,
 		script: r#"
 			local labels = {}
@@ -645,7 +987,7 @@ fn key_bindings_each_click_binding_has_its_label_and_the_step_key_its_button_fro
 				local l = _G["BINDING_NAME_CLICK " .. n .. ":LeftButton"]
 				labels[n] = type(l) == "string" and l ~= "" and not l:find("^CLICK ")
 			end
-			emit({ labels = labels, step = PolestarStepButton ~= nil })
+			emit({ labels = labels, step = NorthstarStepButton ~= nil })
 		"#
 		.replace("__NAMES__", &list),
 		..Default::default()
@@ -660,21 +1002,21 @@ fn key_bindings_each_click_binding_has_its_label_and_the_step_key_its_button_fro
 #[test]
 fn target_button_a_name_with_a_line_break_or_other_control_character_never_reaches_the_macro_from_the_guide_or_from_questdb_a_pack_could_hide_run_in_it() {
 	let out = run(r#"
-		local t = PolestarTargetButton
+		local t = NorthstarTargetButton
 		q.step({
 			{ t = "kill", target = "Kobold Vermin\n/run SendMail(\"Thief\", \"x\", \"\")", quest = 7, oi = 1 },
 			{ t = "kill", target = "Kobold Worker\r/script SetSendMailMoney(1)", quest = 7, oi = 2 },
 		})
 		emit({ t:GetAttribute("macrotext") or "nil", t:IsShown() })
-		Polestar.QuestDB = {
+		Northstar.QuestDB = {
 			IsLoaded = function() return true end,
 			GetObjectiveMobs = function() return { "Kobold Laborer", "Tunnel Rat\n/run X()" } end,
 		}
-		Polestar.Fire("QUESTDB_LOADED")
+		Northstar.Fire("QUESTDB_LOADED")
 		q.step({ { t = "collect", item = 950, itemName = "Candle", quest = 7, oi = 3 } })
 		stub.runTimers()
 		emit(t:GetAttribute("macrotext"))
-		emit(Polestar.QoL.Buttons.TargetMacro({ "Kobold Laborer", "Bad\n/run X()" }, 2))
+		emit(Northstar.QoL.Buttons.TargetMacro({ "Kobold Laborer", "Bad\n/run X()" }, 2))
 	"#);
 	assert_eq!(out[0], json!(["nil", false]), "only unsafe names: no macro, no button");
 	assert_eq!(out[1], "/cleartarget [nocombat]\n/targetexact Kobold Laborer\n/cleartarget [dead]");
@@ -724,7 +1066,7 @@ fn play_macro(text: &str, units: &[Unit], target: Option<Unit>, combat: bool) ->
 #[test]
 fn target_button_a_corpse_is_never_left_selected_the_first_living_match_wins_the_preferred_name_first_355() {
 	let out = run(r#"
-		local B = Polestar.QoL.Buttons
+		local B = Northstar.QoL.Buttons
 		emit(B.TargetMacro({ "Nightsaber", "Feral Nightsaber" }, 2))
 		emit(B.TargetMacro({ "Webwood Lurker" }, 1))
 		emit(B.TargetMacro({ "Defias Pathstalker", "Defias Highwayman", "Defias Pillager", "Defias Looter", "Defias Smuggler" }, 1))
@@ -777,20 +1119,20 @@ fn target_button_a_corpse_is_never_left_selected_the_first_living_match_wins_the
 #[test]
 fn rare_button_targets_the_rares_in_range_comes_up_and_goes_with_them_each_click_cycles_off_with_its_setting() {
 	let out = run(r#"
-		local b = PolestarRareButton
+		local b = NorthstarRareButton
 		local nearby = {}
-		Polestar.Rares = { Nearby = function() return nearby end }
+		Northstar.Rares = { Nearby = function() return nearby end }
 		q.step({ { t = "kill", target = "Wolf" } })
 		emit({ b:GetAttribute("macrotext") or "nil", b:IsShown() })
 		nearby = { "Thuros Lightfingers", "Bad\n/run X()", "Hogger" }
-		Polestar.Fire("RARE_NEARBY")
+		Northstar.Fire("RARE_NEARBY")
 		stub.runTimers()
-		emit({ b:GetAttribute("type"), b:GetAttribute("macrotext"), b:IsShown(), b.Label:GetText(), PolestarTargetButton:GetAttribute("macrotext") })
+		emit({ b:GetAttribute("type"), b:GetAttribute("macrotext"), b:IsShown(), b.Label:GetText(), NorthstarTargetButton:GetAttribute("macrotext") })
 		q.click(b, false)
 		emit(b:GetAttribute("macrotext"))
 		q.combat(true)
 		nearby = { "Hogger" }
-		Polestar.Fire("RARE_NEARBY")
+		Northstar.Fire("RARE_NEARBY")
 		stub.runTimers()
 		emit({ b:GetAttribute("macrotext"), b:IsShown() })
 		q.combat(false)
@@ -799,7 +1141,7 @@ fn rare_button_targets_the_rares_in_range_comes_up_and_goes_with_them_each_click
 		emit({ b:GetAttribute("macrotext") or "nil", b:IsShown() })
 		set("rareButton", true)
 		nearby = {}
-		Polestar.Fire("RARE_NEARBY")
+		Northstar.Fire("RARE_NEARBY")
 		stub.runTimers()
 		emit({ b:GetAttribute("macrotext") or "nil", b:IsShown() })
 	"#);
@@ -822,11 +1164,33 @@ fn rare_button_targets_the_rares_in_range_comes_up_and_goes_with_them_each_click
 }
 
 #[test]
+fn rare_button_the_founder_in_front_targets_him_by_full_name_then_first_name_and_waves_rares_keep_their_macro() {
+	let out = run(r#"
+		local b = NorthstarRareButton
+		local nearby = { "Fitz Polestar", "Hogger" }
+		Northstar.Rares = { Nearby = function() return nearby end, IsFounder = function(n) return n == "Fitz Polestar" end }
+		Northstar.Fire("RARE_NEARBY")
+		stub.runTimers()
+		emit({ b:GetAttribute("type"), b:GetAttribute("macrotext"), b:IsShown(), b.Label:GetText() })
+		q.click(b, false)
+		emit(b:GetAttribute("macrotext"))
+		q.click(b, false)
+		emit(b:GetAttribute("macrotext"))
+		emit({ Northstar.QoL.Buttons.FounderMacro("Bad\n/run X()") or "nil" })
+	"#);
+	let founder = "/cleartarget [nocombat]\n/targetexact Fitz Polestar\n/targetexact [noexists] Fitz\n/wave";
+	assert_eq!(out[0], json!(["macro", founder, true, "Fitz Polestar"]));
+	assert_eq!(out[1], "/cleartarget [nocombat]\n/targetexact Hogger\n/cleartarget [dead]", "a rare in front: its own macro, the founder left out");
+	assert_eq!(out[2], founder, "and back to him");
+	assert_eq!(out[3], json!(["nil"]));
+}
+
+#[test]
 fn rare_button_its_icon_is_gold_apart_from_the_red_target_button() {
 	let out = run(r#"
-		emit({ PolestarRareButton.Icon:GetVertexColor() })
-		emit({ PolestarTargetButton.Icon:GetVertexColor() })
-		emit({ Polestar.Theme.Color("quest") })
+		emit({ NorthstarRareButton.Icon:GetVertexColor() })
+		emit({ NorthstarTargetButton.Icon:GetVertexColor() })
+		emit({ Northstar.Theme.Color("quest") })
 	"#);
 	let (rare, target, gold) = (&out[0], &out[1], &out[2]);
 	assert_eq!(head(rare, 3), head(gold, 3), "the quest gold");
@@ -836,7 +1200,7 @@ fn rare_button_its_icon_is_gold_apart_from_the_red_target_button() {
 #[test]
 fn hearth_button_while_a_hearth_goal_is_open_gethearth_reports_bind_and_cooldown() {
 	let out = run(r#"
-		local h = PolestarHearthButton
+		local h = NorthstarHearthButton
 		q.items[6948] = { name = "Hearthstone" }
 		q.addItem(0, 1, 6948, 1)
 		q.step({ { t = "kill", target = "Wolf" } })
@@ -869,7 +1233,7 @@ local function secureClick(self, _, down)
 	if use == nil then use = GetCVarBool("ActionButtonUseKeyDown") end
 	if (down and use) or (not down and not use) then acted = acted + 1 end
 end
-local item, hearth, target = PolestarQuestItemButton, PolestarHearthButton, PolestarTargetButton
+local item, hearth, target = NorthstarQuestItemButton, NorthstarHearthButton, NorthstarTargetButton
 for _, b in ipairs({ item, hearth, target }) do b:SetScript("OnClick", secureClick) end
 local holder = select(2, item:GetPoint(1))
 local R = stub.RunScript
@@ -930,7 +1294,7 @@ fn action_buttons_a_left_drag_moves_the_whole_set_and_never_uses_the_item_clicks
 			stub.cvars.ActionButtonUseKeyDown = cvar
 			emit({ drag(item, -300, 50), drag(target, -300, 50), mouseClick(item, false), mouseClick(item, true), keyPress(item), attr(item) })
 		end
-		emit({ spot(), PolestarCharDB.qol.buttonPos, slot(item), slot(target) })
+		emit({ spot(), NorthstarCharDB.qol.buttonPos, slot(item), slot(target) })
 
 		-- a hearth goal: the Hearthstone button shows above the item, where the set now is
 		q.step({ { t = "hearth", location = "Goldshire" }, { t = "use", item = 900, quest = 7 } })
@@ -944,7 +1308,7 @@ fn action_buttons_a_left_drag_moves_the_whole_set_and_never_uses_the_item_clicks
 		q.combat(false)
 
 		QoL.Buttons.ResetPositions()
-		emit({ spot(), PolestarCharDB.qol.buttonPos or false })
+		emit({ spot(), NorthstarCharDB.qol.buttonPos or false })
 	"#,
 	]
 	.concat());
@@ -970,14 +1334,14 @@ fn action_buttons_with_the_lock_on_only_a_shift_drag_moves_the_set_a_plain_drag_
 		q.addItem(0, 1, 900, 1)
 		q.step({ { t = "use", item = 900, quest = 7 }, { t = "kill", target = "Wolf" } })
 		stub.cvars.ActionButtonUseKeyDown = "1"
-		Polestar.Set("ui.lockHud", true)
+		Northstar.Set("ui.lockHud", true)
 		emit({ drag(item, -300, 50), drag(target, -300, 50), spot(), mouseClick(item, false), mouseClick(item, true), keyPress(item) })
 		hover(target)
 		emit(GameTooltip.lines[#GameTooltip.lines])
 		leave(target)
 		stub.keys.shift = true
 		emit({ drag(target, -200, 30), spot() })
-		Polestar.Set("ui.lockHud", false)
+		Northstar.Set("ui.lockHud", false)
 		stub.keys.shift = false
 		emit({ drag(item, -100, 10), spot() })
 	"#,
@@ -995,8 +1359,399 @@ fn action_buttons_with_the_lock_on_only_a_shift_drag_moves_the_set_a_plain_drag_
 
 #[test]
 fn action_buttons_the_set_comes_back_where_it_was_left_after_a_reload() {
-	let out = run_with(&[ACTS, " emit(spot())"].concat(), "", Some(r#"PolestarCharDB = { qol = { buttonPos = { "TOPLEFT", "TOPLEFT", 40, -60 } } }"#));
+	let out = run_with(&[ACTS, " emit(spot())"].concat(), "", Some(r#"NorthstarCharDB = { qol = { buttonPos = { "TOPLEFT", "TOPLEFT", 40, -60 } } }"#));
 	assert_eq!(out[0], json!(["TOPLEFT", "TOPLEFT", 40, -60]));
+}
+
+// The target button shows who it targets (qol.targetPlate, #1387): its icon the action of the name the next click
+// targets, the name in its kind's colour, the names after it as small icons, faces of elites and NPCs once seen.
+const LOOK: &str = r#"
+local B, t = Northstar.QoL.Buttons, NorthstarTargetButton
+local function base(tex) local p = tex:GetTexture(); return p and p:match("([^\\/]+)$") end
+local TONES = { "danger", "success", "quest", "textDim" }
+local function tone(r, g, b)
+	for _, k in ipairs(TONES) do
+		local r2, g2, b2 = Northstar.Theme.Color(k)
+		if math.abs(r - r2) < 1e-6 and math.abs(g - g2) < 1e-6 and math.abs(b - b2) < 1e-6 then return k end
+	end
+	return "other"
+end
+local function face()
+	for _, region in ipairs({ t:GetRegions() }) do
+		if region.portraitOf and region:IsShown() then return region.portraitOf end
+	end
+	return false
+end
+local function look()
+	local minis = {}
+	for _, m in ipairs(t.Minis) do if m:IsShown() then minis[#minis + 1] = base(m) end end
+	return {
+		name = t.Label:GetText(), icon = t.Icon:IsShown() and base(t.Icon) or false, iconTone = tone(t.Icon:GetVertexColor()),
+		label = tone(t.Label:GetTextColor()), minis = minis, face = face(), badge = t.Badge:IsShown() and base(t.Badge) or false,
+	}
+end
+local function names()
+	local out = {}
+	for i, n in ipairs((B.TargetNames(nil, nil, true))) do out[i] = n end
+	return out
+end
+"#;
+
+fn look_run(script: &str) -> Vec<Value> {
+	run(&[LOOK, script].concat())
+}
+
+#[test]
+fn target_button_icon_and_name_follow_the_goal_type_a_sword_a_bag_a_skull_a_bubble_and_the_plate_turns_off() {
+	let out = look_run(
+		r#"
+		q.step({ { t = "kill", target = "Kobold Vermin", quest = 7, oi = 1 } })
+		emit(look())
+		q.step({ { t = "collect", item = 950, itemName = "Candle", quest = 7, oi = 2, npc = 300, npcName = "Kobold Laborer" } })
+		emit(look())
+		q.step({ { t = "kill", target = "Elder Stranglethorn Tiger", npc = 772, group = { kind = "elite", rank = 1 } } })
+		emit(look())
+		q.step({ { t = "turnin", quest = 9, npc = 240, npcName = "Sir S. J. Erlgadin" } })
+		emit(look())
+		q.step({ { t = "talk", npc = 241, npcName = "Gryan Stoutmantle" } })
+		emit(look())
+		q.step({ { t = "accept", quest = 12, npc = 242, npcName = "Marshal Dughan" } })
+		emit(look())
+		emit(Northstar.GetDefault("qol.targetPlate"))
+		set("targetPlate", false)
+		emit(look())
+	"#,
+	);
+	// An empty Lua table emits as {}.
+	let row = |name: &str, icon: &str, tone: &str| json!({ "name": name, "icon": icon, "iconTone": tone, "label": tone, "minis": {}, "face": false, "badge": false });
+	assert_eq!(out[0], row("Kobold Vermin", "icon-kill", "danger"));
+	assert_eq!(out[1], row("Kobold Laborer", "icon-collect", "danger"));
+	assert_eq!(out[2], row("Elder Stranglethorn Tiger", "icon-elite", "quest"), "elite work: the skull in gold");
+	assert_eq!(out[3], row("Sir S. J. Erlgadin", "icon-turnin", "success"));
+	assert_eq!(out[4], row("Gryan Stoutmantle", "icon-talk", "success"));
+	assert_eq!(out[5], row("Marshal Dughan", "icon-accept", "success"));
+	assert_eq!(out[6], true, "on by default");
+	assert_eq!(
+		out[7],
+		json!({ "name": "Marshal Dughan", "icon": "qol-target", "iconTone": "danger", "label": "textDim", "minis": {}, "face": false, "badge": false }),
+		"off: the crosshair and the plain name"
+	);
+}
+
+#[test]
+fn target_button_names_the_step_s_npc_goals_when_it_has_no_mob_the_arrow_s_goal_first_with_the_npc_mark() {
+	let out = look_run(
+		r#"
+		q.step({
+			{ t = "turnin", quest = 9, npc = 240, npcName = "Marshal Dughan" },
+			{ t = "accept", quest = 10, npc = 241, npcName = "Deputy Willem" },
+			{ t = "accept", quest = 11, npc = 240, npcName = "Marshal Dughan" },
+			{ t = "accept", quest = 12, npc = 243, npcName = "Done Giver", status = "done" },
+			{ t = "goto", map = 9000, x = 1, y = 1 },
+		})
+		emit({ t:GetAttribute("macrotext"), names(), t:IsShown() })
+		q.engine.waypoint = { stepIndex = q.engine.step, goalIndex = 2 }
+		Northstar.Fire("WAYPOINT_CHANGED", q.engine.waypoint)
+		stub.runTimers()
+		emit({ names(), t.Label:GetText() })
+		-- a mob to kill: the mobs only
+		q.step({ { t = "turnin", quest = 9, npc = 240, npcName = "Marshal Dughan" }, { t = "kill", target = "Kobold Vermin" } })
+		emit(names())
+		-- the step key's list and the loot check keep to mobs
+		q.step({ { t = "turnin", quest = 9, npc = 240, npcName = "Marshal Dughan" } })
+		emit(#B.TargetNames())
+		set("markTarget", true)
+		emit(t:GetAttribute("macrotext"))
+	"#,
+	);
+	assert_eq!(
+		out[0],
+		json!(["/cleartarget [nocombat]\n/targetexact Marshal Dughan\n/cleartarget [dead]\n/targetexact [noexists] Deputy Willem\n/cleartarget [dead]", ["Marshal Dughan", "Deputy Willem"], true])
+	);
+	assert_eq!(out[1], json!([["Deputy Willem", "Marshal Dughan"], "Deputy Willem"]), "the arrow's goal first");
+	assert_eq!(out[2], json!(["Kobold Vermin"]));
+	assert_eq!(out[3], 0);
+	assert_eq!(out[4], "/cleartarget [nocombat]\n/targetexact Marshal Dughan\n/cleartarget [dead]\n/tm [@target,exists,nodead,nocombat][@target,noharm,nodead] !1", "an NPC takes the NPC mark");
+}
+
+#[test]
+fn target_button_the_arrow_s_kill_goal_comes_first_and_each_click_moves_the_icon_name_and_small_icons_along() {
+	let out = look_run(
+		r#"
+		q.step({
+			{ t = "kill", target = "Kobold Vermin" },
+			{ t = "kill", target = "Goldtooth", group = { kind = "elite", rank = 1 } },
+			{ t = "collect", item = 950, itemName = "Candle", npc = 300, npcName = "Kobold Laborer" },
+		})
+		emit(look())
+		q.click(t, true)
+		q.click(t, false)
+		emit(look())
+		q.click(t, false)
+		emit(look())
+		q.engine.waypoint = { stepIndex = q.engine.step, goalIndex = 3 }
+		Northstar.Fire("WAYPOINT_CHANGED", q.engine.waypoint)
+		stub.runTimers()
+		emit(names())
+	"#,
+	);
+	assert_eq!(out[0]["name"], "Kobold Vermin");
+	assert_eq!(out[0]["minis"], json!(["icon-elite", "icon-collect"]));
+	assert_eq!(out[1]["name"], "Goldtooth");
+	assert_eq!(out[1]["icon"], "icon-elite");
+	assert_eq!(out[1]["minis"], json!(["icon-collect", "icon-kill"]));
+	assert_eq!(out[2]["name"], "Kobold Laborer");
+	assert_eq!(out[2]["minis"], json!(["icon-kill", "icon-elite"]));
+	assert_eq!(out[3], json!(["Kobold Laborer", "Kobold Vermin", "Goldtooth"]));
+}
+
+#[test]
+fn target_button_in_combat_the_macro_waits_but_the_picture_still_updates_and_matches_what_the_click_does() {
+	let out = look_run(
+		r#"
+		q.step({ { t = "kill", target = "Kobold Vermin" } })
+		local before = t:GetAttribute("macrotext")
+		q.combat(true)
+		q.step({ { t = "turnin", quest = 9, npc = 240, npcName = "Marshal Dughan" } })
+		emit({ t:GetAttribute("macrotext") == before, QoL.HasQueued("target"), look() })
+		-- a Kobold Vermin's nameplate shows it elite: only textures change
+		q.units.nameplate1 = { name = "Kobold Vermin", class = "elite", hostile = true }
+		stub.fire("NAME_PLATE_UNIT_ADDED", "nameplate1")
+		emit({ t:GetAttribute("macrotext") == before, look() })
+		q.combat(false)
+		emit({ t:GetAttribute("macrotext"), look() })
+	"#,
+	);
+	assert_eq!(out[0][0], true, "the macro waits for the fight's end");
+	assert_eq!(out[0][1], true);
+	assert_eq!(out[0][2]["name"], "Kobold Vermin", "the picture says what the click still does");
+	assert_eq!(out[0][2]["icon"], "icon-kill");
+	assert_eq!(out[1][0], true);
+	assert_eq!(out[1][1]["icon"], false, "its face over the icon");
+	assert_eq!(out[1][1]["face"], "Kobold Vermin");
+	assert_eq!(out[1][1]["badge"], "icon-elite");
+	assert_eq!(out[1][1]["label"], "quest");
+	assert_eq!(out[2][0], "/cleartarget [nocombat]\n/targetexact Marshal Dughan\n/cleartarget [dead]");
+	assert_eq!(out[2][1]["name"], "Marshal Dughan");
+	assert_eq!(out[2][1]["icon"], "icon-turnin");
+}
+
+#[test]
+fn target_button_faces_an_elite_or_rare_once_seen_and_an_npc_a_plain_mob_keeps_its_sword_players_never_count() {
+	let out = look_run(
+		r#"
+		q.step({ { t = "kill", target = "Steelsnap", npc = 3058 }, { t = "kill", target = "Kolkar Pack Runner", npc = 3274 } })
+		emit(look())
+		q.target = { name = "Steelsnap", class = "rare", hostile = true }
+		stub.fire("PLAYER_TARGET_CHANGED")
+		emit(look())
+		q.units.mouseover = { name = "Kolkar Pack Runner", class = "normal", hostile = true }
+		stub.fire("UPDATE_MOUSEOVER_UNIT")
+		emit(look())
+		q.units.mouseover = { name = "Steelsnap", player = true }
+		stub.fire("UPDATE_MOUSEOVER_UNIT")
+		local draws = #q.portraits
+		-- the NPC's nameplate was up before the step: the new names look around
+		q.units.nameplate2 = { name = "Sir S. J. Erlgadin", friend = true }
+		q.step({ { t = "turnin", quest = 9, npc = 240, npcName = "Sir S. J. Erlgadin" } })
+		emit(look())
+		-- back to the tiger: its face is kept, drawn once
+		q.step({ { t = "kill", target = "Steelsnap", npc = 3058 } })
+		emit({ look(), #q.portraits - draws, draws })
+		set("targetPlate", false)
+		emit(look())
+	"#,
+	);
+	assert_eq!(out[0]["icon"], "icon-kill");
+	assert_eq!(out[0]["minis"], json!(["icon-kill"]));
+	assert_eq!(out[1]["face"], "Steelsnap");
+	assert_eq!(out[1]["badge"], "icon-elite");
+	assert_eq!(out[1]["label"], "quest");
+	assert_eq!(out[2]["minis"], json!(["icon-kill"]), "a plain mob keeps its sword");
+	assert_eq!(out[2]["face"], "Steelsnap");
+	assert_eq!(out[3]["face"], "Sir S. J. Erlgadin");
+	assert_eq!(out[3]["badge"], "icon-turnin");
+	assert_eq!(out[3]["label"], "success");
+	assert_eq!(out[4][0]["face"], "Steelsnap");
+	assert_eq!(out[4][1], 1, "only Sir S. J. Erlgadin drawn since");
+	assert_eq!(out[4][2], 2, "Steelsnap and the Kolkar, never the player");
+	assert_eq!(out[5]["face"], false);
+	assert_eq!(out[5]["icon"], "qol-target");
+}
+
+#[test]
+fn target_button_chat_note_is_off_by_default_and_names_a_new_set_once() {
+	let out = look_run(
+		r#"
+		local function count()
+			local n = 0
+			for _, m in ipairs(stub.messages) do if m:find("Targeting: ", 1, true) then n = n + 1 end end
+			return n
+		end
+		q.step({ { t = "kill", target = "Kobold Vermin" } })
+		emit({ Northstar.GetDefault("qol.targetAnnounce"), count() })
+		set("targetAnnounce", true)
+		q.step({ { t = "kill", target = "Kobold Vermin" }, { t = "kill", target = "Kobold Worker" } })
+		emit(count())
+		emit(printed("Targeting: Kobold Vermin, Kobold Worker"))
+		set("markTarget", true)
+		q.step({ { t = "kill", target = "Kobold Vermin" }, { t = "kill", target = "Kobold Worker" } })
+		emit(count())
+		q.step({ { t = "goto", map = 9000, x = 1, y = 1 } })
+		emit(count())
+	"#,
+	);
+	assert_eq!(out[0], json!([false, 0]));
+	assert_eq!(out[1], 1);
+	assert_eq!(out[2], true);
+	assert_eq!(out[3], 1, "the same names: no new line");
+	assert_eq!(out[4], 1, "no names: no line");
+}
+
+#[test]
+fn target_button_small_icons_sit_under_the_name_right_or_left_and_after_it_above_or_below() {
+	let out = look_run(
+		r#"
+		q.step({ { t = "kill", target = "Kobold Vermin" }, { t = "kill", target = "Kobold Worker" } })
+		local function at()
+			local p, rel, rp, x, y = t.Label:GetPoint(1)
+			local mp, mrel, mrp = t.Minis[1]:GetPoint(1)
+			return { p, rp, y, mp, mrel == t.Label, mrp }
+		end
+		for _, side in ipairs({ "right", "left", "above" }) do
+			set("buttonTextSide", side)
+			emit(at())
+		end
+		q.step({ { t = "kill", target = "Kobold Vermin" } })
+		set("buttonTextSide", "right")
+		emit(at())
+	"#,
+	);
+	assert_eq!(out[0], json!(["LEFT", "RIGHT", 7, "TOPLEFT", true, "BOTTOMLEFT"]));
+	assert_eq!(out[1], json!(["RIGHT", "LEFT", 7, "TOPRIGHT", true, "BOTTOMRIGHT"]));
+	assert_eq!(out[2], json!(["BOTTOM", "TOP", 4, "LEFT", true, "RIGHT"]));
+	assert_eq!(out[3][2], 0, "one name: centred on the button");
+}
+
+// #1441 (Emil): the target button also names the mobs of the While you're here rows (Engine.GetWhileHereList,
+// nearest first; raw goals by Engine.AlongGoal) after the step's own, one from each row in turn, no name twice.
+// rows(list) puts the rows up (each a goal view, its raw goal as `raw`) and fires WHILE_HERE_CHANGED; tnames()
+// reads the names the target button's macro tries, in order.
+const TARGET_HERE_ROWS: &str = r#"
+local shown = {}
+q.Engine.GetWhileHereList = function()
+	local out = {}
+	for i, r in ipairs(shown) do out[i] = r end
+	return out
+end
+q.Engine.AlongGoal = function(s, g)
+	for _, r in ipairs(shown) do
+		if r.step == s and r.index == g then return r.raw end
+	end
+end
+local function rows(list)
+	shown = list
+	for i, r in ipairs(shown) do
+		r.step, r.index, r.status, r.raw = r.step or 40 + i, r.index or 1, r.status or "active", r.raw or {}
+	end
+	Northstar.Fire("WHILE_HERE_CHANGED")
+	stub.runTimers()
+end
+local function tnames()
+	local out = {}
+	for line in (NorthstarTargetButton:GetAttribute("macrotext") or ""):gmatch("[^\n]+") do
+		local name = line:match("^/targetexact %[noexists%] (.+)$") or line:match("^/targetexact (.+)$")
+		if name then out[#out + 1] = name end
+	end
+	return table.concat(out, ", ")
+end
+"#;
+
+#[test]
+fn target_button_names_the_while_you_re_here_rows_mobs_after_the_step_s_own_nearest_row_first_1441() {
+	let out = look_run(
+		&[
+			TARGET_HERE_ROWS,
+			r#"
+		q.step({ { t = "kill", target = "Mottled Screecher", npc = 1021 }, { t = "kill", target = "Mottled Raptor", status = "done" } })
+		emit(tnames())
+		rows({
+			{ t = "collect", npc = 1032, npcName = "Black Ooze", raw = { fromNpcs = { { npcName = "Cursed Ooze" } } } },
+			{ t = "kill", subject = "Mottled Screecher" },
+			{ t = "kill", subject = "Bluegill Murloc" },
+			{ t = "interact", subject = "Cart" },
+			{ t = "kill", subject = "Gnoll", status = "done" },
+		})
+		emit({ tnames(), look() })
+		-- the arrow on a row: its mob first among the rows', after the step's own
+		q.engine.waypoint = { stepIndex = 43, goalIndex = 1 }
+		Northstar.Fire("WAYPOINT_CHANGED", q.engine.waypoint)
+		stub.runTimers()
+		emit(tnames())
+		local here = {}
+		for i, n in ipairs((B.HereNames())) do here[i] = n end
+		emit(here)
+	"#,
+		]
+		.concat(),
+	);
+	assert_eq!(out[0], "Mottled Screecher");
+	assert_eq!(out[1][0], "Mottled Screecher, Black Ooze, Bluegill Murloc, Cursed Ooze", "the step's own first; no name twice; each row's first before any row's second; no interact or done row");
+	assert_eq!(out[1][1]["name"], "Mottled Screecher");
+	assert_eq!(out[1][1]["minis"], json!(["icon-collect", "icon-kill", "icon-collect"]));
+	assert_eq!(out[2], "Mottled Screecher, Bluegill Murloc, Black Ooze, Cursed Ooze");
+	assert_eq!(out[3], json!(["Bluegill Murloc", "Black Ooze", "Mottled Screecher", "Cursed Ooze"]), "HereNames: the rows' mobs alone, the same way, the arrow's row first");
+}
+
+#[test]
+fn target_button_while_you_re_here_mobs_alone_on_a_step_without_mobs_an_npc_step_keeps_its_npc_1441() {
+	let out = look_run(
+		&[
+			TARGET_HERE_ROWS,
+			r#"
+		q.step({ { t = "goto", map = 9000, x = 1, y = 1 } })
+		emit({ tnames(), t:IsShown() })
+		rows({ { t = "kill", subject = "Black Ooze" } })
+		emit({ tnames(), t:IsShown(), look().icon })
+		q.step({ { t = "turnin", quest = 9, npc = 240, npcName = "Marshal Dughan" } })
+		emit(tnames())
+	"#,
+		]
+		.concat(),
+	);
+	assert_eq!(out[0], json!(["", false]));
+	assert_eq!(out[1], json!(["Black Ooze", true, "icon-kill"]));
+	assert_eq!(out[2], "Marshal Dughan", "an NPC step keeps its NPC");
+}
+
+#[test]
+fn target_button_while_you_re_here_mobs_go_with_the_rows_and_change_only_out_of_combat_1441() {
+	let out = look_run(
+		&[
+			TARGET_HERE_ROWS,
+			r#"
+		q.step({ { t = "kill", target = "Mottled Screecher" } })
+		rows({ { t = "kill", subject = "Black Ooze" } })
+		emit(tnames())
+		q.combat(true)
+		rows({})
+		emit({ tnames(), QoL.HasQueued("target"), look().minis })
+		q.combat(false)
+		emit({ tnames(), look().minis })
+		q.combat(true)
+		rows({ { t = "kill", subject = "Bluegill Murloc" } })
+		emit(tnames())
+		q.combat(false)
+		emit(tnames())
+	"#,
+		]
+		.concat(),
+	);
+	assert_eq!(out[0], "Mottled Screecher, Black Ooze");
+	assert_eq!(out[1], json!(["Mottled Screecher, Black Ooze", true, ["icon-kill"]]), "the macro and the picture wait for the fight's end");
+	assert_eq!(out[2], json!(["Mottled Screecher", {}]), "the rows hid: their mobs go");
+	assert_eq!(out[3], "Mottled Screecher");
+	assert_eq!(out[4], "Mottled Screecher, Bluegill Murloc");
 }
 
 // ---------------------------------------------------------------------------
@@ -1078,8 +1833,8 @@ fn xp_level_ups_close_a_split_per_level_in_charstate() {
 		stub.fire("QUEST_TURNED_IN", 3, 700, 0)
 		q.gainXP(700)                                -- 1100 of 1000: level 11, 100 into it
 		stub.advance(50)
-		local splits = PolestarCharDB.qol.xp.splits
-		emit({ s10 = splits[10], level = PolestarCharDB.qol.xp.level })
+		local splits = NorthstarCharDB.qol.xp.splits
+		emit({ s10 = splits[10], level = NorthstarCharDB.qol.xp.level })
 		local st = QoL.GetXPStats()
 		emit({ level = st.level, xp = st.xp, levelSeconds = math.floor(st.levelSeconds * 1000 + 0.5) / 1000 })
 		-- UnitLevel lagging one event: XP dropped at the same level still closes the level
@@ -1088,7 +1843,7 @@ fn xp_level_ups_close_a_split_per_level_in_charstate() {
 		q.xp = 20
 		q.xpMax = 1200
 		stub.fire("PLAYER_XP_UPDATE", "player")
-		emit({ s11 = PolestarCharDB.qol.xp.splits[11] ~= nil, level = PolestarCharDB.qol.xp.level })
+		emit({ s11 = NorthstarCharDB.qol.xp.splits[11] ~= nil, level = NorthstarCharDB.qol.xp.level })
 	"#);
 	let (splits, st, again) = (&out[0], &out[1], &out[2]);
 	assert_eq!(splits["level"], 11);
@@ -1108,7 +1863,7 @@ fn xp_tracker_off_returns_nil_and_prints_nothing() {
 		set("xpTracker", false)
 		q.gainXP(100)
 		emit(QoL.GetXPStats() == nil)
-		SlashCmdList.POLESTAR("xp")
+		SlashCmdList.NORTHSTAR("xp")
 		emit(printed("tracker is off"))
 	"#);
 	assert_eq!(out[0], true);
@@ -1123,7 +1878,7 @@ local function mark(bar)
 	local point, rel, relPoint = f:GetPoint(1)
 	local tick, tickRel, tickRelPoint = f.Tick:GetPoint(1)
 	local r, g, b = f.Tick:GetVertexColor()
-	local ar, ag, ab = Polestar.Theme.Accent()
+	local ar, ag, ab = Northstar.Theme.Accent()
 	return {
 		shown = true, text = f.Label:GetText(), underBar = f:GetParent() == bar,
 		spans = point == "TOPLEFT" and rel == bar.StatusBar and f:GetNumPoints() == 2,
@@ -1253,12 +2008,12 @@ fn xp_mark_hidden_with_the_option_off_without_a_target_without_the_xp_bar_or_at_
 fn xp_mark_on_by_default_on_quality_of_life_trackers_experience() {
 	let out = run(r#"
 		local found
-		for _, spec in ipairs(Polestar.Widgets.OptionsRegistry) do
+		for _, spec in ipairs(Northstar.Widgets.OptionsRegistry) do
 			for _, c in ipairs(spec.controls) do
 				if c.key == "qol.xpTargetMark" then found = { page = spec.page, tab = spec.tab, section = spec.section } end
 			end
 		end
-		emit({ default = Polestar.GetDefault("qol.xpTargetMark"), where = found or "none" })
+		emit({ default = Northstar.GetDefault("qol.xpTargetMark"), where = found or "none" })
 	"#);
 	assert_eq!(out[0], json!({ "default": true, "where": { "page": "Quality of Life", "tab": "Trackers", "section": "Experience" } }));
 }
@@ -1267,12 +2022,12 @@ fn xp_mark_on_by_default_on_quality_of_life_trackers_experience() {
 fn options_open_the_quest_log_cleanup_from_tooltips_and_quest_log() {
 	let out = run(r#"
 		local found, asked
-		for _, spec in ipairs(Polestar.Widgets.OptionsRegistry) do
+		for _, spec in ipairs(Northstar.Widgets.OptionsRegistry) do
 			for _, c in ipairs(spec.controls) do
 				if c.kind == "button" and c.label == "Clean up quest log" then found = { page = spec.page, tab = spec.tab, section = spec.section, c = c } end
 			end
 		end
-		Polestar.On("SHOW_QUEST_ROOM", function() asked = true end)
+		Northstar.On("SHOW_QUEST_ROOM", function() asked = true end)
 		if found then found.c.onClick(); found.c = nil end
 		emit({ where = found or "none", asked = asked or false })
 	"#);
@@ -1334,7 +2089,7 @@ fn merchant_a_grey_item_a_quest_still_needs_is_not_sold() {
 	let out = run(&[
 		BAGS,
 		r#"
-		Polestar.QuestDB = { IsItemNeeded = function(id) return id == 5 end }
+		Northstar.QuestDB = { IsItemNeeded = function(id) return id == 5 end }
 		q.openMerchant()
 		stub.advance(2)
 		emit(q.sold)
@@ -2178,7 +2933,7 @@ fn rewards_ranking_by_gear_upgrade_else_vendor_value_stack_included() {
 // on the most valuable (true or false), whether the best's hairline is drawn, and whether the mark hangs off
 // the item icon (never over the name).
 const MARKS: &str = r#"
-local T = Polestar.Theme
+local T = Northstar.Theme
 local function tint(t)
 	local r, g, b = t:GetVertexColor()
 	local sr, sg, sb = T.Color("success")
@@ -2223,7 +2978,7 @@ fn rewards_a_green_arrow_on_every_upgrade_the_best_framed_on_the_icon_the_coin_a
 		emit({ best = QoL.Rewards.best, reason = QoL.Rewards.reason, picks = #calls("GetQuestReward") })
 		emit(marks())
 
-		Polestar.Gear = {
+		Northstar.Gear = {
 			IsEnabled = function() return true end,
 			CompareToEquipped = function() return { usable = true } end,
 			IsUpgrade = function(link)
@@ -2272,7 +3027,7 @@ fn rewards_a_disabled_gear_module_marks_no_upgrades_a_single_choice_gets_its_arr
 		q.items[12] = { name = "Ring", price = 400 }
 		q.choices = { { id = 11 }, { id = 12 } }
 		local on = false
-		Polestar.Gear = { IsEnabled = function() return on end, IsUpgrade = function(link) return link:find("item:11") ~= nil, 5 end }
+		Northstar.Gear = { IsEnabled = function() return on end, IsUpgrade = function(link) return link:find("item:11") ~= nil, 5 end }
 		q.questComplete(); stub.runTimers()
 		emit(marks())
 		on = true
@@ -2288,7 +3043,7 @@ fn rewards_a_disabled_gear_module_marks_no_upgrades_a_single_choice_gets_its_arr
 
 // The gamepad interface hooks CreateFrame and, for a parent inside the quest frame while it is open, rebuilds
 // the quest frame's buttons in the caller's code: a mark made by CreateFrame under a reward button, from
-// Polestar's code, blocks the next gamepad action there (the A that takes the reward). wow_stub.lua's
+// Northstar's code, blocks the next gamepad action there (the A that takes the reward). wow_stub.lua's
 // CreateFrame lists those in stub.underGameFrames.
 #[test]
 fn rewards_a_mark_is_made_with_no_parent_then_set_on_its_reward_button_so_the_gamepad_interface_never_rebuilds_the_quest_frame_s_buttons_in_polestar_s_code() {
@@ -2298,7 +3053,7 @@ fn rewards_a_mark_is_made_with_no_parent_then_set_on_its_reward_button_so_the_ga
 		q.items[11] = { name = "Cloak", price = 120 }
 		q.items[12] = { name = "Potion", price = 50 }
 		q.choices = { { id = 11 }, { id = 12, count = 5 } }
-		Polestar.Gear = { IsEnabled = function() return true end, CompareToEquipped = function() return { usable = true } end, IsUpgrade = function(link) return link:find("item:11") ~= nil, 4 end }
+		Northstar.Gear = { IsEnabled = function() return true end, CompareToEquipped = function() return { usable = true } end, IsUpgrade = function(link) return link:find("item:11") ~= nil, 4 end }
 		q.questComplete()
 		stub.runTimers()
 		local on = 0
@@ -2320,7 +3075,7 @@ fn rewards_auto_pick_takes_the_best_when_on_shift_quest_cost_and_a_disabled_gear
 		q.items[11] = { name = "Cloak", price = 120 }
 		q.items[12] = { name = "Ring", price = 400 }
 		q.choices = { { id = 11 }, { id = 12 } }
-		Polestar.Gear = { IsEnabled = function() return false end, IsUpgrade = function() return true, 50 end }
+		Northstar.Gear = { IsEnabled = function() return false end, IsUpgrade = function() return true, 50 end }
 		set("rewardAutoPick", true)
 		q.questComplete(); stub.runTimers()
 		emit(calls("GetQuestReward"))
@@ -2344,7 +3099,7 @@ fn rewards_auto_pick_waits_for_automation_delay_and_shift_or_a_closed_window_sto
 		q.items[11] = { name = "Cloak", price = 120 }
 		q.items[12] = { name = "Ring", price = 400 }
 		q.choices = { { id = 11 }, { id = 12 } }
-		Polestar.Automation = { Delay = function() return 0.3 end }
+		Northstar.Automation = { Delay = function() return 0.3 end }
 		set("rewardAutoPick", true)
 		q.questComplete(); stub.runTimers()
 		emit(#calls("GetQuestReward"))
@@ -2393,7 +3148,7 @@ fn rewards_an_unsettled_gear_verdict_keeps_the_coin_on_the_most_valuable_reward_
 		q.items[12] = { name = "Potion", price = 50 }
 		q.choices = { { id = 11 }, { id = 12 } }
 		-- Gear is on but has no comparison yet for either choice.
-		Polestar.Gear = { IsEnabled = function() return true end, CompareToEquipped = function() return nil end, IsUpgrade = function() return false, nil end }
+		Northstar.Gear = { IsEnabled = function() return true end, CompareToEquipped = function() return nil end, IsUpgrade = function() return false, nil end }
 		q.questComplete(); stub.advance(5)          -- every retry spent
 		emit(marks())
 		emit(#calls("GetQuestReward"))
@@ -2455,8 +3210,8 @@ fn rewards_turning_auto_pick_off_and_on_again_while_a_pick_is_pending_cancels_th
 		q.choices = { { id = 11 }, { id = 12 } }
 		set("rewardAutoPick", true)
 		q.questComplete()                           -- the pick waits for the panel's layout
-		Polestar.Set("qol.rewardAutoPick", false)
-		Polestar.Set("qol.rewardAutoPick", true)
+		Northstar.Set("qol.rewardAutoPick", false)
+		Northstar.Set("qol.rewardAutoPick", true)
 		stub.runTimers()
 		emit(#calls("GetQuestReward"))
 	"#);
@@ -2479,7 +3234,7 @@ const WEAR: &str = r#"
 		GetQuestReward(i)
 		stub.advance(1)
 	end
-	Polestar.Gear = {
+	Northstar.Gear = {
 		IsEnabled = function() return true end,
 		IsUpgrade = function(link)
 			if link:find("item:11|", 1, true) then return true, 6, 12.5 end
@@ -2542,7 +3297,7 @@ fn rewards_wearing_waits_for_combat_to_end_off_by_default_shift_at_the_turn_in_a
 		turnIn(2, nil, {})
 		emit(#worn())                       -- the gloves are no upgrade
 
-		Polestar.Gear.IsEnabled = function() return false end
+		Northstar.Gear.IsEnabled = function() return false end
 		turnIn(1)
 		emit(#worn())
 	"#,
@@ -2564,7 +3319,7 @@ fn rewards_a_turn_in_made_before_anything_else_sees_the_panel_wears_that_quest_s
 		set("rewardEquip", true)
 		turnIn(2, nil, {})                  -- the gloves: nothing worn, but this panel offered the boots too
 		q.calls = {}
-		q.early = true                      -- turns in on QUEST_COMPLETE, ahead of Polestar, as automation does
+		q.early = true                      -- turns in on QUEST_COMPLETE, ahead of Northstar, as automation does
 		offer({ { id = 13 } }, {})          -- the only reward: the belt
 		stub.advance(1)
 		emit(worn())
@@ -2610,7 +3365,7 @@ const GEAR: &str = r#"
 	local function linkOf(id) return id and ("|Hitem:" .. id .. "|h[" .. ((q.items[id] or {}).name or "?") .. "]|h") end
 	local function idOf(link) return tonumber(link:match("item:(%d+)")) end
 	local function at(slot) return score[q.worn[slot]] or 0 end
-	Polestar.Gear = {
+	Northstar.Gear = {
 		IsEnabled = function() return true end,
 		Client = { InventoryLink = function(slot) return linkOf(q.worn[slot]) end },
 		GetItemInfo = function(link) local id = idOf(link); return inv[id] and { id = id, inv = inv[id] } end,
@@ -2632,8 +3387,8 @@ const GEAR: &str = r#"
 			return r
 		end,
 	}
-	Polestar.Gear.IsUpgrade = function(link)
-		local r = Polestar.Gear.CompareToEquipped(link)
+	Northstar.Gear.IsUpgrade = function(link)
+		local r = Northstar.Gear.CompareToEquipped(link)
 		return r.delta > 0, r.delta, r.pct
 	end
 "#;
@@ -2757,7 +3512,7 @@ fn rewards_with_the_real_gear_module_a_two_hander_stays_on_against_a_one_hander_
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_qol.lua"],
 		addons: vec![Addon::files(
-			"Polestar",
+			"Northstar",
 			&["Core/Init.lua", "Core/Compat.lua", "Theme/Theme.xml", "Gear/ItemDB.lua", "Gear/Weights.lua", "Gear/SpecData.lua", "Gear/PawnStats.lua", "Gear/Pawn.lua", "Gear/Gear.lua", "QoL/QoL.xml"],
 		)],
 		before: r#"
@@ -2775,7 +3530,7 @@ fn rewards_with_the_real_gear_module_a_two_hander_stays_on_against_a_one_hander_
 		script: [
 			PRELUDE,
 			r#"
-			Polestar.ItemDB.Register({ schema = 1, build = "test" }, {
+			Northstar.ItemDB.Register({ schema = 1, build = "test" }, {
 				[9032] = "17 22 17 2 2 8 str10 dmin40 dmax60 speed3000",          -- two-hander: 126.9
 				[9033] = "13 22 17 2 2 7 agi3 dmin12 dmax22 speed1800",           -- weak one-hander: 67.6
 				[9034] = "14 30 25 3 4 6 sta20 armor3000",                        -- strong shield: 70
@@ -2849,7 +3604,7 @@ fn rewards_waits_for_uncached_item_data_before_ranking_an_upgrade_is_marked_from
 		q.items[11] = { name = "Cloak", price = 120 }
 		q.items[12] = { name = "Ring", price = 400, uncached = true }
 		q.choices = { { id = 11 }, { id = 12 } }
-		Polestar.Gear = { IsEnabled = function() return true end, CompareToEquipped = function() return { usable = true } end, IsUpgrade = function(link) return link:find("item:12") ~= nil, 4 end }
+		Northstar.Gear = { IsEnabled = function() return true end, CompareToEquipped = function() return { usable = true } end, IsUpgrade = function(link) return link:find("item:12") ~= nil, 4 end }
 		q.questComplete()
 		stub.runTimers()
 		emit(QoL.Rewards.best or "pending")
@@ -2972,7 +3727,7 @@ fn flight_marks_the_route_s_next_flight_destination_else_the_fly_goal_never_take
 #[test]
 fn flight_the_step_key_takes_the_marked_flight_on_the_live_step_when_the_player_can_pay() {
 	let out = run(r#"
-		local s = PolestarStepButton
+		local s = NorthstarStepButton
 		local function press() q.calls = {}; q.click(s, true); q.click(s, false); return calls("TakeTaxiNode")[1] or 0 end
 		q.step({ { t = "fly", location = "Lakeshire" } })
 		q.money = 500
@@ -2987,7 +3742,7 @@ fn flight_the_step_key_takes_the_marked_flight_on_the_live_step_when_the_player_
 		q.taxiCosts[2] = 300
 		q.engine.live = 1
 		q.step({ { t = "fly", location = "Lakeshire" } }, 2)
-		Polestar.Fire("FLIGHT_MARK_CHANGED", 2); stub.runTimers()
+		Northstar.Fire("FLIGHT_MARK_CHANGED", 2); stub.runTimers()
 		emit(press())
 		-- the map closed: the step key is back to the step
 		q.engine.live = nil
@@ -3012,7 +3767,7 @@ fn flight_the_mark_names_the_destination_node_and_bobs_unless_motion_is_reduced(
 		local m = theMark()
 		emit({ m.Label:GetText(), m.Bob.plays or 0, m.Wave.plays or 0, m.Ripple:IsShown() })
 		stub.fire("TAXIMAP_CLOSED")
-		Polestar.Set("ui.reduceMotion", true)
+		Northstar.Set("ui.reduceMotion", true)
 		q.openTaxi({ "Stormwind, Elwynn", "Lakeshire, Redridge", "Sentinel Hill, Westfall" })
 		emit({ m.Bob.plays or 0, m.Wave.plays or 0, m.Ripple:IsShown() })
 	"#);
@@ -3140,7 +3895,7 @@ fn death_resurrection_sickness_is_forever_s_ten_minutes_from_level_11_or_what_th
 		q.level = 12
 		q.auras[15007] = { spellId = 15007, duration = 120, expirationTime = 1000 }
 		stub.fire("PLAYER_UNGHOST")
-		local seen = PolestarCharDB.qol.resSickness
+		local seen = NorthstarCharDB.qol.resSickness
 		emit({ seen.level, seen.seconds })
 		emit({ D.Sickness(12, seen), D.Sickness(13, seen) })
 		emit({ (D.Decide(1050, 20, 7, 12, nil, seen)) })
@@ -3164,7 +3919,7 @@ fn death_resurrection_sickness_is_forever_s_ten_minutes_from_level_11_or_what_th
 }
 
 #[test]
-fn death_as_a_ghost_the_arrow_points_at_the_faster_choice_resurrection_releases_it() {
+fn death_as_a_ghost_the_arrow_is_held_on_the_faster_choice_resurrection_lets_go() {
 	let out = run(r#"
 		-- healer 20 yd north of the player; corpse 400 yd east
 		QoL.SetData({ spiritHealers = { { 0, 20, 0, 9000, 50, 49 }, { 1, 0, 0, 9001, 50, 50 } }, flightMasters = {} })
@@ -3172,35 +3927,37 @@ fn death_as_a_ghost_the_arrow_points_at_the_faster_choice_resurrection_releases_
 		local _, cx, cy = q.mapPoint(0, -400)
 		q.corpse = { cx, cy }
 		q.level = 30
+		q.nav.target = { map = 9000, x = 10, y = 10, label = "The guide's step" }
 		q.ghost = true
 		stub.fire("PLAYER_ALIVE")
 		local t = q.nav.target
-		emit({ label = t.label, x = t.x, y = t.y, choice = QoL.GetDeathAdvice().choice, pins = #q.pins["qol.death"] })
+		emit({ label = t.label, x = t.x, y = t.y, held = q.nav.held == t, choice = QoL.GetDeathAdvice().choice, pins = #q.pins["qol.death"] })
 		-- level 8: no sickness, the healer wins
 		q.level = 8
 		stub.advance(1.1)
 		t = q.nav.target
-		emit({ label = t.label, x = t.x, y = t.y, note = QoL.GetDeathAdvice().note })
-		-- the step changed and Nav dropped our target: it comes back on the next tick
-		q.nav.target = nil
-		stub.advance(1)
-		emit(q.nav.target and q.nav.target.label)
+		emit({ label = t.label, x = t.x, y = t.y, held = q.nav.held == t, note = QoL.GetDeathAdvice().note })
+		local sets = #q.nav.sets
+		stub.advance(3)
+		emit(#q.nav.sets == sets)
 		q.ghost = false
 		stub.fire("PLAYER_UNGHOST")
-		emit({ releases = q.nav.releases, target = q.nav.target == nil, pins = q.pins["qol.death"] == nil, advice = QoL.GetDeathAdvice() == nil })
-		local sets = #q.nav.sets
+		emit({ unholds = q.nav.unholds, target = q.nav.target and q.nav.target.label, pins = q.pins["qol.death"] == nil, advice = QoL.GetDeathAdvice() == nil })
+		sets = #q.nav.sets
 		stub.advance(3)
 		emit(#q.nav.sets == sets)
 	"#);
 	assert_eq!(out[0]["label"], "Your corpse");
 	assert!((out[0]["x"].as_f64().unwrap() - 70.0).abs() < 1e-9 && (out[0]["y"].as_f64().unwrap() - 50.0).abs() < 1e-9);
+	assert_eq!(out[0]["held"], true);
 	assert_eq!(out[0]["choice"], "corpse");
 	assert_eq!(out[0]["pins"], 2);
 	assert_eq!(out[1]["label"], "Spirit Healer");
 	assert!((out[1]["x"].as_f64().unwrap() - 50.0).abs() < 1e-9 && (out[1]["y"].as_f64().unwrap() - 49.0).abs() < 1e-9);
+	assert_eq!(out[1]["held"], true);
 	assert!(is_match(text(&out[1]["note"]), r"no resurrection sickness"));
-	assert_eq!(out[2], "Spirit Healer");
-	assert_eq!(out[3], json!({ "releases": 1, "target": true, "pins": true, "advice": true }));
+	assert_eq!(out[2], true, "held: no target set again while the choice stands");
+	assert_eq!(out[3], json!({ "unholds": 1, "target": "The guide's step", "pins": true, "advice": true }), "alive: the guide's target again");
 	assert_eq!(out[4], true, "no more targets after resurrection");
 }
 
@@ -3234,7 +3991,7 @@ fn death_a_ghost_in_the_next_zone_is_led_to_the_corpse_on_its_own_zone_map_not_o
 #[test]
 fn death_in_metres_the_advice_gives_the_distances_in_metres() {
 	let out = run(r#"
-		Polestar.Set("nav.distanceUnit", "metres")
+		Northstar.Set("nav.distanceUnit", "metres")
 		QoL.SetData({ spiritHealers = { { 0, 20, 0, 9000, 50, 49 } }, flightMasters = {} })
 		q.player = { c = 0, wx = 0, wy = 0 }
 		local _, cx, cy = q.mapPoint(0, -400)
@@ -3268,7 +4025,7 @@ fn death_released_outside_the_dungeon_you_died_in_the_arrow_runs_to_its_entrance
 		QoL.SetData({ spiritHealers = { { 0, 20, 0, 9000, 50, 49 } }, flightMasters = {} })
 		q.player = { c = 0, wx = 0, wy = 0 }
 		q.level = 30
-		Polestar.Codex = { IsLoaded = function() return true end, Each = function(_, fn) fn("rfc"); fn("deadmines") end,
+		Northstar.Codex = { IsLoaded = function() return true end, Each = function(_, fn) fn("rfc"); fn("deadmines") end,
 			Instance = function(key)
 				if key == "rfc" then return { key = key, name = "Ragefire Chasm", map = 389, entrance = { map = 9000, x = 90, y = 90 } } end
 				return { key = key, name = "The Deadmines", map = 36, entrance = { map = 9000, x = 50, y = 30 } }
@@ -3316,7 +4073,7 @@ fn instant_quest_text_sets_the_cvar_restores_the_player_value_when_turned_off_ab
 	assert_eq!(json!(out), json!(["1", "0", "1"]));
 	let absent = run("emit(stub.cvars.instantQuestText == nil)");
 	assert_eq!(absent[0], true);
-	let untouched = run_with("emit(stub.cvars.instantQuestText)", r#"stub.cvars.instantQuestText = "0""#, Some("PolestarDB = { schema = 1, settings = { qol = { instantQuestText = false } } }"));
+	let untouched = run_with("emit(stub.cvars.instantQuestText)", r#"stub.cvars.instantQuestText = "0""#, Some("NorthstarDB = { schema = 1, settings = { qol = { instantQuestText = false } } }"));
 	assert_eq!(untouched[0], "0", "off: the CVar is never touched");
 }
 
@@ -3433,7 +4190,7 @@ fn hide_quest_tracker_a_protected_tracker_waits_for_the_end_of_combat_the_gamepa
 		emit(f:IsShown())
 		set("hideQuestTracker", false)
 		f.protected = false
-		Polestar.GamepadUI = function() return true end
+		Northstar.GamepadUI = function() return true end
 		set("hideQuestTracker", true)
 		emit(f:IsShown())
 	"#,
@@ -3694,7 +4451,7 @@ fn covered_defaults(before: &str, saved: Option<&str>) -> Value {
 		local o = {}
 		for _, k in ipairs({ __KEYS__ }) do o[k] = QoL.On(k) end
 		o.instantQuestText = QoL.On("instantQuestText")
-		for _, spec in ipairs(Polestar.Widgets.OptionsRegistry) do
+		for _, spec in ipairs(Northstar.Widgets.OptionsRegistry) do
 			for _, c in ipairs(spec.controls) do if c.key == "qol.sellJunk" then o.help = c.help end end
 		end
 		emit(o)
@@ -3720,11 +4477,11 @@ fn ellesmereui_overlapping_toggles_start_off_while_its_module_is_installed_and_e
 	assert!(is_match(text(&loaded["help"]), r"Off by default: EllesmereUI QoL does this too\."));
 
 	let later = covered_defaults("stub.qol.installed.EllesmereUIQoL = true", None);
-	assert_eq!(later["sellJunk"], false, "enabled but loading after Polestar counts");
+	assert_eq!(later["sellJunk"], false, "enabled but loading after Northstar counts");
 	let disabled = covered_defaults("stub.qol.installed.EllesmereUIQoL = false", None);
 	assert_eq!(disabled["sellJunk"], true, "installed but disabled does not");
 
-	let mine = covered_defaults("stub.addonsLoaded.EllesmereUIQoL = true", Some("PolestarDB = { schema = 1, settings = { qol = { sellJunk = true } } }"));
+	let mine = covered_defaults("stub.addonsLoaded.EllesmereUIQoL = true", Some("NorthstarDB = { schema = 1, settings = { qol = { sellJunk = true } } }"));
 	assert_eq!(mine["sellJunk"], true);
 }
 
@@ -3755,12 +4512,12 @@ fn merchant_guild_bank_first_when_allowed_no_affordability_gate_as_blizzard_s_bu
 fn full_addon_qol_loads_with_every_module_and_creates_its_buttons_at_login() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
-		addons: vec![Addon::name("Polestar")],
+		addons: vec![Addon::name("Northstar")],
 		login: true,
 		script: r#"
-			local st = Polestar.QoL.GetXPStats()
-			emit({ qol = Polestar.QoL ~= nil, item = PolestarQuestItemButton ~= nil, target = PolestarTargetButton ~= nil,
-				hearth = PolestarHearthButton ~= nil, xp = st ~= nil and st.level ~= nil, healers = #Polestar.QoL.data.spiritHealers })
+			local st = Northstar.QoL.GetXPStats()
+			emit({ qol = Northstar.QoL ~= nil, item = NorthstarQuestItemButton ~= nil, target = NorthstarTargetButton ~= nil,
+				hearth = NorthstarHearthButton ~= nil, xp = st ~= nil and st.level ~= nil, healers = #Northstar.QoL.data.spiritHealers })
 		"#
 		.into(),
 		..Default::default()

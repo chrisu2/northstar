@@ -1,8 +1,8 @@
 'use strict';
-// The Recorder window (addon/Polestar_Recorder/Panel.lua) against
+// The Recorder window (addon/Northstar_Recorder/Panel.lua) against
 // tests/lua/stub_recorder.lua: the label comes from the next spot of the
 // player's faction's tour, Start/Stop records a trail, and the stop ticks the
-// spot in PolestarRecorderDB.spots and moves the label to the next spot.
+// spot in NorthstarRecorderDB.spots and moves the label to the next spot.
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -11,14 +11,14 @@ const { runAddon } = require('./helpers/lua');
 test('the window\'s Start/Stop records a trail with the next spot\'s label and ticks that spot', () => {
 	const { emitted: [out] } = runAddon({
 		stubs: ['stub_recorder.lua'],
-		addons: ['Polestar_Recorder'],
+		addons: ['Northstar_Recorder'],
 		login: true,
 		script: `
-		local cmd = PolestarRecorder_Command
+		local cmd = NorthstarRecorder_Command
 		stub.world.level = 30
 		cmd("on")
 		cmd("ui")
-		local F = PolestarRecorderPanel
+		local F = NorthstarRecorderPanel
 		local label = F.Label:GetText()
 		local rows = {}
 		for i, r in ipairs(F.Rows) do if r.spot then rows[i] = r.spot.id end end
@@ -30,14 +30,14 @@ test('the window\'s Start/Stop records a trail with the next spot\'s label and t
 		F.Start:Click()
 		stub.fire("PLAYER_LOGOUT") -- writes the open chunk
 		local evs = {}
-		for _, text in pairs(PolestarRecorderDB.chunks) do
+		for _, text in pairs(NorthstarRecorderDB.chunks) do
 			for _, r in ipairs(stub.records(text)) do
 				if r[1] == "mark" then evs[#evs + 1] = r[6] end
 			end
 		end
 		emit({
 			label = label, rows = rows, running = running, evs = evs,
-			ticked = PolestarRecorderDB.spots and PolestarRecorderDB.spots[11], next = F.Label:GetText(),
+			ticked = NorthstarRecorderDB.spots and NorthstarRecorderDB.spots[11], next = F.Label:GetText(),
 			trail = F.Trails[1]:GetText(), head = F.SpotsHead:GetText(),
 			check = F.Rows[1].Check:IsShown(),
 		})`,
@@ -57,19 +57,19 @@ test('the window\'s Start/Stop records a trail with the next spot\'s label and t
 	assert.equal(out.check, true);
 });
 
-test('with Polestar loaded the window is drawn in Polestar\'s theme and works the same', () => {
+test('with Northstar loaded the window is drawn in Northstar\'s theme and works the same', () => {
 	const { emitted: [out] } = runAddon({
 		stubs: ['stub_world.lua'],
-		addons: ['Polestar', 'Polestar_Recorder'],
+		addons: ['Northstar', 'Northstar_Recorder'],
 		login: true,
 		script: `
-		PolestarRecorder_Command("on")
-		PolestarRecorder_Command("ui")
-		local F = PolestarRecorderPanel
+		NorthstarRecorder_Command("on")
+		NorthstarRecorder_Command("ui")
+		local F = NorthstarRecorderPanel
 		F.Start:Click()
 		stub.advance(1)
 		local running = F.Start.Label:GetText()
-		PolestarRecorder_Command("trail toggle") -- the key binding
+		NorthstarRecorder_Command("trail toggle") -- the key binding
 		emit({ shown = F:IsShown(), polestarButton = F.Start.Label ~= nil, running = running, after = F.Start.Label:GetText(), trails = #F.Trails, first = F.Trails[1]:GetText() })`,
 	});
 	assert.deepEqual({ ...out, first: undefined }, { shown: true, polestarButton: true, running: 'Stop trail', after: 'Start trail', trails: 4, first: undefined });

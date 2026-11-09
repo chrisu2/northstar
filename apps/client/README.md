@@ -1,9 +1,9 @@
 # Polestar Client
 
-A small desktop app for Windows, macOS and Linux that keeps Polestar's
+A small desktop app for Windows, macOS and Linux that keeps Northstar's
 addons for World of Warcraft: Forever installed and up to date, and takes
-part in Polestar's crowd recording program: it uploads what the Polestar
-Recorder writes so Polestar's guides and data get better (on by default; one
+part in Northstar's crowd recording program: it uploads what the Northstar
+Recorder writes so Northstar's guides and data get better (on by default; one
 click stops it), and it shows exactly what it sends.
 
 [docs/RECORDING.md](../../docs/RECORDING.md) is the contract the recording
@@ -30,9 +30,9 @@ the upload API, and the public list of what is never collected.
   once to players who already shared before 0.1.3 too. It never turns on for
   a player who stopped sharing (Settings' "Share my play" or the notice:
   `everShared` without `consent` in `settings.json`), nor while any account's
-  Recorder file says `/psrec off` (`optout`), nor while a file can't be read
+  Recorder file says `/nsrec off` (`optout`), nor while a file can't be read
   (its opt-out is unknown). With sharing off, the Recording section's "Help
-  improve Polestar's guides" page (what is shared, what never is) offers
+  improve Northstar's guides" page (what is shared, what never is) offers
   "Start sharing" again.
 - **Client updates** are looked for at launch and every 6 hours (Settings >
   About also has "Check for client updates"). One waiting shows as a banner
@@ -49,11 +49,11 @@ the upload API, and the public list of what is never collected.
   the new client in place of the old one while the old one keeps running in
   the tray. Starting the client then quits the old copy and starts the new
   one, instead of bringing the old window back (`src-tauri/src/relaunch.rs`).
-- **Addons** lists Polestar, Polestar Recorder and LibForeverData: the
+- **Addons** lists Northstar, Northstar Recorder and LibForeverData: the
   version installed, the newest release on
-  [GitHub](https://github.com/fitzforge/polestar/releases) (Polestar and the
-  Recorder from the `v*` releases' `Polestar-<v>.zip` and
-  `Polestar_Recorder-<v>.zip`, LibForeverData from `lib-v*`), its changelog,
+  [GitHub](https://github.com/fitzforge/polestar/releases) (Northstar and the
+  Recorder from the `v*` releases' `Northstar-<v>.zip` and
+  `Northstar_Recorder-<v>.zip`, LibForeverData from `lib-v*`), its changelog,
   and Install, Update, Update all, Repair and Uninstall, each showing how far
   it has got (downloading with the share received, checking, installing). Every download is
   checked against the SHA-256 GitHub publishes for it and against the
@@ -65,8 +65,8 @@ the upload API, and the public list of what is never collected.
   every old folder back, that backup is kept as
   `AddOns/.polestar-client-backup-<time>` and the message names it; it is
   never wiped by a later install. A product only
-  touches its own folders: Polestar's are `Polestar` and the `Polestar_*`
-  folders whose .toc says `## Author: Polestar` (an update also removes the
+  touches its own folders: Northstar's are `Northstar` and the `Northstar_*`
+  folders whose .toc says `## Author: Northstar` (an update also removes the
   ones its new release no longer has); never another addon. Updates are
   looked for every 6 hours (off in Settings) and announced in the tray;
   they install by themselves only if you turn that on, and never while the
@@ -99,21 +99,21 @@ the upload API, and the public list of what is never collected.
   not leave that origin or go from https to http. Server answers are read up
   to 64 KiB, and a `Retry-After` is held to at most 5 minutes (1 day for a
   503). A guide is installed only into a game whose Interface matches the
-  guide's `toc` and with Polestar at least its `minPolestar` (otherwise the
+  guide's `toc` and with Northstar at least its `minNorthstar` (otherwise the
   page says why). Its zip must match the index's SHA-256 and size (at most
   20 MB, 100 MB unpacked) and hold only what the guide compiler makes: the
-  folders the index lists (`PolestarPack_<id>` and
-  `PolestarPack_<id>_<locale>`), each with its `.toc`, the `.lua` files that
+  folders the index lists (`NorthstarPack_<id>` and
+  `NorthstarPack_<id>_<locale>`), each with its `.toc`, the `.lua` files that
   TOC lists, `.tga` and `.blp` pictures and LICENSE/README texts. No `.xml`,
   no `.png`. A TOC may list only the generated files (`Pack.lua`,
   `MapFrames.lua`, `Guides.lua`; in a locale folder `Texts.lua`) and use
   only the generated `## Key:` lines (Interface, Title, Notes, Author,
-  Version, Category, Group, Dependencies, LoadOnDemand, X-Polestar-*,
+  Version, Category, Group, Dependencies, LoadOnDemand, X-Northstar-*,
   X-License, X-Website, Title-/Notes-<locale>), so no SavedVariables,
   LoadWith, LoadManagers or AllowLoad. Each TOC says its guide's id
-  (`## X-Polestar-Pack: <id>`, locale folders `## X-Polestar-Texts: <id>`).
+  (`## X-Northstar-Pack: <id>`, locale folders `## X-Northstar-Texts: <id>`).
   A guide writes or removes only folders that don't exist yet or already
-  carry its id, swapped in like an addon with a backup; Polestar's own
+  carry its id, swapped in like an addon with a backup; Northstar's own
   folders and every other addon are never touched. At install the client
   pins the guide's uid, publisher and folders (guides installed before this
   pin them on the first check). A different uid under the same id means the
@@ -149,7 +149,7 @@ the upload API, and the public list of what is never collected.
   AppImage writes for itself (`MimeType=x-scheme-handler/polestar`, made the
   default in `mimeapps.list` unless another program already is).
 - **Recording.** Every 5 seconds the client looks at each account's
-  `WTF/Account/<account>/SavedVariables/Polestar_Recorder.lua` (the game
+  `WTF/Account/<account>/SavedVariables/Northstar_Recorder.lua` (the game
   writes it when you log out or type `/reload`), waits until the file has
   been still for 3 seconds, reads it, replaces your characters' names in its
   text fields with `$N`, drops every line of a record kind it doesn't know
@@ -162,15 +162,15 @@ the upload API, and the public list of what is never collected.
   (about 4 million SHA-256 hashes at the default 22 bits, a few seconds;
   Status shows "Setting up"), and the server answers with a token it made.
   It then records in
-  `Interface/AddOns/Polestar_Recorder/Ack.lua` the highest chunk the server
+  `Interface/AddOns/Northstar_Recorder/Ack.lua` the highest chunk the server
   accepted or already had among the ones that request sent, per Recorder
   install, so the addon can free the space. Once sharing has been on at least
   once (`everShared` in `settings.json`: by default or by Start sharing), the
-  same file carries `PolestarRecorderShare = true|false` (sharing on and not
+  same file carries `NorthstarRecorderShare = true|false` (sharing on and not
   paused), written whenever that changes and with every ack: at the next
   login (or `/reload`) the Recorder turns itself on and says so, unless the
-  player typed `/psrec off` (docs/RECORDING.md "Ack file"). A Recorder
-  installed without the client stays off until `/psrec on`. **Status** says
+  player typed `/nsrec off` (docs/RECORDING.md "Ack file"). A Recorder
+  installed without the client stays off until `/nsrec on`. **Status** says
   what it is doing (sharing on, sending, waiting for
   the game to save, can't reach the server and retrying, paused, some data
   skipped and why, or what needs your attention) and what this week's play
@@ -178,7 +178,7 @@ the upload API, and the public list of what is never collected.
   to update the Recorder only when a newer one is published; with the latest
   installed it asks you to log in (or `/reload`) with it, and while no
   published Recorder records the new format yet it says the new one comes
-  with the next Polestar update. **Activity** lists every upload and every
+  with the next Northstar update. **Activity** lists every upload and every
   addon change; **What we send** shows the next upload as a summary, event
   by event, and as the raw JSON, and its **Already sent** tab shows the uploads
   the server accepted in the last 8 days the same way (read from `sent.jsonl`;
@@ -186,14 +186,14 @@ the upload API, and the public list of what is never collected.
   there, and Activity lists uploads older than that.
 - **Settings** has sharing and pause, the addon update options, start with
   your computer, the game folder, "Delete my data from the server", the
-  frame-rate overlay (Ctrl+Shift+F anywhere, or `POLESTAR_FRAME_METER=1`
+  frame-rate overlay (Ctrl+Shift+F anywhere, or `NORTHSTAR_FRAME_METER=1`
   from launch, with the last intro's numbers), counting guide installs and,
   in a debug build only, folded away under Advanced, the recording server
   and community site addresses.
 - Closing the window keeps it running in the tray (Open, Pause/Resume, Quit).
 - **The intro.** The window opens on a starlit intro (`index.html` holds
   its first frame, `src/lib/intro.svelte.ts` plays it) that ends with the
-  Polestar star gliding into the app. It plays in full (about 5.5 s) on every
+  Northstar star gliding into the app. It plays in full (about 5.5 s) on every
   launch and every time the window comes back from the tray, while Settings >
   General > "Play the full intro every launch" is on (the default); off, the
   first launch of a version plays it in full and later launches a short one.
@@ -259,7 +259,7 @@ not in production builds.
 
 ### The launch test
 
-`POLESTAR_SMOKE=<seconds>` starts a built client as a launch test
+`NORTHSTAR_SMOKE=<seconds>` starts a built client as a launch test
 (`src-tauri/src/smoke.rs`): in a fresh data folder of its own (no consent,
 game folder or token, so nothing is uploaded or installed), without the
 update check, the single-instance hand-over or the desktop entry. It exits 1
@@ -285,8 +285,8 @@ path. The frontend is Svelte 5 with Vite and TypeScript; it follows
 [docs/DESIGN.md](../../docs/DESIGN.md) (the Dusk scheme, one gold accent,
 Inter, the starlit band). The glyphs, band and wordmark in
 `src/assets/ui/` are PNG copies of the addon's textures in
-`addon/Polestar/Media/UI/` (drawn by `tools/media/ui.js`); the Inter fonts
-in `src/assets/fonts/` come from `addon/Polestar/Media/Fonts/` (SIL OFL,
+`addon/Northstar/Media/UI/` (drawn by `tools/media/ui.js`); the Inter fonts
+in `src/assets/fonts/` come from `addon/Northstar/Media/Fonts/` (SIL OFL,
 `Inter-OFL.txt`). The motion system is in `src/lib/motion.ts` and
 DESIGN.md's Motion section.
 

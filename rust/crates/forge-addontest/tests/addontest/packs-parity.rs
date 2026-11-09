@@ -1,4 +1,4 @@
-//! Lint and the runtime refuse the same guides: for every reason Polestar.RegisterGuide refuses a guide
+//! Lint and the runtime refuse the same guides: for every reason Northstar.RegisterGuide refuses a guide
 //! (Core/Guides.lua validate() and the pack rules), a .guide under tests/fixtures/packs/parity/ that lint
 //! rejects, and its compiled twin (hand-written below) that the runtime refuses. The verb reasons are derived
 //! by running the validator over its own verb table (Guides.VERBS), so a verb or required field added to Core
@@ -127,7 +127,7 @@ const GENERIC: [&str; 6] = ["unknown verb fish", "coordinates outside 0-100", "s
 // filled (its own checker picks a number or a string), then that goal without each field in turn; a filled
 // goal that still fails gives its own reason (sethome's location rule).
 const DERIVE: &str = r#"
-local G = Polestar.Guides
+local G = Northstar.Guides
 local function wrap(goal) return { id = "parity/x", title = "x", steps = { { goals = { goal } } } } end
 local function reasonOf(goal)
 	local err = G.Validate(wrap(goal))
@@ -154,10 +154,10 @@ const ID_DEF: &str = r#"{ id = "@ID@", pack = "parity", title = "T", steps = { {
 const DEF_DEF: &str = r#"(function() local d = @DEF@; d.id = @ID@; d.pack = "parity"; d.title = "T"; return d end)()"#;
 const GOAL_DEF: &str = r#"{ id = @ID@, pack = "parity", title = "T", steps = { { goals = { { t = "level", level = 2 }, @GOAL@ } } } }"#;
 
-const REGISTER: &str = r#"do local ok, err = Polestar.RegisterGuide(@DEF@); refused[#refused + 1] = { ok = ok, err = err } end"#;
+const REGISTER: &str = r#"do local ok, err = Northstar.RegisterGuide(@DEF@); refused[#refused + 1] = { ok = ok, err = err } end"#;
 
 const SCRIPT: &str = r#"
-assert(Polestar.RegisterPack({ addon = "ParityAddon", id = "parity", format = 1, title = "Parity", author = "Tests", version = "1.0.0", license = "CC0-1.0" }))
+assert(Northstar.RegisterPack({ addon = "ParityAddon", id = "parity", format = 1, title = "Parity", author = "Tests", version = "1.0.0", license = "CC0-1.0" }))
 @DERIVE@
 refused = {}
 @REGISTER@
@@ -176,7 +176,7 @@ fn compiled_def(c: &Case) -> String {
 fn runtime() -> (Vec<String>, Vec<Value>) {
 	let register = CASES.iter().map(|c| REGISTER.replace("@DEF@", &compiled_def(c))).collect::<Vec<_>>().join("\n");
 	let script = SCRIPT.replace("@DERIVE@", DERIVE).replace("@REGISTER@", &register);
-	let out = emitted(&RunAddon { addons: vec![Addon::files("Polestar", &["Core/Core.xml"])], login: false, script, ..Default::default() });
+	let out = emitted(&RunAddon { addons: vec![Addon::files("Northstar", &["Core/Core.xml"])], login: false, script, ..Default::default() });
 	let derived = out[0].as_array().expect("derived reasons").iter().map(|v| v.as_str().expect("a reason").to_string()).collect();
 	let refused = out[1].as_array().expect("refusals").clone();
 	(derived, refused)

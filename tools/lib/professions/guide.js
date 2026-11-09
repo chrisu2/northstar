@@ -964,7 +964,7 @@ function draftGuide(name, data, opts = {}) {
 		line('');
 		line(`step ${P} ${plan.reach}-${goal}`);
 		world();
-		line(`  tip ${spec.last || `On Forever no recipe a trainer teaches or both factions' vendors sell gives ${P} points past ${plan.reach}, so Polestar has no route for the last points.${names.length ? ` Recipes that still do: ${names.join(', ')}.` : ''}`}`);
+		line(`  tip ${spec.last || `On Forever no recipe a trainer teaches or both factions' vendors sell gives ${P} points past ${plan.reach}, so Northstar has no route for the last points.${names.length ? ` Recipes that still do: ${names.join(', ')}.` : ''}`}`);
 		line(`  skill ${pq} ${goal}`);
 	}
 	return { text: `${out.join('\n')}\n`, plan };

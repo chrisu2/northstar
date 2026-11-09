@@ -1,4 +1,4 @@
-//! The Lookup section of the hub (addon/Polestar/UI/Lookup.lua) and its rows in the guide menu's search, against
+//! The Lookup section of the hub (addon/Northstar/UI/Lookup.lua) and its rows in the guide menu's search, against
 //! the fake Engine of tests/lua/stub_ui.lua and the fake Search / Codex / Lookup runtime of
 //! tests/lua/stub_lookup.lua; the last test runs the real runtime over the synthetic Codex pack
 //! (tests/fixtures/codex).
@@ -27,16 +27,16 @@ local function rowFor(parent, title)
 	for _, r in ipairs(shownRows(parent)) do if r.Title:GetText() == title then return r end end
 end
 local function nav(key)
-	for _, b in ipairs(PolestarPicker.navButtons) do if b.psKey == key and b:IsShown() then return b end end
+	for _, b in ipairs(NorthstarPicker.navButtons) do if b.psKey == key and b:IsShown() then return b end end
 end
-local function lookupShown() return PolestarPicker:IsShown() and Polestar.UI.Picker.Section() == "Lookup" end
+local function lookupShown() return NorthstarPicker:IsShown() and Northstar.UI.Picker.Section() == "Lookup" end
 local function navKeys()
 	local out = {}
-	for _, b in ipairs(PolestarPicker.navButtons) do if b:IsShown() then out[#out + 1] = b.psKey end end
+	for _, b in ipairs(NorthstarPicker.navButtons) do if b:IsShown() then out[#out + 1] = b.psKey end end
 	return out
 end
 local function type_(text)
-	local box = Polestar.UI.Picker.search
+	local box = Northstar.UI.Picker.search
 	box:SetText(text)
 	stub.RunScript(box, "OnTextChanged", true)
 end
@@ -45,8 +45,8 @@ end
 fn run(script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua", "stub_lookup.lua"],
-		addons: vec![Addon::files("Polestar", &FILES)],
-		script: format!("uistub.install()\nlookupstub.install()\nstub.login()\nlocal UI, LK = Polestar.UI, Polestar.UI.Lookup\n{HELPERS}\n{script}"),
+		addons: vec![Addon::files("Northstar", &FILES)],
+		script: format!("uistub.install()\nlookupstub.install()\nstub.login()\nlocal UI, LK = Northstar.UI, Northstar.UI.Lookup\n{HELPERS}\n{script}"),
 		..Default::default()
 	})
 	.remove(0)
@@ -60,13 +60,13 @@ fn cols(sources: &Value, keys: &[&str]) -> Value {
 #[test]
 fn show_lookup_opens_the_hub_at_lookup_on_the_query_results_grouped_by_kind_the_first_selected() {
 	let out = run(r#"
-		Polestar.Lookup.Show("saber")
+		Northstar.Lookup.Show("saber")
 		local body = LK.results.Child
-		emit({ shown = lookupShown(), query = LK.Query(), box = Polestar.UI.Picker.search:GetText(), groups = LK.shown.groups, rows = rowTexts(body),
-			sel = LK.Selected() and LK.Selected().id, title = PolestarPicker.Title:GetText(), sub = PolestarPicker.Subtitle:GetText(),
-			navs = navKeys(), mounts = nav("mount").Count:GetText(), codex = LK.root.CodexLine:GetText(), tabRow = PolestarPicker.TabRow:IsShown(),
+		emit({ shown = lookupShown(), query = LK.Query(), box = Northstar.UI.Picker.search:GetText(), groups = LK.shown.groups, rows = rowTexts(body),
+			sel = LK.Selected() and LK.Selected().id, title = NorthstarPicker.Title:GetText(), sub = NorthstarPicker.Subtitle:GetText(),
+			navs = navKeys(), mounts = nav("mount").Count:GetText(), codex = LK.root.CodexLine:GetText(), tabRow = NorthstarPicker.TabRow:IsShown(),
 			tip = rowFor(body, "Reins of the Striped Frostsaber").psTip,
-			special = (function() for _, n in ipairs(UISpecialFrames) do if n == "PolestarPicker" then return true end end end)() })"#);
+			special = (function() for _, n in ipairs(UISpecialFrames) do if n == "NorthstarPicker" then return true end end end)() })"#);
 	assert_eq!(out["shown"], true);
 	assert_eq!(out["query"], "saber");
 	assert_eq!(out["box"], "saber");
@@ -105,12 +105,12 @@ fn show_lookup_opens_the_hub_at_lookup_on_the_query_results_grouped_by_kind_the_
 #[test]
 fn show_all_and_the_sidebar_filter_to_one_kind_arrows_walk_the_results() {
 	let out = run(r#"
-		Polestar.Lookup.Show("saber")
+		Northstar.Lookup.Show("saber")
 		local body = LK.results.Child
 		rowFor(body, "Show all 6"):Click()
-		local filtered = { kind = LK.Kind(), rows = rowTexts(body), title = PolestarPicker.Title:GetText() }
+		local filtered = { kind = LK.Kind(), rows = rowTexts(body), title = NorthstarPicker.Title:GetText() }
 		nav("all"):Click()
-		local box = Polestar.UI.Picker.search
+		local box = Northstar.UI.Picker.search
 		stub.RunScript(box, "OnArrowPressed", "DOWN")
 		stub.RunScript(box, "OnArrowPressed", "DOWN")
 		local two = LK.Selected().id
@@ -143,7 +143,7 @@ fn typing_waits_for_a_pause_before_searching() {
 #[test]
 fn what_cannot_be_got_a_muted_chip_carries_it_in_the_list_and_the_hub_search_the_name_keeps_its_colour_no_guide_in_the_details() {
 	let out = run(r#"
-		Polestar.Lookup.Show("saber")
+		Northstar.Lookup.Show("saber")
 		LK.SetKind("mount")
 		local function row(title)
 			local r = rowFor(LK.results.Child, title)
@@ -157,14 +157,14 @@ fn what_cannot_be_got_a_muted_chip_carries_it_in_the_list_and_the_hub_search_the
 		local buttons = { primary = LK.details.Primary:IsShown(), secondary = LK.details.Secondary:IsShown() }
 		LK.details.Rows[1]:Click()
 		local sourceGuide = LK.details.Rows[1].Guide:IsShown()
-		stub.RunScript(Polestar.UI.Picker.search, "OnEnterPressed")
+		stub.RunScript(Northstar.UI.Picker.search, "OnEnterPressed")
 		LK.Guide(1)
 		local calls = #lookupstub.calls
 		UI.ShowPicker()
-		Polestar.UI.Picker.ShowSection("Guides")
-		Polestar.UI.Picker.SetQuery("reins of the frostsaber")
+		Northstar.UI.Picker.ShowSection("Guides")
+		Northstar.UI.Picker.SetQuery("reins of the frostsaber")
 		local hub = {}
-		for _, r in ipairs(shownRows(PolestarPicker.Scroll.Child)) do
+		for _, r in ipairs(shownRows(NorthstarPicker.Scroll.Child)) do
 			if r.psResult and r.psResult.id == 12302 then hub = { chip = r.Status:IsShown() and r.Status.Text:GetText(), alpha = r.Title:GetAlpha() } end
 		end
 		emit({ list = list, d = d, chip = chip, buttons = buttons, sourceGuide = sourceGuide, calls = calls, hub = hub })"#);
@@ -185,7 +185,7 @@ fn what_cannot_be_got_a_muted_chip_carries_it_in_the_list_and_the_hub_search_the
 #[test]
 fn a_vendor_mount_facts_ranked_sources_with_travel_and_price_the_closed_one_dimmed_with_why() {
 	let out = run(r#"
-		Polestar.Lookup.Show(nil, "mount", 8631)
+		Northstar.Lookup.Show(nil, "mount", 8631)
 		emit({ query = LK.Query(), d = LK.detail, title = LK.details.Title:GetText(), color = { LK.details.Title:GetTextColor() } })"#);
 	assert_eq!(out["query"], "Reins of the Striped Frostsaber");
 	assert_eq!(out["title"], "Reins of the Striped Frostsaber");
@@ -202,15 +202,15 @@ fn a_vendor_mount_facts_ranked_sources_with_travel_and_price_the_closed_one_dimm
 #[test]
 fn a_mount_without_a_curated_guide_has_no_guide_me_an_ordinary_item_still_builds_one() {
 	let out = run(r#"
-		Polestar.Lookup.Show(nil, "mount", 8631)
+		Northstar.Lookup.Show(nil, "mount", 8631)
 		local mount = { d = LK.detail, shown = LK.details.Primary:IsShown() }
-		stub.RunScript(Polestar.UI.Picker.search, "OnEnterPressed")
+		stub.RunScript(Northstar.UI.Picker.search, "OnEnterPressed")
 		mount.enter = lookupstub.calls[1]
 		mount.status = LK.details.Note:GetText()
 		mount.still = lookupShown()
 		LK.details.Rows[1]:Click()
 		mount.rowGuide = LK.details.Rows[1].Guide:IsShown()
-		Polestar.Lookup.Show(nil, "item", 4386)
+		Northstar.Lookup.Show(nil, "item", 4386)
 		emit({ mount = mount, item = LK.detail })"#);
 	assert_eq!(out["mount"]["d"]["primary"], Value::Null);
 	assert_eq!(out["mount"]["shown"], false);
@@ -226,18 +226,18 @@ fn a_mount_without_a_curated_guide_has_no_guide_me_an_ordinary_item_still_builds
 #[test]
 fn guide_me_and_a_source_s_own_guide_call_lookup_guide_and_open_the_guide_window() {
 	let out = run(r#"
-		Polestar.Lookup.Show(nil, "mount", 8631)
+		Northstar.Lookup.Show(nil, "mount", 8631)
 		LK.details.Rows[2]:Click()
 		local pick = { sel = LK.detail.sources[2].guide, other = LK.detail.sources[1].guide }
 		LK.details.Rows[2].Guide:Click()
-		local afterSource = { call = lookupstub.calls[1], shown = lookupShown(), ui = Polestar.Get("ui.shown") }
-		Polestar.Set("ui.shown", false)
-		Polestar.Lookup.Show(nil, "item", 4386)
+		local afterSource = { call = lookupstub.calls[1], shown = lookupShown(), ui = Northstar.Get("ui.shown") }
+		Northstar.Set("ui.shown", false)
+		Northstar.Lookup.Show(nil, "item", 4386)
 		LK.details.Primary:Click()
 		local primary = lookupstub.calls[2]
-		Polestar.Lookup.Show(nil, "item", 4386)
-		stub.RunScript(Polestar.UI.Picker.search, "OnEnterPressed")
-		emit({ pick = pick, afterSource = afterSource, primary = primary, enter = lookupstub.calls[3], shown = lookupShown(), ui = Polestar.Get("ui.shown") })"#);
+		Northstar.Lookup.Show(nil, "item", 4386)
+		stub.RunScript(Northstar.UI.Picker.search, "OnEnterPressed")
+		emit({ pick = pick, afterSource = afterSource, primary = primary, enter = lookupstub.calls[3], shown = lookupShown(), ui = Northstar.Get("ui.shown") })"#);
 	assert_eq!(out["pick"], json!({ "sel": true, "other": false }));
 	assert_eq!(out["afterSource"], json!({ "call": ["mount", 8631, 2], "shown": false, "ui": true }));
 	assert_eq!(out["primary"], json!(["item", 4386, false]));
@@ -249,14 +249,14 @@ fn guide_me_and_a_source_s_own_guide_call_lookup_guide_and_open_the_guide_window
 #[test]
 fn a_rare_drop_mount_out_of_reach_chance_the_reason_no_guide_me_a_curated_guide_says_open_guide() {
 	let out = run(r#"
-		Polestar.Lookup.Show("deathcharger")
+		Northstar.Lookup.Show("deathcharger")
 		local drop = LK.detail
 		lookupstub.curated["mount:8631"] = "forever/alliance/02-westfall"
-		Polestar.Lookup.Show(nil, "mount", 8631)
+		Northstar.Lookup.Show(nil, "mount", 8631)
 		local curated = LK.detail
 		LK.details.Primary:Click()
 		lookupstub.guideResult = "nosource"
-		Polestar.Lookup.Show(nil, "mount", 13335)
+		Northstar.Lookup.Show(nil, "mount", 13335)
 		LK.details.Rows[1]:Click()
 		LK.details.Rows[1].Guide:Click()
 		emit({ drop = drop, curated = curated, call = lookupstub.calls[1], failed = LK.details.Note:GetText(), still = lookupShown() })"#);
@@ -271,7 +271,7 @@ fn a_rare_drop_mount_out_of_reach_chance_the_reason_no_guide_me_a_curated_guide_
 	assert_eq!(out["curated"]["primary"], "Open guide");
 	// Neutral wording: the curated guide may come from a guide pack.
 	assert!(is_match(text(&out["curated"]["note"]), r"^A guide covers this: .*Westfall.*\.$"));
-	assert!(!is_match(text(&out["curated"]["note"]), r"Polestar"));
+	assert!(!is_match(text(&out["curated"]["note"]), r"Northstar"));
 	assert_eq!(out["call"], json!(["mount", 8631, false]));
 	assert!(is_match(text(&out["failed"]), r"nosource"));
 	assert_eq!(out["still"], true);
@@ -284,16 +284,16 @@ fn without_the_codex_pack_the_section_says_what_is_missing_and_still_finds_guide
 		UI.ShowLookup()
 		local idle = { title = LK.detail.empty, note = LK.detail.note, list = LK.shown.empty, codex = LK.root.CodexLine:GetText(),
 			navs = navKeys() }
-		Polestar.UI.Picker.SetQuery("saber"); stub.advance(0.3)
+		Northstar.UI.Picker.SetQuery("saber"); stub.advance(0.3)
 		local none = LK.shown.empty
-		Polestar.UI.Picker.SetQuery("west"); stub.advance(0.3)
+		Northstar.UI.Picker.SetQuery("west"); stub.advance(0.3)
 		emit({ idle = idle, none = none, rows = rowTexts(LK.results.Child), sel = LK.detail.primary })"#);
 	assert_eq!(out["idle"]["title"], "The Codex is not loaded");
 	assert!(
-		is_match(text(&out["idle"]["note"]), r#"^The Polestar_Codex addon is not installed\. .*Releases page.*not "Source code""#),
+		is_match(text(&out["idle"]["note"]), r#"^The Northstar_Codex addon is not installed\. .*Releases page.*not "Source code""#),
 		"a missing Codex points at the release download, not the source zip"
 	);
-	assert!(!is_match(text(&out["idle"]["note"]), r"tools/polestar|codex build"), "no developer command in a player message");
+	assert!(!is_match(text(&out["idle"]["note"]), r"tools/northstar|codex build"), "no developer command in a player message");
 	assert!(is_match(text(&out["idle"]["list"]), r"search the guides"));
 	assert!(is_match(text(&out["idle"]["codex"]), r"Codex not installed"));
 	assert_eq!(out["idle"]["navs"], json!(["all"]), "no kind is offered that nothing was found in");
@@ -315,13 +315,13 @@ fn a_codex_that_is_installed_but_turned_off_says_to_enable_it_not_to_download_po
 #[test]
 fn a_guide_result_opens_in_a_new_tab_or_among_the_hub_s_guides() {
 	let out = run(r#"
-		Polestar.Lookup.Show("west")
+		Northstar.Lookup.Show("west")
 		LK.details.Primary:Click()
 		local opened = uistub.calls[#uistub.calls]
-		Polestar.Lookup.Show("west")
+		Northstar.Lookup.Show("west")
 		LK.details.Secondary:Click()
-		local P = Polestar.UI.Picker
-		emit({ opened = opened, lookup = lookupShown(), picker = PolestarPicker:IsShown(), section = P.Section(), view = P.View(), sel = P.Selected() })"#);
+		local P = Northstar.UI.Picker
+		emit({ opened = opened, lookup = lookupShown(), picker = NorthstarPicker:IsShown(), section = P.Section(), view = P.View(), sel = P.Selected() })"#);
 	assert_eq!(out["opened"], json!(["OpenTab", "forever/alliance/02-westfall"]));
 	assert_eq!(out["lookup"], false);
 	assert_eq!(out["picker"], true);
@@ -334,14 +334,14 @@ fn a_guide_result_opens_in_a_new_tab_or_among_the_hub_s_guides() {
 fn the_hub_s_guide_search_lists_codex_matches_under_its_guides_one_opens_the_lookup_section_at_it() {
 	let out = run(r#"
 		UI.ShowPicker()
-		Polestar.UI.Picker.SetQuery("saber"); stub.advance(0.3)
-		local body = PolestarPicker.Scroll.Child
+		Northstar.UI.Picker.SetQuery("saber"); stub.advance(0.3)
+		local body = NorthstarPicker.Scroll.Child
 		local rows = {}
 		for _, r in ipairs(shownRows(body)) do rows[#rows + 1] = r.Title:GetText() .. " | " .. r.Sub:GetText() end
-		local empty = PolestarPicker.Empty and PolestarPicker.Empty:IsShown()
+		local empty = NorthstarPicker.Empty and NorthstarPicker.Empty:IsShown()
 		local count = UI.LookupCount()
 		rowFor(body, "Frostsaber Provisions"):Click()
-		emit({ rows = rows, count = count, empty = empty, picker = PolestarPicker:IsShown(), lookup = lookupShown(), sel = LK.Selected(), query = LK.Query() })"#);
+		emit({ rows = rows, count = count, empty = empty, picker = NorthstarPicker:IsShown(), lookup = lookupShown(), sel = LK.Selected(), query = LK.Query() })"#);
 	assert_eq!(
 		out["rows"],
 		json!([
@@ -365,10 +365,10 @@ fn the_hub_s_guide_search_lists_codex_matches_under_its_guides_one_opens_the_loo
 fn clearing_the_hub_s_search_takes_its_codex_matches_away_none_stay_drawn_over_the_guide_list() {
 	let out = run(r#"
 		UI.ShowPicker()
-		Polestar.UI.Picker.SetQuery("saber"); stub.advance(0.3)
-		local body = PolestarPicker.Scroll.Child
+		Northstar.UI.Picker.SetQuery("saber"); stub.advance(0.3)
+		local body = NorthstarPicker.Scroll.Child
 		local before = rowFor(body, "Frostsaber Provisions") and true or false
-		Polestar.UI.Picker.SetQuery(""); stub.advance(0.3)
+		Northstar.UI.Picker.SetQuery(""); stub.advance(0.3)
 		local stale = {}
 		for _, r in ipairs(shownRows(body)) do
 			local t = r.Title and r.Title:GetText() or ""
@@ -387,13 +387,13 @@ fn with_the_real_search_codex_and_lookup_runtime_over_the_sample_pack() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: pack.stub_lua.clone(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Lookup/Lookup.xml", "UI/UI.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Lookup/Lookup.xml", "UI/UI.xml"])],
 		script: r#"uistub.install()
 stub.login()
-local LK = Polestar.UI.Lookup
-Polestar.Lookup.Show("saber")
+local LK = Northstar.UI.Lookup
+Northstar.Lookup.Show("saber")
 local search = { groups = LK.shown.groups, sel = LK.Selected().kind, codex = LK.root.CodexLine:GetText() }
-Polestar.Lookup.Show(nil, "mount", 13335)
+Northstar.Lookup.Show(nil, "mount", 13335)
 emit({ search = search, title = LK.detail.title, query = LK.Query(), sources = LK.detail.sources, primary = LK.detail.primary, note = LK.detail.note })"#
 			.into(),
 		..Default::default()
@@ -419,22 +419,22 @@ fn changing_the_suggestion_source_ranks_a_cached_search_again() {
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
 		before: pack.stub_lua.clone(),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml", "Theme/Theme.xml", "Lookup/Lookup.xml", "UI/UI.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Lookup/Lookup.xml", "UI/UI.xml"])],
 		// The real registry: the ranking follows its suggestion source.
 		script: [
-			"uistub.install()\nPolestar.Guides = uistub.realGuides\nstub.login()\nlocal LK = Polestar.UI.Lookup",
+			"uistub.install()\nNorthstar.Guides = uistub.realGuides\nstub.login()\nlocal LK = Northstar.UI.Lookup",
 			HELPERS,
-			r#"Polestar.RegisterPack({ addon = "Polestar_Other", id = "other", format = 1, title = "Other", author = "O", version = "1", license = "MIT" })
+			r#"Northstar.RegisterPack({ addon = "Northstar_Other", id = "other", format = 1, title = "Other", author = "O", version = "1", license = "MIT" })
 local function g(id, extra)
 	local def = { id = id, pack = "other", title = id, steps = { { goals = { { t = "note", text = "x" } } } } }
 	for k, v in pairs(extra) do def[k] = v end
-	assert(Polestar.RegisterGuide(def))
+	assert(Northstar.RegisterGuide(def))
 end
 g("other/sabers", { category = "Collectibles", collects = { 13086 } })
 g("other/route", { category = "Leveling", minLevel = 1, maxLevel = 60 })
-Polestar.Lookup.Show("frostsaber")
+Northstar.Lookup.Show("frostsaber")
 emit(rowTexts(LK.results.Child)[1])
-Polestar.Set("behavior.suggestFrom", "other")
+Northstar.Set("behavior.suggestFrom", "other")
 emit(rowTexts(LK.results.Child)[1])"#,
 		]
 		.join("\n"),
@@ -450,20 +450,20 @@ emit(rowTexts(LK.results.Child)[1])"#,
 fn a_dungeon_also_opens_in_the_dungeons_section_beside_the_guide_to_its_entrance_or_alone() {
 	let out = run(r#"
 		local opened = {}
-		Polestar.Dungeons = { Open = function(key) opened[#opened + 1] = key end }
+		Northstar.Dungeons = { Open = function(key) opened[#opened + 1] = key end }
 		table.insert(lookupstub.entities, { kind = "instance", id = "stratholme", title = "Stratholme", subtitle = "Dungeon \194\183 45-60" })
 		lookupstub.sources["instance:stratholme"] = {
 			{ type = "world", src = { type = "world" }, label = "Stratholme", detail = "Entrance \194\183 Eastern Plaguelands", map = 1423, x = 27, y = 11, available = true, guideable = true },
 		}
-		Polestar.Lookup.Show(nil, "instance", "stratholme")
+		Northstar.Lookup.Show(nil, "instance", "stratholme")
 		local both = { primary = LK.detail.primary, secondary = LK.details.Secondary:IsShown() and LK.details.Secondary.Label:GetText() }
 		LK.details.Secondary:Click()
 		local after = { opened = opened[1], shown = lookupShown() }
 		lookupstub.sources["instance:stratholme"] = {}
-		Polestar.UI.Lookup.Select(nil)
-		Polestar.Lookup.Show(nil, "instance", "stratholme")
+		Northstar.UI.Lookup.Select(nil)
+		Northstar.Lookup.Show(nil, "instance", "stratholme")
 		local alone = { primary = LK.detail.primary, secondary = LK.details.Secondary:IsShown() }
-		stub.RunScript(Polestar.UI.Picker.search, "OnEnterPressed")
+		stub.RunScript(Northstar.UI.Picker.search, "OnEnterPressed")
 		emit({ both = both, after = after, alone = alone, enter = opened[2] })"#);
 	assert_eq!(out["both"], json!({ "primary": "Guide me", "secondary": "Open dungeon" }));
 	// The Dungeons section takes over the hub itself; Lookup closes nothing.
@@ -477,17 +477,17 @@ fn an_empty_search_lists_the_recent_lookups_newest_first_at_most_10_never_a_data
 	let out = run(r#"
 		UI.ShowLookup()
 		local first = { rows = #rowTexts(LK.results.Child), empty = LK.shown.empty, queries = lookupstub.queries }
-		Polestar.Lookup.Show(nil, "mount", 8631)
-		Polestar.Lookup.Show(nil, "mount", 13335)
+		Northstar.Lookup.Show(nil, "mount", 8631)
+		Northstar.Lookup.Show(nil, "mount", 13335)
 		-- Typing selects the first result for you: that is no lookup of yours.
-		Polestar.UI.Picker.SetQuery("lelanai"); stub.advance(0.3)
+		Northstar.UI.Picker.SetQuery("lelanai"); stub.advance(0.3)
 		local auto = #LK.Recent()
 		-- A click is.
 		rowFor(LK.results.Child, "Lelanai"):Click()
-		Polestar.UI.Picker.SetQuery(""); stub.advance(0.3)
+		Northstar.UI.Picker.SetQuery(""); stub.advance(0.3)
 		local recent = { rows = rowTexts(LK.results.Child), folder = LK.shown.rows, empty = LK.shown.empty, navs = navKeys() }
-		for i = 1, 12 do Polestar.Lookup.Show(nil, "mount", 8631 + (i % 2)); Polestar.Lookup.Show(nil, "npc", 10440) end
-		emit({ first = first, auto = auto, recent = recent, saved = Polestar.CharState().ui.recentLookups[1].title, n = #LK.Recent() })"#);
+		for i = 1, 12 do Northstar.Lookup.Show(nil, "mount", 8631 + (i % 2)); Northstar.Lookup.Show(nil, "npc", 10440) end
+		emit({ first = first, auto = auto, recent = recent, saved = Northstar.CharState().ui.recentLookups[1].title, n = #LK.Recent() })"#);
 	assert_eq!(out["first"]["rows"], 0);
 	assert!(is_match(text(&out["first"]["empty"]), r"Type a name in the search box"));
 	assert_eq!(out["first"]["queries"], 0, "nothing is searched for an empty box");
@@ -503,7 +503,7 @@ fn an_empty_search_lists_the_recent_lookups_newest_first_at_most_10_never_a_data
 fn one_kind_shows_a_page_of_50_and_show_more_adds_the_next_only_the_rows_in_view_are_drawn_and_subtitled() {
 	let out = run(r#"
 		lookupstub.many(120)
-		Polestar.Lookup.Show("steed")
+		Northstar.Lookup.Show("steed")
 		local all = { groups = LK.shown.groups, painted = LK.painted, subtitled = lookupstub.subtitled }
 		LK.SetKind("mount")
 		local page1 = { rows = LK.shown.rows, painted = LK.painted, more = rowTexts(LK.results.Child)[LK.painted] }
@@ -524,10 +524,10 @@ fn one_kind_shows_a_page_of_50_and_show_more_adds_the_next_only_the_rows_in_view
 fn while_the_codex_loads_the_section_says_so_and_searches_again_once_it_has() {
 	let out = run(r#"
 		lookupstub.loaded, lookupstub.reason = false, "loading"
-		Polestar.Lookup.Show("saber")
+		Northstar.Lookup.Show("saber")
 		local loading = { empty = LK.shown.empty, codex = LK.root.CodexLine:GetText(), rows = #rowTexts(LK.results.Child) }
 		lookupstub.loaded, lookupstub.reason = true, nil
-		Polestar.Fire("CODEX_LOADED", {})
+		Northstar.Fire("CODEX_LOADED", {})
 		emit({ loading = loading, rows = LK.shown.rows, empty = LK.shown.empty or false })"#);
 	assert_eq!(out["loading"]["empty"], "Loading the Codex\u{2026}");
 	assert_eq!(out["loading"]["codex"], "Loading the Codex\u{2026}");
@@ -541,10 +541,10 @@ fn while_the_codex_loads_the_section_says_so_and_searches_again_once_it_has() {
 #[test]
 fn a_names_pack_landing_late_searches_again_and_the_rows_take_the_new_names() {
 	let out = run(r#"
-		Polestar.Lookup.Show("lelanai")
+		Northstar.Lookup.Show("lelanai")
 		local before = rowTexts(LK.results.Child)
 		for _, e in ipairs(lookupstub.entities) do if e.id == 4730 then e.title = "Lelanai la dresseuse" end end
-		Polestar.Fire("NAMES_LOADED")
+		Northstar.Fire("NAMES_LOADED")
 		emit({ before = before, after = rowTexts(LK.results.Child) })"#);
 	let strings = |v: &Value| v.as_array().unwrap().iter().map(|t| text(t).to_string()).collect::<Vec<_>>();
 	assert!(strings(&out["before"]).iter().any(|t| t.starts_with("Lelanai") && !t.contains("dresseuse")));
@@ -556,12 +556,12 @@ fn lookup_turned_off_in_options_guides_only_the_section_says_where_to_turn_it_on
 	let out = run(r#"
 		lookupstub.loaded, lookupstub.reason = false, "off"
 		local loads = 0
-		Polestar.Codex.Load = function() loads = loads + 1; return false, "off" end
+		Northstar.Codex.Load = function() loads = loads + 1; return false, "off" end
 		UI.ShowLookup()
 		local idle = { title = LK.detail.empty, note = LK.detail.note, codex = LK.root.CodexLine:GetText() }
-		Polestar.UI.Picker.SetQuery("saber"); stub.advance(0.3)
+		Northstar.UI.Picker.SetQuery("saber"); stub.advance(0.3)
 		local none = LK.shown.empty
-		Polestar.Lookup.Show(nil, "mount", 8631)
+		Northstar.Lookup.Show(nil, "mount", 8631)
 		emit({ idle = idle, none = none, loads = loads })"#);
 	assert_eq!(out["idle"]["title"], "Lookup is turned off");
 	assert!(is_match(text(&out["idle"]["note"]), r"Options > Discovery > Lookup"));

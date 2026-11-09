@@ -5,10 +5,10 @@
 //! guides pin `skipto`, `when`, `only` and `along` the same way.
 //!
 //! Default: rust/tests/golden/engine (its README and regen.sh): the clean guide slice (common::clean_slice)
-//! and the fixtures on the data slice. Optional extra on a full checkout ($POLESTAR_CHECKOUT): the shipped
-//! chains, the v2 slice ($POLESTAR_JSREF/repaired) and the fixtures on its data; skipped with a note when
+//! and the fixtures on the data slice. Optional extra on a full checkout ($NORTHSTAR_CHECKOUT): the shipped
+//! chains, the v2 slice ($NORTHSTAR_JSREF/repaired) and the fixtures on its data; skipped with a note when
 //! the guides, the data, node or lua5.1 are absent. Their JS reference is cached in rust/target/judge-ref/
-//! (POLESTAR_REF_REFRESH=1 rebuilds it).
+//! (NORTHSTAR_REF_REFRESH=1 rebuilds it).
 
 use crate::common;
 
@@ -21,13 +21,13 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::Instant;
 
-/// A full Polestar checkout with built data/forever ($POLESTAR_CHECKOUT): its guides and data.
+/// A full Northstar checkout with built data/forever ($NORTHSTAR_CHECKOUT): its guides and data.
 fn checkout() -> Option<PathBuf> {
-	std::env::var_os("POLESTAR_CHECKOUT").map(PathBuf::from)
+	std::env::var_os("NORTHSTAR_CHECKOUT").map(PathBuf::from)
 }
 
 fn data() -> PathBuf {
-	checkout().expect("POLESTAR_CHECKOUT").join("data/forever")
+	checkout().expect("NORTHSTAR_CHECKOUT").join("data/forever")
 }
 
 fn crate_dir() -> PathBuf {
@@ -46,7 +46,7 @@ fn have_tools() -> bool {
 /// The JS reference for a chain (cached): { files, trace, level, ms, luaMs }.
 fn reference(name: &str, root: &Path, first: &str, race: &str, faction: &str, class: &str) -> Value {
 	let out = ref_dir().join(format!("engine-{name}.json"));
-	if !out.exists() || std::env::var_os("POLESTAR_REF_REFRESH").is_some() {
+	if !out.exists() || std::env::var_os("NORTHSTAR_REF_REFRESH").is_some() {
 		assert!(have_tools(), "engine parity for {name} needs node and lua5.1 on PATH");
 		let script = crate_dir().join("tests/js/engine-chain.js");
 		let st = Command::new("node").arg(&script).args([root.to_str().unwrap(), first, race, faction, class, data().to_str().unwrap(), out.to_str().unwrap(), "skip"]).status().expect("node runs");
@@ -125,11 +125,11 @@ fn first_diff(a: &[Event], b: &[Event]) -> Option<usize> {
 
 fn check_chain(name: &str, root: &Path, first: &str, race: &str, faction: &str, class: &str) {
 	let Some(checkout) = checkout() else {
-		eprintln!("note: POLESTAR_CHECKOUT unset: engine parity for {name} skipped");
+		eprintln!("note: NORTHSTAR_CHECKOUT unset: engine parity for {name} skipped");
 		return;
 	};
 	if !root.join(first).exists() || !checkout.join("data/forever").exists() {
-		eprintln!("note: {} or POLESTAR_CHECKOUT's data/forever absent (v2 chains read POLESTAR_JSREF/repaired): engine parity for {name} skipped", root.join(first).display());
+		eprintln!("note: {} or NORTHSTAR_CHECKOUT's data/forever absent (v2 chains read NORTHSTAR_JSREF/repaired): engine parity for {name} skipped", root.join(first).display());
 		return;
 	}
 	let js = reference(name, root, first, race, faction, class);
@@ -179,31 +179,31 @@ fn slice_human_warrior_chain() {
 }
 
 #[test]
-#[ignore = "needs POLESTAR_CHECKOUT (guides, data/forever), node and lua5.1"]
+#[ignore = "needs NORTHSTAR_CHECKOUT (guides, data/forever), node and lua5.1"]
 fn orc_warrior_chain() {
 	check_chain("orc", &checkout().unwrap_or_default().join("guides"), "forever/horde/orc-troll/01-durotar.guide", "Orc", "Horde", "WARRIOR");
 }
 
 #[test]
-#[ignore = "needs POLESTAR_CHECKOUT (guides, data/forever), node and lua5.1"]
+#[ignore = "needs NORTHSTAR_CHECKOUT (guides, data/forever), node and lua5.1"]
 fn human_warrior_chain() {
 	check_chain("human", &checkout().unwrap_or_default().join("guides"), "forever/alliance/human/01-elwynn-forest.guide", "Human", "Alliance", "WARRIOR");
 }
 
-/// The v2 slice (repaired writer output, $POLESTAR_JSREF/repaired): conditional `next` options
+/// The v2 slice (repaired writer output, $NORTHSTAR_JSREF/repaired): conditional `next` options
 /// (`next <catchup> when level<N`).
 fn v2() -> PathBuf {
-	std::env::var_os("POLESTAR_JSREF").map(PathBuf::from).unwrap_or_default().join("repaired")
+	std::env::var_os("NORTHSTAR_JSREF").map(PathBuf::from).unwrap_or_default().join("repaired")
 }
 
 #[test]
-#[ignore = "needs POLESTAR_JSREF (repaired guides), POLESTAR_CHECKOUT, node and lua5.1"]
+#[ignore = "needs NORTHSTAR_JSREF (repaired guides), NORTHSTAR_CHECKOUT, node and lua5.1"]
 fn v2_orc_warrior_chain() {
 	check_chain("v2-orc", &v2().join("horde-orc-troll-warrior"), "forever/horde/orc-troll-warrior/01-durotar.guide", "Orc", "Horde", "WARRIOR");
 }
 
 #[test]
-#[ignore = "needs POLESTAR_JSREF (repaired guides), POLESTAR_CHECKOUT, node and lua5.1"]
+#[ignore = "needs NORTHSTAR_JSREF (repaired guides), NORTHSTAR_CHECKOUT, node and lua5.1"]
 fn v2_human_warrior_chain() {
 	check_chain("v2-human", &v2().join("alliance-human-warrior"), "forever/alliance/human-warrior/01-elwynn-forest.guide", "Human", "Alliance", "WARRIOR");
 }
@@ -366,13 +366,13 @@ fn fixtures() -> PathBuf {
 }
 
 #[test]
-#[ignore = "needs POLESTAR_CHECKOUT (guides, data/forever), node and lua5.1"]
+#[ignore = "needs NORTHSTAR_CHECKOUT (guides, data/forever), node and lua5.1"]
 fn fixtures_warrior() {
 	check_chain("fx-warrior", &fixtures(), FIXTURES[0].0, "Human", "Alliance", "WARRIOR");
 }
 
 #[test]
-#[ignore = "needs POLESTAR_CHECKOUT (guides, data/forever), node and lua5.1"]
+#[ignore = "needs NORTHSTAR_CHECKOUT (guides, data/forever), node and lua5.1"]
 fn fixtures_mage() {
 	check_chain("fx-mage", &fixtures(), FIXTURES[0].0, "Human", "Alliance", "MAGE");
 }
@@ -471,4 +471,20 @@ fn stuck_and_ticks() {
 	let goals: Vec<(String, usize, bool)> = events.iter().filter_map(|e| if let Event::Goal { verb, step, ticked, .. } = e { Some((verb.clone(), *step, *ticked)) } else { None }).collect();
 	let want = [("accept", 1, false), ("kill", 1, false), ("goto", 2, false), ("getfp", 2, true), ("turnin", 2, false)];
 	assert_eq!(goals, want.map(|(v, s, t)| (v.to_string(), s, t)));
+}
+
+/// A vendor beside other work of its step (Own.sideVendor) is left alone and never holds the step: the play
+/// moves on with the hand-ins, the last step's too, so the guide ends. A step of only a vendor still opens the
+/// merchant (it holds the step).
+#[test]
+fn a_vendor_beside_other_work_never_holds_the_step() {
+	let guides = vec![compiled(
+		r#"{ "id": "t/v", "steps": [
+		{ "goals": [{ "t": "accept", "quest": 1 }, { "t": "accept", "quest": 2 }] },
+		{ "goals": [{ "t": "turnin", "quest": 1 }, { "t": "vendor", "npc": 54 }] },
+		{ "goals": [{ "t": "vendor", "npc": 54 }] },
+		{ "goals": [{ "t": "vendor" }, { "t": "turnin", "quest": 2 }] }
+	] }"#,
+	)];
+	assert_eq!(played(&guides, "WARRIOR"), ["t/v 1:1 accept", "t/v 1:2 accept", "t/v 2:1 turnin", "t/v 3:1 vendor", "t/v 4:2 turnin"]);
 }

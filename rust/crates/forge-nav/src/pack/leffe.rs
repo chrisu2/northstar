@@ -1,6 +1,6 @@
-//! Leffe's navigation maps as Polestar's walking maps (`forge nav pack --leffe <dir>`, maps format 5): his surfaces,
+//! Leffe's navigation maps as Northstar's walking maps (`forge nav pack --leffe <dir>`, maps format 5): his surfaces,
 //! floors, classes, zones, jumps and drops and his entrance graph, read with `crate::f4` and written in the encodings
-//! the in-game engine (addon/Polestar_Nav Routing/) reads (docs/forge/nav.md, "The walking maps"). Credit: Leffe's
+//! the in-game engine (addon/Northstar_Nav Routing/) reads (docs/forge/nav.md, "The walking maps"). Credit: Leffe's
 //! navigation maps.
 //!
 //! His cell fields (grid, height, floor, class, zone) already are the in-game encodings and pass through, except the

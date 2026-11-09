@@ -190,6 +190,6 @@ fn a_pack_is_written_in_format_4_only_when_a_step_of_its_guides_has_when() {
 	assert_eq!(format_for(&guides), WHEN_FORMAT);
 	let files = pack_files(&guides, &manifest, &data);
 	let folder = manifest.get("folder").to_js_string();
-	assert_match(&files[&format!("{folder}.toc")], &format!(r"(?m)^## X-Polestar-Format: {WHEN_FORMAT}\n## X-Polestar-Needs: {}$", needs(WHEN_FORMAT).unwrap().replace('.', r"\.")));
+	assert_match(&files[&format!("{folder}.toc")], &format!(r"(?m)^## X-Northstar-Format: {WHEN_FORMAT}\n## X-Northstar-Needs: {}$", needs(WHEN_FORMAT).unwrap().replace('.', r"\.")));
 	assert_match(&files["Pack.lua"], &format!("format = {WHEN_FORMAT},"));
 }

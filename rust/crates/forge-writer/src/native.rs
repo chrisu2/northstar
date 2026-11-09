@@ -144,7 +144,7 @@ pub fn run_paths(pin: &PathInputs, opts: &RunOpts, cache: &SharedCache) -> Resul
 		zones: read_json(&data_dir.join("zones.json"))?,
 	};
 	let frames = MapFrames::from_json(&std::fs::read(data_dir.join("map-frames.json")).map_err(|e| e.to_string())?).map_err(|e| format!("map-frames.json: {e}"))?;
-	let grid = std::env::var("POLESTAR_GRID").map_or_else(|_| root.join("data/local/nav4"), PathBuf::from);
+	let grid = std::env::var("NORTHSTAR_GRID").map_or_else(|_| root.join("data/local/nav4"), PathBuf::from);
 	let areas = GridSubzones::open(&grid, &root.join("data/sources"));
 	let floors = forge_nav::grid::Grid::open(&grid, 256).ok().map(NavFloors);
 	if floors.is_none() {

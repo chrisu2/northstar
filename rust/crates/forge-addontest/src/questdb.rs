@@ -11,7 +11,7 @@ pub fn fixture_dir() -> PathBuf {
 	root().join("tests/fixtures/questdb")
 }
 
-/// The data files of the Polestar_QuestDB addon, in the TOC's order.
+/// The data files of the Northstar_QuestDB addon, in the TOC's order.
 pub const FILES: [&str; 5] = ["MapFrames.lua", "Quests.lua", "Npcs.lua", "Objects.lua", "Items.lua"];
 
 /// A built quest database in a temp folder (removed when dropped).
@@ -63,7 +63,7 @@ pub fn data_with(edit: impl FnOnce(&mut std::collections::BTreeMap<String, serde
 }
 
 /// Lua for a test script: `AddRecords(kind, { [id] = { field, ... }, ... })` registers hand-written records
-/// with Polestar.QuestDB in the database's layout (one chunk of `forge data questdb` payload lines: fields
+/// with Northstar.QuestDB in the database's layout (one chunk of `forge data questdb` payload lines: fields
 /// by ";", nil empty, "'" and the escaped text for a string, "{" and the elements by "," for a list).
 pub const ADD_RECORDS_LUA: &str = r#"
 local function questdbField(v)
@@ -85,6 +85,6 @@ function AddRecords(kind, recs)
 		lines[#lines + 1] = id .. "\t" .. table.concat(fields, ";")
 	end
 	lines[#lines + 1] = ""
-	Polestar.QuestDB.AddChunk(kind, ids[1], ids[#ids], table.concat(lines, "\n"))
+	Northstar.QuestDB.AddChunk(kind, ids[1], ids[#ids], table.concat(lines, "\n"))
 end
 "#;

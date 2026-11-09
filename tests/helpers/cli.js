@@ -47,19 +47,19 @@ async function quiet(fn) {
 	}
 }
 
-// Minimal addon folders with TOCs, for pack/install tests; Polestar_Guides is
+// Minimal addon folders with TOCs, for pack/install tests; Northstar_Guides is
 // a generated pack (its TOC carries the marker) without guides.
-function fakeAddons(root, names = ['Polestar', 'Polestar_Guides', 'Polestar_Nav', 'Polestar_Recorder'], version = '0.1.0') {
+function fakeAddons(root, names = ['Northstar', 'Northstar_Guides', 'Northstar_Nav', 'Northstar_Recorder'], version = '0.1.0') {
 	for (const n of names) {
 		const dir = path.join(root, n);
 		fs.mkdirSync(dir, { recursive: true });
-		const files = n === 'Polestar_Guides' ? `${TOC_MARKER}\n\nPack.lua\nMapFrames.lua\nGuides.lua` : '\nMain.lua';
+		const files = n === 'Northstar_Guides' ? `${TOC_MARKER}\n\nPack.lua\nMapFrames.lua\nGuides.lua` : '\nMain.lua';
 		fs.writeFileSync(path.join(dir, `${n}.toc`), `## Interface: 16001\n## Title: ${n}\n## Version: ${version}\n${files}\n`);
-		if (n !== 'Polestar_Guides') fs.writeFileSync(path.join(dir, 'Main.lua'), `local ADDON, ns = ...\n-- ${n}\n`);
+		if (n !== 'Northstar_Guides') fs.writeFileSync(path.join(dir, 'Main.lua'), `local ADDON, ns = ...\n-- ${n}\n`);
 		// A release-safe Codex as `forge release pack` checks it (forge-release addons.rs codex_refusal).
-		if (n === 'Polestar_Codex') {
+		if (n === 'Northstar_Codex') {
 			fs.writeFileSync(path.join(dir, 'Meta.lua'), 'C.Register("meta", {\n\tlocalExtras = false,\n\tsources = {\n\t\t{\n\t\t\tname = "pfQuest",\n\t\t},\n\t},\n})\n');
-			fs.writeFileSync(path.join(dir, 'LICENSE-DATA.txt'), 'Polestar Codex: third-party notices\n');
+			fs.writeFileSync(path.join(dir, 'LICENSE-DATA.txt'), 'Northstar Codex: third-party notices\n');
 		}
 		fs.writeFileSync(path.join(dir, '.hidden'), 'not shipped\n');
 	}

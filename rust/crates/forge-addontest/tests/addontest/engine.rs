@@ -1,4 +1,4 @@
-//! Engine scenarios (addon/Polestar/Core/Engine.lua + Guides.lua + Commands.lua) against the stub world in
+//! Engine scenarios (addon/Northstar/Core/Engine.lua + Guides.lua + Commands.lua) against the stub world in
 //! tests/lua/stub_world.lua, loading the real Core manifest.
 
 use forge_addontest::{emitted, Addon, RunAddon, TEST_PACK, TEST_SOURCE};
@@ -16,7 +16,7 @@ w.titles[783] = "A Threat Within"; w.titles[7] = "Kobold Camp Cleanup"
 // A Northshire-shaped route: accept -> turn in -> accept -> goto + kill -> class training (one step per class)
 // -> turn in + level.
 const NORTHSHIRE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/01-northshire", pack = "test", title = "Northshire Valley",
 	faction = "Alliance", races = { "Human" }, minLevel = 1, maxLevel = 6,
 	zone = 1429, next = "test/02-elwynn",
@@ -49,7 +49,7 @@ Polestar.RegisterGuide({
 "#;
 
 const ELWYNN: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/02-elwynn", pack = "test", title = "Elwynn Forest",
 	faction = "Alliance", minLevel = 5, maxLevel = 12, zone = 1429,
 	steps = {
@@ -63,7 +63,7 @@ Polestar.RegisterGuide({
 const RECORDER: &str = r#"
 LOG = {}
 for _, m in ipairs({ "GUIDE_CHANGED", "STEP_CHANGED", "STEP_UPDATED", "WAYPOINT_CHANGED", "GUIDE_COMPLETED" }) do
-	Polestar.On(m, function(a)
+	Northstar.On(m, function(a)
 		local v = a
 		if m == "WAYPOINT_CHANGED" then v = a and (a.stepIndex .. ":" .. a.goalIndex) or "nil" end
 		LOG[#LOG + 1] = m .. " " .. tostring(v)
@@ -76,7 +76,7 @@ function activeTickers()
 	for _, t in ipairs(stub.timers) do if t.handle and not t.cancelled then n = n + 1 end end
 	return n
 end
-E = Polestar.Engine
+E = Northstar.Engine
 "#;
 
 struct Run<'a> {
@@ -85,7 +85,7 @@ struct Run<'a> {
 	saved: Option<&'a str>,
 	script: &'a str,
 	login: bool,
-	/// Load addon/Polestar by its TOC instead of the Core manifest alone.
+	/// Load addon/Northstar by its TOC instead of the Core manifest alone.
 	full: bool,
 }
 
@@ -99,8 +99,8 @@ fn run(o: Run) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{WORLD}{}", o.before),
-		addons: vec![if o.full { Addon::name("Polestar") } else { Addon::files("Polestar", &["Core/Core.xml"]) }],
-		saved: o.saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
+		addons: vec![if o.full { Addon::name("Northstar") } else { Addon::files("Northstar", &["Core/Core.xml"]) }],
+		saved: o.saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
 		login: false,
 		script: [TEST_PACK, TEST_SOURCE, o.guides, RECORDER, if o.login { "stub.login()" } else { "" }, o.script].join("\n"),
 	})
@@ -163,7 +163,7 @@ fn accept_objectives_and_turn_in_advance_the_steps_and_fire_messages_in_order() 
 		json!(goals),
 		json!([
 			["active", "Go to Kobold camp", "Go to", "Kobold camp", "place", "Elwynn Forest", false],
-			["active", "Kill Kobold Vermin", "Kill", "Kobold Vermin", "npc", "for Kobold Camp Cleanup", false],
+			["active", "Kill Kobold Vermin", "Kill", "Kobold Vermin", "npc", "for “Kobold Camp Cleanup”", false],
 		])
 	);
 	assert_eq!(view3["goals"][1]["progress"], json!({ "cur": 3, "max": 10, "kind": "count" }));
@@ -296,7 +296,7 @@ fn goto_completes_on_arrival_via_the_ticker_which_runs_only_while_a_goto_is_acti
 #[test]
 fn a_quest_less_use_is_done_once_a_later_quest_goal_of_its_step_is_1120_runes_of_summoning() {
 	const BINDING: &str = r#"
-Polestar.RegisterGuide({ id = "test/binding", pack = "test", title = "Binding", zone = 1429, steps = {
+Northstar.RegisterGuide({ id = "test/binding", pack = "test", title = "Binding", zone = 1429, steps = {
 	{ title = "Carendin", goals = { { t = "accept", quest = 7, title = "Kobold Camp Cleanup", npc = 197, map = 1429, x = 48.9, y = 41.6 } } },
 	{ title = "Circle", goals = {
 		{ t = "use", item = 6284, itemName = "Runes of Summoning", map = 1429, x = 47.6, y = 35.1 },
@@ -345,7 +345,7 @@ fn a_goto_that_leads_into_the_next_step_is_done_once_that_step_s_quest_work_is_s
 	// way; a goto ahead of a step with no quest work (training, a level) still holds, and so does one with
 	// optional work after it in its own step (the Wailing Caverns mound), which is where that work is.
 	const COVEN: &str = r#"
-Polestar.RegisterGuide({ id = "test/coven", pack = "test", title = "Coven", zone = 1429, steps = {
+Northstar.RegisterGuide({ id = "test/coven", pack = "test", title = "Coven", zone = 1429, steps = {
 	{ title = "Zureetha", goals = { { t = "accept", quest = 7, title = "Kobold Camp Cleanup", npc = 197, map = 1429, x = 48.9, y = 41.6 } } },
 	{ title = "Burning Blade Coven", goals = { { t = "goto", map = 1429, x = 20, y = 20, text = "Burning Blade Coven" } } },
 	{ title = "Yarrog", goals = { { t = "kill", target = "Kobold Vermin", npc = 6, count = 10, quest = 7, oi = 1, map = 1429, x = 22, y = 18 } } },
@@ -400,7 +400,7 @@ fn a_goto_ahead_of_a_step_done_only_through_class_quests_a_skipped_step_or_unava
 	// accept `only Warrior`); a step the player skipped or one whose only quest the giver will never offer
 	// proves nothing either. The last pair is the control.
 	const STEPS: &str = r#"
-Polestar.RegisterGuide({ id = "test/evidence", pack = "test", title = "Evidence", zone = 1429, steps = {
+Northstar.RegisterGuide({ id = "test/evidence", pack = "test", title = "Evidence", zone = 1429, steps = {
 	{ title = "Hold", goals = { { t = "level", level = 60 } } },
 	{ title = "Zeppelin", goals = { { t = "goto", map = 1429, x = 20, y = 20, text = "Zeppelin" } } },
 	{ title = "Sorek", goals = { { t = "turnin", quest = 783, title = "A Threat Within", npc = 197, map = 1429, x = 22, y = 20, only = { classes = { "WARRIOR" } } } } },
@@ -422,7 +422,7 @@ Polestar.RegisterGuide({ id = "test/evidence", pack = "test", title = "Evidence"
 			E.SetGuide("test/evidence"); flush()
 			E.Goto(7); E.Skip(); flush()
 			w.accept(783, {}); w.turnIn(783); w.accept(7, {}); w.turnIn(7); flush()
-			emit({ skipped = PolestarCharDB.skipped["test/evidence"][7] == true,
+			emit({ skipped = NorthstarCharDB.skipped["test/evidence"][7] == true,
 				gotos = { E.GetStepView(2).goals[1].status, E.GetStepView(4).goals[1].status, E.GetStepView(6).goals[1].status,
 				E.GetStepView(8).goals[1].status, E.GetStepView(10).goals[1].status } })
 		"#,
@@ -435,7 +435,7 @@ Polestar.RegisterGuide({ id = "test/evidence", pack = "test", title = "Evidence"
 
 // A step with several field goals (Garren's Haunt from Brill): Elwynn here is 30 yd per map percent across.
 const FIELD: &str = r#"
-Polestar.RegisterGuide({ id = "test/field", pack = "test", title = "Field", zone = 1429, steps = {
+Northstar.RegisterGuide({ id = "test/field", pack = "test", title = "Field", zone = 1429, steps = {
 	{ title = "Garren's Haunt", goals = {
 		{ t = "kill", target = "Maggot Eye", npc = 300, count = 1, quest = 7, oi = 1, map = 1429, x = 80, y = 50,
 			spots = { { x = 80, y = 50, r = 10, n = 1 } } },
@@ -480,11 +480,13 @@ fn the_nearest_field_goal_holds_until_another_is_clearly_nearer_never_in_a_fight
 			r.past = at(51.5)
 			-- 50.5: 165 against 125, the Graverobbers not clearly nearer: no flap back
 			r.back = at(50.5)
-			-- in a fight beside the Graverobbers the arrow stays
+			-- in a fight beside the Graverobbers the arrow stays, and for 5 s after it (Spots.SETTLE)
 			fighting = true
 			r.fight = at(45.5)
 			fighting = false
-			r.after = at(45.5)
+			r.settling = at(45.5)
+			stub.advance(5)
+			r.after = E.GetWaypoint().goalIndex
 			-- the Graverobbers done: on to the nearest left, the Doom Weed
 			w.progress(8, 1, 8); flush()
 			r.done = E.GetWaypoint().goalIndex
@@ -492,14 +494,14 @@ fn the_nearest_field_goal_holds_until_another_is_clearly_nearer_never_in_a_fight
 		"#,
 		..Default::default()
 	});
-	assert_eq!(out, json!({ "start": 2, "between": 2, "past": 3, "back": 3, "fight": 3, "after": 2, "done": 3 }));
+	assert_eq!(out, json!({ "start": 2, "between": 2, "past": 3, "back": 3, "fight": 3, "settling": 3, "after": 2, "done": 3 }));
 }
 
 #[test]
 fn a_kill_goal_with_spawn_areas_points_at_the_area_nearest_the_player_switching_only_once_another_is_clearly_nearer() {
 	// Elwynn here is 30 yd per map percent across: the two areas are 600 yd apart, radius 30.
 	const SPOTS: &str = r#"
-Polestar.RegisterGuide({ id = "test/spots", pack = "test", title = "Spots", zone = 1429, steps = {
+Northstar.RegisterGuide({ id = "test/spots", pack = "test", title = "Spots", zone = 1429, steps = {
 	{ goals = { { t = "kill", target = "Kobold Vermin", npc = 6, count = 10, quest = 7, oi = 1, map = 1429, x = 40, y = 50,
 		spots = { { x = 40, y = 50, r = 30, n = 5 }, { x = 60, y = 50, r = 30, n = 4 } } } } },
 	{ goals = { { t = "level", level = 60 } } },
@@ -545,7 +547,7 @@ Polestar.RegisterGuide({ id = "test/spots", pack = "test", title = "Spots", zone
 
 // An area objective: three spots along y = 50 (Elwynn here: 30 yd per map percent across), radius 30 each.
 const SEARCH: &str = r#"
-Polestar.RegisterGuide({ id = "test/search", pack = "test", title = "Search", zone = 1429, steps = {
+Northstar.RegisterGuide({ id = "test/search", pack = "test", title = "Search", zone = 1429, steps = {
 	{ goals = { { t = "collect", item = 5062, itemName = "Raptor Head", count = 12, quest = 7, oi = 1, map = 1429, x = 20, y = 50, spread = true,
 		spots = { { x = 20, y = 50, r = 30, n = 3 }, { x = 40, y = 50, r = 30, n = 2 }, { x = 80, y = 50, r = 30, n = 1 } } } } },
 	{ goals = { { t = "level", level = 60 } } },
@@ -615,7 +617,7 @@ fn another_place_the_target_spawns_alt_is_never_picked_on_its_own_moving_on_by_h
 	// Camps at 40 and 60 along y = 50, and another place at 30 (alt), radius 30 each. The player stands inside
 	// the alt.
 	const ALT: &str = r#"
-Polestar.RegisterGuide({ id = "test/alt", pack = "test", title = "Alt", zone = 1429, steps = {
+Northstar.RegisterGuide({ id = "test/alt", pack = "test", title = "Alt", zone = 1429, steps = {
 	{ goals = { { t = "kill", target = "Kobold Vermin", npc = 6, count = 10, quest = 7, oi = 1, map = 1429, x = 40, y = 50,
 		spots = { { x = 40, y = 50, r = 30, n = 5 }, { x = 60, y = 50, r = 30, n = 4 }, { x = 30, y = 50, r = 30, n = 1, alt = true } } } } },
 	{ goals = { { t = "level", level = 60 } } },
@@ -662,7 +664,7 @@ fn a_circuit_of_waypoints_in_one_step_costs_one_pass_over_the_step_and_a_later_a
 	let n = 22;
 	let gotos = (0..n).map(|i| format!("{{ t = \"goto\", map = 1429, x = {}, y = 70, r = 5 }}", 10 + i * 3)).collect::<Vec<_>>().join(",\n");
 	let guide = r#"
-		Polestar.RegisterGuide({ id = "test/circuit", pack = "test", title = "Circuit", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/circuit", pack = "test", title = "Circuit", minLevel = 1, maxLevel = 60, steps = {
 			{ goals = { {GOTOS}, { t = "level", level = 3 } } },
 			{ goals = { { t = "level", level = 60 } } },
 		} })
@@ -695,8 +697,8 @@ fn a_circuit_of_waypoints_in_one_step_costs_one_pass_over_the_step_and_a_later_a
 #[test]
 fn era_frame_goto_coordinates_convert_through_the_registered_era_bounds() {
 	let guide = r#"
-		Polestar.RegisterMapFrames({ era = { [1429] = { c = 0, left = 1600, right = -1400, top = 600, bottom = -1400 } } }, "guides")
-		Polestar.RegisterGuide({ id = "test/era", pack = "test", title = "Era", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterMapFrames({ era = { [1429] = { c = 0, left = 1600, right = -1400, top = 600, bottom = -1400 } } }, "guides")
+		Northstar.RegisterGuide({ id = "test/era", pack = "test", title = "Era", minLevel = 1, maxLevel = 60, steps = {
 			{ goals = { { t = "goto", map = 1429, x = 50, y = 50, f = "e" } } },
 			{ goals = { { t = "level", level = 60 } } },
 		} })
@@ -719,7 +721,7 @@ fn era_frame_goto_coordinates_convert_through_the_registered_era_bounds() {
 #[test]
 fn check_offs_are_stored_per_guide_survive_recomputes_and_a_reload_and_toggle_off_any_goal_ticks_not_only_manual_ones() {
 	let guide = r#"
-		Polestar.RegisterGuide({ id = "test/manual", pack = "test", title = "Manual", minLevel = 1, maxLevel = 10, steps = {
+		Northstar.RegisterGuide({ id = "test/manual", pack = "test", title = "Manual", minLevel = 1, maxLevel = 10, steps = {
 			{ goals = { { t = "talk", npc = 197, npcName = "Marshal McBride" } } },
 			{ goals = { { t = "kill", target = "Young Wolf", count = 5 }, { t = "level", level = 2 } } },
 			{ goals = { { t = "talk", npc = 295, npcName = "Innkeeper Farley" } } },
@@ -737,7 +739,7 @@ fn check_offs_are_stored_per_guide_survive_recomputes_and_a_reload_and_toggle_of
 			w.setLevel(2); flush()
 			w.accept(5, { 1 }); w.addItem(1, 1); flush() -- unrelated recomputes
 			emit({ levelTick = levelTick, ok = ok, afterTalk = afterTalk, manualFlags = { view.goals[1].manual, view.goals[2].manual },
-				index = E.GetStepIndex(), saved = PolestarCharDB.manual["test/manual"] })
+				index = E.GetStepIndex(), saved = NorthstarCharDB.manual["test/manual"] })
 		"#,
 		..Default::default()
 	});
@@ -756,11 +758,11 @@ fn check_offs_are_stored_per_guide_survive_recomputes_and_a_reload_and_toggle_of
 	let second = run1(Run {
 		guides: guide,
 		before: "w.level = 2",
-		saved: Some(r#"PolestarCharDB = { schema = 1, guide = "test/manual", manual = { ["test/manual"] = { ["1:1"] = true, ["2:1"] = true } } }"#),
+		saved: Some(r#"NorthstarCharDB = { schema = 1, guide = "test/manual", manual = { ["test/manual"] = { ["1:1"] = true, ["2:1"] = true } } }"#),
 		script: r#"
 			local resumed = E.GetStepIndex()
 			E.ToggleGoal(1, 1)
-			emit({ resumed = resumed, untoggled = E.GetStepIndex(), saved = PolestarCharDB.manual["test/manual"] })
+			emit({ resumed = resumed, untoggled = E.GetStepIndex(), saved = NorthstarCharDB.manual["test/manual"] })
 		"#,
 		..Default::default()
 	});
@@ -773,8 +775,8 @@ fn nil_savedvariables_at_login_still_resume_the_right_step_from_live_quest_state
 	let cold = run1(Run {
 		guides: &both,
 		before: "w.level = 2; w.complete({ 783 }); w.onQuest(7, { 10 })",
-		saved: Some("PolestarDB = nil; PolestarCharDB = nil"),
-		script: "emit({ guide = E.GetGuide().id, index = E.GetStepIndex(), stored = PolestarCharDB.guide })",
+		saved: Some("NorthstarDB = nil; NorthstarCharDB = nil"),
+		script: "emit({ guide = E.GetGuide().id, index = E.GetStepIndex(), stored = NorthstarCharDB.guide })",
 		..Default::default()
 	});
 	assert_eq!(cold, json!({ "guide": "test/01-northshire", "index": 3, "stored": "test/01-northshire" }));
@@ -782,7 +784,7 @@ fn nil_savedvariables_at_login_still_resume_the_right_step_from_live_quest_state
 	let warm = run1(Run {
 		guides: &both,
 		before: "w.level = 2",
-		saved: Some(r#"PolestarCharDB = { schema = 1, guide = "test/02-elwynn" }"#),
+		saved: Some(r#"NorthstarCharDB = { schema = 1, guide = "test/02-elwynn" }"#),
 		script: "emit({ guide = E.GetGuide().id, index = E.GetStepIndex() })",
 		..Default::default()
 	});
@@ -790,7 +792,7 @@ fn nil_savedvariables_at_login_still_resume_the_right_step_from_live_quest_state
 
 	let off = run1(Run {
 		guides: NORTHSHIRE,
-		saved: Some("PolestarDB = { schema = 1, settings = { behavior = { autoSelectGuide = false } } }"),
+		saved: Some("NorthstarDB = { schema = 1, settings = { behavior = { autoSelectGuide = false } } }"),
 		script: "emit({ guide = E.GetGuide() == nil, index = E.GetStepIndex() == nil })",
 		..Default::default()
 	});
@@ -800,7 +802,7 @@ fn nil_savedvariables_at_login_still_resume_the_right_step_from_live_quest_state
 #[test]
 fn suggest_matches_faction_race_and_class_then_level_preferring_specific_and_narrow_guides() {
 	let guides = r#"
-		local function g(id, t) t.id = "test/" .. id; t.pack = "test"; t.title = id; t.steps = { { goals = { { t = "level", level = 60 } } } }; Polestar.RegisterGuide(t) end
+		local function g(id, t) t.id = "test/" .. id; t.pack = "test"; t.title = id; t.steps = { { goals = { { t = "level", level = 60 } } } }; Northstar.RegisterGuide(t) end
 		g("human-1", { faction = "Alliance", races = { "Human" }, minLevel = 1, maxLevel = 6 })
 		g("dwarf-1", { faction = "Alliance", races = { "Dwarf", "Gnome" }, minLevel = 1, maxLevel = 6 })
 		g("alliance-5", { faction = "Alliance", minLevel = 5, maxLevel = 12 })
@@ -816,7 +818,7 @@ fn suggest_matches_faction_race_and_class_then_level_preferring_specific_and_nar
 			local w = stub.world
 			local function s(race, class, faction, level)
 				w.race, w.class, w.faction, w.level = race, class, faction, level
-				return Polestar.Guides.Suggest()
+				return Northstar.Guides.Suggest()
 			end
 			emit({
 				s("Human", "MAGE", "Alliance", 1), s("Dwarf", "MAGE", "Alliance", 3), s("Human", "MAGE", "Alliance", 6),
@@ -834,7 +836,7 @@ fn suggest_matches_faction_race_and_class_then_level_preferring_specific_and_nar
 #[test]
 fn suggestions_lists_every_leveling_guide_for_the_level_best_first_else_the_nearest_upcoming_one() {
 	let guides = r#"
-		local function g(id, t) t.id = "test/" .. id; t.pack = "test"; t.title = id; t.steps = { { goals = { { t = "level", level = 60 } } } }; Polestar.RegisterGuide(t) end
+		local function g(id, t) t.id = "test/" .. id; t.pack = "test"; t.title = id; t.steps = { { goals = { { t = "level", level = 60 } } } }; Northstar.RegisterGuide(t) end
 		g("human-1", { faction = "Alliance", races = { "Human" }, minLevel = 1, maxLevel = 6 })
 		g("alliance-5", { faction = "Alliance", minLevel = 5, maxLevel = 12 })
 		g("alliance-wide", { faction = "Alliance", minLevel = 1, maxLevel = 20 })
@@ -850,7 +852,7 @@ fn suggestions_lists_every_leveling_guide_for_the_level_best_first_else_the_near
 			local w = stub.world
 			local function s(level)
 				w.race, w.class, w.faction, w.level = "Human", "MAGE", "Alliance", level
-				return Polestar.Guides.Suggestions()
+				return Northstar.Guides.Suggestions()
 			end
 			emit({ s(5), s(25) })
 		"#,
@@ -864,7 +866,7 @@ fn suggestions_lists_every_leveling_guide_for_the_level_best_first_else_the_near
 #[test]
 fn a_quest_started_by_a_dropped_item_is_one_line_the_collect_stands_for_it_then_the_accept_a_go_to_naming_the_step_is_its_header() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/fog", pack = "test", title = "Field", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
+		Northstar.RegisterGuide({ id = "test/fog", pack = "test", title = "Field", faction = "Horde", minLevel = 10, maxLevel = 20, steps = {
 			{ title = "Field of Giants", goals = {
 				{ t = "goto", text = "Field of Giants", map = 1429, x = 44.7, y = 70.7 },
 				{ t = "collect", item = 10621, itemName = "Runed Scroll", count = 1, map = 1429, x = 46, y = 70, note = "Aean Swiftriver",
@@ -916,7 +918,7 @@ fn a_quest_started_by_a_dropped_item_is_one_line_the_collect_stands_for_it_then_
 #[test]
 fn the_collect_of_a_quest_s_starting_item_is_done_once_the_quest_is_taken_though_the_item_is_gone() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/paw", pack = "test", title = "Paw", faction = "Horde", minLevel = 20, maxLevel = 30, steps = {
+		Northstar.RegisterGuide({ id = "test/paw", pack = "test", title = "Paw", faction = "Horde", minLevel = 20, maxLevel = 30, steps = {
 			{ title = "Ursangous", goals = {
 				{ t = "collect", item = 16303, itemName = "Ursangous's Paw", count = 1, map = 1429, x = 40, y = 65 },
 				{ t = "accept", quest = 23, title = "Ursangous's Paw", item = 16303, itemName = "Ursangous's Paw" },
@@ -956,7 +958,7 @@ fn a_taken_quest_does_not_count_for_other_collects_of_its_item() {
 		),
 	];
 	for (name, goals) in cases {
-		let guides = r#"Polestar.RegisterGuide({ id = "test/paws", pack = "test", title = "Paws", faction = "Horde", minLevel = 20, maxLevel = 30, steps = {
+		let guides = r#"Northstar.RegisterGuide({ id = "test/paws", pack = "test", title = "Paws", faction = "Horde", minLevel = 20, maxLevel = 30, steps = {
 				{ title = "Paws", goals = { {GOALS} } },
 				{ title = "Later", goals = { { t = "level", level = 60 } } },
 			} })"#
@@ -980,7 +982,7 @@ fn a_taken_quest_does_not_count_for_other_collects_of_its_item() {
 #[test]
 fn a_collect_with_a_known_source_names_it_kill_an_enemy_for_the_item_collect_from_a_friend_or_an_object() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/src", pack = "test", title = "Src", faction = "Alliance", minLevel = 1, maxLevel = 10, steps = {
+		Northstar.RegisterGuide({ id = "test/src", pack = "test", title = "Src", faction = "Alliance", minLevel = 1, maxLevel = 10, steps = {
 			{ title = "Woods", goals = {
 				{ t = "collect", quest = 459, title = "The Woodland Protector", item = 3297, itemName = "Fel Moss", count = 8, oi = 1, map = 1438, x = 56, y = 45,
 					from = "Grell", fromAlso = "Grellkin", fromKind = "npc", fromFaction = "H" },
@@ -1025,9 +1027,9 @@ fn registerguide_rejects_malformed_guides_with_a_debug_message_instead_of_errori
 		guides: "",
 		login: false,
 		script: r#"
-			Polestar.debug = true
+			Northstar.debug = true
 			local results = {}
-			local function try(def) local ok, err = Polestar.RegisterGuide(def); results[#results + 1] = ok and "ok" or err end
+			local function try(def) local ok, err = Northstar.RegisterGuide(def); results[#results + 1] = ok and "ok" or err end
 			try("nope")
 			try({ title = "No id", steps = { { goals = { { t = "level", level = 2 } } } } })
 			try({ id = "test/a", pack = "test", title = "No steps", steps = {} })
@@ -1037,7 +1039,7 @@ fn registerguide_rejects_malformed_guides_with_a_debug_message_instead_of_errori
 			try({ id = "test/e", pack = "test", title = "Bad coords", steps = { { goals = { { t = "goto", map = 1, x = 120, y = 5 } } } } })
 			try({ id = "test/f", pack = "test", title = "Good", minLevel = 1, maxLevel = 2, steps = { { goals = { { t = "note", text = "hi", extra = 1 } } } } })
 			local ids = {}
-			for i, h in ipairs(Polestar.Guides.List()) do ids[i] = h.id .. ":" .. h.stepCount .. ":" .. tostring(h.steps) end
+			for i, h in ipairs(Northstar.Guides.List()) do ids[i] = h.id .. ":" .. h.stepCount .. ":" .. tostring(h.steps) end
 			emit({ results = results, ids = ids, debugLines = #stub.messages })
 		"#,
 		..Default::default()
@@ -1062,15 +1064,15 @@ fn registerguide_rejects_malformed_guides_with_a_debug_message_instead_of_errori
 #[test]
 fn completing_a_leveling_guide_chains_to_next_with_guideend_continue_and_stays_with_ask() {
 	let guides = r#"
-		Polestar.RegisterGuide({ id = "test/a", pack = "test", title = "A", minLevel = 1, maxLevel = 2, next = "test/b", steps = { { goals = { { t = "level", level = 2 } } } } })
-		Polestar.RegisterGuide({ id = "test/b", pack = "test", title = "B", minLevel = 2, maxLevel = 3, steps = { { goals = { { t = "level", level = 3 } } } } })
+		Northstar.RegisterGuide({ id = "test/a", pack = "test", title = "A", minLevel = 1, maxLevel = 2, next = "test/b", steps = { { goals = { { t = "level", level = 2 } } } } })
+		Northstar.RegisterGuide({ id = "test/b", pack = "test", title = "B", minLevel = 2, maxLevel = 3, steps = { { goals = { { t = "level", level = 3 } } } } })
 	"#;
-	const CONTINUE: &str = r#"PolestarDB = { schema = 1, settings = { behavior = { guideEnd = "continue" } } }"#;
+	const CONTINUE: &str = r#"NorthstarDB = { schema = 1, settings = { behavior = { guideEnd = "continue" } } }"#;
 	let on = run1(Run {
 		guides,
 		saved: Some(CONTINUE),
 		script: r#"takeLog(); stub.world.setLevel(2); flush()
-			emit({ log = takeLog(), guide = E.GetGuide().id, stored = PolestarCharDB.guide, index = E.GetStepIndex() })"#,
+			emit({ log = takeLog(), guide = E.GetGuide().id, stored = NorthstarCharDB.guide, index = E.GetStepIndex() })"#,
 		..Default::default()
 	});
 	assert_eq!(
@@ -1094,19 +1096,19 @@ fn completing_a_leveling_guide_chains_to_next_with_guideend_continue_and_stays_w
 
 	let at_login = |saved: &str| run1(Run { guides, before: "w.level = 2", saved: Some(saved), script: "emit({ log = takeLog(), guide = E.GetGuide().id })", ..Default::default() });
 	assert_eq!(
-		at_login(&format!("{CONTINUE}\nPolestarCharDB = {{ schema = 1, guide = \"test/a\" }}")),
+		at_login(&format!("{CONTINUE}\nNorthstarCharDB = {{ schema = 1, guide = \"test/a\" }}")),
 		json!({
 			"log": ["GUIDE_CHANGED test/a", "GUIDE_COMPLETED test/a", "GUIDE_CHANGED test/b", "STEP_CHANGED 1"],
 			"guide": "test/b",
 		})
 	);
-	assert_eq!(at_login(r#"PolestarCharDB = { schema = 1, guide = "test/a" }"#), json!({ "log": ["GUIDE_CHANGED test/a", "GUIDE_COMPLETED test/a"], "guide": "test/a" }));
+	assert_eq!(at_login(r#"NorthstarCharDB = { schema = 1, guide = "test/a" }"#), json!({ "log": ["GUIDE_CHANGED test/a", "GUIDE_COMPLETED test/a"], "guide": "test/a" }));
 
 	// Picking a finished guide by hand reports it complete but stays on it.
 	let picked = run1(Run {
 		guides,
 		before: "w.level = 2",
-		saved: Some("PolestarDB = { schema = 1, settings = { behavior = { autoSelectGuide = false } } }"),
+		saved: Some("NorthstarDB = { schema = 1, settings = { behavior = { autoSelectGuide = false } } }"),
 		script: r#"takeLog(); E.SetGuide("test/a")
 			emit({ log = takeLog(), guide = E.GetGuide().id })"#,
 		..Default::default()
@@ -1127,16 +1129,16 @@ fn prev_next_skip_and_goto_move_the_current_step_only_skip_saves_a_skip_goto_ahe
 			E.Next(); mark("next")
 			E.Skip(); mark("skip")
 			local skippedStatus = E.GetStepView(3).status
-			local stored = PolestarCharDB.skipped["test/01-northshire"][3]
+			local stored = NorthstarCharDB.skipped["test/01-northshire"][3]
 			E.Goto(3); mark("goto3")
 			E.Goto(6); mark("goto6")
 			local jumped = { E.GetStepView(3).status, E.GetStepView(4).status, E.GetStepView(5).status, E.GetLiveStep() }
 			E.Prev(); mark("prev")
 			E.Next(); mark("next")
-			SlashCmdList.POLESTAR("reset")
+			SlashCmdList.NORTHSTAR("reset")
 			mark("reset")
 			emit({ trail = trail, pinnedStatus = pinnedStatus, skippedStatus = skippedStatus, stored = stored, jumped = jumped,
-				skipped = PolestarCharDB.skipped["test/01-northshire"] == nil })
+				skipped = NorthstarCharDB.skipped["test/01-northshire"] == nil })
 		"#,
 		..Default::default()
 	});
@@ -1162,7 +1164,7 @@ fn prev_walks_back_over_every_applicable_step_done_or_skipped_and_next_walks_the
 			for k, v in pairs(extra or {}) do step[k] = v end
 			return step
 		end
-		Polestar.RegisterGuide({ id = "test/walk", pack = "test", title = "Walk", minLevel = 1, maxLevel = 60, steps = {
+		Northstar.RegisterGuide({ id = "test/walk", pack = "test", title = "Walk", minLevel = 1, maxLevel = 60, steps = {
 			accept(901),                                 -- done (turned in)
 			accept(902),                                 -- open, skipped earlier
 			accept(903, { only = { classes = { "MAGE" } } }), -- not for a Warrior
@@ -1174,18 +1176,18 @@ fn prev_walks_back_over_every_applicable_step_done_or_skipped_and_next_walks_the
 	let out = run1(Run {
 		guides,
 		before: "w.complete({ 901 }); w.onQuest(904, {})",
-		saved: Some(r#"PolestarCharDB = { schema = 1, guide = "test/walk", skipped = { ["test/walk"] = { [2] = true } } }"#),
+		saved: Some(r#"NorthstarCharDB = { schema = 1, guide = "test/walk", skipped = { ["test/walk"] = { [2] = true } } }"#),
 		script: r#"
 			local back, forward = {}, {}
 			local start = E.GetStepIndex()
 			for k = 1, 4 do E.Prev(); flush(); back[k] = E.GetStepIndex() .. ":" .. E.GetStepView(E.GetStepIndex()).goals[1].status end
 			for k = 1, 3 do E.Next(); flush(); forward[k] = E.GetStepIndex() end
 			local skips = {}
-			for s in pairs(PolestarCharDB.skipped["test/walk"]) do skips[#skips + 1] = s end
+			for s in pairs(NorthstarCharDB.skipped["test/walk"]) do skips[#skips + 1] = s end
 			table.sort(skips)
 			E.Next(); flush()
 			local after = {}
-			for s in pairs(PolestarCharDB.skipped["test/walk"]) do after[#after + 1] = s end
+			for s in pairs(NorthstarCharDB.skipped["test/walk"]) do after[#after + 1] = s end
 			emit({ start = start, back = back, forward = forward, skips = skips, skipNext = E.GetStepIndex(), live = E.GetLiveStep(), after = after })
 		"#,
 		..Default::default()
@@ -1208,7 +1210,7 @@ fn prev_walks_back_over_every_applicable_step_done_or_skipped_and_next_walks_the
 #[test]
 fn talk_sethome_getfp_fly_vendor_buy_collect_and_hearth_complete_from_interactions() {
 	let guide = r#"
-		Polestar.RegisterGuide({ id = "test/actions", pack = "test", title = "Actions", minLevel = 1, maxLevel = 10, steps = {
+		Northstar.RegisterGuide({ id = "test/actions", pack = "test", title = "Actions", minLevel = 1, maxLevel = 10, steps = {
 			{ goals = { { t = "talk", npc = 197, npcName = "Marshal McBride" } } },
 			{ goals = { { t = "sethome", location = "Goldshire", npc = 295, npcName = "Innkeeper Farley" } } },
 			{ goals = { { t = "getfp", location = "Stormwind", npc = 352, npcName = "Dungar Longdrink" } } },
@@ -1245,7 +1247,7 @@ fn talk_sethome_getfp_fly_vendor_buy_collect_and_hearth_complete_from_interactio
 			w.setZone("Westfall", "Sentinel Hill"); flush(); mark("moved-on")
 			local texts = {}
 			for i = 1, 8 do texts[i] = E.GetStepView(i).goals[1].text end
-			emit({ trail = trail, fp = PolestarCharDB.flags.fp, progress = progress, texts = texts })
+			emit({ trail = trail, fp = NorthstarCharDB.flags.fp, progress = progress, texts = texts })
 		"#,
 		..Default::default()
 	});
@@ -1267,12 +1269,41 @@ fn talk_sethome_getfp_fly_vendor_buy_collect_and_hearth_complete_from_interactio
 	);
 }
 
+// #1298: the bind confirmation closes the innkeeper's window before HEARTHSTONE_BOUND, so the "npc" unit is gone
+// then (every bind the Recorder saw). The innkeeper is the last NPC window closed within 2 minutes; a bind
+// location that does not read as the goal's place ("Lakeshire Inn") still completes the goal bound at its inn.
+#[test]
+fn t_1298_a_bind_after_the_innkeeper_s_window_closed_completes_the_sethome_at_that_innkeeper_only() {
+	let out = run1(Run {
+		guides: r#"
+			Northstar.RegisterGuide({ id = "test/bind", pack = "test", title = "Bind", minLevel = 1, maxLevel = 30, steps = {
+				{ goals = { { t = "sethome", location = "Lakeshire", npc = 6727, npcName = "Innkeeper Brianna" } } },
+				{ goals = { { t = "level", level = 99 } } },
+			} })
+		"#,
+		script: r#"
+			local w = stub.world
+			E.SetGuide("test/bind"); flush()
+			local r = {}
+			w.gossip(54); w.close(); w.bind("Lakeshire Inn"); flush()
+			r.otherNpc = E.GetStepIndex()
+			w.gossip(6727); w.close(); stub.advance(130); w.bind("Lakeshire Inn"); flush()
+			r.longAgo = E.GetStepIndex()
+			w.gossip(6727); w.close(); w.bind("Lakeshire Inn"); flush()
+			r.innkeeper = E.GetStepIndex()
+			emit(r)
+		"#,
+		..Default::default()
+	});
+	assert_eq!(out, json!({ "otherNpc": 1, "longAgo": 1, "innkeeper": 2 }));
+}
+
 // #859: Desperate Times (92640) asks to speak with Valennia, then the Windshapers (Ayessa), then the High
 // Order (Elaadrin), and the client lists each line only once the one before it is done. A quest `talk` goal
 // reads its quest-log line; talking checks it off only on a line the client does not list yet, with every
 // line before it finished.
 const DESPERATE_TIMES: &str = r#"
-	Polestar.RegisterGuide({ id = "test/talkq", pack = "test", title = "Talk objectives", minLevel = 1, maxLevel = 90, steps = {
+	Northstar.RegisterGuide({ id = "test/talkq", pack = "test", title = "Talk objectives", minLevel = 1, maxLevel = 90, steps = {
 		{ goals = {
 			{ t = "talk", npc = 252383, npcName = "Valennia", quest = 92640, title = "Desperate Times", oi = 1 },
 			{ t = "talk", npc = 251968, npcName = "Ayessa", quest = 92640, title = "Desperate Times", oi = 2 },
@@ -1327,7 +1358,7 @@ fn t_859_a_quest_talk_goal_ticks_from_its_quest_log_line_and_a_talk_counts_only_
 	assert_eq!(out["trail"], json!(["start=---", "elaadrin-first=---", "valennia=---", "line1=x--", "elaadrin-early=x--", "ayessa=x--", "line2=xx-", "elaadrin=xxx"]));
 	assert_eq!(out["at"], 2);
 	assert_eq!(out["text"], "Talk to Valennia");
-	assert_eq!(out["detail"], "for Desperate Times");
+	assert_eq!(out["detail"], "for “Desperate Times”");
 
 	// The quest ready for turn-in: every talk goal is done, the lines the client never listed too.
 	let ready = run1(Run {
@@ -1346,7 +1377,7 @@ fn t_859_a_quest_talk_goal_ticks_from_its_quest_log_line_and_a_talk_counts_only_
 #[test]
 fn a_step_that_hearths_and_then_flies_completes_when_the_flight_lands_the_hearth_counts_as_done_once_a_later_goal_is() {
 	let guide = r#"
-		Polestar.RegisterGuide({ id = "test/travel", pack = "test", title = "Travel", minLevel = 1, maxLevel = 10, steps = {
+		Northstar.RegisterGuide({ id = "test/travel", pack = "test", title = "Travel", minLevel = 1, maxLevel = 10, steps = {
 			{ goals = { { t = "hearth", location = "Goldshire" }, { t = "fly", location = "Stormwind City" } } },
 			{ goals = { { t = "level", level = 99 } } },
 		} })
@@ -1370,7 +1401,7 @@ fn a_step_that_hearths_and_then_flies_completes_when_the_flight_lands_the_hearth
 // #362: Body and Heart's Darkshore leg, `fly Auberdine` -> work outside the town; Goldshire stands in for
 // Auberdine.
 const LANDED: &str = r#"
-	Polestar.RegisterGuide({ id = "test/landed", pack = "test", title = "Landed", minLevel = 1, maxLevel = 10, steps = {
+	Northstar.RegisterGuide({ id = "test/landed", pack = "test", title = "Landed", minLevel = 1, maxLevel = 10, steps = {
 		{ goals = {
 			{ t = "fly", location = "Goldshire", npc = 352, npcName = "Dungar Longdrink", map = 1453, x = 66, y = 62 },
 			{ t = "kill", target = "Kobold Vermin", npc = 6, count = 10, quest = 7, oi = 1, map = 1429, x = 47.6, y = 35.1 },
@@ -1402,7 +1433,7 @@ fn a_flight_that_landed_stays_done_when_the_player_walks_out_of_the_town_and_acr
 	let reloaded = run1(Run {
 		guides: LANDED,
 		before: r#"w.onQuest(7, { { required = 10, fulfilled = 3 } }); w.setZone("Elwynn Forest", "")"#,
-		saved: Some(r#"PolestarCharDB = { schema = 1, tabs = { "test/landed" }, activeTab = 1, manual = { ["test/landed"] = { ["1:1"] = true } } }"#),
+		saved: Some(r#"NorthstarCharDB = { schema = 1, tabs = { "test/landed" }, activeTab = 1, manual = { ["test/landed"] = { ["1:1"] = true } } }"#),
 		script: "emit({ E.GetStepIndex(), E.GetStepView(1).goals[1].status, E.GetWaypoint().goalIndex })",
 		..Default::default()
 	});
@@ -1413,7 +1444,7 @@ fn a_flight_that_landed_stays_done_when_the_player_walks_out_of_the_town_and_acr
 fn a_flight_looked_at_ahead_while_standing_at_its_end_is_not_latched_362() {
 	let out = run1(Run {
 		guides: r#"
-			Polestar.RegisterGuide({ id = "test/ahead", pack = "test", title = "Ahead", minLevel = 1, maxLevel = 10, steps = {
+			Northstar.RegisterGuide({ id = "test/ahead", pack = "test", title = "Ahead", minLevel = 1, maxLevel = 10, steps = {
 				{ goals = { { t = "kill", target = "Kobold Vermin", npc = 6, count = 10, quest = 7, oi = 1, map = 1429, x = 47.6, y = 35.1 } } },
 				{ goals = { { t = "fly", location = "Goldshire" }, { t = "level", level = 99 } } },
 			} })
@@ -1424,7 +1455,7 @@ fn a_flight_looked_at_ahead_while_standing_at_its_end_is_not_latched_362() {
 			E.Goto(2); flush()
 			local looked = { E.GetStepIndex(), E.GetStepView(2).goals[1].status }
 			stub.world.setZone("Elwynn Forest", ""); flush()
-			emit({ looked = looked, latches = PolestarCharDB.manual["test/ahead"] or {} })
+			emit({ looked = looked, latches = NorthstarCharDB.manual["test/ahead"] or {} })
 		"#,
 		..Default::default()
 	});
@@ -1435,7 +1466,7 @@ fn a_flight_looked_at_ahead_while_standing_at_its_end_is_not_latched_362() {
 fn a_hearth_that_landed_stays_done_when_the_player_walks_out_of_the_inn_s_town_while_the_step_goes_on_362() {
 	let out = run1(Run {
 		guides: r#"
-			Polestar.RegisterGuide({ id = "test/hearthed", pack = "test", title = "Hearthed", minLevel = 1, maxLevel = 10, steps = {
+			Northstar.RegisterGuide({ id = "test/hearthed", pack = "test", title = "Hearthed", minLevel = 1, maxLevel = 10, steps = {
 				{ goals = {
 					{ t = "hearth", location = "Goldshire" },
 					{ t = "kill", target = "Kobold Vermin", npc = 6, count = 10, quest = 7, oi = 1, map = 1429, x = 47.6, y = 35.1 },
@@ -1464,7 +1495,7 @@ fn a_hearth_that_landed_stays_done_when_the_player_walks_out_of_the_inn_s_town_w
 fn hotline_s_report_576_a_hearth_step_while_the_hearthstone_waits_says_how_long_and_walks_the_arrow_to_the_inn_once_it_is_ready_both_go() {
 	let out = run1(Run {
 		guides: r#"
-			Polestar.RegisterGuide({ id = "test/hearth-cd", pack = "test", title = "Hearth", minLevel = 1, maxLevel = 10, steps = {
+			Northstar.RegisterGuide({ id = "test/hearth-cd", pack = "test", title = "Hearth", minLevel = 1, maxLevel = 10, steps = {
 				-- A note beside the hearth keeps the step (a hearth-only step is hidden: Own.hearthOnly).
 				{ goals = { { t = "hearth", location = "Goldshire" }, { t = "note", text = "The inn by the road." } } },
 				{ goals = { { t = "hearth", location = "Nowhere Inn" }, { t = "note", text = "Somewhere." } } },
@@ -1476,13 +1507,13 @@ fn hotline_s_report_576_a_hearth_step_while_the_hearthstone_waits_says_how_long_
 			local w = stub.world
 			-- The Hearthstone (QoL/Hearth.lua) and the inns (Nav/Travel.lua), as the test sets them.
 			local hs = { have = true, remaining = 23 * 60 - 20 }
-			Polestar.QoL = Polestar.QoL or {}
-			Polestar.QoL.GetHearth = function() return hs end
-			Polestar.Nav = Polestar.Nav or {}
-			Polestar.Nav.FindInn = function(npc, name)
+			Northstar.QoL = Northstar.QoL or {}
+			Northstar.QoL.GetHearth = function() return hs end
+			Northstar.Nav = Northstar.Nav or {}
+			Northstar.Nav.FindInn = function(npc, name)
 				if name == "Goldshire" then return { map = 1429, x = 43.8, y = 65.8, f = "e", npc = 295 } end
 			end
-			local function changed() Polestar.Fire("QOL_HEARTH_CHANGED"); flush() end
+			local function changed() Northstar.Fire("QOL_HEARTH_CHANGED"); flush() end
 			local function state()
 				local g, wp = E.GetStepView(E.GetStepIndex()).goals[1], E.GetWaypoint()
 				return { line = g.hearthText or false, arrow = wp and { wp.map, wp.x, wp.y, wp.label } or false }
@@ -1517,7 +1548,7 @@ fn hotline_s_report_576_a_hearth_step_while_the_hearthstone_waits_says_how_long_
 fn a_hearth_step_weighs_the_hearthstone_against_the_trip_set_off_while_it_waits_longer_wait_when_it_is_sooner_travel_when_the_inn_is_close() {
 	let out = run1(Run {
 		guides: r#"
-			Polestar.RegisterGuide({ id = "test/hearth-trip", pack = "test", title = "Hearth", minLevel = 1, maxLevel = 10, steps = {
+			Northstar.RegisterGuide({ id = "test/hearth-trip", pack = "test", title = "Hearth", minLevel = 1, maxLevel = 10, steps = {
 				{ goals = { { t = "hearth", location = "Goldshire" }, { t = "note", text = "The inn by the road." } } },
 				{ goals = { { t = "level", level = 99 } } },
 			} })
@@ -1525,20 +1556,20 @@ fn a_hearth_step_weighs_the_hearthstone_against_the_trip_set_off_while_it_waits_
 		before: r#"w.setZone("Stormwind City", "Trade District")"#,
 		script: r#"
 			local hs = { have = true, remaining = 20 * 60 }
-			Polestar.QoL = Polestar.QoL or {}
-			Polestar.QoL.GetHearth = function() return hs end
+			Northstar.QoL = Northstar.QoL or {}
+			Northstar.QoL.GetHearth = function() return hs end
 			-- The way to the inn without the Hearthstone, as Nav plans it (seconds); noHearth asked for.
 			local trip, asked = 9 * 60, {}
-			Polestar.Nav = Polestar.Nav or {}
-			Polestar.Nav.HEARTH_SECONDS, Polestar.Nav.HEARTH_MARGIN, Polestar.Nav.HEARTH_MIN_TRIP = 15, 120, 180
-			Polestar.Nav.FindInn = function(npc, name)
+			Northstar.Nav = Northstar.Nav or {}
+			Northstar.Nav.HEARTH_SECONDS, Northstar.Nav.HEARTH_MARGIN, Northstar.Nav.HEARTH_MIN_TRIP = 15, 120, 180
+			Northstar.Nav.FindInn = function(npc, name)
 				if name == "Goldshire" then return { map = 1429, x = 43.8, y = 65.8, f = "e", npc = 295 } end
 			end
-			Polestar.Nav.EstimateTravel = function(from, to, budgeted, noHearth)
+			Northstar.Nav.EstimateTravel = function(from, to, budgeted, noHearth)
 				asked[#asked + 1] = (from == nil and to.map == 1429 and noHearth == true) and "noHearth" or "other"
 				return trip
 			end
-			local function changed() Polestar.Fire("QOL_HEARTH_CHANGED"); flush() end
+			local function changed() Northstar.Fire("QOL_HEARTH_CHANGED"); flush() end
 			local function state()
 				local g, wp = E.GetStepView(1).goals[1], E.GetWaypoint()
 				return { line = g.hearthText or false, arrow = wp and wp.label or false }
@@ -1576,7 +1607,7 @@ fn a_hearth_step_weighs_the_hearthstone_against_the_trip_set_off_while_it_waits_
 fn a_hearth_only_step_is_never_paged_to_counted_or_live() {
 	let out = run1(Run {
 		guides: r#"
-			Polestar.RegisterGuide({ id = "test/hearth-hidden", pack = "test", title = "Hearth", minLevel = 1, maxLevel = 10, steps = {
+			Northstar.RegisterGuide({ id = "test/hearth-hidden", pack = "test", title = "Hearth", minLevel = 1, maxLevel = 10, steps = {
 				{ goals = { { t = "talk", npc = 197, npcName = "Marshal McBride" } } },
 				{ title = "Hearth to Goldshire", goals = { { t = "hearth", location = "Goldshire" } } },
 				{ goals = { { t = "sethome", location = "Goldshire", npc = 295, npcName = "Innkeeper Farley" } } },
@@ -1639,8 +1670,8 @@ fn bursts_of_quest_events_are_coalesced_to_at_most_10_evaluations_per_second() {
 	let out = run1(Run {
 		script: r#"
 			local n = 0
-			local real = Polestar.Compat.GetPlayerInfo
-			Polestar.Compat.GetPlayerInfo = function() n = n + 1; return real() end
+			local real = Northstar.Compat.GetPlayerInfo
+			Northstar.Compat.GetPlayerInfo = function() n = n + 1; return real() end
 			for i = 1, 100 do
 				stub.fire("QUEST_LOG_UPDATE")
 				stub.advance(0.01)
@@ -1661,25 +1692,25 @@ fn slash_commands_drive_the_engine_and_report_status() {
 		before: "w.complete({ 783 }); w.onQuest(7, { { required = 10, fulfilled = 4 } })",
 		script: r#"
 			stub.messages = {}
-			SlashCmdList.POLESTAR("status")
+			SlashCmdList.NORTHSTAR("status")
 			local status = stub.messages
 			stub.messages = {}
-			SlashCmdList.POLESTAR("skip")
+			SlashCmdList.NORTHSTAR("skip")
 			local afterSkip = E.GetStepIndex()
-			SlashCmdList.POLESTAR("prev")
+			SlashCmdList.NORTHSTAR("prev")
 			local afterPrev = E.GetStepIndex()
-			SlashCmdList.POLESTAR("guide nope")
-			SlashCmdList.POLESTAR("guide test/02-elwynn")
+			SlashCmdList.NORTHSTAR("guide nope")
+			SlashCmdList.NORTHSTAR("guide test/02-elwynn")
 			local exact = E.GetGuide().id
-			SlashCmdList.POLESTAR("guide test/01-northshire")
-			SlashCmdList.POLESTAR("guide Test/02-Elwynn")
+			SlashCmdList.NORTHSTAR("guide test/01-northshire")
+			SlashCmdList.NORTHSTAR("guide Test/02-Elwynn")
 			emit({ status = status, afterSkip = afterSkip, afterPrev = afterPrev, exact = exact, guide = E.GetGuide().id, msgs = stub.messages,
-				header = BINDING_HEADER_POLESTAR, binding = BINDING_NAME_POLESTAR_NEXT })
+				header = BINDING_HEADER_NORTHSTAR, binding = BINDING_NAME_NORTHSTAR_NEXT })
 		"#,
 		..Default::default()
 	});
 	// The Warrior's Mage training step is not his (#942): "of 5", as the player counts the steps.
-	assert_eq!(out["status"], json!(["|cff4fd1c5Polestar|r: Northshire Valley: step 3 of 5 (2/5 done)", "  [ ] Go to Kobold camp", "  [ ] Kill Kobold Vermin (4/10)"]));
+	assert_eq!(out["status"], json!(["|cff4fd1c5Northstar|r: Northshire Valley: step 3 of 5 (2/5 done)", "  [ ] Go to Kobold camp", "  [ ] Kill Kobold Vermin (4/10)"]));
 	assert_eq!(out["afterSkip"], 4);
 	assert_eq!(out["afterPrev"], 3);
 	assert_eq!(out["exact"], "test/02-elwynn");
@@ -1688,13 +1719,13 @@ fn slash_commands_drive_the_engine_and_report_status() {
 	assert_eq!(
 		out["msgs"],
 		json!([
-			"|cff4fd1c5Polestar|r: Unknown guide 'nope'.",
-			"|cff4fd1c5Polestar|r: Guide: Elwynn Forest",
-			"|cff4fd1c5Polestar|r: Guide: Northshire Valley",
-			"|cff4fd1c5Polestar|r: Guide: Elwynn Forest",
+			"|cff4fd1c5Northstar|r: Unknown guide 'nope'.",
+			"|cff4fd1c5Northstar|r: Guide: Elwynn Forest",
+			"|cff4fd1c5Northstar|r: Guide: Northshire Valley",
+			"|cff4fd1c5Northstar|r: Guide: Elwynn Forest",
 		])
 	);
-	assert_eq!(out["header"], "Polestar");
+	assert_eq!(out["header"], "Northstar");
 	assert_eq!(out["binding"], "Next step");
 }
 
@@ -1702,7 +1733,7 @@ fn slash_commands_drive_the_engine_and_report_status() {
 // kill) and reads as each of them in the game's words with its own count (`objectiveLines`, #942; a player's
 // report: The Hunt Begins showed no x of y).
 const HUNT: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/hunt", pack = "test", title = "Camp Narache", faction = "Alliance", minLevel = 1, maxLevel = 4, zone = 1429,
 	steps = {
 		{ title = "The Hunt Begins", goals = {
@@ -1752,11 +1783,32 @@ fn a_quest_to_complete_shows_its_objectives_count_and_reads_as_its_objective_lin
 	assert_eq!(*log, json!(["STEP_UPDATED 1", "STEP_UPDATED 1"]), "each count change redraws the step");
 }
 
+// The frFR client's kill line (#942's objective lines): "Jeune loup : 3/7 |4personnage tué:personnages tués;"
+// reads as "Jeune loup 3/7", never with the raw grammar escape.
+#[test]
+fn a_quest_to_complete_reads_an_frfr_kill_line_without_its_grammar_escape() {
+	let guides = format!("{NORTHSHIRE}{HUNT}");
+	let out = run(Run {
+		guides: &guides,
+		before: r#"w.onQuest(747, { { text = "Jeune loup\194\160: 0/7 |4personnage tué:personnages tués;", required = 7 } })"#,
+		script: r#"
+			local w = stub.world
+			E.SetGuide("test/hunt"); flush()
+			w.progress(747, 1, 3); flush()
+			local out = {}
+			for _, o in ipairs(E.GetStepView(1).goals[1].objectiveLines or {}) do out[#out + 1] = o.text .. " " .. o.cur .. "/" .. o.max end
+			emit(out)
+		"#,
+		..Default::default()
+	});
+	assert_eq!(out[0], json!(["Jeune loup 3/7"]));
+}
+
 // Darkshore's Plagued Lands (#942): looked at before the quest is taken, its `complete` goal reads as the
 // compiled objectives (`objs`, the quest data's); taken, as the game's own line, "Use Tharnariun's Hope:" first
 // while the trap the quest hands over (`startItem`) is in the bags.
 const PLAGUED: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/plagued", pack = "test", title = "Auberdine", faction = "Alliance", minLevel = 1, maxLevel = 20, zone = 1429,
 	steps = {
 		{ title = "Tharnariun", goals = {
@@ -1805,7 +1857,7 @@ fn a_complete_goal_reads_the_data_s_objectives_ahead_then_the_game_s_line_with_i
 // has Murloc Streamrunner first, and An Enticing Offer's Vial of Animal Blood first, where the data has Duskweed
 // Petal. By position, each line read the other's count ("Kill Murloc 1/4") and ticked the other line.
 const MURLOCS: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/murlocs", pack = "test", title = "Crystal Lake", faction = "Alliance", minLevel = 1, maxLevel = 10, zone = 1429,
 	steps = {
 		{ title = "The murloc camp", goals = {
@@ -1867,7 +1919,7 @@ fn an_objective_goal_reads_the_quest_log_line_named_after_its_target_not_the_pos
 // Carcass lures Ishamuhale (quest 882's one line is his Fang). No line counts either item, so the bags do; the
 // Fang still reads its line.
 const USED_ITEMS: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/used", pack = "test", title = "The Barrens", faction = "Horde", minLevel = 10, maxLevel = 20, zone = 1413,
 	steps = {
 		{ title = "A feather", goals = {
@@ -1886,7 +1938,7 @@ Polestar.RegisterGuide({
 })
 "#;
 const USED_DB: &str = r#"
-Polestar.QuestDB.SetMeta({ schema = 2 })
+Northstar.QuestDB.SetMeta({ schema = 2 })
 AddRecords("quests", {
 	[905] = { "The Angry Scytheclaws", 17, 10, nil, nil, 2, 3338, 3338, nil, 881, nil, { 3, 6907, nil, 3, 6908, nil, 3, 6906 }, 1413, nil, nil, nil, nil, 2, 5165 },
 	[882] = { "Ishamuhale", 19, 10, nil, nil, 2, 3387, 3387, nil, nil, nil, { 2, 5101 }, 1413, nil, nil, nil, nil, 2, 10338 },
@@ -1978,7 +2030,7 @@ fn an_objective_goal_keeps_its_compiled_position_when_no_line_names_its_target()
 fn a_hearth_step_whose_hearthstone_is_bound_at_another_inn_says_so_and_walks_the_arrow_to_its_inn_bound_there_it_is_as_before_667() {
 	let out = run1(Run {
 		guides: r#"
-			Polestar.RegisterGuide({ id = "test/hearth-bound", pack = "test", title = "Hearth", minLevel = 1, maxLevel = 10, steps = {
+			Northstar.RegisterGuide({ id = "test/hearth-bound", pack = "test", title = "Hearth", minLevel = 1, maxLevel = 10, steps = {
 				{ goals = { { t = "hearth", location = "Goldshire" }, { t = "note", text = "The inn by the road." } } },
 				{ goals = { { t = "hearth", location = "Nowhere Inn" }, { t = "note", text = "Somewhere." } } },
 				{ goals = { { t = "level", level = 99 } } },
@@ -1992,14 +2044,14 @@ fn a_hearth_step_whose_hearthstone_is_bound_at_another_inn_says_so_and_walks_the
 			local goldshire = { map = 1429, x = 43.8, y = 65.8, f = "e", npc = 295 }
 			local kharanos = { map = 1426, x = 47.4, y = 52.4, f = "w", npc = 1247 }
 			local bound = kharanos
-			Polestar.QoL = Polestar.QoL or {}
-			Polestar.QoL.GetHearth = function() return hs end
-			Polestar.Nav = Polestar.Nav or {}
-			Polestar.Nav.FindInn = function(npc, name)
+			Northstar.QoL = Northstar.QoL or {}
+			Northstar.QoL.GetHearth = function() return hs end
+			Northstar.Nav = Northstar.Nav or {}
+			Northstar.Nav.FindInn = function(npc, name)
 				if name == "Goldshire" then return goldshire end
 			end
-			Polestar.Nav.BoundInn = function() return bound end
-			local function changed() Polestar.Fire("QOL_HEARTH_CHANGED"); flush() end
+			Northstar.Nav.BoundInn = function() return bound end
+			local function changed() Northstar.Fire("QOL_HEARTH_CHANGED"); flush() end
 			local function state()
 				local g, wp = E.GetStepView(E.GetStepIndex()).goals[1], E.GetWaypoint()
 				return { line = g.hearthText or false, arrow = wp and { wp.map, wp.x, wp.y, wp.label } or false }

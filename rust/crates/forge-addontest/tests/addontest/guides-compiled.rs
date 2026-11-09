@@ -1,4 +1,4 @@
-//! The committed addon/Polestar_Guides/Guides.lua and its faction parts (Polestar_Guides_Alliance, _Horde),
+//! The committed addon/Northstar_Guides/Guides.lua and its faction parts (Northstar_Guides_Alliance, _Horde),
 //! loaded the way the game loads them, hold what `compile` writes from the .guide sources: every goal inside
 //! its step's `goals`, every goal a kind the engine knows, and per guide the source's steps with their goal
 //! kinds and quests in order. A hunk of Guides.lua spliced by hand can break that and still be valid Lua: a
@@ -20,7 +20,7 @@ use std::sync::OnceLock;
 const HINT: &str = "Guides.lua comes from `forge guide compile`, never a hand edit (CONTRIBUTING.md, \"Fixing a guide\")";
 
 fn pack_dir() -> PathBuf {
-	addons_dir().join("Polestar_Guides")
+	addons_dir().join("Northstar_Guides")
 }
 
 fn official_dir() -> PathBuf {
@@ -90,7 +90,7 @@ fn lua_str(s: &str) -> String {
 }
 
 const LOAD_SCRIPT: &str = r#"
-local G = Polestar.Guides
+local G = Northstar.Guides
 local r = G.Pack("guides")
 local problems = {}
 for _, p in ipairs(r and r.problems or {}) do problems[#problems + 1] = p.message end
@@ -100,10 +100,10 @@ local GOAL_KEYS = { @GOAL_KEYS@ }
 -- Format 8 writes a goal's spots as one string.
 GOAL_KEYS.spotsPacked = true
 local raw = {}
-local register = Polestar.RegisterGuide
-Polestar.RegisterGuide = function(def) raw[#raw + 1] = def end
+local register = Northstar.RegisterGuide
+Northstar.RegisterGuide = function(def) raw[#raw + 1] = def end
 for _, f in ipairs({ @GUIDES_LUA@ }) do dofile(f) end
-Polestar.RegisterGuide = register
+Northstar.RegisterGuide = register
 
 local function isIndex(k, n) return type(k) == "number" and k >= 1 and k <= n and k % 1 == 0 end
 local function goalShaped(v)
@@ -171,11 +171,11 @@ fn str_of(v: &Value) -> String {
 	v.as_str().map(String::from).unwrap_or_else(|| v.to_string())
 }
 
-// The pack in `dir` and its faction parts beside it (Polestar_Guides_Alliance, _Horde), as (addon, folder).
+// The pack in `dir` and its faction parts beside it (Northstar_Guides_Alliance, _Horde), as (addon, folder).
 fn pack_parts(dir: &Path) -> Vec<(String, PathBuf)> {
-	let mut out = vec![("Polestar_Guides".to_string(), dir.to_path_buf())];
+	let mut out = vec![("Northstar_Guides".to_string(), dir.to_path_buf())];
 	for f in forge_guide::project::FACTION_PARTS {
-		let name = forge_guide::project::part_addon("Polestar_Guides", f);
+		let name = forge_guide::project::part_addon("Northstar_Guides", f);
 		let part = dir.parent().unwrap().join(&name);
 		if part.exists() {
 			out.push((name, part));
@@ -184,14 +184,14 @@ fn pack_parts(dir: &Path) -> Vec<(String, PathBuf)> {
 	out
 }
 
-// Loads Polestar's core, the pack in `dir` and its faction parts through the real registry, then runs their
+// Loads Northstar's core, the pack in `dir` and its faction parts through the real registry, then runs their
 // Guides.lua again with RegisterGuide capturing each table as written, and walks those.
 fn load(dir: &Path) -> Loaded {
 	let goal_keys = GOAL_KEYS.iter().map(|k| format!("[{}] = true", lua_str(k))).collect::<Vec<_>>().join(", ");
 	let parts = pack_parts(dir);
 	let files = parts.iter().map(|(_, d)| lua_str(&d.join("Guides.lua").to_string_lossy())).collect::<Vec<_>>().join(", ");
 	let script = LOAD_SCRIPT.replace("@GOAL_KEYS@", &goal_keys).replace("@GUIDES_LUA@", &files);
-	let mut addons = vec![Addon::files("Polestar", &["Core/Core.xml"])];
+	let mut addons = vec![Addon::files("Northstar", &["Core/Core.xml"])];
 	addons.extend(parts.iter().map(|(n, d)| Addon::dir(n, d.clone())));
 	let out = emitted(&RunAddon { addons, script, ..Default::default() });
 	let (registry, guides) = out.split_first().expect("the registry's line");
@@ -301,7 +301,7 @@ fn broken_copy(edit: impl FnOnce(&mut Vec<String>) -> String) -> (TempDir, PathB
 	for (name, from) in pack_parts(&pack_dir()) {
 		copy_dir(&from, &tmp.path().join(name));
 	}
-	let dir = tmp.path().join("Polestar_Guides");
+	let dir = tmp.path().join("Northstar_Guides");
 	let file = dir.join("Guides.lua");
 	let mut lines: Vec<String> = std::fs::read_to_string(&file).unwrap().split('\n').map(String::from).collect();
 	let id = edit(&mut lines);
@@ -327,7 +327,7 @@ fn guide_id_before(lines: &[String], i: usize) -> String {
 
 #[test]
 fn a_goal_spliced_in_before_goals_fails_the_checks() {
-	let (sources, committed) = setup();
+	let (_, committed) = setup();
 	let (_tmp, dir, id) = broken_copy(|lines| {
 		let i = (0..lines.len()).position(|j| lines[j] == GOALS_OPEN && is_goal(lines.get(j + 1)) && is_goal(lines.get(j + 2))).unwrap();
 		let id = guide_id_before(lines, i);
@@ -338,7 +338,11 @@ fn a_goal_spliced_in_before_goals_fails_the_checks() {
 	let broken = load(&dir);
 	assert_eq!(broken.problems, committed.problems, "the registry takes it without a word");
 	assert!(is_match(&broken.shape.join("\n"), &format!(r"(?m)^{id}: step \d+ \(.+\): entry \[1\] outside goals$")));
-	assert!(is_match(&diff(&broken.steps, sources).join("\n"), &format!(r"(?m)^{id} step \d+ ")));
+	// Registered steps are fewer than the source where a step is not for this
+	// character, so the splice is measured against the unedited register.
+	let prev = get(&committed.steps, &id).unwrap_or_else(|| panic!("missing {id}"));
+	let now = get(&broken.steps, &id).unwrap_or_else(|| panic!("spliced {id} did not register"));
+	assert_ne!(prev, now, "a goal spliced out of its list changes what the guide registers");
 }
 
 #[test]

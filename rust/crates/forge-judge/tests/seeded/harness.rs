@@ -3,7 +3,7 @@
 //! Every check is run in memory on the compiled sources: honest (default: R1-R10, deduplicated), honest
 //! legacy (R1-R5 as the JS), the judge walk's passed-by and avoidable returns, the guide-text metrics, the
 //! engine replay (stuck and missing-location events) and the compiler's own diagnostics (lint). Levels for
-//! the walk and the guide-text replay come from the JS dumps in $POLESTAR_JSREF, aligned to the goal list by
+//! the walk and the guide-text replay come from the JS dumps in $NORTHSTAR_JSREF, aligned to the goal list by
 //! goal key (see [`Aligned`]).
 
 use forge_core::{Faction, Projector};
@@ -27,13 +27,13 @@ use std::time::Instant;
 fn env_dir(var: &str) -> PathBuf {
 	std::env::var_os(var).map(PathBuf::from).unwrap_or_default()
 }
-/// A full Polestar checkout with built data/forever and data/sim/export ($POLESTAR_CHECKOUT).
+/// A full Northstar checkout with built data/forever and data/sim/export ($NORTHSTAR_CHECKOUT).
 pub fn main_dir() -> PathBuf {
-	env_dir("POLESTAR_CHECKOUT")
+	env_dir("NORTHSTAR_CHECKOUT")
 }
-/// The JS dumps: walk levels, gt/ guide-text replays, repaired/ v2 slice ($POLESTAR_JSREF).
+/// The JS dumps: walk levels, gt/ guide-text replays, repaired/ v2 slice ($NORTHSTAR_JSREF).
 pub fn rsj() -> PathBuf {
-	env_dir("POLESTAR_JSREF")
+	env_dir("NORTHSTAR_JSREF")
 }
 pub fn v2_dir() -> PathBuf {
 	rsj().join("repaired")

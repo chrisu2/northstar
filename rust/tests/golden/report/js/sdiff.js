@@ -1,6 +1,6 @@
 // node sdiff.js <Faction> <Race> <stream.json> <written-guides>: JS-model hours of the order's goal stream vs the
 // written guides' walk, and where the written quest-event order departs from the order's.
-process.env.POLESTAR_CAS='off';process.env.POLESTAR_CAS_SKIP='walks';
+process.env.NORTHSTAR_CAS='off';process.env.NORTHSTAR_CAS_SKIP='walks';
 const path=require('path');const JR=process.env.JUDGE_ROOT;const SIM=process.env.SIM;
 const [faction,race,sf,gd]=process.argv.slice(2);const S=path.resolve(sf),G=path.resolve(gd);process.chdir(JR);
 (async()=>{

@@ -5,9 +5,9 @@
 // `nav path` routes between two map points on it (tools/lib/nav/path.js);
 // `nav aids` generates the arrow's crossings, open borders and approach
 // chains from it and measures them (tools/lib/nav/aids.js, arrow.js).
-// Polestar's walking maps (addon/Polestar_Nav), their check and the ground
+// Northstar's walking maps (addon/Northstar_Nav), their check and the ground
 // layers are Forge's: forge nav pack, forge nav check, forge nav layers
-// (docs/forge/nav.md); the walking router (Routing/) is Polestar's, started
+// (docs/forge/nav.md); the walking router (Routing/) is Northstar's, started
 // from Shortest Path Forever's.
 // `nav eval` runs that router standalone on a folder's
 // maps over a route corpus and a per-zone goal sweep, and judges two folders
@@ -19,12 +19,13 @@ const { parseArgs } = require('../lib/cli');
 const { ROOT, DATA, SOURCES } = require('../lib/paths');
 
 const DEFAULT_DIR = path.join(ROOT, 'data', 'local', 'nav');
-const NAV_ADDON = path.join(ROOT, 'addon', 'Polestar_Nav');
+const NAV_ADDON = path.join(ROOT, 'addon', 'Northstar_Nav');
 
 const usage = `usage: node tools/polestar.js nav build [--continents 0,1] [--force] [--offline] [--workers N] [--out <dir>] [--product <p>]
        node tools/polestar.js nav path <map> <x>,<y> <map> <x>,<y> [--class C] [--level N] [--frame era|forever] [--json] [--dir <dir>]
        node tools/polestar.js nav aids [--out <file>] [--lua <file>] [--report] [--continents 0,1] [--workers N] [--reference <file>] [--dir <dir>]
-       node tools/polestar.js nav eval [--nav <Polestar_Nav dir>] [--baseline <dir or eval .json>] [--routes <file>] [--sweep] [--style fastest|balanced|roads] [--out <file.json>]
+       node tools/polestar.js nav eval [--nav <Northstar_Nav dir>] [--baseline <dir or eval .json>] [--routes <file>] [--sweep] [--style fastest|balanced|roads] [--out <file.json>]
+       node tools/polestar.js nav welcome [--nav <Northstar_Nav dir>] [--out <file>]
        node tools/polestar.js nav prepare [--dir <grid dir>] [--continents 0,1,2991] [--workers N]
 
 build   the navigation grid of every continent map-frames.json names (or
@@ -43,7 +44,7 @@ aids    the arrow's aids from the grid (--dir, default data/local/nav;
         chains in the crossings schema, validated, written to aids.json in
         the grid's folder (--out: another file). --lua writes
         them as a Crossings.lua for a local test (never into
-        addon/Polestar_Travel); to build a test copy of the data addon:
+        addon/Northstar_Travel); to build a test copy of the data addon:
         node tools/polestar.js travel build --offline --crossings data/local/nav/aids.json --travel-addon <test folder> --json <test folder>/travel.json --lua <test folder>/TravelData.lua
         Pockets are tested in --workers threads (default: up to 6).
         --report also plans every consecutive pair of located goals in our
@@ -53,7 +54,7 @@ aids    the arrow's aids from the grid (--dir, default data/local/nav;
         data/local/crossings.json; read only).
 eval    the walking router run standalone (LuaJIT, else Lua 5.1; a folder
         without its own Routing takes the repository's) on a folder's maps
-        (--nav, default addon/Polestar_Nav): the route corpus (--routes,
+        (--nav, default addon/Northstar_Nav): the route corpus (--routes,
         default tools/lib/nav/eval/routes.json) with each route's metrics
         (yards, seconds, the share of the drawn line our grid at
         data/local/nav3 cannot walk, off-road share, yards in hostile hubs,
@@ -73,11 +74,15 @@ eval    the walking router run standalone (LuaJIT, else Lua 5.1; a folder
         route style (fastest, balanced or roads; default balanced), the
         baseline's too. --out writes the whole report.
 prepare what the node router (tools/lib/nav/router.js) routes on beside a grid
-        (--dir, default data/local/nav4 or $POLESTAR_GRID): per continent the
+        (--dir, default data/local/nav4 or $NORTHSTAR_GRID): per continent the
         road mask and, for the cost model (edgecost.js), one walk graph per
         faction and the zone mix, into <dir>/walk/; what is there is kept.
         The sim's walks are routed by \`forge walks walks\` once this is done.
         A heavy job (~28 min and 3.7 GB with --workers 6).
+welcome the welcome's Route style map: per start zone, the walking router's
+        (--nav, default addon/Northstar_Nav) walk in each route style between
+        two places of its first guide, into addon/Northstar/UI/
+        WelcomeRoutes.lua (--out another file). Needs data/forever.
 
 Retired for Forge (docs/forge/nav.md): pack (forge nav pack), check (forge
 nav check), layers (forge nav layers roads|hubs).`;
@@ -175,7 +180,7 @@ async function route(argv) {
 	return 0;
 }
 
-// The aids as a Crossings.lua (Polestar_Travel's format) for a local test.
+// The aids as a Crossings.lua (Northstar_Travel's format) for a local test.
 function aidsLua(set, frames, build) {
 	const { crossingsLua } = require('../lib/travel/crossings');
 	const { header } = require('../lib/generated');
@@ -183,7 +188,7 @@ function aidsLua(set, frames, build) {
 		header('lua', 'nav aids --lua <file>', `the navigation grid (data/local/nav, client build ${build})`),
 		`-- ${set.crossings.length} crossing(s), ${set.open.length} open-ground pair(s), ${set.chains.length} approach chain(s). Local test only: never committed or packaged.`,
 		'',
-		'local N = Polestar and Polestar.Nav',
+		'local N = Northstar and Northstar.Nav',
 		'if not (N and N.RegisterCrossings) then return end',
 		'',
 		...crossingsLua(set, frames, { complete: true }),
@@ -340,7 +345,7 @@ async function evalCmd(argv) {
 	const taxi = o.sweep ? readJson(path.join(DATA, 'travel.json')).taxi.nodes : null;
 	// Our guides and their faction parts (format 8), read as one text.
 	const guides = o.sweep
-		? ['Polestar_Guides', 'Polestar_Guides_Alliance', 'Polestar_Guides_Horde'].map((n) => path.join(ROOT, 'addon', n, 'Guides.lua')).filter((f) => fs.existsSync(f)).map((f) => fs.readFileSync(f, 'utf8')).join('\n')
+		? ['Northstar_Guides', 'Northstar_Guides_Alliance', 'Northstar_Guides_Horde'].map((n) => path.join(ROOT, 'addon', n, 'Guides.lua')).filter((f) => fs.existsSync(f)).map((f) => fs.readFileSync(f, 'utf8')).join('\n')
 		: null;
 	// Routes with a level are priced with zone danger from each zone's lowest level (the addon's ZoneLevels.lua source).
 	const zoneLevels = corpus.routes.some((r) => r.level !== undefined && r.level !== null) ? require('../lib/maps/zonelevels').buildZoneLevels().levels : null;
@@ -391,7 +396,109 @@ async function prepareCmd(argv) {
 	return 0;
 }
 
-const SUBCOMMANDS = { build, path: route, aids, eval: evalCmd, prepare: prepareCmd };
+// The welcome's Route style map (addon/Northstar/UI/Welcome.lua): per start zone, two places of its first guide
+// between which Fastest, Balanced and Roads walk visibly apart (found with the walking router over the guide's
+// located goals; the guide's own first walk is too short for the styles to part in most zones). `to` is a
+// named place (its AreaTable id, which the client names in its language; `place` the English kept for none);
+// both ends in the zone map's percent, the live frame. default: the zone shown when the suggested guide's has none.
+const WELCOME_WALKS = {
+	default: 1426,
+	zones: [
+		{ map: 1426, zone: 'Dun Morogh', profile: 'Alliance', from: [76.91, 59.95], to: [42.57, 54.68], area: 136, place: 'Grizzled Den' },
+		{ map: 1429, zone: 'Elwynn Forest', profile: 'Alliance', from: [69.66, 79.25], to: [39.5, 82.4], area: 57, place: 'Fargodeep Mine' },
+		{ map: 1438, zone: 'Teldrassil', profile: 'Alliance', from: [68.27, 52.18], to: [54.59, 52.12], area: 258, place: 'Fel Rock' },
+		{ map: 1411, zone: 'Durotar', profile: 'Horde', from: [57.79, 53.79], to: [42.4, 68.6], area: 364, place: 'The Den' },
+		{ map: 1412, zone: 'Mulgore', profile: 'Horde', from: [33.5, 46.82], to: [61.19, 49.31], area: 360, place: 'The Venture Co. Mine' },
+		{ map: 1420, zone: 'Tirisfal Glades', profile: 'Horde', from: [45.79, 29.39], to: [60.6, 52], area: 159, place: 'Brill' },
+	],
+};
+const WELCOME_STYLES = ['fastest', 'balanced', 'roads'];
+const WELCOME_OUT = path.join(ROOT, 'addon', 'Polestar', 'UI', 'WelcomeRoutes.lua');
+
+// A walk thinned to the points that turn it (Douglas-Peucker, `tol` map percent).
+function thin(pts, tol) {
+	if (pts.length < 3) return pts;
+	const keep = new Array(pts.length).fill(false);
+	keep[0] = keep[pts.length - 1] = true;
+	const stack = [[0, pts.length - 1]];
+	while (stack.length) {
+		const [i, j] = stack.pop();
+		const [ax, ay] = pts[i];
+		const [bx, by] = pts[j];
+		const dx = bx - ax;
+		const dy = by - ay;
+		const len = Math.hypot(dx, dy) || 1;
+		let far = -1;
+		let at = -1;
+		for (let k = i + 1; k < j; k++) {
+			const d = Math.abs((pts[k][0] - ax) * dy - (pts[k][1] - ay) * dx) / len;
+			if (d > far) [far, at] = [d, k];
+		}
+		if (far > tol) {
+			keep[at] = true;
+			stack.push([i, at], [at, j]);
+		}
+	}
+	return pts.filter((_, k) => keep[k]);
+}
+
+// The walks routed by the addon's walking router (addon/Northstar_Nav, run standalone as `nav eval` runs it), each
+// style priced as the arrow prices it (Routing/Costs.lua), into UI/WelcomeRoutes.lua.
+async function welcomeCmd(argv) {
+	const { opts: o, positional, error } = parseArgs(argv, { options: ['--nav', '--out'] });
+	if (error || positional.length) throw usageError(error || `unexpected argument "${positional[0]}"`);
+	const navDir = o.nav ? path.resolve(o.nav) : NAV_ADDON;
+	const out = o.out ? path.resolve(o.out) : WELCOME_OUT;
+	const { runRoutes, resolveRoutes } = require('../lib/nav/eval/run');
+	const { Geo } = require('../lib/planner/geo');
+	const { header } = require('../lib/generated');
+	const geo = new Geo(readJson(path.join(DATA, 'map-frames.json')), readJson(path.join(DATA, 'zones.json')));
+	const ends = WELCOME_WALKS.zones.map((w) => ({ id: String(w.map), profile: w.profile, from: { uiMap: w.map, x: w.from[0], y: w.from[1] }, to: { uiMap: w.map, x: w.to[0], y: w.to[1] } }));
+	const routes = resolveRoutes(ends, geo);
+	const walks = {};
+	for (const style of WELCOME_STYLES) {
+		runRoutes({ navDir, routes, style }).forEach((r, i) => {
+			const w = WELCOME_WALKS.zones[i];
+			if (!r.ok) throw Object.assign(new Error(`${w.zone}: no ${style} walk (${r.reason})`), { exit: 1 });
+			const pts = r.pts.map(([x, y]) => {
+				const m = geo.toMap(w.map, routes[i].map, x, y, 'l');
+				return [m.x, m.y];
+			});
+			// The walk starts and ends on the places themselves, as the map's marks do.
+			pts[0] = w.from;
+			pts[pts.length - 1] = w.to;
+			(walks[w.map] ??= {})[style] = { yards: Math.round(r.yards), pts: thin(pts, 0.15) };
+		});
+	}
+	const num = (v) => String(+v.toFixed(2));
+	const lines = [
+		header('lua', 'nav welcome', 'the walking router (addon/Northstar_Nav) and data/forever/map-frames.json'),
+		"-- The welcome's Route style map (UI/Welcome.lua): per start zone, the walk each route style takes between two",
+		'-- places of its first guide, as the arrow routes it: [uiMapID] = { zone, place, area, <style> = { yards = n,',
+		'-- x1, y1, x2, y2, ... } } (zone map percent; area: the place\'s AreaTable id). default: the zone shown',
+		"-- when the suggested guide's zone has none.",
+		'',
+		'local _, ns = ...',
+		'',
+		'ns.WelcomeRoutes = {',
+		`\tdefault = ${WELCOME_WALKS.default},`,
+	];
+	for (const w of WELCOME_WALKS.zones) {
+		lines.push(`\t[${w.map}] = { zone = ${JSON.stringify(w.zone)}, place = ${JSON.stringify(w.place)}, area = ${w.area},`);
+		for (const style of WELCOME_STYLES) {
+			const s = walks[w.map][style];
+			lines.push(`\t\t${style} = { yards = ${s.yards}, ${s.pts.map(([x, y]) => `${num(x)}, ${num(y)}`).join(', ')} },`);
+		}
+		lines.push('\t},');
+	}
+	lines.push('}', '');
+	fs.writeFileSync(out, lines.join('\n'));
+	for (const w of WELCOME_WALKS.zones) console.log(`${w.zone}: ${WELCOME_STYLES.map((s) => `${s} ${walks[w.map][s].yards} yd (${walks[w.map][s].pts.length} points)`).join(', ')}`);
+	console.log(`wrote ${path.relative(process.cwd(), out)}`);
+	return 0;
+}
+
+const SUBCOMMANDS = { build, path: route, aids, eval: evalCmd, prepare: prepareCmd, welcome: welcomeCmd };
 
 // Subcommands retired for Forge (docs/forge/nav.md); each prints its replacement.
 const RETIRED = {
@@ -427,4 +534,4 @@ async function run(argv) {
 	}
 }
 
-module.exports = { name: 'nav', summary: "Terrain navigation from the client geometry (build the grid, route between map points) and Polestar's walking router with its maps (Polestar_Nav)", usage, run, aidsOut };
+module.exports = { name: 'nav', summary: "Terrain navigation from the client geometry (build the grid, route between map points) and Northstar's walking router with its maps (Northstar_Nav)", usage, run, aidsOut };

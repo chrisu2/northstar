@@ -1,16 +1,16 @@
 'use strict';
 // The baked legs' memory budget (data/local/research/NavArchitecture.md §4.1:
 // layer L1, "≤ 1 MB per race part"): what a race part's Legs.lua (pack format
-// 7, forge build's legs stage) keeps resident once Polestar.RegisterLegs has
+// 7, forge build's legs stage) keeps resident once Northstar.RegisterLegs has
 // taken it, and the heap it grows while loading, under Lua 5.1 as the client
-// counts it (collectgarbage("count")), with Polestar and its guides loaded as
+// counts it (collectgarbage("count")), with Northstar and its guides loaded as
 // in game. A figure past its budget fails the test: lower a budget when the
 // legs shrink, never raise one to let a change pass; a bake that outgrows it
 // needs a leaner leg (forge-nav bake.rs), not a larger budget.
 //
 // Every race part of our pack that has a Legs.lua is measured (none until the
 // maintainer compiles guides with their legs.json: the test then says so and
-// passes). POLESTAR_ADDON_DIR measures another build's addons
+// passes). NORTHSTAR_ADDON_DIR measures another build's addons
 // (tests/helpers/lua.js).
 
 const { test } = require('node:test');
@@ -24,7 +24,7 @@ const { RACE_FILES, RACE_BY_FILE } = require('../tools/lib/game/races');
 // routes now ship 1-60 for all ten starts, and Skyborne's part holds the legs of both factions.
 const BUDGET = { resident: 1024, peak: 1670 };
 
-const parts = RACE_FILES.map((race) => ({ race, file: path.join(ADDONS, `Polestar_Guides_${race}`, 'Legs.lua') })).filter((p) => fs.existsSync(p.file));
+const parts = RACE_FILES.map((race) => ({ race, file: path.join(ADDONS, `Northstar_Guides_${race}`, 'Legs.lua') })).filter((p) => fs.existsSync(p.file));
 
 test('baked legs stay within their budget: each race part\'s Legs.lua, resident and while loading', (t) => {
 	if (!parts.length) {
@@ -37,14 +37,14 @@ test('baked legs stay within their budget: each race part\'s Legs.lua, resident 
 			const [got] = runAddon({
 				stubs: ['stub_world.lua'],
 				before: `stub.world.faction = ${JSON.stringify(side)}`,
-				addons: ['Polestar', 'Polestar_Guides'],
+				addons: ['Northstar', 'Northstar_Guides'],
 				login: true,
 				script: `
 local function full() collectgarbage("collect") collectgarbage("collect") return collectgarbage("count") end
 local base = full()
 collectgarbage("stop")
 local chunk = assert(loadfile(${JSON.stringify(file)}))
-chunk("Polestar_Guides_${race}", {})
+chunk("Northstar_Guides_${race}", {})
 chunk = nil
 local peak = collectgarbage("count") - base
 collectgarbage("restart")

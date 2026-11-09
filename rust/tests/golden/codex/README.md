@@ -21,9 +21,9 @@ Inputs:
 - `root/data/codex/*.json`: copies of this checkout's curated tables (attunements, entrances, journal quests, rep gates). The Rust build reads them from its root; regen.js checks that they match the JS tree's.
 - There is no web quest database cache (`sources/web`).
 
-expected/: `codex/*.json`, `Polestar_Codex/*` and `warnings.txt`. Files over 64 KiB are gzipped (`<name>.gz`).
+expected/: `codex/*.json`, `Northstar_Codex/*` and `warnings.txt`. Files over 64 KiB are gzipped (`<name>.gz`).
 
-When the curated tables moved out of tools/ to data/codex/, the source names in `codex/meta.json`, `Polestar_Codex/Meta.lua` and `Polestar_Codex/LICENSE-DATA.txt` (which name each table's path) were updated by hand to the new paths, in the Rust and the JS builders alike; nothing else changed. A regen needs a JS tree with that move (its tables in `data/codex/`).
+When the curated tables moved out of tools/ to data/codex/, the source names in `codex/meta.json`, `Northstar_Codex/Meta.lua` and `Northstar_Codex/LICENSE-DATA.txt` (which name each table's path) were updated by hand to the new paths, in the Rust and the JS builders alike; nothing else changed. A regen needs a JS tree with that move (its tables in `data/codex/`).
 
 Test: rust/crates/forge-data/tests/data/codex.rs. It byte-compares every file.
 

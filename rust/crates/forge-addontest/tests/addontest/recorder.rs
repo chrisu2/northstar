@@ -1,22 +1,22 @@
-//! The in-game recorder (addon/Polestar_Recorder) against the quest/map/unit world of
+//! The in-game recorder (addon/Northstar_Recorder) against the quest/map/unit world of
 //! tests/lua/stub_recorder.lua: schema 2 of docs/RECORDING.md, its chunks, the ack file, the caps, the
 //! commands, and the quest records.
 
 use forge_addontest::{emitted, text, truthy, RunAddon};
 use serde_json::{json, Value};
 
-const REC: &str = "Polestar_Recorder";
+const REC: &str = "Northstar_Recorder";
 
 /// Lua helpers every Recorder test script starts with (also used by the other recorder*.rs files).
 pub const PRELUDE: &str = r#"
 -- Every record of every stored chunk, in seq order: { kind, dt, fields... }.
 local function all()
 	local seqs = {}
-	for seq in pairs(PolestarRecorderDB.chunks) do seqs[#seqs + 1] = seq end
+	for seq in pairs(NorthstarRecorderDB.chunks) do seqs[#seqs + 1] = seq end
 	table.sort(seqs)
 	local out = {}
 	for _, s in ipairs(seqs) do
-		for _, r in ipairs(stub.records(PolestarRecorderDB.chunks[s])) do out[#out + 1] = r end
+		for _, r in ipairs(stub.records(NorthstarRecorderDB.chunks[s])) do out[#out + 1] = r end
 	end
 	return out
 end
@@ -39,7 +39,7 @@ local function recs(kinds)
 end
 -- Ends the session: the open chunk is written into chunks[seq].
 local function logout() stub.fire("PLAYER_LOGOUT") end
-local cmd = SlashCmdList.POLESTARREC
+local cmd = SlashCmdList.NORTHSTARREC
 -- docs/RECORDING.md: fields after dt per kind (a position is three).
 local WIDTH = {
 	chunk = 3, session = 14, map = 8, level = 5, xp = 3, dropped = 1, mark = 4, pos = 5, zone = 5, ride = 4, taxi = 2,
@@ -83,8 +83,8 @@ pub fn strings(v: &Value) -> Vec<String> {
 }
 
 const FIXED_IDS: &str = r#"
-PolestarRecorderDB = { schema = 2, enabled = true, install = "k3j9x0q2m7ab", seq = 4, acked = 4, chunks = {}, maps = {} }
-PolestarRecorderCharDB = { id = "k3j9x0q2m7" }"#;
+NorthstarRecorderDB = { schema = 2, enabled = true, install = "k3j9x0q2m7ab", seq = 4, acked = 4, chunks = {}, maps = {} }
+NorthstarRecorderCharDB = { id = "k3j9x0q2m7" }"#;
 
 #[test]
 fn a_quest_with_kills_xp_loot_and_a_turn_in_is_exactly_this_chunk_text() {
@@ -123,7 +123,7 @@ fn a_quest_with_kills_xp_loot_and_a_turn_in_is_exactly_this_chunk_text() {
 		stub.moveTo(48.2, 41.9)
 		stub.turnIn(7, willem, "Deputy Willem", 170, 35, 2)
 		logout()
-		emit({ text = PolestarRecorderDB.chunks[5], seq = PolestarRecorderDB.seq, bad = malformed() })"#,
+		emit({ text = NorthstarRecorderDB.chunks[5], seq = NorthstarRecorderDB.seq, bad = malformed() })"#,
 		"",
 		true,
 		Some(FIXED_IDS),
@@ -165,17 +165,35 @@ fn a_quest_with_kills_xp_loot_and_a_turn_in_is_exactly_this_chunk_text() {
 }
 
 #[test]
+fn a_frfr_kill_objective_loses_its_grammar_escape_and_a_paid_turn_in_keeps_its_negative_money() {
+	// Forever's frFR client writes kill objectives as "%1$s : %2$d/%3$d |4personnage tué:personnages
+	// tués;" (a no-break space before the colon). Recorder 0.3.5 put the escape into the name, and the
+	// server turned away every chunk holding one. Grime-Encrusted Ring costs 3 silver to hand in.
+	let out = run(r#"
+		stub.acceptQuest(52, { title = "Protéger la frontière", objectives = {
+			{ text = "Rôdeur\194\160: %d/%d |4personnage tué:personnages tués;", type = "monster", numRequired = 8 },
+			{ text = "Patte de rôdeur\194\160: %d/%d", type = "item", numRequired = 1 },
+		} })
+		stub.acceptQuest(2945, { title = "Grime-Encrusted Ring", objectives = {} })
+		stub.turnIn(2945, nil, nil, 2700, -300)
+		logout()
+		emit({ recs = recs("objectives turnin"), bad = malformed() })"#);
+	assert_eq!(out["recs"], json!(["objectives|52|monster:8:Rôdeur;item:1:Patte de rôdeur", "turnin|2945|||1429|5000|5000|1|2700|-300|"]));
+	assert_eq!(out["bad"], json!({}));
+}
+
+#[test]
 fn at_login_the_chunks_the_uploader_acknowledged_for_this_install_are_deleted() {
 	const SAVED: &str = r#"
 local function c(seq) return ("chunk\t0\t%d\t1790990000\tk3j9x0q2m7\nmark\t5\t\t\t\tchunk %d"):format(seq, seq) end
-PolestarRecorderDB = { schema = 2, enabled = true, install = "k3j9x0q2m7ab", seq = 4, acked = 1, chunks = { [2] = c(2), [3] = c(3), [4] = c(4) }, maps = {} }
-PolestarRecorderCharDB = { id = "k3j9x0q2m7" }
-PolestarRecorderAck = "#;
+NorthstarRecorderDB = { schema = 2, enabled = true, install = "k3j9x0q2m7ab", seq = 4, acked = 1, chunks = { [2] = c(2), [3] = c(3), [4] = c(4) }, maps = {} }
+NorthstarRecorderCharDB = { id = "k3j9x0q2m7" }
+NorthstarRecorderAck = "#;
 	const SCRIPT: &str = r#"
 		local keys = {}
-		for seq in pairs(PolestarRecorderDB.chunks) do keys[#keys + 1] = seq end
+		for seq in pairs(NorthstarRecorderDB.chunks) do keys[#keys + 1] = seq end
 		table.sort(keys)
-		emit({ chunks = keys, acked = PolestarRecorderDB.acked, seq = PolestarRecorderDB.seq })"#;
+		emit({ chunks = keys, acked = NorthstarRecorderDB.acked, seq = NorthstarRecorderDB.seq })"#;
 	let with = |ack: &str| run_with(SCRIPT, "", true, Some(&format!("{SAVED}{ack}")));
 	// The release's Ack.lua: nothing acknowledged. The new session is chunk 5.
 	assert_eq!(with("nil"), json!({ "chunks": [2, 3, 4, 5], "acked": 1, "seq": 5 }));
@@ -192,7 +210,7 @@ PolestarRecorderAck = "#;
 fn schema_1_recordings_are_removed_at_load_said_once_in_chat_the_opt_in_and_the_window_settings_stay() {
 	let out = run_with(
 		r#"
-		local db = PolestarRecorderDB
+		local db = NorthstarRecorderDB
 		local keys = {}
 		for k in pairs(db) do keys[#keys + 1] = k end
 		table.sort(keys)
@@ -205,7 +223,7 @@ fn schema_1_recordings_are_removed_at_load_said_once_in_chat_the_opt_in_and_the_
 		"",
 		true,
 		Some(
-			r#"PolestarRecorderDB = { schema = 1, enabled = true, current = "1790000000-Testchar",
+			r#"NorthstarRecorderDB = { schema = 1, enabled = true, current = "1790000000-Testchar",
 			sessions = { ["1790000000-Testchar"] = { char = { name = "Testchar", realm = "Test Realm" }, events = { { e = "mark", text = "old" } } } },
 			maps = { [1429] = { name = "Elwynn Forest" } }, fp = {}, panel = { "CENTER", "CENTER", 10, 20 }, spots = { [3] = 1790000000 } }"#,
 		),
@@ -225,19 +243,19 @@ fn a_nil_polestarrecorderdb_cold_start_bug_neither_errors_nor_loses_the_open_chu
 		r#"
 		cmd("on") -- a lost table also lost the opt-in
 		cmd("mark before")
-		local install = PolestarRecorderDB.install
-		PolestarRecorderDB = nil -- the table vanishes under the running session
+		local install = NorthstarRecorderDB.install
+		NorthstarRecorderDB = nil -- the table vanishes under the running session
 		cmd("mark after")
 		logout()
-		emit({ type = type(PolestarRecorderDB), schema = PolestarRecorderDB.schema, marks = recs("mark"), seq = PolestarRecorderDB.seq,
-			sameInstall = PolestarRecorderDB.install == install, installLength = #install, charId = #PolestarRecorderCharDB.id })"#,
+		emit({ type = type(NorthstarRecorderDB), schema = NorthstarRecorderDB.schema, marks = recs("mark"), seq = NorthstarRecorderDB.seq,
+			sameInstall = NorthstarRecorderDB.install == install, installLength = #install, charId = #NorthstarRecorderCharDB.id })"#,
 		"",
 		true,
-		Some("PolestarRecorderDB = nil; PolestarRecorderCharDB = nil"),
+		Some("NorthstarRecorderDB = nil; NorthstarRecorderCharDB = nil"),
 	);
 	assert_eq!(out, json!({ "type": "table", "schema": 2, "marks": ["mark|1429|5000|5000|before", "mark|1429|5000|5000|after"], "seq": 1, "sameInstall": true, "installLength": 12, "charId": 10 }));
 
-	let garbage = run_with(r#"cmd("on"); cmd("mark x"); logout(); emit({ marks = recs("mark"), bad = malformed() })"#, "", true, Some(r#"PolestarRecorderDB = "corrupt"; PolestarRecorderCharDB = 5"#));
+	let garbage = run_with(r#"cmd("on"); cmd("mark x"); logout(); emit({ marks = recs("mark"), bad = malformed() })"#, "", true, Some(r#"NorthstarRecorderDB = "corrupt"; NorthstarRecorderCharDB = 5"#));
 	assert_eq!(garbage, json!({ "marks": ["mark|1429|5000|5000|x"], "bad": {} }));
 }
 
@@ -247,21 +265,21 @@ fn a_nil_polestarrecorderdb_cold_start_bug_neither_errors_nor_loses_the_open_chu
 fn recording_is_off_until_the_player_turns_it_on_no_chunks_on_opens_one_off_closes_it() {
 	let out = run_with(
 		r#"
-		local function n() local c = 0 for _ in pairs(PolestarRecorderDB.chunks) do c = c + 1 end return c end
+		local function n() local c = 0 for _ in pairs(NorthstarRecorderDB.chunks) do c = c + 1 end return c end
 		stub.fire("PLAYER_LEVEL_UP", 2)
 		cmd("mark ignored")
-		local off = { chunks = n(), enabled = PolestarRecorderDB.enabled, seq = PolestarRecorderDB.seq }
+		local off = { chunks = n(), enabled = NorthstarRecorderDB.enabled, seq = NorthstarRecorderDB.seq }
 		cmd("on")
 		cmd("mark kept")
-		local on = { chunks = n(), seq = PolestarRecorderDB.seq }
+		local on = { chunks = n(), seq = NorthstarRecorderDB.seq }
 		cmd("off")
 		cmd("mark dropped")
 		cmd("on")
 		logout()
-		emit({ off = off, on = on, marks = recs("mark"), enabled = PolestarRecorderDB.enabled, seqs = PolestarRecorderDB.seq })"#,
+		emit({ off = off, on = on, marks = recs("mark"), enabled = NorthstarRecorderDB.enabled, seqs = NorthstarRecorderDB.seq })"#,
 		"",
 		true,
-		Some("PolestarRecorderDB = nil"),
+		Some("NorthstarRecorderDB = nil"),
 	);
 	assert_eq!(out["off"], json!({ "chunks": 0, "enabled": false, "seq": 0 }));
 	assert_eq!(out["on"], json!({ "chunks": 1, "seq": 1 }));
@@ -273,7 +291,7 @@ fn recording_is_off_until_the_player_turns_it_on_no_chunks_on_opens_one_off_clos
 #[test]
 fn a_chunk_closes_after_5_minutes_or_16_kib_and_is_refreshed_every_60_s_out_of_combat() {
 	let out = run(r#"
-		local db = PolestarRecorderDB
+		local db = NorthstarRecorderDB
 		local function stored(seq) return db.chunks[seq] and #stub.records(db.chunks[seq]) or 0 end
 		cmd("mark one")
 		local first = db.seq
@@ -317,10 +335,10 @@ fn past_4_mib_the_oldest_chunks_are_dropped_and_a_dropped_record_counts_them() {
 	let out = run_with(
 		r#"
 		local keys = {}
-		for seq in pairs(PolestarRecorderDB.chunks) do keys[#keys + 1] = seq end
+		for seq in pairs(NorthstarRecorderDB.chunks) do keys[#keys + 1] = seq end
 		table.sort(keys)
 		local dropped = {}
-		for _, r in ipairs(stub.records(PolestarRecorderDB.chunks[6])) do if r[1] == "dropped" then dropped[#dropped + 1] = r[3] end end
+		for _, r in ipairs(stub.records(NorthstarRecorderDB.chunks[6])) do if r[1] == "dropped" then dropped[#dropped + 1] = r[3] end end
 		stub.messages = {}
 		cmd("status")
 		emit({ chunks = keys, dropped = dropped, status = stub.messages })"#,
@@ -331,8 +349,8 @@ fn past_4_mib_the_oldest_chunks_are_dropped_and_a_dropped_record_counts_them() {
 local big = ("x"):rep(1024 * 1024 - 40)
 local chunks = {}
 for seq = 1, 5 do chunks[seq] = ("chunk\t0\t%d\t1790990000\tk3j9x0q2m7\nmark\t5\t\t\t\t"):format(seq) .. big end
-PolestarRecorderDB = { schema = 2, enabled = true, install = "k3j9x0q2m7ab", seq = 5, acked = 0, chunks = chunks, maps = {} }
-PolestarRecorderCharDB = { id = "k3j9x0q2m7" }"#,
+NorthstarRecorderDB = { schema = 2, enabled = true, install = "k3j9x0q2m7ab", seq = 5, acked = 0, chunks = chunks, maps = {} }
+NorthstarRecorderCharDB = { id = "k3j9x0q2m7" }"#,
 		),
 	);
 	assert_eq!(out["chunks"], json!([3, 4, 5, 6]));
@@ -341,24 +359,26 @@ PolestarRecorderCharDB = { id = "k3j9x0q2m7" }"#,
 	assert!(status[1].ends_with("4 chunks waiting for the uploader (about 3072 KiB of 4096 KiB)"), "{status:?}");
 	assert!(status[2].ends_with("the uploader has not confirmed a chunk yet (newest: 6)"), "{status:?}");
 	assert!(status[3].ends_with("install id: k3j9x0q2m7ab"), "{status:?}");
+	// Chunks still in memory reach the uploader only once the game writes them (#1453).
+	assert!(status.last().unwrap().ends_with("/reload or log out to send what's recorded"), "{status:?}");
 }
 
 #[test]
 fn psrec_clear_needs_confirmation_deletes_every_chunk_and_map_and_the_seq_keeps_counting() {
 	let out = run(r#"
 		cmd("mark kept")
-		local before = PolestarRecorderDB.seq
+		local before = NorthstarRecorderDB.seq
 		cmd("clear")
-		local armed = PolestarRecorderDB.chunks[before] ~= nil
+		local armed = NorthstarRecorderDB.chunks[before] ~= nil
 		stub.advance(31)
 		cmd("clear confirm") -- too late: re-arms instead
-		local still = PolestarRecorderDB.chunks[before] ~= nil
+		local still = NorthstarRecorderDB.chunks[before] ~= nil
 		cmd("clear confirm")
 		local n = 0
-		for _ in pairs(PolestarRecorderDB.chunks) do n = n + 1 end
+		for _ in pairs(NorthstarRecorderDB.chunks) do n = n + 1 end
 		cmd("mark after")
 		logout()
-		emit({ armed = armed, still = still, after = n, seq = PolestarRecorderDB.seq, marks = recs("mark"), maps = #recs("map") })"#);
+		emit({ armed = armed, still = still, after = n, seq = NorthstarRecorderDB.seq, marks = recs("mark"), maps = #recs("map") })"#);
 	assert_eq!(out, json!({ "armed": true, "still": true, "after": 1, "seq": 2, "marks": ["mark|1429|5000|5000|after"], "maps": 1 }));
 }
 
@@ -368,7 +388,7 @@ fn psrec_speaks_the_client_s_language_through_the_recorder_s_own_locale_file_eng
 do
 	local load = loadfile
 	function loadfile(file)
-		if file:match("Polestar_Recorder[/\\]Locales[/\\]ruRU%.lua$") then
+		if file:match("Northstar_Recorder[/\\]Locales[/\\]ruRU%.lua$") then
 			return function(_, ns) ns.L["recording %s"] = "запись: %s"; ns.L["on"] = "вкл" end
 		end
 		return load(file)
@@ -385,12 +405,14 @@ emit(stub.messages)"#,
 		None,
 	);
 	assert!(truthy(&lines[0]) && text(&lines[0]).contains("запись: |cff4fd18fвкл|r"), "{}", lines[0]);
-	assert!(truthy(&lines[1]) && text(&lines[1]).contains("usage: /psrec mark <text>"), "{}", lines[1]);
+	// /nsrec on says the game shows it to Polestar Client only after a /reload or logout (#1453).
+	assert!(truthy(&lines[1]) && text(&lines[1]).contains("/reload or log out to send what's recorded"), "{}", lines[1]);
+	assert!(truthy(&lines[2]) && text(&lines[2]).contains("usage: /nsrec mark <text>"), "{}", lines[2]);
 }
 
-// Polestar's quest database: NPC 197 starts 18, 33, 54, 60 and 70; object 1593 starts 61.
-const POLESTAR_QUESTDB: &str = r#"
-Polestar = { QuestDB = {
+// Northstar's quest database: NPC 197 starts 18, 33, 54, 60 and 70; object 1593 starts 61.
+const NORTHSTAR_QUESTDB: &str = r#"
+Northstar = { QuestDB = {
 	IsLoaded = function() return true end,
 	QuestIds = function() return { 18, 33, 54, 60, 61, 70 } end,
 	QuestRecord = function(q) return ({ [18] = { [7] = 197 }, [33] = { [7] = { 197, 240 } }, [54] = { [7] = 197 }, [60] = { [7] = 197 }, [61] = { [7] = -1593 }, [70] = { [7] = 197 } })[q] end,
@@ -431,7 +453,7 @@ fn offers_list_what_is_shown_in_the_log_and_among_what_polestar_says_the_npc_sta
 		stub.abandon(60)
 		logout()
 		emit({ recs = recs("offer gossip detail escort abandon"), bad = malformed(), option = stub.world.selectedOption })"#,
-		POLESTAR_QUESTDB,
+		NORTHSTAR_QUESTDB,
 		true,
 		None,
 	);
@@ -461,7 +483,7 @@ fn a_quest_s_text_is_recorded_once_per_character_with_the_player_s_name_race_and
 		stub.fire("QUEST_CLOSED")
 		stub.offerQuest(7, (stub.creature(823, "Deputy Willem")), "Deputy Willem", "Kobold Camp Cleanup")
 		logout()
-		emit({ text = recs("text"), seen = PolestarRecorderCharDB.textSeen[7], char = stub.serialize(PolestarRecorderCharDB) })"#);
+		emit({ text = recs("text"), seen = NorthstarRecorderCharDB.textSeen[7], char = stub.serialize(NorthstarRecorderCharDB) })"#);
 	assert_eq!(first["text"], json!(["text|7|Kobold Camp Cleanup|Slay the beasts, $N.|A $R $c like you, $N, is what we need. $Cs are rare."]));
 	assert_eq!(first["seen"], true);
 	let again = run_with(
@@ -471,7 +493,7 @@ fn a_quest_s_text_is_recorded_once_per_character_with_the_player_s_name_race_and
 		emit(#recs("text"))"#,
 		"",
 		true,
-		Some(&format!("PolestarRecorderDB = {{ enabled = true, install = \"testinstall1\" }}; PolestarRecorderCharDB = {}", first["char"].as_str().unwrap())),
+		Some(&format!("NorthstarRecorderDB = {{ enabled = true, install = \"testinstall1\" }}; NorthstarRecorderCharDB = {}", first["char"].as_str().unwrap())),
 	);
 	assert_eq!(again, 0, "textSeen is per character, across sessions");
 }

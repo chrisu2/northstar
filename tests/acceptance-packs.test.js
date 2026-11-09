@@ -11,7 +11,7 @@
 //                                           addons the CLI would never write: a
 //                                           guide under forever/, and format 2
 //
-// Then the real Polestar (every module), our committed pack and those addons
+// Then the real Northstar (every module), our committed pack and those addons
 // load through their TOCs on the Lua harness, the AddOns list (stub.addons)
 // and TOC fields (stub.addonMeta) as the client reports them. Needs
 // data/forever (the build) and Lua 5.1; skips without them.
@@ -37,10 +37,10 @@ function hasLua() {
 
 const skip = needs('races.json') || (!process.env.LUA && !hasLua() && 'no Lua 5.1');
 
-const GOOD = 'PolestarPack_AcceptanceGood';
-const IMPOSTER = 'PolestarPack_AcceptanceImposter';
-const STRAY = 'PolestarPack_AcceptanceStray';
-const FUTURE = 'PolestarPack_AcceptanceFuture';
+const GOOD = 'NorthstarPack_AcceptanceGood';
+const IMPOSTER = 'NorthstarPack_AcceptanceImposter';
+const STRAY = 'NorthstarPack_AcceptanceStray';
+const FUTURE = 'NorthstarPack_AcceptanceFuture';
 const WESTFALL = 'forever/alliance/02-westfall';
 
 function polestar(args, cwd, env = {}) {
@@ -76,7 +76,7 @@ before(() => {
 	// The pack `new` makes (no origin: no workflow), plus a second guide; it
 	// lints clean, playtests, packs and installs with --dest.
 	goodSrc = path.join(tmp, 'acceptance-good');
-	polestar(['new', goodSrc, '--yes', '--id', 'acceptance-good', '--title', 'Acceptance Good', '--author', 'Ann Example', '--license', 'CC-BY-4.0'], tmp, { POLESTAR_ORIGIN_URL: '' });
+	polestar(['new', goodSrc, '--yes', '--id', 'acceptance-good', '--title', 'Acceptance Good', '--author', 'Ann Example', '--license', 'CC-BY-4.0'], tmp, { NORTHSTAR_ORIGIN_URL: '' });
 	fs.copyFileSync(path.join(FIXTURES, 'acceptance-farms.guide'), path.join(goodSrc, 'guides', 'farms.guide'));
 	// Lint moved to forge: checked when this checkout has a forge build.
 	const lint = cli.forge(['guide', 'lint'], { cwd: goodSrc });
@@ -94,17 +94,17 @@ before(() => {
 	for (const name of [STRAY, FUTURE]) fs.cpSync(path.join(FIXTURES, 'acceptance-bad', name), path.join(dest, name), { recursive: true });
 	good = path.join(dest, GOOD);
 	addons = [
-		{ name: 'Polestar', dir: path.join(ADDONS, 'Polestar') },
-		{ name: 'Polestar_Guides', dir: path.join(ADDONS, 'Polestar_Guides') },
-		// Both faction parts (Polestar loads only the player's in game): Alliance and Horde characters play here.
-		{ name: 'Polestar_Guides_Alliance', dir: path.join(ADDONS, 'Polestar_Guides_Alliance') },
-		{ name: 'Polestar_Guides_Horde', dir: path.join(ADDONS, 'Polestar_Guides_Horde') },
+		{ name: 'Northstar', dir: path.join(ADDONS, 'Northstar') },
+		{ name: 'Northstar_Guides', dir: path.join(ADDONS, 'Northstar_Guides') },
+		// Both faction parts (Northstar loads only the player's in game): Alliance and Horde characters play here.
+		{ name: 'Northstar_Guides_Alliance', dir: path.join(ADDONS, 'Northstar_Guides_Alliance') },
+		{ name: 'Northstar_Guides_Horde', dir: path.join(ADDONS, 'Northstar_Guides_Horde') },
 		...fs.readdirSync(dest).sort().map((name) => ({ name, dir: path.join(dest, name) })),
 	];
 });
 
 // A level-5 Human in Goldshire, every addon loaded (the too-new one too: the
-// client loads it, Polestar refuses it) plus `extra` ([{ name, dir }]), logged in.
+// client loads it, Northstar refuses it) plus `extra` ([{ name, dir }]), logged in.
 function run(script, { saved, world = '', extra = [] } = {}) {
 	const all = [...addons, ...extra];
 	const list = all.map((a) => `{ name = ${luaStr(a.name)}, loaded = true }`).join(', ');
@@ -124,10 +124,10 @@ w.moveTo(1429, 42.9, 65.6)
 w.level = 5
 ${world}`,
 		addons: all.map(({ name, dir }) => ({ name, dir })),
-		saved: saved ? { Polestar: saved } : undefined,
+		saved: saved ? { Northstar: saved } : undefined,
 		login: true,
 		script: `stub.advance(0.5)
-G, E, UI = Polestar.Guides, Polestar.Engine, Polestar.UI
+G, E, UI = Northstar.Guides, Northstar.Engine, Northstar.UI
 function flush() stub.advance(0.25) end
 function rowOf(addon)
 	for _, r in ipairs(UI.Packs.view.rows) do if r:IsShown() and r.psRecord.addon == addon then return r end end
@@ -140,7 +140,7 @@ function titles(entries)
 end
 function nav()
 	local out = {}
-	for _, b in ipairs(PolestarPicker.navButtons) do
+	for _, b in ipairs(NorthstarPicker.navButtons) do
 		if b:IsShown() then out[#out + 1] = (b.psHeading and "# " or "") .. b.Label:GetText() end
 	end
 	return out
@@ -158,7 +158,7 @@ test('the pack made by `new` lints, playtests, packs and installs with --dest', 
 	if (zip) assert.ok(fs.existsSync(zip), zip);
 	assert.deepEqual(fs.readdirSync(good).sort(), ['Guides.lua', 'LICENSE-DATA.txt', 'LICENSE.txt', `${GOOD}.toc`, 'MapFrames.lua', 'Pack.lua'].sort());
 	assert.equal(fs.readFileSync(path.join(good, 'LICENSE.txt'), 'utf8'), fs.readFileSync(path.join(goodSrc, 'LICENSE'), 'utf8'));
-	assert.equal(tocMeta(good)['X-Polestar-Pack'], 'acceptance-good');
+	assert.equal(tocMeta(good)['X-Northstar-Pack'], 'acceptance-good');
 });
 
 test('beside ours: a row with its credits, its own picker entry, credits in the details, and a hand-over to our guide', { skip }, () => {
@@ -170,7 +170,7 @@ test('beside ours: a row with its credits, its own picker entry, credits in the 
 		UI.ShowPicker()
 		local P = UI.Picker
 		P.SetCategory("pack:acceptance-good")
-		local picker = { nav = nav(), title = PolestarPicker.Title:GetText(), entries = titles(P.Entries("All", "", "pack:acceptance-good")),
+		local picker = { nav = nav(), title = NorthstarPicker.Title:GetText(), entries = titles(P.Entries("All", "", "pack:acceptance-good")),
 			leveling = titles(P.Entries("All", "", "Leveling")) }
 		P.Select("acceptance-good/example")
 		local credits = shownText(P.details.Credits)
@@ -186,7 +186,7 @@ test('beside ours: a row with its credits, its own picker entry, credits in the 
 	assert.ok(!out.picker.leveling.some((e) => e.startsWith('acceptance-good/')), 'our categories list only our guides');
 	assert.ok(out.picker.leveling.includes(WESTFALL));
 	assert.equal(out.credits, 'By Ann Example  ·  Acceptance Good 0.1.0  ·  CC-BY-4.0');
-	assert.equal(out.ours, 'By Polestar');
+	assert.equal(out.ours, 'By Northstar');
 	assert.equal(out.next, WESTFALL);
 });
 
@@ -194,7 +194,7 @@ test('beside ours: a row with its credits, its own picker entry, credits in the 
 // the window offers it instead (engine-guide-end.rs).
 test('the example guide played to its end hands over to our Westfall guide', { skip }, () => {
 	const [out] = run(`
-		Polestar.Set("behavior.guideEnd", "continue")
+		Northstar.Set("behavior.guideEnd", "continue")
 		E.OpenTab("acceptance-good/example"); flush()
 		local start = { guide = E.GetGuide().id, step = E.GetStepIndex() }
 		local w = stub.world
@@ -223,13 +223,13 @@ test('the bad addons\' refusals show on the page and our guides are untouched', 
 			westfall = { title = westfall.title, pack = westfall.pack }, example = { title = example.title, pack = example.pack },
 			stray_walk = G.Get("acceptance-stray/walk") ~= nil, future_guide = G.Get("acceptance-future/a") ~= nil,
 			count = G.Pack("acceptance-good").guideCount, ours = G.Pack("guides").guideCount, oursProblems = #G.Pack("guides").problems })`);
-	assert.match(out.imposter.status, /^refused: Pack id acceptance-good is already taken by PolestarPack_AcceptanceGood; PolestarPack_AcceptanceImposter was refused\. 1 guide dropped\.$/);
+	assert.match(out.imposter.status, /^refused: Pack id acceptance-good is already taken by NorthstarPack_AcceptanceGood; NorthstarPack_AcceptanceImposter was refused\. 1 guide dropped\.$/);
 	assert.equal(out.imposter.switch, false);
 	assert.equal(out.stray.problems, '1 problem');
 	assert.match(out.stray.list, /Guide forever\/alliance\/02-westfall was refused: its id must start with acceptance-stray\//);
 	assert.equal(out.stray.switch, true, 'the rest of the pack is on');
 	assert.equal(out.stray_walk, true);
-	assert.equal(out.future.status, 'needs Polestar 0.9.0 or newer');
+	assert.equal(out.future.status, 'needs Northstar 0.9.0 or newer');
 	assert.equal(out.future.switch, false);
 	assert.equal(out.future_guide, false);
 	assert.deepEqual(out.westfall, { title: 'Westfall', pack: 'guides' });
@@ -274,7 +274,7 @@ test('switching the pack off and on hides and restores its guides and its open t
 test('suggestions come from the chosen pack and fall back to ours for a character it does not cover', { skip }, () => {
 	const script = `
 		local r = { default = G.Suggest() }
-		Polestar.Set("behavior.suggestFrom", "acceptance-good")
+		Northstar.Set("behavior.suggestFrom", "acceptance-good")
 		r.source = G.SuggestSource()
 		r.chosen = G.Suggest()
 		emit(r)`;
@@ -293,24 +293,24 @@ w.race, w.raceName, w.faction, w.class, w.className = "Orc", "Orc", "Horde", "WA
 });
 
 test('the welcome greets a new character on a profile that saw the beta notice, walks its three pages and reopens from About', { skip }, () => {
-	const saved = 'PolestarDB = { schema = 1, settings = {}, betaNoticeSeen = true }';
+	const saved = 'NorthstarDB = { schema = 1, settings = {}, betaNoticeSeen = true }';
 	const [out] = run(`
 		stub.advance(3)
 		local Wel = UI.Welcome
-		local first = PolestarWelcome ~= nil and PolestarWelcome:IsShown()
+		local first = NorthstarWelcome ~= nil and NorthstarWelcome:IsShown()
 		local pages = {}
 		for i = 1, 4 do
 			pages[i] = select(4, Wel.Page())
-			if i < 4 then PolestarWelcome.Next:Click() end
+			if i < 4 then NorthstarWelcome.Next:Click() end
 		end
-		local next = PolestarWelcome.Next:IsShown()
-		PolestarWelcome.Browse:Click()
-		local closed = not PolestarWelcome:IsShown()
+		local next = NorthstarWelcome.Next:IsShown()
+		NorthstarWelcome.Browse:Click()
+		local closed = not NorthstarWelcome:IsShown()
 		UI.ShowOptions("about")
 		UI.Options.view.Welcome:Click()
 		emit({ first = first, guide = G.Get(G.Suggest()).title, pages = pages, next = next, closed = closed,
-			seen = PolestarDB.welcomeSeen, char = PolestarCharDB.welcomeSeen, old = PolestarDB.betaNoticeSeen or false,
-			reopened = PolestarWelcome:IsShown(), title = select(4, Wel.Page()) })`, { saved });
+			seen = NorthstarDB.welcomeSeen, char = NorthstarCharDB.welcomeSeen, old = NorthstarDB.betaNoticeSeen or false,
+			reopened = NorthstarWelcome:IsShown(), title = select(4, Wel.Page()) })`, { saved });
 	assert.equal(out.first, true);
 	assert.deepEqual(out.pages, ['Hello, Testchar', 'Make it yours', 'Route style', out.guide], 'the last page names the suggested guide');
 	assert.equal(out.next, false, 'the last page has the guide buttons, not Next');
@@ -321,8 +321,8 @@ test('the welcome greets a new character on a profile that saw the beta notice, 
 	assert.equal(out.reopened, true);
 	assert.equal(out.title, 'Hello, Testchar');
 
-	const [again] = run('stub.advance(10)\nemit({ shown = PolestarWelcome ~= nil and PolestarWelcome:IsShown() })', {
-		saved: 'PolestarDB = { schema = 1, settings = {}, welcomeSeen = 1 }\nPolestarCharDB = { schema = 1, welcomeSeen = 1 }',
+	const [again] = run('stub.advance(10)\nemit({ shown = NorthstarWelcome ~= nil and NorthstarWelcome:IsShown() })', {
+		saved: 'NorthstarDB = { schema = 1, settings = {}, welcomeSeen = 1 }\nNorthstarCharDB = { schema = 1, welcomeSeen = 1 }',
 	});
 	assert.equal(again.shown, false, 'the next login of that character does not show it');
 });
@@ -330,12 +330,12 @@ test('the welcome greets a new character on a profile that saw the beta notice, 
 test('a "|" in a pack and its guide prints literally in the guide window and the picker, escaped exactly once', { skip }, () => {
 	const src = path.join(tmp, 'pipe');
 	fs.mkdirSync(path.join(src, 'guides'), { recursive: true });
-	fs.writeFileSync(path.join(src, 'pack.json'), JSON.stringify({ id: 'pipe', title: 'Pipe |cffff0000Red|r', author: 'Pi|pe', version: '1.0.0', license: 'CC0-1.0', source: 'My |Hitem:1|h notes', folder: 'PolestarPack_Pipe' }));
+	fs.writeFileSync(path.join(src, 'pack.json'), JSON.stringify({ id: 'pipe', title: 'Pipe |cffff0000Red|r', author: 'Pi|pe', version: '1.0.0', license: 'CC0-1.0', source: 'My |Hitem:1|h notes', folder: 'NorthstarPack_Pipe' }));
 	fs.writeFileSync(path.join(src, 'guides', 'walk.guide'), [
 		'guide pipe/walk', 'title Walk |cffff0000Red|r', 'faction Alliance', 'levels 5-10', 'zone Elwynn Forest', '',
 		'step Step |Hone', '  tip Mind the |cffff0000red|r sign.', '  goto 24.2,74.5 "Mill |cffgold" r 30', '',
 	].join('\n'));
-	const out = path.join(tmp, 'pipe-out', 'PolestarPack_Pipe');
+	const out = path.join(tmp, 'pipe-out', 'NorthstarPack_Pipe');
 	// The pack built as `forge guide compile` builds it (the JS library both compilers match byte for byte).
 	const { buildPack } = require('../tools/lib/pack/build');
 	const { commandPack } = require('../tools/lib/pack/locate');
@@ -350,12 +350,12 @@ test('a "|" in a pack and its guide prints literally in the guide window and the
 			end
 			for _, c in ipairs(f.children or {}) do walk(c) end
 		end
-		walk(PolestarGuideFrame)
+		walk(NorthstarGuideFrame)
 		UI.ShowPicker()
 		UI.Picker.SetCategory("pack:pipe")
 		UI.Picker.Select("pipe/walk")
-		emit({ guide = E.GetGuide() and E.GetGuide().id, texts = texts, header = PolestarPicker.Title:GetText(),
-			credits = UI.Picker.details.Credits:GetText(), source = UI.Picker.details.Source:GetText() })`, { extra: [{ name: 'PolestarPack_Pipe', dir: out }] });
+		emit({ guide = E.GetGuide() and E.GetGuide().id, texts = texts, header = NorthstarPicker.Title:GetText(),
+			credits = UI.Picker.details.Credits:GetText(), source = UI.Picker.details.Source:GetText() })`, { extra: [{ name: 'NorthstarPack_Pipe', dir: out }] });
 	assert.equal(r.guide, 'pipe/walk');
 	const all = r.texts.join('\n');
 	for (const want of ['Walk ||cffff0000Red||r', 'Mind the ||cffff0000red||r sign.']) assert.ok(all.includes(want), `${want} in:\n${all}`);

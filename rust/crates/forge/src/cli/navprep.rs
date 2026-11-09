@@ -8,8 +8,8 @@ pub const USAGE: &str = "usage: forge nav prepare [--dir <grid>] [--continents 0
 
 Builds what is missing of each continent's road mask (roads-<c>-<tag>.bin, from the roads layer),
 walk graphs (<c>-0-<sha>.f32 for no faction, Alliance and Horde) and zone mix (<c>-0-<sha>.mix)
-into <grid>/walk/ (default: $POLESTAR_GRID, else <root>/data/local/nav4), on --threads threads
-(default 6). --root: the Polestar checkout (default: the nearest folder above the working
+into <grid>/walk/ (default: $NORTHSTAR_GRID, else <root>/data/local/nav4), on --threads threads
+(default 6). --root: the Northstar checkout (default: the nearest folder above the working
 directory with data/forever): its data/forever/zones.json and newest cached Forever AreaTable
 (data/sources/wago) give the zones. --layers: the optional ground layers (roads/, hubs.json;
 default <root>/data/local/nav-layers, made by `polestar nav layers`); without them walks have no
@@ -33,7 +33,7 @@ pub fn main2(args: &[String]) -> Result<(), Fail> {
 		Some(r) => r.into(),
 		None => cwd.ancestors().find(|d| d.join("data/forever").is_dir()).map(Path::to_path_buf).ok_or("no data/forever above the working directory (give --root)")?,
 	};
-	let grid: PathBuf = o.get("--dir").map(PathBuf::from).or_else(|| std::env::var_os("POLESTAR_GRID").map(PathBuf::from)).unwrap_or_else(|| root.join("data/local/nav4"));
+	let grid: PathBuf = o.get("--dir").map(PathBuf::from).or_else(|| std::env::var_os("NORTHSTAR_GRID").map(PathBuf::from)).unwrap_or_else(|| root.join("data/local/nav4"));
 	if !grid.join("index.json").is_file() {
 		return Err(format!("no grid in {} (forge nav grid)", grid.display()).into());
 	}

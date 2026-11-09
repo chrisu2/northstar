@@ -1,5 +1,5 @@
 //! A `level` goal inside a level (`level 3.5`, compiled to { level = 3, frac = 0.5 }) and a `when level`
-//! predicate with `frac` (addon/Polestar/Core/Engine.lua): done at the goal's level once XP / XPMax reaches
+//! predicate with `frac` (addon/Northstar/Core/Engine.lua): done at the goal's level once XP / XPMax reaches
 //! frac, or at any later level; the window shows the share; a bad `frac` refuses the guide (Core/Guides.lua).
 //! Real Core manifest, stub world (a level 1 Human Warrior in Elwynn Forest).
 
@@ -15,7 +15,7 @@ w.moveTo(1429, 48, 42)
 // Step 1 reaches halfway through level 3; step 2 is for characters below level 4 and a quarter (`when`);
 // step 3 reaches level 6.
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/level", pack = "test", title = "Level", minLevel = 1, maxLevel = 6,
 	steps = {
 		{ title = "Half of 3", goals = { { t = "level", level = 3, frac = 0.5 } } },
@@ -26,7 +26,7 @@ Polestar.RegisterGuide({
 "#;
 
 const HELPERS: &str = r#"
-E = Polestar.Engine
+E = Northstar.Engine
 w = stub.world
 function flush() stub.advance(0.25) end
 stub.login()
@@ -34,7 +34,7 @@ stub.fire("QUEST_LOG_UPDATE"); stub.advance(0.6)
 "#;
 
 fn core() -> Addon {
-	Addon::files("Polestar", &["Core/Core.xml"])
+	Addon::files("Northstar", &["Core/Core.xml"])
 }
 
 fn run(script: &str) -> Value {
@@ -42,7 +42,7 @@ fn run(script: &str) -> Value {
 		stubs: vec!["stub_world.lua"],
 		before: WORLD.into(),
 		addons: vec![core()],
-		saved: vec![("Polestar".into(), r#"PolestarCharDB = { schema = 1, guide = "test/level" }"#.into())],
+		saved: vec![("Northstar".into(), r#"NorthstarCharDB = { schema = 1, guide = "test/level" }"#.into())],
 		script: [TEST_PACK, TEST_SOURCE, GUIDE, HELPERS, script].join("\n"),
 		..Default::default()
 	}))
@@ -125,7 +125,7 @@ fn a_guide_with_a_frac_outside_0_1_on_a_goal_or_a_when_level_is_refused() {
 		before: WORLD.into(),
 		addons: vec![core()],
 		script: r#"
-local V = Polestar.Guides.Validate
+local V = Northstar.Guides.Validate
 local function goal(frac) return { id = "test/x", title = "X", steps = { { goals = { { t = "level", level = 12, frac = frac } } } } } end
 local function when(frac) return { id = "test/x", title = "X", steps = { { when = { { k = "level", op = ">=", n = 12, frac = frac } }, goals = { { t = "level", level = 2 } } } } } end
 emit({

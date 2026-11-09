@@ -17,12 +17,12 @@
 //   GET  /nav/roads/index.json         the roads layer (data/local/nav-layers/roads/index.json): { build, continents: { [c]: ['col_row'] } } (tiles with road), or 404
 //   GET  /nav/roads/tile/<c>/<col>_<row>.png  the Roads layer of an ADT tile (tools/lib/nav/layers/roads.js roadsPng), 256x256
 //   GET  /nav/hubs.json                the Hubs layer (data/local/nav-layers/hubs.json): { [c]: [{ id, side, name, areaId, disks: [[x, y, r]] }] }, or 404
-//   GET  /glyph/<name>.png?px=<24..256>  a Polestar glyph, white on transparent (default 96 px)
-//   GET  /emblem.png?px=               the Polestar emblem
+//   GET  /glyph/<name>.png?px=<24..256>  a Northstar glyph, white on transparent (default 96 px)
+//   GET  /emblem.png?px=               the Northstar emblem
 //   GET  /band.png, /band-stars.png    the night-sky header layers (1024x128)
 //   GET  /icon/<kind>/<key>.png        a game icon (tools/planner/icons.js), local only
-//   GET  /fonts/<file>.ttf             the Inter faces of addon/Polestar/Media/Fonts
-//   GET  /media/<UI|Nav>/<name>.png    an addon texture (addon/Polestar/Media/*/<name>.tga)
+//   GET  /fonts/<file>.ttf             the Inter faces of addon/Northstar/Media/Fonts
+//   GET  /media/<UI|Nav>/<name>.png    an addon texture (addon/Northstar/Media/*/<name>.tga)
 //
 // Commands that edit files run one at a time; a failing command answers
 // { ok: false } and never stops the server.
@@ -57,7 +57,7 @@ const TYPES = {
 };
 const HEARTBEAT_MS = 20000;
 const TILE_CACHE = 'max-age=604800';
-const FONTS = path.join(__dirname, '..', '..', 'addon', 'Polestar', 'Media', 'Fonts');
+const FONTS = path.join(__dirname, '..', '..', 'addon', 'Northstar', 'Media', 'Fonts');
 // The Inter faces shipped with the addon, read once.
 const FONT_FILES = new Set(fs.readdirSync(FONTS).filter((f) => /^[A-Za-z0-9-]+\.ttf$/.test(f)));
 
@@ -226,7 +226,7 @@ async function startServer(opts = {}) {
 	}
 
 	const png = (res, data) => send(res, 200, 'image/png', data, TILE_CACHE);
-	// Polestar's own art (/glyph, /emblem, /band) and the addon's fonts and textures.
+	// Northstar's own art (/glyph, /emblem, /band) and the addon's fonts and textures.
 	function ownArt(res, pathname, url) {
 		let m;
 		if ((m = /^\/glyph\/([a-z0-9-]+)\.png$/.exec(pathname))) {

@@ -1,4 +1,4 @@
-//! The Import page (addon/Polestar/UI/Import.lua), a hub section at the rail's foot above Options, over the
+//! The Import page (addon/Northstar/UI/Import.lua), a hub section at the rail's foot above Options, over the
 //! real Core (Core/Import.lua, the guide registry) and the UI's fake Engine (tests/lua/stub_ui.lua); and the
 //! guide menu's "Imported" entry under Community guides.
 
@@ -44,12 +44,12 @@ fn string() -> String {
 
 const SETUP: &str = r#"
 uistub.install()
-Polestar.Guides = uistub.realGuides
+Northstar.Guides = uistub.realGuides
 G = uistub.realGuides
-assert(Polestar.RegisterPack({ addon = "Polestar_Guides", id = "guides", format = 1, title = "Polestar Guides", author = "Polestar", version = "0.1.0", license = "GPL-3.0" }))
-assert(Polestar.RegisterGuide({ id = "forever/westfall", pack = "guides", title = "Westfall", minLevel = 10, maxLevel = 20, steps = { { goals = { { t = "level", level = 20 } } } } }))
+assert(Northstar.RegisterPack({ addon = "Northstar_Guides", id = "guides", format = 1, title = "Northstar Guides", author = "Northstar", version = "0.1.0", license = "GPL-3.0" }))
+assert(Northstar.RegisterGuide({ id = "forever/westfall", pack = "guides", title = "Westfall", minLevel = 10, maxLevel = 20, steps = { { goals = { { t = "level", level = 20 } } } } }))
 stub.login()
-UI, P, IV = Polestar.UI, Polestar.UI.Picker, Polestar.UI.Import
+UI, P, IV = Northstar.UI, Northstar.UI.Picker, Northstar.UI.Import
 function paste(text)
 	local box = IV.parts.Box
 	box:SetText(text)
@@ -65,7 +65,7 @@ end
 "#;
 
 fn run(script: &str) -> Vec<Value> {
-	emitted(&RunAddon { stubs: vec!["stub_ui.lua", "stub_encoding.lua"], addons: vec![Addon::files("Polestar", &FILES)], script: format!("{SETUP}\n{script}"), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_ui.lua", "stub_encoding.lua"], addons: vec![Addon::files("Northstar", &FILES)], script: format!("{SETUP}\n{script}"), ..Default::default() })
 }
 
 fn str_(s: &str) -> String {
@@ -83,11 +83,11 @@ fn size(v: &Value) -> usize {
 #[test]
 fn import_sits_at_the_rail_s_foot_just_above_options_in_the_hub_and_in_the_settings_polestar_import_opens_it() {
 	let out = run(r#"
-		SlashCmdList.POLESTAR("import")
-		local hub = rail(PolestarPicker)
+		SlashCmdList.NORTHSTAR("import")
+		local hub = rail(NorthstarPicker)
 		local section = P.Section()
 		UI.ShowOptions()
-		emit({ hub = hub, section = section, options = rail(PolestarOptions), foot = P.FootItems() })
+		emit({ hub = hub, section = section, options = rail(NorthstarOptions), foot = P.FootItems() })
 	"#);
 	let out = &out[0];
 	assert_eq!(out["section"], "Import");
@@ -106,13 +106,13 @@ fn a_pasted_string_shows_its_preview_before_anything_is_saved_import_saves_it_li
 		IV.Show()
 		paste($S)
 		emit(IV.Shown())
-		emit({ saved = PolestarDB.imports == nil })
+		emit({ saved = NorthstarDB.imports == nil })
 		IV.parts.Apply:Click()
 		emit(IV.Shown())
 		local g = G.Get("yendi/cozy-sleeping-bag")
 		local nav = {}
 		P.ShowSection("Guides")
-		for _, b in ipairs(PolestarPicker.navButtons) do
+		for _, b in ipairs(NorthstarPicker.navButtons) do
 			if b:IsShown() then nav[#nav + 1] = (b.psHeading and "# " or "") .. b.Label:GetText() end
 		end
 		emit({ credits = (P.Credits(g)), nav = nav, entries = #P.Entries("All", "", "pack:imported") })
@@ -165,7 +165,7 @@ fn a_refused_string_shows_why_and_saves_nothing_the_same_string_again_says_it_is
 	let out = run(&r#"
 		IV.Show()
 		paste("!PS1!garbage")
-		emit({ shown = IV.Shown(), saved = PolestarDB.imports == nil })
+		emit({ shown = IV.Shown(), saved = NorthstarDB.imports == nil })
 		paste($S)
 		IV.parts.Apply:Click()
 		paste($S)
@@ -195,7 +195,7 @@ fn delete_asks_for_a_second_click_then_removes_the_guide_from_the_list_and_the_s
 		row.Delete:Click()
 		emit({ label = row.Delete.Label:GetText(), list = #IV.Shown().list })
 		row.Delete:Click()
-		emit({ list = #IV.Shown().list, stored = PolestarDB.imports["yendi/cozy-sleeping-bag"] == nil, got = G.Get("yendi/cozy-sleeping-bag") == nil })
+		emit({ list = #IV.Shown().list, stored = NorthstarDB.imports["yendi/cozy-sleeping-bag"] == nil, got = G.Get("yendi/cozy-sleeping-bag") == nil })
 	"#
 	.replace("$S", &str_(&string())));
 	let (one, two) = (&out[0], &out[1]);

@@ -1,7 +1,7 @@
 'use strict';
 // Regenerates the addon's textures. Every module in tools/media/*.js exports
 // { name, generate(addonRoot, { offline }) -> [writtenPaths] }; this runs them
-// all, in name order, against addon/Polestar. The generated TGAs are committed.
+// all, in name order, against addon/Northstar. The generated TGAs are committed.
 // offline: the generators that read client tables (game-art) read the cached
 // ones under data/sources/wago only.
 
@@ -10,7 +10,7 @@ const path = require('node:path');
 
 const { ROOT } = require('../lib/paths');
 const MEDIA = path.join(ROOT, 'tools', 'media');
-const ADDON = path.join(ROOT, 'addon', 'Polestar');
+const ADDON = path.join(ROOT, 'addon', 'Northstar');
 
 function generators() {
 	if (!fs.existsSync(MEDIA)) return [];
@@ -27,12 +27,12 @@ function generators() {
 
 module.exports = {
 	name: 'media',
-	summary: 'Regenerate the addon textures (tools/media/*.js -> addon/Polestar/Media)',
+	summary: 'Regenerate the addon textures (tools/media/*.js -> addon/Northstar/Media)',
 	usage: [
 		'usage: node tools/polestar.js media [--offline] [generator ...]',
 		'',
 		'Runs every generator in tools/media/ (or only the named ones) against',
-		'addon/Polestar and lists the files written. --offline: no download; the',
+		'addon/Northstar and lists the files written. --offline: no download; the',
 		'client tables game-art reads come from data/sources/wago (the newest',
 		'cached build holding them).',
 	].join('\n'),

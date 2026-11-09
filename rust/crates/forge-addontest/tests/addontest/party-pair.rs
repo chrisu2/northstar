@@ -1,4 +1,4 @@
-//! Two Polestar players in one party, each client its own Lua state (forge_addontest::Session) with the fake
+//! Two Northstar players in one party, each client its own Lua state (forge_addontest::Session) with the fake
 //! world and party (tests/lua/stub_party.lua), the test carrying each one's addon messages to the other as
 //! Forever's client does: on the party channel, only to clients that registered the prefix, and back to the
 //! sender too, under the sender's full name. Forever's characters have a surname: UnitName gives
@@ -61,12 +61,12 @@ function relayIn(sender, prefix, text)
 	if stub.party.prefixes[prefix] then stub.party.receive(sender, text, "PARTY", prefix) end
 end
 function panelShown()
-	local f = Polestar.UI.PartyPanel.Frame()
+	local f = Northstar.UI.PartyPanel.Frame()
 	return f ~= nil and f:IsShown()
 end
 function seen()
 	local out = {{}}
-	for _, m in ipairs(Polestar.Party.Members()) do
+	for _, m in ipairs(Northstar.Party.Members()) do
 		local qs = {{}}
 		for q, counts in pairs(m.quests) do
 			local parts = {{}}
@@ -81,7 +81,7 @@ end"#,
 	)
 }
 
-/// A client logged in as `me`; `saved` restores its PolestarDB (None: never set anything, as a player who
+/// A client logged in as `me`; `saved` restores its NorthstarDB (None: never set anything, as a player who
 /// installed 0.3.3 and touched no option).
 fn client(me: &str, log: &str, already: &[&str], saved: Option<&str>) -> Session {
 	client_with(me, log, already, saved, false)
@@ -91,8 +91,8 @@ fn client_with(me: &str, log: &str, already: &[&str], saved: Option<&str>, compl
 	Session::open(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_party.lua"],
 		before: before(me, log, already, complete),
-		saved: saved.map(|s| ("Polestar".to_string(), s.to_string())).into_iter().collect(),
-		addons: vec![Addon::files("Polestar", FILES)],
+		saved: saved.map(|s| ("Northstar".to_string(), s.to_string())).into_iter().collect(),
+		addons: vec![Addon::files("Northstar", FILES)],
 		login: true,
 		script: String::new(),
 	})
@@ -156,7 +156,7 @@ fn pair_a_fresh_group_of_two_polestar_players_both_doing_nothing_both_panels_ope
 	drop(pair);
 	assert_eq!(get(&mut ana, "seen()"), json!(["Ben 60:0/4"]));
 	assert_eq!(get(&mut ben, "seen()"), json!(["Ana 33:0/8"]));
-	assert_eq!(get(&mut ana, "#Polestar.Party.Roster()"), 1);
+	assert_eq!(get(&mut ana, "#Northstar.Party.Roster()"), 1);
 }
 
 #[test]
@@ -243,7 +243,7 @@ fn pair_a_panel_the_player_closed_stays_closed_through_more_messages_and_a_reloa
 	pair.play(SYNC);
 	drop(pair);
 	assert_eq!(get(&mut ana, "panelShown()"), true);
-	ana.run("Polestar.UI.PartyPanel.Frame().Close:Click()");
+	ana.run("Northstar.UI.PartyPanel.Frame().Close:Click()");
 	assert_eq!(get(&mut ana, "panelShown()"), false, "closed");
 	ben.run("stub.world.progress(60, 1, 3)");
 	let mut pair = Pair { clients: vec![(&mut ana, "Ana Smith"), (&mut ben, "Ben Stone")] };
@@ -251,16 +251,16 @@ fn pair_a_panel_the_player_closed_stays_closed_through_more_messages_and_a_reloa
 	drop(pair);
 	assert_eq!(get(&mut ana, "seen()"), json!(["Ben 60:3/4"]), "sync goes on");
 	assert_eq!(get(&mut ana, "panelShown()"), false, "the panel stays closed");
-	let saved = format!("PolestarDB = {{ schema = 1, settings = {{ party = {{ panel = {} }} }} }}", get(&mut ana, "Polestar.Get('party.panel')"));
-	assert_eq!(saved, "PolestarDB = { schema = 1, settings = { party = { panel = false } } }", "remembered");
+	let saved = format!("NorthstarDB = {{ schema = 1, settings = {{ party = {{ panel = {} }} }} }}", get(&mut ana, "Northstar.Get('party.panel')"));
+	assert_eq!(saved, "NorthstarDB = { schema = 1, settings = { party = { panel = false } } }", "remembered");
 	let mut ana2 = client("Ana Smith", "{ [33] = { 8 } }", &["Ben Stone"], Some(&saved));
 	let mut pair = Pair { clients: vec![(&mut ana2, "Ana Smith"), (&mut ben, "Ben Stone")] };
 	pair.play(SYNC);
 	drop(pair);
 	assert_eq!(get(&mut ana2, "seen()"), json!(["Ben 60:3/4"]));
 	assert_eq!(get(&mut ana2, "panelShown()"), false, "still closed after a reload");
-	ana2.run("Polestar.RunCommand('party')");
-	assert_eq!(get(&mut ana2, "panelShown()"), true, "/polestar party brings it back");
+	ana2.run("Northstar.RunCommand('party')");
+	assert_eq!(get(&mut ana2, "panelShown()"), true, "/northstar party brings it back");
 }
 
 #[test]

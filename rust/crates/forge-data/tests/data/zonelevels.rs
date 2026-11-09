@@ -99,7 +99,7 @@ fn zone_levels_lua_is_up_to_date_with_data_forever() {
 	let data = std::env::var_os("FORGE_DATA").map(std::path::PathBuf::from).unwrap_or_else(|| repo.join("data/forever"));
 	assert!(data.join("npcs.json").exists() && data.join("zones.json").exists(), "no data/forever (npcs.json, zones.json) at {}", data.display());
 	let (_, lua) = forge_data::worldmap::zone_levels(&data).unwrap();
-	assert_eq!(std::fs::read_to_string(repo.join("addon/Polestar/Maps/ZoneLevels.lua")).unwrap(), lua, "run: forge data maps build");
+	assert_eq!(std::fs::read_to_string(repo.join("addon/Northstar/Maps/ZoneLevels.lua")).unwrap(), lua, "run: forge data maps build");
 	let r: std::collections::BTreeMap<u32, String> = ranges(&lua).into_iter().collect();
 	assert!(r[&1429].starts_with("{ 1, 10,"), "Elwynn Forest");
 	assert!(!r.contains_key(&1453), "Stormwind City");

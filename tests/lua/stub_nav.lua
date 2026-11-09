@@ -1,4 +1,4 @@
--- A fake world for Nav tests: Polestar.Compat and Polestar.Engine fakes
+-- A fake world for Nav tests: Northstar.Compat and Northstar.Engine fakes
 -- (installed just before ADDON_LOADED, after the addon files have run), the
 -- world map (wow_stub.lua's map canvas, guarded: addon code may only read
 -- it), C_Minimap/C_Map/C_SuperTrack and an optional TomTom.
@@ -128,7 +128,7 @@ end
 function nav.useTravelWorld(flightYards, boatWait)
 	flightYards = flightYards or 1700
 	boatWait = boatWait or 30
-	Polestar.Nav.RegisterTravelData({
+	Northstar.Nav.RegisterTravelData({
 		build = "test",
 		taxi = {
 			{ 1, 0, 0, 790, 9000, 10.5, 50, 1, "West Hold, Testshire" },
@@ -156,23 +156,23 @@ function Engine.GetStepView(i) return nav.engine.views[i] end
 
 function nav.setWaypoint(wp)
 	nav.engine.waypoint = wp
-	Polestar.Fire("WAYPOINT_CHANGED", wp)
+	Northstar.Fire("WAYPOINT_CHANGED", wp)
 end
 
 function nav.changeStep(i, wp)
 	nav.engine.step = i
 	nav.engine.waypoint = wp
-	Polestar.Fire("STEP_CHANGED", i)
-	Polestar.Fire("WAYPOINT_CHANGED", wp)
+	Northstar.Fire("STEP_CHANGED", i)
+	Northstar.Fire("WAYPOINT_CHANGED", wp)
 end
 
 local addonLoaded = stub.addonLoaded
 function stub.addonLoaded(name)
-	if name == "Polestar" and Polestar then
-		Polestar.Compat = Polestar.Compat or Compat
-		Polestar.Engine = Polestar.Engine or Engine
-		if not Polestar.RegisterMapFrames then
-			function Polestar.RegisterMapFrames(t)
+	if name == "Northstar" and Northstar then
+		Northstar.Compat = Northstar.Compat or Compat
+		Northstar.Engine = Northstar.Engine or Engine
+		if not Northstar.RegisterMapFrames then
+			function Northstar.RegisterMapFrames(t)
 				for id, b in pairs(t.era or {}) do nav.era[id] = b end
 			end
 		end
@@ -255,7 +255,7 @@ function nav.showWorldMap(mapID)
 end
 
 function nav.pins(kind)
-	local out = Polestar.Pins.GetWorldFrames(kind or "pins")
+	local out = Northstar.Pins.GetWorldFrames(kind or "pins")
 	table.sort(out, function(a, b)
 		if a.width ~= b.width then return a.width > b.width end
 		if a.data.layer.name ~= b.data.layer.name then return a.data.layer.name < b.data.layer.name end

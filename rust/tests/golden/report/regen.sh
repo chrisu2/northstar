@@ -20,8 +20,8 @@ G=$REPO/rust/tests/golden
 OUT=$G/report
 T=$(mktemp -d)
 trap 'rm -rf "$T"' EXIT
-unset POLESTAR_GRID NAV4_PACK POLESTAR_KB
-export POLESTAR_CAS=off POLESTAR_CAS_SKIP=walks
+unset NORTHSTAR_GRID NAV4_PACK NORTHSTAR_KB
+export NORTHSTAR_CAS=off NORTHSTAR_CAS_SKIP=walks
 
 # root, the clean slice, the empty knowledge base, the sim dirs (one for forge, one for the JS)
 cp -r "$G/world/root" "$T/root"
@@ -45,7 +45,7 @@ for d in sim simjs; do
 	for f in horde alliance; do gunzip -c "$G/world/expected/world-$f.json.gz" > "$T/$d/world-$f.json"; done
 	cp "$G/sim/params.json" "$T/$d/"
 done
-export POLESTAR_GRID=$T/root/data/local/nav4
+export NORTHSTAR_GRID=$T/root/data/local/nav4
 
 # inputs: forge's routes and written guides
 rm -rf "$OUT/route" "$OUT/written"
@@ -71,7 +71,7 @@ for s in "Horde Orc" "Alliance Human"; do
 	for t in "v1 $T/root/guides" "written $T/written/$2"; do
 		set -- "$1" "$2" $t
 		for to in 30 61; do node "$OUT/js/gmeasure.js" "$4" "$1" "$2" - "$to" --json "$T/ref/gm.json" >/dev/null; node -e 'const d = require(process.argv[1]); console.log(JSON.stringify({ chain: process.argv[2], ...d.row, guides: undefined }));' "$T/ref/gm.json" "$3" >> "$T/ref/rows-$2.jsonl"; done
-		POLESTAR_HONEST_JS=$T/jr node rust/crates/forge-judge/tests/js/honest-ref.js "$4" - "$T/ref/honest.json" --data "$T/jr/data/forever" --kb "$T/root/data/local/kb/forever-kb.sqlite"
+		NORTHSTAR_HONEST_JS=$T/jr node rust/crates/forge-judge/tests/js/honest-ref.js "$4" - "$T/ref/honest.json" --data "$T/jr/data/forever" --kb "$T/root/data/local/kb/forever-kb.sqlite"
 		JSON_OUT=$T/ref/hsum-$2-$3.json node "$OUT/js/honest-sum.js" "$T/ref/honest.json" "$1" "$2" "$4" >/dev/null
 	done
 	JSON_OUT=$T/ref/sdiff-$2.json node "$OUT/js/sdiff.js" "$1" "$2" "$T/out/$2.judge-improved.json" "$T/written/$2" >/dev/null

@@ -1,4 +1,4 @@
-//! The launch test: `POLESTAR_SMOKE=<seconds>` starts the client as usual, but in a fresh data
+//! The launch test: `NORTHSTAR_SMOKE=<seconds>` starts the client as usual, but in a fresh data
 //! folder of its own, without the update check and without registering itself with the desktop.
 //! It exits 1 as soon as the window shows its fault page (the page reports it with `smoke_fault`)
 //! and 0 after the given seconds when the page reached its first frame and showed no fault (1 if
@@ -11,7 +11,7 @@ use std::time::Duration;
 
 use tauri::AppHandle;
 
-const VAR: &str = "POLESTAR_SMOKE";
+const VAR: &str = "NORTHSTAR_SMOKE";
 
 static SECONDS: LazyLock<Option<u64>> = LazyLock::new(|| std::env::var(VAR).ok().and_then(|v| v.trim().parse().ok()).filter(|&s| s > 0));
 /// The page asked for its window (`window_ready`): it loaded and drew its first frame.

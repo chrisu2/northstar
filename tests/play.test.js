@@ -44,14 +44,14 @@ test('a scripted session: hub, a guide, a goal, a scheme change, the world map, 
 	try {
 		let f = await act(play.url, { type: 'render' });
 		assert.ok(f.svg.startsWith('<svg'), 'a frame is drawn');
-		assert.ok(f.hits.some((h) => h.n === 'PolestarGuideFrame'), 'the guide window takes the mouse');
+		assert.ok(f.hits.some((h) => h.n === 'NorthstarGuideFrame'), 'the guide window takes the mouse');
 		assert.equal(f.state.player.level, 1);
 		assert.ok(f.timing.total > 0);
 
 		// The hub opens beside the guide window.
 		f = await act(play.url, { type: 'open', what: 'hub' });
 		assert.equal(f.state.hub, true);
-		assert.ok(f.hits.some((h) => h.n === 'PolestarPicker'));
+		assert.ok(f.hits.some((h) => h.n === 'NorthstarPicker'));
 
 		// Pick and load a guide this character can play.
 		const guides = await (await fetch(`${play.url}api/guides`)).json();
@@ -75,7 +75,7 @@ test('a scripted session: hub, a guide, a goal, a scheme change, the world map, 
 		assert.notEqual(f.svg, svgBefore);
 
 		// Hovering a frame from the hit map runs its scripts without errors.
-		const frame = f.hits.find((h) => h.n === 'PolestarGuideFrame');
+		const frame = f.hits.find((h) => h.n === 'NorthstarGuideFrame');
 		const hover = await act(play.url, { type: 'hover', id: frame.id, x: frame.r[0] + 5, y: frame.r[1] + 5 });
 		assert.equal(hover.errors.length, 0);
 
@@ -96,6 +96,6 @@ test('a scripted session: hub, a guide, a goal, a scheme change, the world map, 
 		await play.close({ save: true });
 	}
 	// SavedVariables written on stop.
-	const sv = fs.readFileSync(path.join(dataDir, 'SavedVariables', 'Polestar.lua'), 'utf8');
+	const sv = fs.readFileSync(path.join(dataDir, 'SavedVariables', 'Northstar.lua'), 'utf8');
 	assert.match(sv, /scheme = "graphite"/);
 });

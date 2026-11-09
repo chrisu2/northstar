@@ -15,12 +15,12 @@ const { tmpdir } = require('./helpers/tmp');
 const SCRIPT = path.join(__dirname, '../apps/client/release/latest-json.sh');
 const BASE = 'https://github.com/fitzforge/polestar/releases/download/client-v0.1.5';
 const FILES = [
-	'Polestar.Client_0.1.5_amd64.AppImage',
-	'Polestar.Client_0.1.5_aarch64.AppImage',
-	'Polestar.Client_0.1.5_amd64.deb',
-	'Polestar.Client_0.1.5_arm64.deb',
-	'Polestar.Client_0.1.5_x64_en-US.msi',
-	'Polestar.Client.app_universal.app.tar.gz',
+	'Northstar.Client_0.1.5_amd64.AppImage',
+	'Northstar.Client_0.1.5_aarch64.AppImage',
+	'Northstar.Client_0.1.5_amd64.deb',
+	'Northstar.Client_0.1.5_arm64.deb',
+	'Northstar.Client_0.1.5_x64_en-US.msi',
+	'Northstar.Client.app_universal.app.tar.gz',
 ];
 
 function release(files = FILES) {
@@ -30,7 +30,7 @@ function release(files = FILES) {
 		fs.writeFileSync(path.join(dir, `${f}.sig`), `sig of ${f}`);
 	}
 	// What the release job also has in out/ and must not pick up.
-	fs.writeFileSync(path.join(dir, 'Polestar.Client_0.1.5_universal.dmg'), 'dmg');
+	fs.writeFileSync(path.join(dir, 'Northstar.Client_0.1.5_universal.dmg'), 'dmg');
 	return dir;
 }
 
@@ -78,8 +78,8 @@ test('a release missing a .deb or a signature gets no latest.json', () => {
 	assert.match(run.stderr, /no \*_arm64\.deb/);
 
 	const unsigned = release();
-	fs.rmSync(path.join(unsigned, 'Polestar.Client_0.1.5_amd64.deb.sig'));
+	fs.rmSync(path.join(unsigned, 'Northstar.Client_0.1.5_amd64.deb.sig'));
 	run = spawnSync('bash', [SCRIPT, unsigned, '0.1.5', BASE], { encoding: 'utf8' });
 	assert.notEqual(run.status, 0);
-	assert.match(run.stderr, /Polestar\.Client_0\.1\.5_amd64\.deb has no \.sig/);
+	assert.match(run.stderr, /Northstar\.Client_0\.1\.5_amd64\.deb has no \.sig/);
 });

@@ -1,8 +1,8 @@
-//! What Polestar's own guide pack costs in memory (issues #60, #693): addon/Polestar_Guides loaded the way the
-//! client loads it, with Polestar reading it (Core/Guides.lua) for one Alliance (Human) and one Horde (Orc)
+//! What Northstar's own guide pack costs in memory (issues #60, #693): addon/Northstar_Guides loaded the way the
+//! client loads it, with Northstar reading it (Core/Guides.lua) for one Alliance (Human) and one Horde (Orc)
 //! character, under Lua 5.1 as the client counts it (collectgarbage("count")). The pack is format 8
 //! (docs/PACK_FORMAT.md, "Format 8"): each faction's guides in a load-on-demand part
-//! (Polestar_Guides_Alliance, _Horde) of which only the player's faction's loads, and a goal's spawn spots as
+//! (Northstar_Guides_Alliance, _Horde) of which only the player's faction's loads, and a goal's spawn spots as
 //! one string, built into tables on the goal's first read of `spots`. Each figure fails the test when it grows
 //! past its budget: lower a budget when a change lowers the figure, never raise one to make a change pass.
 //!
@@ -35,7 +35,7 @@ fn pack_files(name: &str) -> String {
 /// KiB (Lua 5.1, 64-bit), measured here on the committed pack on 2026-10-24 (222 guides, 3,937 steps,
 /// 12,280 goals, 25,233 spots; 155 registered for the Alliance character, 152 for the Horde one): Alliance
 /// resident 10,499, peak 22,119, read 15,833; Horde resident 10,249, peak 21,665, read 16,146. The format-4
-/// pack (every guide in Polestar_Guides, spots as tables) cost 24,378 resident and 47,362 at the peak for
+/// pack (every guide in Northstar_Guides, spots as tables) cost 24,378 resident and 47,362 at the peak for
 /// either faction (the same harness, the same runtime).
 /// 0.3.0 (2026-11-02, Fitz accepted the rise for 0.3.0): the generated 1-60 routes for all ten starts (each
 /// faction's shared route once) and the new class, profession, reputation and collectible guides measure
@@ -43,24 +43,34 @@ fn pack_files(name: &str) -> String {
 /// Budgets are those plus ~3%. The release build (Release: 0.3.0, the final routes and the release-check
 /// fixes) measures Alliance peak 32,742 and Horde peak 30,963, so the peaks are those plus ~3% too.
 /// Loading the side shelves on demand (0.3.x) should bring them back down.
+/// 0.3.5 shipped at 15661 KiB (kb data); raised for the 0.3.6 hotfix; bring back down in 0.3.7.
+/// 0.3.6 round 2 measured 15838/33949/23334 KiB (Westfall Alba chain for Humans, new entrance/route steps,
+/// corrections); raised for the hotfix; trim in 0.3.7.
+/// 0.3.6 round 4, the pack compiled from it (`forge guide compile`): Alliance resident 15,927, peak 34,104, read
+/// 21,778; Horde resident 14,588, peak 31,470, read 21,309 (round 2 compiled the same way: 15,911 / 34,086 / 23,548
+/// and 14,575 / 31,440 / 22,933; goals with the same spots now share one list). Every budget is that plus ~1%:
+/// resident and the Alliance peak raised (round 2 compiled was already over them), the Horde peak and reads lowered.
+/// 0.3.6 round 5 (the 0.3.7 work folded in), the pack compiled from it at 6f9421be0: Alliance resident 16,043, peak
+/// 34,451, read 21,908; Horde resident 14,682, peak 31,659, read 21,363 (fab904a87 compiled the same way: 15,914 /
+/// 34,089 / 21,655 and 14,578 / 31,455 / 20,655). Budgets: those plus ~1%.
 const BUDGET: [(&str, &str, [(&str, f64); 3]); 2] =
-	[("Alliance", "Human", [("resident", 15650.0), ("peak", 33700.0), ("read", 23300.0)]), ("Horde", "Orc", [("resident", 14600.0), ("peak", 31900.0), ("read", 22500.0)])];
+	[("Alliance", "Human", [("resident", 16200.0), ("peak", 34800.0), ("read", 22130.0)]), ("Horde", "Orc", [("resident", 14830.0), ("peak", 31980.0), ("read", 21580.0)])];
 
 #[test]
 fn the_guide_pack_stays_within_its_memory_budget_for_each_faction_693() {
 	let mut over = vec![];
 	for (faction, race, budget) in BUDGET {
-		let main = forge_addontest::run::dir_files(&part("Polestar_Guides")).unwrap_or_else(|e| panic!("{e}"));
+		let main = forge_addontest::run::dir_files(&part("Northstar_Guides")).unwrap_or_else(|e| panic!("{e}"));
 		let files: Vec<String> = main.iter().map(|f| lua_string(&f.to_string_lossy())).collect();
 		let script = format!(
 			r#"
-local G = Polestar.Guides
+local G = Northstar.Guides
 local function full() collectgarbage("collect"); collectgarbage("collect"); return collectgarbage("count") end
 local base = full()
 collectgarbage("stop")
 local ns = {{}}
-for _, f in ipairs({{ {files} }}) do assert(loadfile(f))("Polestar_Guides", ns) end
-stub.addonLoaded("Polestar_Guides")
+for _, f in ipairs({{ {files} }}) do assert(loadfile(f))("Northstar_Guides", ns) end
+stub.addonLoaded("Northstar_Guides")
 local peak = collectgarbage("count") - base
 collectgarbage("restart")
 local resident = full() - base
@@ -75,7 +85,7 @@ for _, h in ipairs(G.List()) do
 end
 local read = full() - base
 emit({{ resident = resident, peak = peak, read = read, guides = guides, other = other, spots = spots,
-	alliance = stub.packLoads.Polestar_Guides_Alliance or 0, horde = stub.packLoads.Polestar_Guides_Horde or 0 }})"#,
+	alliance = stub.packLoads.Northstar_Guides_Alliance or 0, horde = stub.packLoads.Northstar_Guides_Horde or 0 }})"#,
 			files = files.join(", "),
 			faction = lua_string(faction),
 		);
@@ -83,13 +93,13 @@ emit({{ resident = resident, peak = peak, read = read, guides = guides, other = 
 			stubs: vec!["stub_world.lua", "stub_packs.lua"],
 			before: format!(
 				"{}\n{}\nlocal w = stub.world\nw.faction, w.race, w.raceName = {}, {}, {}",
-				pack_files("Polestar_Guides_Alliance"),
-				pack_files("Polestar_Guides_Horde"),
+				pack_files("Northstar_Guides_Alliance"),
+				pack_files("Northstar_Guides_Horde"),
 				lua_string(faction),
 				lua_string(race),
 				lua_string(race)
 			),
-			addons: vec![Addon::name("Polestar")],
+			addons: vec![Addon::name("Northstar")],
 			script,
 			..Default::default()
 		});
@@ -122,34 +132,34 @@ fn the_other_faction_s_part_loads_when_asked_for_or_when_a_saved_tab_needs_it() 
 	let run = |saved: &str, script: &str| {
 		emitted(&RunAddon {
 			stubs: vec!["stub_world.lua", "stub_packs.lua"],
-			before: format!("{}\n{}\nlocal w = stub.world\nw.faction, w.race, w.raceName = \"Horde\", \"Orc\", \"Orc\"", pack_files("Polestar_Guides_Alliance"), pack_files("Polestar_Guides_Horde")),
-			addons: vec![Addon::name("Polestar"), Addon::name("Polestar_Guides")],
-			saved: vec![("Polestar".into(), format!("PolestarCharDB = {saved}"))],
+			before: format!("{}\n{}\nlocal w = stub.world\nw.faction, w.race, w.raceName = \"Horde\", \"Orc\", \"Orc\"", pack_files("Northstar_Guides_Alliance"), pack_files("Northstar_Guides_Horde")),
+			addons: vec![Addon::name("Northstar"), Addon::name("Northstar_Guides")],
+			saved: vec![("Northstar".into(), format!("NorthstarCharDB = {saved}"))],
 			login: true,
 			script: script.into(),
 		})
 	};
 	let asked = run(
 		"nil",
-		r#"local G = Polestar.Guides
+		r#"local G = Northstar.Guides
 local before = G.Get("forever/alliance/02-westfall") ~= nil
 local fired = 0
-Polestar.On("GUIDES_REGISTERED", function() fired = fired + 1 end)
+Northstar.On("GUIDES_REGISTERED", function() fired = fired + 1 end)
 local came = G.LoadFaction("Alliance")
 emit({ before = before, came = came, after = G.Get("forever/alliance/02-westfall") ~= nil, fired = fired,
-	again = G.LoadFaction("Alliance"), loads = stub.packLoads.Polestar_Guides_Alliance })"#,
+	again = G.LoadFaction("Alliance"), loads = stub.packLoads.Northstar_Guides_Alliance })"#,
 	);
 	assert_eq!(asked[0], serde_json::json!({ "before": false, "came": true, "after": true, "fired": 1, "again": false, "loads": 1 }));
 	let saved = run(
 		r#"{ schema = 1, tabs = { "forever/alliance/02-westfall" }, activeTab = 1 }"#,
-		r#"emit({ loads = stub.packLoads.Polestar_Guides_Alliance or 0, guide = Polestar.Engine.GetGuide() and Polestar.Engine.GetGuide().id or false })"#,
+		r#"emit({ loads = stub.packLoads.Northstar_Guides_Alliance or 0, guide = Northstar.Engine.GetGuide() and Northstar.Engine.GetGuide().id or false })"#,
 	);
 	assert_eq!(saved[0], serde_json::json!({ "loads": 1, "guide": "forever/alliance/02-westfall" }), "the saved tab of an Alliance guide comes back on a Horde character");
 }
 
-// Baked legs in Polestar's own pack (formats 7 and 8): an Alliance zone guide ships in the faction part and
+// Baked legs in Northstar's own pack (formats 7 and 8): an Alliance zone guide ships in the faction part and
 // its legs in each Alliance race's part, here one with Legs.lua alone. The faction part loads before the
-// race part, so Polestar.RegisterLegs finds the guide registered and keeps its legs.
+// race part, so Northstar.RegisterLegs finds the guide registered and keeps its legs.
 #[test]
 fn the_faction_part_loads_before_a_race_part_holding_only_legs_whose_legs_are_kept() {
 	let r = forge_addontest::dsl::compile(&forge_addontest::dsl::guide_text(&[
@@ -166,27 +176,27 @@ fn the_faction_part_loads_before_a_race_part_holding_only_legs_whose_legs_are_ke
 	r.guides[0].set_hidden("_legs", forge_guide::js::parse_json(r#"{ "1": "CgA" }"#).unwrap());
 	r.guides[0].set_hidden("_legsGrid", "test");
 	let pack = forge_addontest::dsl::write_our_test_pack(&r.guides);
-	assert_eq!(pack.text("../Polestar_Guides_Human/Polestar_Guides_Human.toc").rsplit("\n\n").next(), Some("Legs.lua\n"));
+	assert_eq!(pack.text("../Northstar_Guides_Human/Northstar_Guides_Human.toc").rsplit("\n\n").next(), Some("Legs.lua\n"));
 	let lua_list = |files: Vec<PathBuf>| files.iter().map(|f| lua_string(&f.to_string_lossy())).collect::<Vec<_>>().join(", ");
 	let entries = |dir: PathBuf| lua_list(forge_addontest::run::toc_entries(&dir).unwrap_or_else(|e| panic!("{e}")).iter().map(|f| dir.join(f)).collect());
 	let parent = pack.dir.parent().unwrap().to_path_buf();
 	let out = emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_packs.lua"],
 		before: format!(
-			"stub.packs.Polestar_Guides_Alliance = {{ {} }}\nstub.packs.Polestar_Guides_Human = {{ {} }}\nlocal w = stub.world\nw.faction, w.race, w.raceName = \"Alliance\", \"Human\", \"Human\"",
-			entries(parent.join("Polestar_Guides_Alliance")),
-			entries(parent.join("Polestar_Guides_Human"))
+			"stub.packs.Northstar_Guides_Alliance = {{ {} }}\nstub.packs.Northstar_Guides_Human = {{ {} }}\nlocal w = stub.world\nw.faction, w.race, w.raceName = \"Alliance\", \"Human\", \"Human\"",
+			entries(parent.join("Northstar_Guides_Alliance")),
+			entries(parent.join("Northstar_Guides_Human"))
 		),
-		addons: vec![Addon::name("Polestar")],
+		addons: vec![Addon::name("Northstar")],
 		script: format!(
 			r#"
 local ns = {{}}
-for _, f in ipairs({{ {} }}) do assert(loadfile(f))("Polestar_Guides", ns) end
-stub.addonLoaded("Polestar_Guides")
+for _, f in ipairs({{ {} }}) do assert(loadfile(f))("Northstar_Guides", ns) end
+stub.addonLoaded("Northstar_Guides")
 stub.login()
-local legs = Polestar.Guides.Legs("forever/alliance/t-legs")
-emit({{ guide = Polestar.Guides.Get("forever/alliance/t-legs") ~= nil, leg = legs and legs[1] or false,
-	alliance = stub.packLoads.Polestar_Guides_Alliance or 0, human = stub.packLoads.Polestar_Guides_Human or 0 }})"#,
+local legs = Northstar.Guides.Legs("forever/alliance/t-legs")
+emit({{ guide = Northstar.Guides.Get("forever/alliance/t-legs") ~= nil, leg = legs and legs[1] or false,
+	alliance = stub.packLoads.Northstar_Guides_Alliance or 0, human = stub.packLoads.Northstar_Guides_Human or 0 }})"#,
 			entries(pack.dir.clone())
 		),
 		..Default::default()
@@ -200,13 +210,13 @@ emit({{ guide = Polestar.Guides.Get("forever/alliance/t-legs") ~= nil, leg = leg
 #[test]
 fn packed_spots_read_back_as_the_compiler_s_tables_and_a_bad_string_refuses_the_guide() {
 	let out = emitted(&RunAddon {
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: r#"
-local G = Polestar.Guides
-assert(Polestar.RegisterPack({ addon = "JoeAddon", id = "joe", format = 8, title = "Joe", author = "Joe", version = "1", license = "MIT" }))
+local G = Northstar.Guides
+assert(Northstar.RegisterPack({ addon = "JoeAddon", id = "joe", format = 8, title = "Joe", author = "Joe", version = "1", license = "MIT" }))
 local function guide(id, goal)
 	goal.t, goal.target, goal.npc, goal.map, goal.x, goal.y = "kill", "Young Wolf", 299, 1429, 43.5, 9.2
-	local ok, err = Polestar.RegisterGuide({ id = id, pack = "joe", title = id, steps = { { goals = { goal } } } })
+	local ok, err = Northstar.RegisterGuide({ id = id, pack = "joe", title = id, steps = { { goals = { goal } } } })
 	return ok and true or err
 end
 local res = {
@@ -255,15 +265,15 @@ fn validating_the_registered_guides_allocates_almost_nothing_per_goal() {
 		// The pack and its parts by their TOCs, the way the client loads them, so a file added to one is
 		// measured.
 		addons: vec![
-			Addon::files("Polestar", &["Core/Core.xml"]),
-			Addon::dir("Polestar_Guides", part("Polestar_Guides")),
-			Addon::dir("Polestar_Guides_Alliance", part("Polestar_Guides_Alliance")),
-			Addon::dir("Polestar_Guides_Horde", part("Polestar_Guides_Horde")),
+			Addon::files("Northstar", &["Core/Core.xml"]),
+			Addon::dir("Northstar_Guides", part("Northstar_Guides")),
+			Addon::dir("Northstar_Guides_Alliance", part("Northstar_Guides_Alliance")),
+			Addon::dir("Northstar_Guides_Horde", part("Northstar_Guides_Horde")),
 		],
 		script: r#"
 			local defs, goals = {}, 0
-			for _, header in ipairs(Polestar.Guides.List()) do
-				local g = Polestar.Guides.Get(header.id)
+			for _, header in ipairs(Northstar.Guides.List()) do
+				local g = Northstar.Guides.Get(header.id)
 				if g then
 					defs[#defs + 1] = g
 					for _, step in ipairs(g.steps) do goals = goals + #step.goals end
@@ -274,7 +284,7 @@ fn validating_the_registered_guides_allocates_almost_nothing_per_goal() {
 			collectgarbage("collect"); collectgarbage("collect")
 			collectgarbage("stop")
 			local base = collectgarbage("count")
-			for i = 1, #defs do assert(Polestar.Guides.Validate(defs[i]) == nil) end
+			for i = 1, #defs do assert(Northstar.Guides.Validate(defs[i]) == nil) end
 			local allocated = collectgarbage("count") - base
 			collectgarbage("restart")
 			emit({ kib = allocated, guides = #defs, goals = goals })

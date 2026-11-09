@@ -27,7 +27,7 @@ so "walks found" is one of the things we check.
 Forge asks two sets of maps for walks:
 
 - **our walking grid**, built from the game's data on your own machine;
-- **Leffe's navigation maps**. Leffe made them and lets Polestar use what they give, with his
+- **Leffe's navigation maps**. Leffe made them and lets Northstar use what they give, with his
   permission. His maps are private: only people he gives access to have them. The walks they
   answered ship in the data pack's walk stores (numbers, no map geometry).
 
@@ -54,7 +54,7 @@ Like every stage, it is skipped when its inputs have not changed (the stage's ke
   places, tasks, objective camps, packages, inns, nodes, starts, services, camps, the graveyards'
   Spirit Healers) and the zones' danger (`zoneMin`, `danger`);
 - the walkers' answer versions (`MODEL_VERSION` in `walker.rs` and `f4walks.rs`) and the nav
-  fingerprint (`POLESTAR_NAV_FP`);
+  fingerprint (`NORTHSTAR_NAV_FP`);
 - the backend, the grid's files and the prepare stage's key, the maps list (`PACK.json`), the
   AreaTable and `zones.json`, the extra pairs and, when used, Leffe's maps, his lift layer or the
   saved Leffe stores (their size and time).
@@ -88,7 +88,7 @@ build walks everything again.
 
 ### The files
 
-The grid lives in `data/local/nav4` (or wherever `--grid` or `POLESTAR_GRID` points). It is
+The grid lives in `data/local/nav4` (or wherever `--grid` or `NORTHSTAR_GRID` points). It is
 built from the installed client, so it is never in the data pack or in git.
 
 | Path | What it is |
@@ -316,7 +316,7 @@ Warm, a stored walk is answered in about a tenth of a microsecond.
 ## Leffe's navigation maps
 
 Leffe's navigation maps are a separate set of walking maps for the game. Leffe made
-them and lets Polestar use what they give. His maps are **private**: they are never in the
+them and lets Northstar use what they give. His maps are **private**: they are never in the
 repository, the data pack or a release. What ships is derived from them: the walks they answered
 (the data pack's Leffe walk stores) and the baked legs drawn on them. Both are credited wherever
 Forge uses them: the build log, the walks stats (`nav: { backend, pack }`) and the report's data
@@ -334,7 +334,7 @@ ends' zones exempt (`f4walks.rs`).
 In this order:
 
 1. `--leffe <dir>` on `forge build`;
-2. the `POLESTAR_LEFFE_NAV` environment variable.
+2. the `NORTHSTAR_LEFFE_NAV` environment variable.
 
 The folder must hold `Nav/Nav.xml` (or `Nav.xml` directly). The maps are about 1 GB.
 
@@ -441,8 +441,8 @@ How to choose:
 - `forge build --nav grid|leffe|hybrid`. Without `--nav`, the build uses `hybrid` when it finds
   Leffe's maps or his saved walks for every faction, and `grid` when it finds neither. Asking for
   `leffe` without his maps, or `hybrid` with neither, is an error.
-- `forge walks walks` (the stage on its own) reads `POLESTAR_NAV`: `grid`, `leffe` or `hybrid`.
-  Without it, it uses `hybrid` when `POLESTAR_LEFFE_NAV` names Leffe's Nav folder or his saved
+- `forge walks walks` (the stage on its own) reads `NORTHSTAR_NAV`: `grid`, `leffe` or `hybrid`.
+  Without it, it uses `hybrid` when `NORTHSTAR_LEFFE_NAV` names Leffe's Nav folder or his saved
   walks lie beside the store (`<store>-leffe.<ext>`), else `grid`.
 
 ## Flights, boats, lifts and hearthstones
@@ -474,7 +474,7 @@ Approximate, on 8 threads; yours will differ.
 |---|---|
 | grid tiles held in memory | 640 tiles (LRU) during walks; 2,048 when reading floors for the world |
 | one customized CCH metric | about 0.7 GB per continent, base walks only |
-| Leffe's decoded map pieces | a byte-bounded cache: 4,096 MB in `forge build`'s walks stage (a faction's walks read about 3.5 GB of them; with 2,048 MB each piece was decoded about nine times), 2,048 MB for its legs and on `forge walks walks`' hybrid; `POLESTAR_LEFFE_NAV_CACHE_MB` for `forge walks walks` with `POLESTAR_NAV=leffe` (default 1,024) |
+| Leffe's decoded map pieces | a byte-bounded cache: 4,096 MB in `forge build`'s walks stage (a faction's walks read about 3.5 GB of them; with 2,048 MB each piece was decoded about nine times), 2,048 MB for its legs and on `forge walks walks`' hybrid; `NORTHSTAR_LEFFE_NAV_CACHE_MB` for `forge walks walks` with `NORTHSTAR_NAV=leffe` (default 1,024) |
 | pairs sent to the walker at once | 150,000 |
 | peak memory, one faction | about 5-6 GB on one backend; 13-15 GB on the hybrid, whose two passes run at once |
 | a faction from an empty store | tens of minutes on our grid, longer on Leffe's maps or the hybrid |
@@ -482,7 +482,7 @@ Approximate, on 8 threads; yours will differ.
 
 `forge build --threads N` (default 8) sets the threads; on the hybrid each of its two passes has N
 of its own. `forge walks walks` uses 8. If a machine runs out of memory, lower `--threads` first.
-With `forge walks walks` on Leffe's maps alone you can also lower `POLESTAR_LEFFE_NAV_CACHE_MB`;
+With `forge walks walks` on Leffe's maps alone you can also lower `NORTHSTAR_LEFFE_NAV_CACHE_MB`;
 `forge build` keeps the walks stage's cache at 4,096 MB.
 
 ## Running it
@@ -518,7 +518,7 @@ Run the world and walks stages on their own, from a checkout (`data/sim` here is
 ```sh
 forge walks world . data/local/nav4 data/sim horde
 forge walks walks . data/local/nav4 data/sim horde data/sim/store-horde.psbn forge-walks-1
-POLESTAR_NAV=hybrid POLESTAR_LEFFE_NAV=~/leffe-nav/Nav forge walks walks . data/local/nav4 data/sim horde data/sim/store-horde.psbn forge-walks-1
+NORTHSTAR_NAV=hybrid NORTHSTAR_LEFFE_NAV=~/leffe-nav/Nav forge walks walks . data/local/nav4 data/sim horde data/sim/store-horde.psbn forge-walks-1
 ```
 
 `forge walks walks` takes:
@@ -571,7 +571,7 @@ Four `forge-nav` examples look at the grid itself (`cargo build --profile quick 
 
 You need the grid once per client build. `forge build` builds it itself from the installed game
 into `<out>/grid` (the grid stage, keyed by the client's build, the map frames, zones and objects:
-skipped while they are unchanged) unless `--grid` or `POLESTAR_GRID` names one. On its own:
+skipped while they are unchanged) unless `--grid` or `NORTHSTAR_GRID` names one. On its own:
 
 ```sh
 forge nav grid --out data/local/nav4                 # every continent map-frames.json names
@@ -626,8 +626,8 @@ pack's stores no longer match it.
 
 ## The walking maps (forge nav pack, forge nav check)
 
-The arrow's walking routes in game run on the walking maps in `addon/Polestar_Nav`. Shipped: maps
-format 5, Leffe's navigation maps condensed for the game. Without `--leffe`: Polestar's own from our
+The arrow's walking routes in game run on the walking maps in `addon/Northstar_Nav`. Shipped: maps
+format 5, Leffe's navigation maps condensed for the game. Without `--leffe`: Northstar's own from our
 grid (maps format 2: per walkable surface a ground class, road, gentle or steep slope, indoor, indoor
 city and the Alliance and Horde hubs; every graph edge priced per faction; format 3 adds each
 surface's WMO group area). `forge nav pack` writes them from the grid and the ground layers:
@@ -647,7 +647,7 @@ forge nav check
   continent can go back to our grid if his maps walk it wrong. About 90 s for the three maps.
   The rules are in [ARCHITECTURE.md](../ARCHITECTURE.md), "Leffe's navigation maps in game".
 - `--dir` is the grid (format 4: it needs each surface's slope), `--layers` the ground layers
-  (default `data/local/nav-layers`, below), `--out` the addon folder (default `addon/Polestar_Nav`),
+  (default `data/local/nav-layers`, below), `--out` the addon folder (default `addon/Northstar_Nav`),
   `--cells` the cells per ADT tile (default 128, 4.17 yd), `--date` the date in the generated headers
   (default today, UTC). The same grid, layers, cells and date give the same bytes.
 - It writes `Nav/Nav<map>.lua` and its parts for maps 0, 1 and 2991, `Nav/Chokepoints.lua` (lift
@@ -661,7 +661,7 @@ forge nav check
   surface's area is its entries' commonest row (ties: the lower id), packed as the class field is
   (`area`, 3-symbol ids, run-length), and the metadata names the rows (`areaNames`). Only rows with a
   name are packed (others as none): the planner matches a surface's area by name to the client's
-  subzone, and the unnamed rows were over half the field (about 0.6 MB of Polestar_Nav's resident
+  subzone, and the unnamed rows were over half the field (about 0.6 MB of Northstar_Nav's resident
   memory). A grid without sidecars, or whose rows have no names, packs format 2.
 - The writer is a port of the Node writer (tools/lib/nav/pack.js, chokepoints.js): on the 1.60.1.70532
   grid every file is byte-identical to it (rust/tests/golden/nav-pack and its opt-in real-grid test);
@@ -669,6 +669,14 @@ forge nav check
   It takes about 2 minutes for the three maps.
 - `forge nav check` compares the folder with its `PACK.json`: every listed file present and unchanged,
   none unlisted, `Nav/Nav.xml` listing them in order, the chokepoints last. Exit 1 when one differs.
+- A Forever install is the checkout's nav addon with this pack's generated files, not the checkout's
+  own `Nav/*.lua`. The checkout's `PACK.json` in this tree is `wow_classic_beta` `1.60.1.70532`,
+  format 5 (Leffe). A native `wowf` `1.60.1.70862` pack is format 3 and has no `Northstar_Nav_EK` or
+  `Northstar_Nav_Kalimdor` parts. Keep the root `Northstar_Nav.toc` (Interface 16001, the Version
+  line, `LoadOnDemand`, `Dependencies: Northstar`, and the file list `Nav\Nav.xml`, `Routing\*.lua`,
+  `API.lua`), plus `LICENSE`, `CREDITS.md`, `API.lua` and `Routing\`. Replace `PACK.json`,
+  `Nav\Nav.xml`, `Nav\Chokepoints.lua` and every `Nav\Nav*.lua` with the native pack's copies. Do not
+  copy the checkout's map Lua or its Eastern Kingdoms and Kalimdor part addons.
 
 The format itself (clusters, cells, entrances, faces, classes, the zone field) is written in each
 `Nav<map>.lua`'s header and in [ARCHITECTURE.md](../ARCHITECTURE.md), "Packing for the in-game engine".
@@ -701,9 +709,15 @@ forge nav layers hubs --dir data/local/nav4
 
 ## When it goes wrong
 
-**`the data pack has no navigation grid (it is built from your own client) and no client … was found: pass --wow <client> or --grid <dir> (or POLESTAR_GRID)`**
+**`the data pack has no navigation grid (it is built from your own client) and no client … was found: pass --wow <client> or --grid <dir> (or NORTHSTAR_GRID)`**
 The pack never ships a grid, and `forge build` found no game client to build one from. Pass
 `--wow` with your game folder, or build a grid (above) and pass `--grid`.
+
+**`forge guide bake: <grid>: The system cannot find the path specified. (os error 3)`**
+The grid directory and its `index.json` are there. `forge nav pack` reads those and does not write
+`walk/`. Bake prices legs from `<grid>/walk`, and the old message named the grid directory instead
+of that folder. Run `forge nav prepare --dir <grid>` (after `forge nav layers`), then bake again.
+The message now names `<grid>/walk`.
 
 **`walker: no walk graph … for continent N (… router.js prepare builds it)`**
 The grid has no `walk/` files for the current `builtAt`. This happens after `nav build` when
@@ -714,10 +728,10 @@ There is no road mask, or there are masks from two road layers. Run `forge nav p
 `forge nav layers roads`. Delete the stale `walk/roads-0-*.bin`, keeping the newest.
 
 **`--nav Hybrid: Leffe's navigation maps not found (…), and no saved Leffe walks`**
-Pass `--leffe <dir>` or set `POLESTAR_LEFFE_NAV` (his maps, if Leffe gave you access), or run
+Pass `--leffe <dir>` or set `NORTHSTAR_LEFFE_NAV` (his maps, if Leffe gave you access), or run
 `forge data fetch` for his saved walks. The maps' folder must contain `Nav/Nav.xml` or `Nav.xml`.
 
-**`POLESTAR_NAV=leffe needs POLESTAR_LEFFE_NAV=<Leffe's Nav folder>`** (or `POLESTAR_NAV=hybrid needs …`)
+**`NORTHSTAR_NAV=leffe needs NORTHSTAR_LEFFE_NAV=<Leffe's Nav folder>`** (or `NORTHSTAR_NAV=hybrid needs …`)
 Same, for `forge walks walks`.
 
 **`<store>: no saved walks on Leffe's maps`**
@@ -751,7 +765,7 @@ If it is a grid gap, fix the grid. If it is a bad place, fix the place in the da
 [data.md](data.md)).
 
 **Out of memory.** Lower `--threads`. With `forge walks walks` on Leffe's maps alone, also lower
-`POLESTAR_LEFFE_NAV_CACHE_MB`.
+`NORTHSTAR_LEFFE_NAV_CACHE_MB`.
 
 **The walks stage runs every time.** It is skipped when its key is unchanged. Its key covers the
 grid's files by path, size and modification time: something that touches the grid folder (a copy, a

@@ -1,5 +1,5 @@
 //! behavior.spokenDelay: Spoken Quests records a quest page in its own handler of the event that opened the
-//! window, and it loads after Polestar, so automation acting inside Polestar's handler leaves it nothing to read.
+//! window, and it loads after Northstar, so automation acting inside Northstar's handler leaves it nothing to read.
 //! With Spoken Quests installed the setting is on by default, and each window waits before automation acts on
 //! it; everything is decided when the wait ends.
 //! `w.questDetail`/`w.gossip`/`w.questProgress` stand for the window opening, `stub.advance` for the wait.
@@ -7,7 +7,7 @@
 use forge_addontest::{emitted, Addon, RunAddon, TEST_PACK, TEST_SOURCE};
 use serde_json::{json, Value};
 
-const STEPS: &str = r#"Polestar.RegisterGuide({
+const STEPS: &str = r#"Northstar.RegisterGuide({
 	id = "test/spoken", pack = "test", title = "Spoken", minLevel = 1, maxLevel = 20,
 	steps = {
 		{ goals = { { t = "accept", quest = 783, title = "Quest 783" } } },
@@ -26,14 +26,14 @@ const CALLS: &str = r#"
 		for i, x in ipairs(w.calls) do c[i] = tostring(x[1]) .. " " .. tostring(x[2]) end
 		return table.concat(c, ", ")
 	end
-	local function set(on) Polestar.Set("behavior.spokenDelay", on) end
+	local function set(on) Northstar.Set("behavior.spokenDelay", on) end
 "#;
 
 fn run_with(before: &str, script: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{MAP}\n{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: format!("\n{TEST_PACK}\n{TEST_SOURCE}\n{STEPS}\nstub.login()\n{CALLS}\n{script}"),
 		..Default::default()
 	})
@@ -80,7 +80,7 @@ fn without_spoken_quests_the_setting_is_on_but_nothing_waits() {
 	let out = run_with(
 		"",
 		r#"
-		emit(Polestar.Automation.Delay() == nil)
+		emit(Northstar.Automation.Delay() == nil)
 		w.questDetail(823, 783)
 		emit(calls())
 	"#,

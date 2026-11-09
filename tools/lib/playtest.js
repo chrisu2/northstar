@@ -149,16 +149,16 @@ function playOptions(pack, g, { race, faction, cls, stubs = [], before = '', scr
 			w.level = ${g.minLevel || 1}
 			${start ? `w.moveTo(${start.map}, ${start.x}, ${start.y})` : ''}
 			${before}`,
-		addons: ['Polestar'],
+		addons: ['Northstar'],
 		script: `
 			${pack.loads}
 			stub.login()
 			stub.fire("QUEST_LOG_UPDATE") -- the client fills the quest log right after login
-			Polestar.Set("behavior.guideEnd", ${handOver ? '"continue"' : '"ask"'})
-			Polestar.Set("behavior.groupQuests", ${luaValue(groups)})
-			${handOver ? 'Polestar.Set("behavior.routeChoice", "recommended")' : ''}
-			Polestar.Engine.SetGuide(${luaValue(g.id)})
-			SIM_GUIDE = Polestar.Engine.GetGuide() -- a hand-over may replace it before SIMULATE starts
+			Northstar.Set("behavior.guideEnd", ${handOver ? '"continue"' : '"ask"'})
+			Northstar.Set("behavior.groupQuests", ${luaValue(groups)})
+			${handOver ? 'Northstar.Set("behavior.routeChoice", "recommended")' : ''}
+			Northstar.Engine.SetGuide(${luaValue(g.id)})
+			SIM_GUIDE = Northstar.Engine.GetGuide() -- a hand-over may replace it before SIMULATE starts
 			stub.advance(0.6)
 			${script == null ? SIMULATE : script}
 			${handOver ? handOverCheck(handOver, g.id) : ''}`,
@@ -173,7 +173,7 @@ function playOptions(pack, g, { race, faction, cls, stubs = [], before = '', scr
 // else the condition that leaves it out ("faction", "race" or "class").
 function handOverCheck(ids, from) {
 	return `do
-	local E, G = Polestar.Engine, Polestar.Guides
+	local E, G = Northstar.Engine, Northstar.Guides
 	local H = E.GetGuide()
 	local i = H and E.GetStepIndex()
 	local open = false
@@ -183,8 +183,8 @@ function handOverCheck(ids, from) {
 		end
 	end
 	local misfit = false
-	if H and not G.GuideMatches(H, Polestar.Compat.GetPlayerInfo()) then
-		local P = Polestar.Compat.GetPlayerInfo()
+	if H and not G.GuideMatches(H, Northstar.Compat.GetPlayerInfo()) then
+		local P = Northstar.Compat.GetPlayerInfo()
 		if H.faction and P.faction and H.faction:lower() ~= P.faction:lower() then misfit = "faction"
 		elseif not G.ListMatches(H.races, P.race, G.NormRace) then misfit = "race"
 		else misfit = "class" end
@@ -368,7 +368,7 @@ function outcome(out, handOver = null, hand = null, persona = null) {
 		let to = handOver.join(' or ');
 		if (!handOver.includes(hand.guide)) {
 			const registered = (hand.registered || []).some(Boolean);
-			reason = registered ? `Polestar did not open ${one ? 'it' : 'any of them'}${hand.guide ? ` (${hand.guide} stayed open)` : ''}` : one ? 'it is not registered' : 'none of them is registered';
+			reason = registered ? `Northstar did not open ${one ? 'it' : 'any of them'}${hand.guide ? ` (${hand.guide} stayed open)` : ''}` : one ? 'it is not registered' : 'none of them is registered';
 		} else if (hand.misfit) {
 			// The engine opened a guide whose race, class or faction leaves this character out.
 			to = hand.guide;
@@ -548,7 +548,7 @@ async function playtest({ dir, manifest, official = false, filter = null, classe
 	// Every compiled guide, for the chains into each one (chainDone).
 	const chained = packs.flatMap((p) => p.guides);
 	const sim = simPacks(packs, data);
-	const pool = new LuaPool({ size: workers || Number(process.env.POLESTAR_PLAY_WORKERS) || undefined });
+	const pool = new LuaPool({ size: workers || Number(process.env.NORTHSTAR_PLAY_WORKERS) || undefined });
 	const pending = [];
 	let shown = 0;
 	const flush = () => {
@@ -638,7 +638,7 @@ function resultLines(r) {
 }
 
 const SIMULATE = `
-local E, w = Polestar.Engine, stub.world
+local E, w = Northstar.Engine, stub.world
 -- SIM_GUIDE (playGuide): the guide that was set, which the engine may already
 -- have left for the next one; else the open guide.
 local G = SIM_GUIDE or E.GetGuide()
@@ -802,9 +802,18 @@ while guard < 4000 do
 	if not i or left() then break end
 	visited[i] = true
 	local view = E.GetStepView(i)
-	local open
+	-- A goal waiting for a level (an accept above the character's level, and
+	-- its work with it): the simulated player gains no XP, so it reaches that
+	-- level here, as a player has by then; the guide brings the quest back.
+	local need = 0
 	for _, g in ipairs(view.goals) do
-		if g.status ~= "done" and g.status ~= "na" and not g.optional and g.t ~= "note" then open = g; break end
+		if g.unavailable == "level" then need = math.max(need, tonumber((g.unavailableText or ""):match("(%d+)")) or w.level + 1) end
+	end
+	local open
+	-- A vendor check-off beside other work (g.side) is left alone, as by a
+	-- player with nothing to sell: it must never hold the step.
+	for _, g in ipairs(view.goals) do
+		if g.status ~= "done" and g.status ~= "na" and not g.optional and not g.side and g.t ~= "note" then open = g; break end
 	end
 	-- A chosen profession's train is taken first, while its step is current: a
 	-- step passed with its \`when\` failing keeps that outcome, so a profession
@@ -813,6 +822,10 @@ while guard < 4000 do
 	if learn then
 		trained[i .. ":" .. learn.index] = true
 		act(i, learn, G.steps[i].goals[learn.index])
+		stub.advance(0.6)
+		if left() then break end
+	elseif need > w.level then
+		w.setLevel(need)
 		stub.advance(0.6)
 		if left() then break end
 	elseif not open then

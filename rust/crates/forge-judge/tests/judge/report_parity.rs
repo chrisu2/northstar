@@ -3,8 +3,8 @@
 //!
 //! Default: rust/tests/golden/report (its README and regen.sh): forge's Orc and Human routes on the slice,
 //! written into the clean guide slice (v1 here), and the scripts' results on the v2-route judge tree.
-//! Optional extra: the r8 Orc and Human routes written into the v1 guides checkout ($POLESTAR_V1), their
-//! inputs in $POLESTAR_JSREF/report/{rep,simdir}; variables unset or inputs absent: skipped with a note.
+//! Optional extra: the r8 Orc and Human routes written into the v1 guides checkout ($NORTHSTAR_V1), their
+//! inputs in $NORTHSTAR_JSREF/report/{rep,simdir}; variables unset or inputs absent: skipped with a note.
 //!
 //! cargo test --release -p forge-judge --test report_parity -- --nocapture
 
@@ -118,7 +118,7 @@ fn report_equals_the_js_scripts_on_the_slice() {
 }
 
 fn dirs() -> Option<(PathBuf, PathBuf)> {
-	Some((PathBuf::from(std::env::var_os("POLESTAR_JSREF")?).join("report"), PathBuf::from(std::env::var_os("POLESTAR_V1")?)))
+	Some((PathBuf::from(std::env::var_os("NORTHSTAR_JSREF")?).join("report"), PathBuf::from(std::env::var_os("NORTHSTAR_V1")?)))
 }
 
 /// gmeasure.js rows: (chain, to, hours, end level, quests, zone changes, passed by, never, later, returns,
@@ -139,11 +139,11 @@ const HUMAN: [Row; 4] = [
 ];
 
 #[test]
-#[ignore = "needs POLESTAR_JSREF (rep/) and POLESTAR_V1 (data/forever)"]
+#[ignore = "needs NORTHSTAR_JSREF (rep/) and NORTHSTAR_V1 (data/forever)"]
 fn report_equals_the_js_scripts_on_r8() {
-	let (scratch, seed) = dirs().expect("report parity needs POLESTAR_JSREF and POLESTAR_V1");
+	let (scratch, seed) = dirs().expect("report parity needs NORTHSTAR_JSREF and NORTHSTAR_V1");
 	let rep = scratch.join("rep");
-	assert!(rep.join("Orc.json").exists() && seed.join("data/forever").is_dir(), "report parity needs {} and POLESTAR_V1's data/forever", rep.display());
+	assert!(rep.join("Orc.json").exists() && seed.join("data/forever").is_dir(), "report parity needs {} and NORTHSTAR_V1's data/forever", rep.display());
 	let start = |s: &str| StartInput { route: rep.join(format!("{s}.json")), stream: None, guides: rep.join("guides").join(s) };
 	let inp = Inputs {
 		starts: vec![start("Orc"), start("Human")],

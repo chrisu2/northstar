@@ -168,7 +168,7 @@ fn changelog(out: &Path, t: &Tables, m: &Meta, previous: Option<&Path>, existing
 /// NOTICE.md's first text (hand-written once seeded: publish never overwrites it).
 fn notice(m: &Meta) -> String {
 	let mut s =
-		String::from("# NOTICE\n\nThe Polestar quest data for World of Warcraft: Forever. Every value in its tables is held by at\nleast one of the independent sources below.\n\n## Credits\n\n");
+		String::from("# NOTICE\n\nThe Northstar quest data for World of Warcraft: Forever. Every value in its tables is held by at\nleast one of the independent sources below.\n\n## Credits\n\n");
 	s.push_str("- **EG Link.** EG Link output: World of Warcraft: Forever (https://github.com/JIVESCORP/eg-link-output-wowf),\n  data from Efficient Games (https://efficient.games), licensed under CC BY 4.0\n  (https://creativecommons.org/licenses/by/4.0/); reduced to quest facts.\n");
 	s.push_str("- **CMaNGOS classic-db** (https://github.com/cmangos/classic-db), GPL-3.0.\n");
 	s.push_str("- **VMaNGOS** values (through pfQuest) and **Factoruide** data (https://github.com/Factoruide), GPL-2.0-or-later.\n");
@@ -195,7 +195,7 @@ fn readme() -> String {
 	let tier: Vec<String> = TABLES.iter().filter(|t| !t.own_layer).map(|t| format!("`data/{}.jsonl`", t.name)).collect();
 	let own: Vec<String> = TABLES.iter().filter(|t| t.own_layer).map(|t| format!("`data/{}.jsonl`", t.name)).collect();
 	format!(
-		"# Polestar quest data for World of Warcraft: Forever\n\nOne row per line in data/*.jsonl; each table's JSON Schema is in schema/, and datapackage.json\nlists every file with its size, sha256 and licence. index.json names the version and client build.\n\n## Licences\n\n- **GPL-3.0** (LICENSE): the database tables {}.\n- **CC BY 4.0** (LICENSE-CC-BY-4.0.txt): our own layer: the quest step and mechanic text in {},\n  the schemas under schema/, and corrections/.\n\nCredits for the sources are in NOTICE.md.\n\n## Disclaimer\n\nWorld of Warcraft names and game data © Blizzard Entertainment; this project is not affiliated with\nor endorsed by Blizzard.\n",
+		"# Northstar quest data for World of Warcraft: Forever\n\nOne row per line in data/*.jsonl; each table's JSON Schema is in schema/, and datapackage.json\nlists every file with its size, sha256 and licence. index.json names the version and client build.\n\n## Licences\n\n- **GPL-3.0** (LICENSE): the database tables {}.\n- **CC BY 4.0** (LICENSE-CC-BY-4.0.txt): our own layer: the quest step and mechanic text in {},\n  the schemas under schema/, and corrections/.\n\nCredits for the sources are in NOTICE.md.\n\n## Disclaimer\n\nWorld of Warcraft names and game data © Blizzard Entertainment; this project is not affiliated with\nor endorsed by Blizzard.\n",
 		tier.join(", "),
 		own.join(" and ")
 	)
@@ -299,7 +299,7 @@ pub fn write(out: &Path, t: &Tables, m: &Meta, previous: Option<&Path>, ledger: 
 	let package = json!({
 		"$schema": "https://datapackage.org/profiles/2.0/datapackage.json",
 		"name": DATASET,
-		"title": "Polestar quest data for World of Warcraft: Forever",
+		"title": "Northstar quest data for World of Warcraft: Forever",
 		"version": m.version,
 		"created": m.date,
 		"clientBuild": m.client_build,

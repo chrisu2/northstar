@@ -1,5 +1,5 @@
-//! Performance budgets for the Recorder (addon/Polestar_Recorder) while it records, against the world of
-//! tests/lua/stub_recorder.lua: the budgets perf.rs holds Polestar to, so the Recorder can stay on while a
+//! Performance budgets for the Recorder (addon/Northstar_Recorder) while it records, against the world of
+//! tests/lua/stub_recorder.lua: the budgets perf.rs holds Northstar to, so the Recorder can stay on while a
 //! player plays. Addon time is CPU time inside its event handlers, OnUpdate scripts and C_Timer callbacks
 //! (tests/lua/profile.lua).
 //!
@@ -43,7 +43,7 @@ const CPU_CLOCK: bool = !cfg!(windows);
 // Recording on, the delayed work after login done, and the measuring helpers.
 const PRELUDE: &str = r#"
 local P = stub.profile
-SlashCmdList.POLESTARREC("on")
+SlashCmdList.NORTHSTARREC("on")
 stub.advance(3) -- the delayed work after login
 local out = {}
 local ROUNDS = ${ROUNDS}
@@ -69,7 +69,7 @@ end
 -- percent.
 local refEvents
 local refFrame = CreateFrame("Frame")
-refFrame:RegisterEvent("POLESTAR_TEST_REFERENCE")
+refFrame:RegisterEvent("NORTHSTAR_TEST_REFERENCE")
 refFrame:SetScript("OnEvent", function(_, _, i)
 	local kind, id = UnitGUID("player"):match("^(%a+)%-[^-]*%-(%x+)")
 	local map = C_Map.GetBestMapForUnit("player")
@@ -84,7 +84,7 @@ local function reference()
 	refEvents = {}
 	collectgarbage("collect")
 	local t = P.total()
-	for i = 1, 4000 do stub.fire("POLESTAR_TEST_REFERENCE", i) end
+	for i = 1, 4000 do stub.fire("NORTHSTAR_TEST_REFERENCE", i) end
 	return (P.total() - t) / 10
 end
 
@@ -129,7 +129,7 @@ end
 local function count(kind)
 	stub.fire("PLAYER_LOGOUT")
 	local n = 0
-	for _, text in pairs(PolestarRecorderDB.chunks) do
+	for _, text in pairs(NorthstarRecorderDB.chunks) do
 		for _, r in ipairs(stub.records(text)) do if r[1] == kind then n = n + 1 end end
 	end
 	return n
@@ -140,7 +140,7 @@ fn measure(script: &str) -> Value {
 	let prelude = PRELUDE.replace("${ROUNDS}", &ROUNDS.to_string());
 	emitted(&RunAddon {
 		stubs: vec!["stub_recorder.lua", "profile.lua"],
-		addons: vec!["Polestar_Recorder".into()],
+		addons: vec!["Northstar_Recorder".into()],
 		login: true,
 		before: "stub.profile.start()".into(),
 		script: [prelude.as_str(), script, "emit(out)"].join("\n"),
@@ -388,7 +388,7 @@ fn an_hour_of_questing_stores_under_80_kib_in_well_formed_records() {
 		end
 		logout()
 		local bytes, kinds = 0, {}
-		for _, text in pairs(PolestarRecorderDB.chunks) do
+		for _, text in pairs(NorthstarRecorderDB.chunks) do
 			bytes = bytes + #text
 			for _, r in ipairs(stub.records(text)) do kinds[r[1]] = (kinds[r[1]] or 0) + 1 end
 		end

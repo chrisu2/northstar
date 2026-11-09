@@ -1,6 +1,6 @@
 'use strict';
 // A guide's texts in the client's language (docs/TRANSLATING.md, "Guide
-// texts"; addon/Polestar/Core/GuideTexts.lua): the compiler writes the game's
+// texts"; addon/Northstar/Core/GuideTexts.lua): the compiler writes the game's
 // names inside the prose as {kind:id} tokens and drops a goal note that only
 // names its goal (#133); an English client reads the guide as written; a
 // French one reads the game's French names in it, and the pack's French
@@ -38,7 +38,7 @@ step Marshal McBride
 // { file: text } }) is given.
 function packDir(locales = {}) {
 	const dir = tmpdir('polestar-texts-');
-	fs.writeFileSync(path.join(dir, 'pack.json'), JSON.stringify({ id: 'texts', title: 'Texts Pack', author: 'Ann', version: '1.0.0', license: 'CC0-1.0', folder: 'PolestarPack_Texts' }));
+	fs.writeFileSync(path.join(dir, 'pack.json'), JSON.stringify({ id: 'texts', title: 'Texts Pack', author: 'Ann', version: '1.0.0', license: 'CC0-1.0', folder: 'NorthstarPack_Texts' }));
 	fs.mkdirSync(path.join(dir, 'guides'));
 	fs.writeFileSync(path.join(dir, 'guides', 'main.guide'), GUIDE);
 	for (const [locale, files] of Object.entries(locales)) {
@@ -74,26 +74,19 @@ function view(addons, folder, { locale = 'enUS', names = null, texts = [], scrip
 		stubs: ['stub_world.lua', 'stub_packs.lua'],
 		before: `function GetLocale() return ${JSON.stringify(locale)} end
 LOCALIZED_CLASS_NAMES_MALE = { WARRIOR = ${JSON.stringify(locale === 'frFR' ? 'Guerrier' : 'Warrior')} }
-do
-	local load = loadfile
-	function loadfile(file)
-		if file:match("[/\\\\]Locales[/\\\\]%a%a%u%u%.lua$") then return function() end end
-		return load(file)
-	end
-end
 ${names ? names.stubLua : ''}
 ${packs}
 stub.world.addMap(1429, { name = "Elwynn Forest", c = 0, left = 1500, right = -1500, top = 500, bottom = -1500 })
 stub.world.moveTo(1429, 48, 42)`,
-		addons: ['Polestar', { name: folder, dir: path.join(addons, folder) }],
+		addons: ['Northstar', { name: folder, dir: path.join(addons, folder) }],
 		script: `stub.login()
-local E = Polestar.Engine
+local E = Northstar.Engine
 E.SetGuide("texts/main")
 local v = E.GetStepView(1)
 local notes = {}
 for i, g in ipairs(v.goals) do notes[i] = g.note or false end
-local h = Polestar.Guides.List()[1]
-emit({ title = v.title, note = v.note, notes = notes, guide = h.title, folder = h.folder, pack = Polestar.Guides.Pack("texts").title })
+local h = Northstar.Guides.List()[1]
+emit({ title = v.title, note = v.note, notes = notes, guide = h.title, folder = h.folder, pack = Northstar.Guides.Pack("texts").title })
 ${script}`,
 	}).emitted;
 }
@@ -124,7 +117,7 @@ test('an English client reads the guide as its author wrote it, less the note th
 test("a French client reads the game's French names in the English texts until the pack translates them", () => {
 	const r = build(packDir());
 	const { addons } = install(r);
-	assert.equal(fs.existsSync(path.join(addons, 'PolestarPack_Texts_frFR')), false, 'no translation, no texts addon');
+	assert.equal(fs.existsSync(path.join(addons, 'NorthstarPack_Texts_frFR')), false, 'no translation, no texts addon');
 	const [v] = view(addons, r.manifest.folder, { locale: 'frFR', names: FR_NAMES });
 	assert.equal(v.title, 'Maréchal McBride');
 	assert.equal(v.note, 'Maréchal McBride stands at the abbey door; Frère Danil sells food inside. Vermine kobold crowd the camp to the north.');
@@ -148,14 +141,14 @@ const FR_TEXTS = {
 test("the pack's French texts addon loads on a French client only, and its translations show with the French names", () => {
 	const r = build(packDir({ frFR: FR_TEXTS }));
 	const { addons } = install(r);
-	const toc = fs.readFileSync(path.join(addons, 'PolestarPack_Texts_frFR', 'PolestarPack_Texts_frFR.toc'), 'utf8');
+	const toc = fs.readFileSync(path.join(addons, 'NorthstarPack_Texts_frFR', 'NorthstarPack_Texts_frFR.toc'), 'utf8');
 	assert.match(toc, /^## LoadOnDemand: 1$/m);
-	assert.match(toc, /^## X-Polestar-Texts: texts$/m);
-	const [fr] = view(addons, r.manifest.folder, { locale: 'frFR', names: FR_NAMES, texts: ['PolestarPack_Texts_frFR'], script: 'emit(stub.packLoads)' });
+	assert.match(toc, /^## X-Northstar-Texts: texts$/m);
+	const [fr] = view(addons, r.manifest.folder, { locale: 'frFR', names: FR_NAMES, texts: ['NorthstarPack_Texts_frFR'], script: 'emit(stub.packLoads)' });
 	assert.equal(fr.note, "Maréchal McBride se tient à la porte de l'abbaye ; Frère Danil vend à manger à l'intérieur. Au nord : Vermine kobold.");
 	assert.deepEqual(fr.notes, [false, 'quelques Vermine kobold à la fois', 'Maréchal McBride ; il vous entraîne aussi']);
 	assert.equal(fr.pack, 'Pack de textes');
-	const [de, loads] = view(addons, r.manifest.folder, { locale: 'deDE', texts: ['PolestarPack_Texts_frFR'], script: 'emit(stub.packLoads)' });
+	const [de, loads] = view(addons, r.manifest.folder, { locale: 'deDE', texts: ['NorthstarPack_Texts_frFR'], script: 'emit(stub.packLoads)' });
 	assert.equal(de.note, TIP, 'a German client reads the English');
 	assert.deepEqual(loads, {}, 'and never loads the French texts');
 });

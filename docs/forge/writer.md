@@ -2,7 +2,7 @@
 
 The writer turns a route into guides. A route is the simulator's improved
 quest order for one start (see [routes.md](routes.md)). The writer puts that
-order into v1's guides, the current guides Polestar ships. It keeps v1's own
+order into v1's guides, the current guides Northstar ships. It keeps v1's own
 lines, tips and layout wherever it can. The result is a normal guides folder.
 The compiler lints it and builds it into the addon's pack, and the judge
 compares it with v1 (see [judge.md](judge.md)).
@@ -12,10 +12,10 @@ as `forge writer apply-route`, and `forge build` runs it as its `guides` stage
 for every start. The compiler is `forge-guide` (`forge guide compile|lint`).
 See [FORGE.md](../FORGE.md) for the whole pipeline.
 
-## Written for how Polestar plays
+## Written for how Northstar plays
 
 A route is only as good as the way the addon plays it, so the writer writes for the engine
-(`addon/Polestar/Core/Engine.lua`, [GUIDE_FORMAT.md](../GUIDE_FORMAT.md)):
+(`addon/Northstar/Core/Engine.lua`, [GUIDE_FORMAT.md](../GUIDE_FORMAT.md)):
 
 - **One area, all its work.** Quest objectives count from the quest log wherever the mob dies, so
   work on the same ground (plainstriders, raptors and zhevra across the northern Barrens) is one
@@ -355,7 +355,15 @@ be compared byte for byte with the old JavaScript writer.
   flight master before the flight to Southshore, with A Plague Upon Thee's second part, c19). The
   log names each moved event (`hub tour: ...`).
 - **The chain** is v1's: from the guide holding the route's first line, through
-  each guide's `next`.
+  each guide's `next`; the guides those links do not reach join it, and then
+  the whole chain is put in the route's order, by the median route position of
+  each guide's lines (`post::play_order`, #1386). The fix-ups below compare a
+  step's guide and line with another's as "before" and "after", so the files'
+  order must be the order the route plays them: Silverpine (12-15), which v1's
+  links did not reach, sat after the Barrens (15-21) it leads into, and its
+  Strange Lockbox step stayed at 12-15, before the Barrens' accept of Trial of
+  the Sea Lion it is for. The log lists a reordered chain (`apply-route: the
+  chain in the route's order: …`).
 - **Steps split.** v1's goal lines go in the route's order. Consecutive lines
   of one v1 step stay one step. A goal line the route does not name goes with
   the next line of its step that the route names (NPC lines between two named
@@ -437,6 +445,25 @@ be compared byte for byte with the old JavaScript writer.
   not written, nor the rest of its quest: next to the accept it made a trip of
   its own (c17 Horde: the OOX-17/TN and OOX-09/HL rewards flown to Booty Bay
   from Tanaris and the Hinterlands, the escort after the hand-in).
+- A step whose every goal collects an item that drops only for a quest not yet
+  taken (or a step `when onquest Q`) moves after Q's accept, next to its place
+  (`post::steps_after_their_quest`). When Q's accept is only in guides the
+  step's players do not play, the step stays, gated `when onquest Q`.
+- **Every guide stands on its own** (Fitz, 2026-11-08; `post::fresh_openers`):
+  a player may load any leveling guide fresh at its level, having done their
+  starting zone and none of our other guides. An accept in a guide's first 10
+  steps whose quest needs one (the data's `pre`/`preAny`) that the guide has
+  not handed in before it, and that only an earlier guide of the chain hands
+  in, is one that player cannot take (the addon hides it). `forge writer
+  apply-route --fresh-openers` sets what the writer does with them: `flag`
+  (default) lists each in the log (`fresh opener: <guide> step N: accept Q
+  needs P (<earlier guide>)`); `move` takes each to the end of the guide's
+  first step after the opening that stands by its giver (a step for everyone,
+  with no line of the quest before it), so the route's player takes it on that
+  later visit and the opening asks nothing of a fresh player
+  (`post::fresh_openers_later`), and lists the rest; `off` skips the check. The
+  release gate measuring the shipped guides the same way, both as written and
+  as the addon shows them, is the maintainers' fresh-start gate.
 - A quest started by an item that only drops, rarely or at an unknown chance,
   is optional: its collect and its accept, and the accepts of the quests
   after it in its chain (Nibbled-On Book, then Book Inventory); their
@@ -488,7 +515,7 @@ be compared byte for byte with the old JavaScript writer.
   route does not name are not written at all, nor a v1 step left with only
   such lines and notes.
 - Hearths and duplicate `only` lines are fixed per audience (see the layout above).
-- **No hearth goals** (Polestar 0.3.3, Fitz: telling the player to hearth is
+- **No hearth goals** (Northstar 0.3.3, Fitz: telling the player to hearth is
   the arrow's job, not the guide's). The route still plans with the
   Hearthstone, and every pass above sees its hearth legs, but the last pass of
   the guides stage (after the travel repair, the travel check and the engine
@@ -885,7 +912,7 @@ and a travel line that starts where the player is not goes to the other races.
 
 ### 5. Engine features
 
-The newer addon engine (Polestar 0.2.6, pack format 4) reads lines that v1's
+The newer addon engine (Northstar 0.2.6, pack format 4) reads lines that v1's
 guides predate. The writer adds them where the route needs them
 (`src/engine.rs`). These R-numbers are the writer's own, in order of how much
 they matter to the player. They are not the judge's honest rules.
@@ -1000,7 +1027,10 @@ they matter to the player. They are not the judge's honest rules.
   placement; several families, in the step's order: Sprogger's hand-in of
   8553 before his accept of 8554). A bag collect of the item that starts a family's quest is
   that quest's line (Croaky's Head, a level 11 elite's drop, sat in Elwynn's step for
-  everyone: 12 recorded deaths at 8-9, #977). The family's work is never listed along the way. Its first step
+  everyone: 12 recorded deaths at 8-9, #977). The family's lines in those steps lose `optional`:
+  only a player who chose the group way follows them, and a step of optional goals only is done at
+  once, which left that player with no arrow to the item, the accept or the hand-in (the Monogrammed
+  Sash, Margol's Horn). The family's work is never listed along the way. Its first step
   that does the root's work (else its accept step) gets one tip: "These are
   elite mobs: grouping up is encouraged, look for people to do it with." then
   how hard (size 1: "Sarkoth is a level 10 elite: most classes solo it at
@@ -1024,7 +1054,7 @@ they matter to the player. They are not the judge's honest rules.
   `--no-groups` turns it off. Under `--format-0-3`, R5 still asks the other
   group and dungeon quests.
 
-`--format-0-3` adds the pack format 5 lines (Polestar 0.3.0): R5 `when group`,
+`--format-0-3` adds the pack format 5 lines (Northstar 0.3.0): R5 `when group`,
 R6 `task` and `cast`, R7 `abandon` when the log would pass 40 (the game's quest log), R8 `skipto` over
 blocks kept for one carried quest. `--no-engine` writes none of these and uses
 no route legs: the old JavaScript writer's output, byte for byte.
@@ -1198,12 +1228,12 @@ judge it:
 
 ```sh
 forge guide lint --guides out/guides/Orc --data out/data/forever
-forge guide compile --guides out/guides/Orc --data out/data/forever --out out/addon/Polestar_Guides
+forge guide compile --guides out/guides/Orc --data out/data/forever --out out/addon/Northstar_Guides
 forge judge report --route out/routes/Orc.json --guides out/guides --root out/.forge/root --sim out/.forge/sim --out out/review
 ```
 
-Run `forge guide` inside a Polestar checkout. It finds the checkout by
-`addon/Polestar/Polestar.toc` and `guides/pack.json`, or you pass `--root`. It
+Run `forge guide` inside a Northstar checkout. It finds the checkout by
+`addon/Northstar/Northstar.toc` and `guides/pack.json`, or you pass `--root`. It
 reads the pack's manifest from `<root>/guides/pack.json`.
 
 | Flag | Meaning |
@@ -1211,7 +1241,7 @@ reads the pack's manifest from `<root>/guides/pack.json`.
 | `compile` / `lint` | Write the addon files / only check |
 | `--guides DIR` | The guides folder (default `<root>/guides`) |
 | `--data DIR` | The game data (default `<root>/data/forever`) |
-| `--out DIR` | The pack's main addon folder (default `<root>/addon/Polestar_Guides`, **the checkout's own pack**). Race parts are written next to it, and its translations into the language folders (`Polestar_deDE`, …) beside the game's names |
+| `--out DIR` | The pack's main addon folder (default `<root>/addon/Northstar_Guides`, **the checkout's own pack**). Race parts are written next to it, and its translations into the language folders (`Northstar_deDE`, …) beside the game's names |
 | `--format text\|json\|github` | How diagnostics print (`github`: annotations for CI) |
 | `--quiet` | Hide warnings |
 | `--force` | Write the files even with errors |
@@ -1227,7 +1257,7 @@ compiler's. Both commands exit 1 on any error. Their last line is the summary
 [PACK_FORMAT.md](../PACK_FORMAT.md).
 
 Always pass `--out` when you compile a written tree. Otherwise it replaces the
-checkout's own `addon/Polestar_Guides`.
+checkout's own `addon/Northstar_Guides`.
 
 ## When something goes wrong
 

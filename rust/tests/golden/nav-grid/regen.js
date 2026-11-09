@@ -17,7 +17,7 @@ const [jsRoot, outArg] = process.argv.slice(2);
 if (!jsRoot || !outArg) throw new Error('usage: node regen.js <js root> <out dir>');
 const ROOT = path.resolve(jsRoot);
 const OUT = path.resolve(outArg);
-process.env.POLESTAR_GRID = path.join(ROOT, 'data', 'local', 'nav4');
+process.env.NORTHSTAR_GRID = path.join(ROOT, 'data', 'local', 'nav4');
 const { Scene, ADT, QUAD } = require(path.join(ROOT, 'tests/helpers/navscene'));
 const { buildGrid } = require(path.join(ROOT, 'tools/lib/nav/grid/build'));
 const { runJob } = require(path.join(ROOT, 'tools/lib/nav/grid/worker'));

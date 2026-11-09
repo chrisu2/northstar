@@ -1,4 +1,4 @@
-//! Compat (addon/Polestar/Core/Compat.lua): map frames and world coordinates, quest objective normalization, NPC
+//! Compat (addon/Northstar/Core/Compat.lua): map frames and world coordinates, quest objective normalization, NPC
 //! IDs, player info, against the stub world.
 
 use forge_addontest::run::addons_dir;
@@ -16,8 +16,8 @@ fn run_with(script: &str, before: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!("{BASE}{before}"),
-		addons: vec![Addon::files("Polestar", &["Core/Core.xml"])],
-		script: format!("C = Polestar.Compat\n{script}"),
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
+		script: format!("C = Northstar.Compat\n{script}"),
 		..Default::default()
 	})
 	.remove(0)
@@ -51,7 +51,7 @@ fn round(list: &Value) -> Value {
 #[test]
 fn maptoworld_uses_registered_era_bounds_for_frame_e_and_the_live_client_otherwise() {
 	let out = run(r#"
-		Polestar.RegisterMapFrames({ era = { [1429] = { c = 0, left = 1600, right = -1400, top = 600, bottom = -1400 } } })
+		Northstar.RegisterMapFrames({ era = { [1429] = { c = 0, left = 1600, right = -1400, top = 600, bottom = -1400 } } })
 		emit({ { C.MapToWorld(1429, 50, 50, "e") }, { C.MapToWorld(1429, 50, 50) }, { C.MapToWorld(9998, 50, 50, "e") },
 			{ C.MapToWorld(9999, 50, 50) } })
 	"#);
@@ -64,7 +64,7 @@ fn maptoworld_uses_registered_era_bounds_for_frame_e_and_the_live_client_otherwi
 #[test]
 fn an_era_point_converts_back_to_the_live_map_percent_with_worldtomap_with_or_without_getmapposfromworldpos() {
 	let script = r#"
-		Polestar.RegisterMapFrames({ era = { [1429] = { c = 0, left = 1600, right = -1400, top = 600, bottom = -1400 } } })
+		Northstar.RegisterMapFrames({ era = { [1429] = { c = 0, left = 1600, right = -1400, top = 600, bottom = -1400 } } })
 		local c, wx, wy = C.MapToWorld(1429, 50, 50, "e")
 		emit({ { C.WorldToMap(c, wx, wy, 1429) }, { C.WorldToMap(1, wx, wy, 1429) } })
 	"#;
@@ -131,6 +131,32 @@ fn quest_objectives_normalize_to_text_type_finished_numfulfilled_numrequired() {
 			"ready": false,
 		})
 	);
+}
+
+#[test]
+fn issue_1327_a_quest_timer_runs_while_a_log_quest_has_time_allowed_and_is_neither_ready_nor_failed() {
+	let out = run(r#"
+		local allowed, ready, failed = { [29] = 1800 }, false, false
+		C_QuestLog.GetNumQuestLogEntries = function() return 2, 2 end
+		C_QuestLog.GetInfo = function(i) return ({ { questID = 0, isHeader = true }, { questID = 29 } })[i] end
+		C_QuestLog.GetTimeAllowed = function(q) return allowed[q], 10 end
+		C_QuestLog.IsOnQuest = function() return true end
+		C_QuestLog.ReadyForTurnIn = function() return ready end
+		C_QuestLog.IsComplete = function() return ready end
+		C_QuestLog.IsFailed = function() return failed end
+		local r = { running = C.QuestTimerRunning() }
+		ready = true
+		r.ready = C.QuestTimerRunning()
+		ready, failed = false, true
+		r.failed = C.QuestTimerRunning()
+		failed, allowed[29] = false, nil
+		r.untimed = C.QuestTimerRunning()
+		allowed[29] = 1800
+		C_QuestLog.GetTimeAllowed = nil
+		r.noApi = C.QuestTimerRunning()
+		emit(r)
+	"#);
+	assert_eq!(out, json!({ "running": true, "ready": false, "failed": false, "untimed": false, "noApi": false }));
 }
 
 #[test]
@@ -337,7 +363,7 @@ fn walk(dir: &Path, root: &Path, bare: &[Regex], comment: &Regex, found: &mut Ve
 			walk(&p, root, bare, comment, found);
 		} else {
 			let rel = p.strip_prefix(root).unwrap();
-			if p.extension().is_some_and(|x| x == "lua") && rel != Path::new("Polestar/Core/Compat.lua") {
+			if p.extension().is_some_and(|x| x == "lua") && rel != Path::new("Northstar/Core/Compat.lua") {
 				// The walking maps' parts may hold zlib bytes in their literals (maps format 5): not UTF-8.
 				let text = String::from_utf8_lossy(&std::fs::read(&p).unwrap()).into_owned();
 				for (i, line) in text.split('\n').enumerate() {
@@ -404,4 +430,20 @@ fn item_tip_color_is_the_tooltips_title_colour_and_nil_until_the_item_is_loaded(
 	assert_eq!(out["kept"], json!([0, 0.5, 1]), "kept for the session");
 	assert_eq!(out["none"], json!({}), "a client without C_TooltipInfo");
 	assert_eq!(out["notNumber"], json!({}));
+}
+
+// The frFR Forever client's kill objectives: "%1$s : %2$d/%3$d |4personnage tué:personnages tués;", the space
+// before the colon sometimes a no-break one. The label is the name alone: no counts, no grammar escape (raw
+// "|4…;" in the step window, the tracker or party chat), so it matches the guide's name exactly.
+#[test]
+fn an_frfr_kill_objective_labels_as_its_name_without_the_counts_or_the_grammar_escape() {
+	let out = run(r#"emit({
+		C.ObjectiveLabel("Jeune loup : 3/10 |4personnage tué:personnages tués;"),
+		C.ObjectiveLabel("Jeune loup\194\160: 1/1 |4personnage tué:personnages tués;"),
+		C.ObjectiveLabel("Voyant novice des Sculpte-vents tué: 6/6"),
+		C.ObjectiveLabel(" : 0/8 |4personnage tué:personnages tués;"),
+		C.ObjectiveLabel("Peau de sanglier\194\160: 2/6"),
+		C.ObjectiveLabel("Kobold Vermin slain: 3/10"),
+	})"#);
+	assert_eq!(out, json!(["Jeune loup", "Jeune loup", "Voyant novice des Sculpte-vents tué", "", "Peau de sanglier", "Kobold Vermin"]));
 }

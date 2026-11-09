@@ -2,7 +2,7 @@
 // mounting or rendering, a promise nobody caught, a backend that never answers)
 // replaces it with a plain-DOM page that says so, with the details to report.
 // Plain DOM on purpose: it must work when Svelte itself is what failed.
-// Under the launch test (POLESTAR_SMOKE, src-tauri/src/smoke.rs) the fault also ends the
+// Under the launch test (NORTHSTAR_SMOKE, src-tauri/src/smoke.rs) the fault also ends the
 // app with a failure, so a build that opens on this page never ships.
 
 import { api } from './backend';

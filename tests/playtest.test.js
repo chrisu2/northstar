@@ -113,7 +113,7 @@ test('a hand-over to one of ours that does not land is stuck at the hand-over; e
 	const { result, out } = await quiet(() => cmd.run(['--pack', path.join(PACKS, 'plays')]));
 	assert.equal(result, 1, out);
 	assert.deepEqual(lines(out).filter((l) => l.startsWith('stuck ')), [
-		'stuck plays/done-on-arrival (Human Warrior) at hand-over to forever/alliance/human/01-elwynn-forest: Polestar did not open it (plays/done-on-arrival stayed open)',
+		'stuck plays/done-on-arrival (Human Warrior) at hand-over to forever/alliance/human/01-elwynn-forest: Northstar did not open it (plays/done-on-arrival stayed open)',
 	]);
 	assert.match(out, /playtest failed: 2 guides, 3 plays: 1 stuck, 0 failed/);
 });

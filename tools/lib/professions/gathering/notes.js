@@ -8,7 +8,7 @@ const ERA_NOTE = [
 	"and prices from Forever's sniffed trainer lists; recipes and their skill colours",
 	'from the Forever client tables (`forge data professions`).',
 	"ASSUMED: past level 30 (the beta's cap) Forever's spawns are Classic's; nothing",
-	'confirms them yet. In-game check: refine with Polestar_Recorder sessions.',
+	'confirms them yet. In-game check: refine with Northstar_Recorder sessions.',
 	"ASSUMED: rank level gates are Classic's (Journeyman 10, Expert 20, Artisan 35);",
 	"Forever's sniffed trainer lists show none (the gate sits on the rank spell, a",
 	'table we lack); only Journeyman Fishing is sniffed at level 10. In-game check:',

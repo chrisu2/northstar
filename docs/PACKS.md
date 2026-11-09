@@ -1,10 +1,10 @@
 # Writing community addons
 
-A community addon is your own guides for Polestar, published as your own
-addon. Players install it next to Polestar, and its guides appear in
-Polestar's guide menu under **Community guides**, with your name on them.
+A community addon is your own guides for Northstar, published as your own
+addon. Players install it next to Northstar, and its guides appear in
+Northstar's guide menu under **Community guides**, with your name on them.
 You write guides as plain text (`.guide` files,
-[GUIDE_FORMAT.md](GUIDE_FORMAT.md)), and Polestar's tools check them, play
+[GUIDE_FORMAT.md](GUIDE_FORMAT.md)), and Northstar's tools check them, play
 them to the end without the game, and build the addon. A community addon is
 built from a pack: a folder with a `pack.json` and `.guide` files.
 
@@ -25,10 +25,10 @@ built from a pack: a folder with a `pack.json` and `.guide` files.
 ## Setup
 
 A pack lives in its own folder (usually its own git repository). The tools
-come from a clone of Polestar:
+come from a clone of Northstar:
 
 ```sh
-git clone <Polestar's repository URL> polestar
+git clone <Northstar's repository URL> polestar
 cd polestar
 npm link                 # puts `polestar` on your PATH
 polestar doctor          # checks everything below and prints the fix for each
@@ -57,12 +57,12 @@ error naming the missing files. A folder missing only some of the core files
 is a warning naming them, and the guides are checked.
 
 The reference data is what fills in quest titles, givers and coordinates.
-`data build` assembles it from the sources listed in Polestar's
+`data build` assembles it from the sources listed in Northstar's
 [THIRD_PARTY.md](../THIRD_PARTY.md) (`polestar help data` names them); until
-Polestar ships the open data, it reads some of them from addons installed
+Northstar ships the open data, it reads some of them from addons installed
 with your game.
 
-**Codespaces.** A pack made by `polestar new` from a Polestar clone whose
+**Codespaces.** A pack made by `polestar new` from a Northstar clone whose
 origin is an http(s) or SSH URL carries `.devcontainer/devcontainer.json`: open the pack's
 repository in GitHub Codespaces and you get Node 24, Lua 5.1, the tools
 linked and the reference data built, with nothing to install. (`install`
@@ -72,7 +72,7 @@ instead.)
 ## A first pack in 15 minutes
 
 ```sh
-# in the folder that holds your Polestar clone, not inside the clone
+# in the folder that holds your Northstar clone, not inside the clone
 polestar new joes-routes          # asks for the id, title, author and licence
 cd joes-routes
 polestar dev --play               # lint and build on every save, with the playground
@@ -88,7 +88,7 @@ polestar dev --play               # lint and build on every save, with the playg
    folder. It writes:
    - `pack.json` (the manifest, PACK_FORMAT.md) and `guides/example.guide`, a
      short guide that lints clean, plays to the end and hands over to one of
-     Polestar's guides (it has no `author` line: a guide without one takes
+     Northstar's guides (it has no `author` line: a guide without one takes
      the pack's author);
    - `README.md` for players (install, credits) and for you (build, test);
    - `LICENSE` for the licence you chose: for MIT the full text with your
@@ -106,12 +106,12 @@ polestar dev --play               # lint and build on every save, with the playg
      request, with read-only access to your repository; on a version tag the
      same job builds the zip, and a second job, run only once that passes,
      attaches it to a GitHub release: the only job allowed to write) and
-     `.devcontainer/` (Codespaces). Both clone Polestar and build its
+     `.devcontainer/` (Codespaces). Both clone Northstar and build its
      reference data with `forge data build --no-web-xp --no-web-zones` (forge built from the clone): that
      skips the quest lookups on community web sites (Forever XP databases)
      and the web quest list cache (a fresh clone has none), but the build still
      clones pfQuest and downloads the client tables from wago.tools. So they
-     need the address of Polestar's public repository. `new` reads it from
+     need the address of Northstar's public repository. `new` reads it from
      your clone's `git remote get-url origin` and writes it as https, quoted: an
      SSH address (`git@host:owner/repo.git`, `ssh://`) or an `http://` one
      becomes its https form, and any user name, password, query (`?…`) or
@@ -123,7 +123,7 @@ polestar dev --play               # lint and build on every save, with the playg
    skips it). With `--play` it also starts the playground and reloads it on
    every build. In AddOns it never writes over a folder it did not build
    for this pack (the folder rule, below).
-3. **`polestar play`** (or `dev --play`) runs the real Polestar against a
+3. **`polestar play`** (or `dev --play`) runs the real Northstar against a
    simulated world, with your pack loaded after our guides, and prints the
    address to open in your browser: open the guide menu, find your pack under "Community guides", load a guide
    and play it with the side panel. Options > Community guides shows your pack's row
@@ -133,7 +133,7 @@ polestar dev --play               # lint and build on every save, with the playg
    running `dev`.
 5. **In game:** the first time, restart the game so the client sees the new
    addon; after that, `/reload` shows every change. Open the guide menu
-   (`/polestar guides`) and pick your guide under "Community guides".
+   (`/northstar guides`) and pick your guide under "Community guides".
 
 ## Three ways to write guides
 
@@ -146,8 +146,8 @@ one page. Whatever way you start, finish with lint and playtest (below).
 Record your own play and turn it into a draft:
 
 ```sh
-polestar install --recorder        # in the Polestar clone (not the pack): installs Polestar_Recorder with Polestar
-# in game: /psrec on, play the route, then log out
+polestar install --recorder        # in the Northstar clone (not the pack): installs Northstar_Recorder with Northstar
+# in game: /nsrec on, play the route, then log out
 forge record import                # copies the recorded sessions out of SavedVariables into data/recordings
 polestar record list
 polestar record draft <session>    # writes drafts/<faction>-<race>-<date>-<time>.guide
@@ -181,7 +181,7 @@ polestar find --kind flight --faction Alliance   # every flight point, as `getfp
 ```
 
 `find` searches quests, NPCs, objects, items, inns, flight points and
-Polestar's guides; a number matches ids exactly. Each result is a guide line
+Northstar's guides; a number matches ids exactly. Each result is a guide line
 ready to paste. A quest also prints its turn-in line and its objectives, `7.1
 = kill Kobold Vermin x10`: write `quest 7.1` on the goal that works it (`kill
 6 x10 quest 7.1`). A guide prints its level range, who it is for
@@ -213,7 +213,7 @@ printed under it); besides:
 Fields with nothing to say are left out (a quest with no starter has no `x`),
 except a quest's `objectives` and `notes`, which are empty lists.
 
-In game, **`/polestar where`** prints where you stand as two guide lines and
+In game, **`/northstar where`** prints where you stand as two guide lines and
 puts them in a box to copy:
 
 ```
@@ -225,10 +225,10 @@ goto 42.11,65.93 live
 coordinates are read in the Era frame unless marked (GUIDE_FORMAT.md,
 `coords`), and Forever moved some zones, so keep the `live`. For any other
 goal, add the `@x,y live` form chat prints (`kill 299 @42.11,65.93 live`). A
-guide written mostly from `/polestar where` can say `coords live` in its
+guide written mostly from `/northstar where` can say `coords live` in its
 header once instead.
 
-A pack's guide may hand over to any of Polestar's guides with `next`
+A pack's guide may hand over to any of Northstar's guides with `next`
 (GUIDE_FORMAT.md, "Handing over to our guides"). Pick one every character of
 your guide can follow: check its races, classes and levels with `polestar find
 --kind guide <zone> --race <Race>` (and `--class <Class>` for a class guide).
@@ -249,7 +249,7 @@ notes, routes you played, guides you wrote. Two ways work well:
   write only from the author's own material. It also writes the
   polestar-guide-pack skill (the workflow and the guide format on one page)
   into `.agents/skills/` and `.claude/skills/`; for an older pack, copy
-  `skills/polestar-guide-pack/` from your Polestar clone into both, or run
+  `skills/polestar-guide-pack/` from your Northstar clone into both, or run
   `npx skills add fitzforge/polestar --skill polestar-guide-pack` in the
   pack folder.
 
@@ -269,12 +269,12 @@ on another.
 | Command | What it checks |
 |---|---|
 | `forge guide lint` | every check `compile` makes, writing nothing; exit code 1 on errors. `--format json` prints one document on stdout and no summary: `{ "ok", "errors", "warnings", "diagnostics" }`, `ok` true without errors, `errors` and `warnings` the counts, and `diagnostics` one object per problem with `file`, `line`, `severity` (`error` or `warning`), `message` and, when there is one, `hint`. `--quiet` leaves the warnings out of the list (text, JSON and annotations alike); the JSON counts still include them. `--format github` prints workflow annotations. `--include-drafts` checks `drafts/` too. `--no-data` checks without reference data: the guides must give every quest title, NPC name and place themselves (`compile`, `dev`, and `install` and `pack` on a pack take it too; it cannot be combined with `--data`, `--context-data` or `--sim`) |
-| `polestar playtest [--filter text] [--class C] [--group do\|skip] [--learn Profession,...]` | plays every guide (every group quest, `when group`, skipped, the solo route, or with `--group do` done; with `--learn`, as a player who chose those professions: their optional `train` taken while its step is current, so the steps behind `when skill` are played) (with `--filter`, those whose file or id contains the text) to the end in the real addon against a simulated world, once per class it branches on plus one it never names, as each race that can reach it (only race and class pairs the game has); Polestar's guides join where yours hand over. Prints per guide, race and class `ok  joe/elwynn (Human Warrior)`, `stuck … at step N "title": goal M (…) stays active`, `fail …` (a problem found while playing, such as a goal with no location) or, for a hand-over that does not land on the next guide with something to do or lands on one the character cannot follow (`no Human can follow it`), a `stuck` line naming the hand-over; exit code 1 when any is stuck or fails, when nothing played, or when the pack does not compile |
+| `polestar playtest [--filter text] [--class C] [--group do\|skip] [--learn Profession,...]` | plays every guide (every group quest, `when group`, skipped, the solo route, or with `--group do` done; with `--learn`, as a player who chose those professions: their optional `train` taken while its step is current, so the steps behind `when skill` are played) (with `--filter`, those whose file or id contains the text) to the end in the real addon against a simulated world, once per class it branches on plus one it never names, as each race that can reach it (only race and class pairs the game has); Northstar's guides join where yours hand over. Prints per guide, race and class `ok  joe/elwynn (Human Warrior)`, `stuck … at step N "title": goal M (…) stays active`, `fail …` (a problem found while playing, such as a goal with no location) or, for a hand-over that does not land on the next guide with something to do or lands on one the character cannot follow (`no Human can follow it`), a `stuck` line naming the hand-over; exit code 1 when any is stuck or fails, when nothing played, or when the pack does not compile |
 | `polestar play` | the playground: your guides, your row on the Community guides page and its problems, in the browser |
-| `polestar sim compare --faction F [--race R]` | inside a pack: scores your leveling chain beside Polestar's under the simulator's model (hours to level 10, 20 … 60); a chain starting above level 1 is scored after Polestar's own chain up to the level yours starts at, and a chain whose guides name no race is scored for every race of the faction. Needs the sim world (`forge walks world`, docs/FORGE.md) |
+| `polestar sim compare --faction F [--race R]` | inside a pack: scores your leveling chain beside Northstar's under the simulator's model (hours to level 10, 20 … 60); a chain starting above level 1 is scored after Northstar's own chain up to the level yours starts at, and a chain whose guides name no race is scored for every race of the faction. Needs the sim world (`forge walks world`, docs/FORGE.md) |
 | `polestar doctor` | the setup, and the pack's `pack.json` |
 
-Lint and compile read Polestar's guides as context, so your `next` is
+Lint and compile read Northstar's guides as context, so your `next` is
 checked against them, and so are quests across the hand-over: a quest your
 guide accepts counts as turned in when our guide you hand over to turns it
 in, but your guide cannot turn in a quest that only our guides accept (that
@@ -293,18 +293,18 @@ GUIDE_FORMAT.md "Pictures"), byte for byte reproducible, with the pack's
 `LICENSE` as `LICENSE.txt` when the pack folder has one.
 
 The TOC places the community addon in the game's AddOns list for you:
-titled "Polestar Community: <title>" (your title as it is when it already
-starts with that), grouped with Polestar, in the Quests category, with your
-`notes` as its description, or "Community addon for Polestar by <author>"
-when `pack.json` has none. Polestar's own menus and the Community guides
+titled "Northstar Community: <title>" (your title as it is when it already
+starts with that), grouped with Northstar, in the Quests category, with your
+`notes` as its description, or "Community addon for Northstar by <author>"
+when `pack.json` has none. Northstar's own menus and the Community guides
 page show your title as you wrote it. Community addons built before this
-name read "Polestar Pack: <title>" until rebuilt; Polestar reads both.
+name read "Northstar Pack: <title>" until rebuilt; Northstar reads both.
 
 Upload the zip to:
 
 - **CurseForge** and **Wago**: a new addon project for World of Warcraft:
   Forever (the Classic game version matching the TOC's Interface). Mark
-  **Polestar as a required dependency** on the listing, so the app installs it
+  **Northstar as a required dependency** on the listing, so the app installs it
   with your pack.
 - **GitHub**: with the template's workflow, push a version tag (`v1.2.0`) and
   the workflow builds the zip and attaches it to a release.
@@ -313,28 +313,28 @@ Raise `version` in `pack.json` for every release. The guides' licence is the
 one in `pack.json` (`license`, and the `LICENSE` file `new` wrote, which the
 zip ships). For a licence `new` has no text for, it writes one placeholder
 line into `LICENSE`; lint warns until you replace it with the licence's text.
-Polestar's [LICENSE-EXCEPTION.md](../LICENSE-EXCEPTION.md) lets you
+Northstar's [LICENSE-EXCEPTION.md](../LICENSE-EXCEPTION.md) lets you
 distribute packs built by its compiler, including the reference data the
 compiler places in them, under terms of your choice; the pack's
 `LICENSE-DATA.txt` names that data's sources. It does not cover guide text
-copied from Polestar's own guides.
+copied from Northstar's own guides.
 
 Players see your title, author, version, licence, guide count, website and
 `source` on the Community guides page, and "By <author> · <pack title> <version> ·
 <licence>" in each guide's details. Each pack is made and supported by its
 author: put where to report problems in your README and on the listing.
 
-Polestar suggests the next guide from its own guides unless the player picks
+Northstar suggests the next guide from its own guides unless the player picks
 your pack under **Suggest guides from** (Options > Community guides); only packs
-with Leveling guides are offered there. With your pack picked, Polestar's
+with Leveling guides are offered there. With your pack picked, Northstar's
 guides still fill in wherever yours have nothing for the character (another
 race, another level range).
 
 ### One guide as an import string
 
 A single small guide (a quest chain, an item, a mount, an errand) can go to
-players as one line of text instead of a zip. They paste it on Polestar's
-Import page (`/polestar import`, or **Import** above Options in the hub);
+players as one line of text instead of a zip. They paste it on Northstar's
+Import page (`/northstar import`, or **Import** above Options in the hub);
 nothing to install, no restart.
 
 ```sh
@@ -353,7 +353,7 @@ Share the line in `cozy.txt` on Discord, GitHub, a forum or your listing.
 - Limits: 60 steps, 100 goals per step, 128 candidates per goal, 50,000
   characters for the string. A bigger guide, or a set of guides, is a
   community addon.
-- A `next` or route choice may lead only to one of Polestar's guides or a
+- A `next` or route choice may lead only to one of Northstar's guides or a
   guide the player has already imported; `export` names the guides to import
   first.
 - Pictures (`image` lines) are not carried: an imported guide shows none.
@@ -377,18 +377,18 @@ community addons.
   it. Removing a guide only closes its tabs; a player's tabs come back if it
   returns.
 - **After a game patch** raises the client's interface number, the game
-  marks every addon built for the old one out of date. Update your Polestar
+  marks every addon built for the old one out of date. Update your Northstar
   clone (`git pull`), rebuild (`forge release pack`) and upload: the TOC takes the
-  interface number from Polestar's. Until then players can tick **Load out of
+  interface number from Northstar's. Until then players can tick **Load out of
   date AddOns** in the game's AddOns list.
-- When Polestar adds a new pack format, packs in the old one keep working
+- When Northstar adds a new pack format, packs in the old one keep working
   (PACK_FORMAT.md, "Versioning").
 
 ## In game: statuses and problems
 
-Options > **Community guides** (`/polestar packs`) lists every pack the game
+Options > **Community guides** (`/northstar packs`) lists every pack the game
 has installed, ours first. The rules behind the statuses and problems below are
-in PACK_FORMAT.md, "Rules Polestar enforces". Each row has a status:
+in PACK_FORMAT.md, "Rules Northstar enforces". Each row has a status:
 
 | Status | The row says | Fix |
 |---|---|---|
@@ -396,24 +396,24 @@ in PACK_FORMAT.md, "Rules Polestar enforces". Each row has a status:
 | `off` | the switch off: the player hid the pack's guides | switch it on; its tabs come back |
 | `disabled` | "turned off in the AddOns list", with **Enable and reload** | press it, or enable the addon in the AddOns list |
 | `not-loaded` | "not loaded: <the client's reason>" (out of date, a dependency missing), or "not loaded" when the client gives none | out of date: rebuild with an updated clone, or tick "Load out of date AddOns"; dependency missing: install or enable the addons on the pack's `## Dependencies` line (the AddOns list names them) |
-| `too-new` | "needs Polestar <version> or newer", or "needs a newer Polestar" when its TOC gives no `X-Polestar-Needs` | update Polestar |
+| `too-new` | "needs Northstar <version> or newer", or "needs a newer Northstar" when its TOC gives no `X-Northstar-Needs` | update Northstar |
 | `refused` | "refused: <reason>" | one of the pack problems below |
 | `broken` | "broken: registered no guides" | see `no-guides` below |
 
 While any pack has problems, the page's entry in the Options sidebar carries a
 dot, and the row shows "<n> problems" with **Show** (the list) and **Copy
-report** (the pack, its version, Polestar's version, the client build and
+report** (the pack, its version, Northstar's version, the client build and
 every problem, selected for copying: players can paste it into a bug report).
 Problems have three kinds:
 
 | Kind | Message | Fix |
 |---|---|---|
 | `pack-refused` | Pack id <id> is not valid: 2 to 32 lower-case letters, digits or hyphens, starting with a letter or digit. | fix `id` in `pack.json` and rebuild |
-| `pack-refused` | Pack id <id> is reserved for Polestar. — plus " 1 guide dropped." or " <n> guides dropped." when it dropped any | pick another id |
+| `pack-refused` | Pack id <id> is reserved for Northstar. — plus " 1 guide dropped." or " <n> guides dropped." when it dropped any | pick another id |
 | `pack-refused` | Pack id <id> is already taken by <addon>; <addon> was refused. — plus " 1 guide dropped." or " <n> guides dropped." when it dropped any | the refused pack's guides stay out, even under the holder's ids. Two installed addons claim one id: pick an id of your own (`<author>-<name>`); players remove one of the two |
 | `pack-refused` | The pack is missing format. / The pack is missing <field>. | rebuild with `forge guide compile`; a hand-written `Pack.lua` needs every field (PACK_FORMAT.md) |
-| `pack-refused` | Needs Polestar <version> or newer. / Needs a newer Polestar. (no `X-Polestar-Needs` in the TOC) | the player updates Polestar |
-| `pack-refused` | Only Polestar's own Lookup pack may register as internal. — plus the dropped guides, as above, when its id is also reserved or taken | remove `internal` from `RegisterPack` |
+| `pack-refused` | Needs Northstar <version> or newer. / Needs a newer Northstar. (no `X-Northstar-Needs` in the TOC) | the player updates Northstar |
+| `pack-refused` | Only Northstar's own Lookup pack may register as internal. — plus the dropped guides, as above, when its id is also reserved or taken | remove `internal` from `RegisterPack` |
 | `guide-refused` | Guide <id> was refused: its id must start with <prefix>. | start every guide id with `<pack id>/` |
 | `guide-refused` | Guide <id> was refused: it was registered before its pack. | `Pack.lua` must load first: rebuild with `forge guide compile` |
 | `guide-refused` | Guide <id> was refused: <reason> (`missing title`, `no steps`, `step 3 has no goals`, `step 3 goal 2: unknown verb …`, `step 3 goal 2: kill needs target`, `step 3 goal 2: coordinates outside 0-100`, …). | the guide's table breaks the format: rebuild with `forge guide compile`, which never writes such a table; with your own tools, PACK_FORMAT.md |
@@ -437,20 +437,20 @@ messages, and nothing is saved:
 
 | Message | Fix |
 |---|---|
-| This is not a Polestar import string. / This import string is damaged or incomplete. Copy the whole string again. | the player copied part of the line, or something else: copy the whole line again (spaces and line breaks in it are fine; Polestar drops them) |
-| This import string needs a newer Polestar. / This import string holds a field Polestar does not read (<field>). It may need a newer Polestar. | the player updates Polestar; if they already have the latest, rebuild the string with an updated clone |
-| This import string is too long: Polestar reads up to 50000 characters. / This import string holds too much: Polestar reads up to 256 KB of guide data. | split the guide, or publish it as a community addon |
+| This is not a Northstar import string. / This import string is damaged or incomplete. Copy the whole string again. | the player copied part of the line, or something else: copy the whole line again (spaces and line breaks in it are fine; Northstar drops them) |
+| This import string needs a newer Northstar. / This import string holds a field Northstar does not read (<field>). It may need a newer Northstar. | the player updates Northstar; if they already have the latest, rebuild the string with an updated clone |
+| This import string is too long: Northstar reads up to 50000 characters. / This import string holds too much: Northstar reads up to 256 KB of guide data. | split the guide, or publish it as a community addon |
 | Its guide has <n> steps; an import string holds 60 at most. A bigger guide comes as a community addon. / Its guide has <n> goals in step <s>; an import string holds 100 per step at most. / Its guide has <n> candidates in a goal; an import string holds 128 per goal at most. | shorten the guide or the step, or publish a community addon |
-| This import string holds a text longer than Polestar reads (<field>): 4096 characters at most. | shorten that tip or text |
+| This import string holds a text longer than Northstar reads (<field>): 4096 characters at most. | shorten that tip or text |
 | Its guide id <id> must start with its author's own id, as in yendi/cozy-sleeping-bag. | start the guide id with your pack id and export again |
 | Guides under <id>/ come from the community addon <addon>, which is installed. | that id belongs to an installed addon: pick a pack id of your own |
-| It leads on to <id>, which is neither one of Polestar's guides nor an imported one: import that guide first. | the player imports that guide first (`export` lists them), or drop the `next` |
-| Guide <id> was refused: <reason>. / Its guide has a spot coordinate outside 0-100. (and the other map-frame and coordinate messages) / Its guide has more than one direct turn-in for quest <q> in step <s>. | the guide breaks a rule a community addon's guide would too (PACK_FORMAT.md, "Rules Polestar enforces"): fix it, lint, export again. `polestar export` never writes such a string |
+| It leads on to <id>, which is neither one of Northstar's guides nor an imported one: import that guide first. | the player imports that guide first (`export` lists them), or drop the `next` |
+| Guide <id> was refused: <reason>. / Its guide has a spot coordinate outside 0-100. (and the other map-frame and coordinate messages) / Its guide has more than one direct turn-in for quest <q> in step <s>. | the guide breaks a rule a community addon's guide would too (PACK_FORMAT.md, "Rules Northstar enforces"): fix it, lint, export again. `polestar export` never writes such a string |
 | This import string holds no guide. | export again with `polestar export <file.guide>` |
-| This game client cannot read import strings. | the client lacks the decoding Polestar needs (`C_EncodingUtil`): publish a community addon for that client |
+| This game client cannot read import strings. | the client lacks the decoding Northstar needs (`C_EncodingUtil`): publish a community addon for that client |
 
-`/polestar import delete <guide-id>` removes one imported guide, and
-`/polestar import clear` removes them all; the Import page's **Delete**
+`/northstar import delete <guide-id>` removes one imported guide, and
+`/northstar import clear` removes them all; the Import page's **Delete**
 buttons do the same.
 
 ## Lint messages
@@ -474,20 +474,20 @@ checks authors meet most; the rest are listed in GUIDE_FORMAT.md
 | `<key>` contains control characters (line breaks, tabs or other invisible characters) | keep the value on one line |
 | `<key>` is N characters long; at most M fit | shorten it |
 | pack id "<id>" is malformed: 2 to 32 lowercase letters, digits and dashes, starting with a letter or digit | pick an id like `<author>-<name>`, e.g. `joe-routes` |
-| pack id "<id>" is reserved for Polestar ("guides", "forever", "lookup", "draft", "polestar" are) | pick another id |
+| pack id "<id>" is reserved for Northstar ("guides", "forever", "lookup", "draft", "polestar" are) | pick another id |
 | version "<v>" is malformed: one word of letters, digits, ".", "+" and "-", at most 32 characters | write a version like `1.2.0` |
 | website "<url>" must start with https:// or http:// | write the full address |
-| folder "<name>" is malformed: 1 to 64 letters, digits, "_" and "-" / folder "<name>" looks like one of Polestar's own addons | pick a folder like `PolestarPack_JoesRoutes`, or leave `folder` out |
+| folder "<name>" is malformed: 1 to 64 letters, digits, "_" and "-" / folder "<name>" looks like one of Northstar's own addons | pick a folder like `NorthstarPack_JoesRoutes`, or leave `folder` out |
 | unknown key `<key>` (ignored) (warning) | remove it; `pack.json` takes the keys in PACK_FORMAT.md |
-| `<key>` contains "\|", which prints literally in game (warning; the same for a guide's title, folder, pitch, pros, cons and author, step titles and tips, goal texts and notes, and names given in quotes) | drop the `\|`: Polestar shows text as written, so colour and link codes do not work |
+| `<key>` contains "\|", which prints literally in game (warning; the same for a guide's title, folder, pitch, pros, cons and author, step titles and tips, goal texts and notes, and names given in quotes) | drop the `\|`: Northstar shows text as written, so colour and link codes do not work |
 | guide id "<id>" is outside pack "<pack>": its guide ids start with <prefix> | start the id with `<pack id>/` |
-| `next` points to unknown guide "<id>" | a guide of your pack or one of Polestar's: list ours with `polestar find --kind guide <text>` |
+| `next` points to unknown guide "<id>" | a guide of your pack or one of Northstar's: list ours with `polestar find --kind guide <text>` |
 | `next` offers <faction> guide "<id>" after a <faction> guide | hand over to a guide of the same faction |
 | no <races> character can follow <id> (it is for <its races> only) | the `next` guide's `race` or `class` leaves out every character of yours: pick one for the same races (or classes) with `polestar find --kind guide <zone> --race <Race>` |
 | LICENSE still holds the placeholder line `polestar new` writes, not the licence text (warning) | replace the line with the full text of your licence |
-| map <id>: this pack's Era frame differs from the one Polestar's guides register; in game Polestar's wins, so coordinates on this map may be off (warning) | mark the coordinates on that map `live` or retake them with `/polestar where` |
-| `kill` npc <id> (<name>) is elite; … / <item> drops only from elites (<names>); … / quest <id> (<title>) is elite … (warning in packs) | Polestar's own house rule (errors in our guides): in a Leveling guide put the goal in a step with `when group <quest>` (the player chooses it; the quest's goals elsewhere go with its accept) or make it `optional`, with the tip "<name> is elite: grouping up is advised." |
-| quest <id> (<title>) needs <Profession> <rank>, and the guide does not train it before here: characters without it never see this goal (warning, Leveling guides) | the quest giver offers it only to characters with that profession, and Polestar hides its goals from the others: make the goal `optional`, or `train <Profession>` (and `skill <Profession> <rank>` above rank 1) earlier in the guide |
+| map <id>: this pack's Era frame differs from the one Northstar's guides register; in game Northstar's wins, so coordinates on this map may be off (warning) | mark the coordinates on that map `live` or retake them with `/northstar where` |
+| `kill` npc <id> (<name>) is elite; … / <item> drops only from elites (<names>); … / quest <id> (<title>) is elite … (warning in packs) | Northstar's own house rule (errors in our guides): in a Leveling guide put the goal in a step with `when group <quest>` (the player chooses it; the quest's goals elsewhere go with its accept) or make it `optional`, with the tip "<name> is elite: grouping up is advised." |
+| quest <id> (<title>) needs <Profession> <rank>, and the guide does not train it before here: characters without it never see this goal (warning, Leveling guides) | the quest giver offers it only to characters with that profession, and Northstar hides its goals from the others: make the goal `optional`, or `train <Profession>` (and `skill <Profession> <rank>` above rank 1) earlier in the guide |
 | enter "<place>": no zone or area has that name; the game never reports it, so the goal never checks off by itself (warning) | write the place as the minimap shows it there, as the game spells it |
 | sethome/hearth/getfp/fly "<location>": no inn has that bind location / no inn stands there (an inn's area or the zone it is in) / no flight point has that name / no flight point lands there (its town, an inn's area or the zone it is in); the game never reports that name, so the goal never checks off by itself (warning) | write the place as the game names it: the hint offers the closest known names (`did you mean "Grom'gol Base Camp"?`); `polestar find --kind inn` and `polestar find --kind flight` list them all. Checked against the inns and flight points of `data/forever/travel.json` (GUIDE_FORMAT.md, "Validation") |
 
@@ -506,7 +506,7 @@ reasons are the same everywhere:
 
 | Message | Fix |
 |---|---|
-| refusing to write into <dir>: it is not a generated community addon (no TOC with the "Generated by …" line); move it away first | a folder of the same name that Polestar did not write is in the way (in AddOns or `dist/`): move or rename it, or set `folder` in `pack.json` |
+| refusing to write into <dir>: it is not a generated community addon (no TOC with the "Generated by …" line); move it away first | a folder of the same name that Northstar did not write is in the way (in AddOns or `dist/`): move or rename it, or set `folder` in `pack.json` |
 | refusing to write into <dir>: it holds the community addon "<other id>", not "<id>"; set "folder" in pack.json to a folder name of your own | another pack builds into the same folder name (folder names come from titles, so two packs titled alike collide): set `folder` in `pack.json` |
 | refusing to write into <dir>: it is not a folder / refusing to install: <AddOns>/<folder> exists and is not a folder | a file has the pack folder's name: move or rename it, or set `folder` in `pack.json` |
 
@@ -517,6 +517,6 @@ reasons are the same everywhere:
 - [GUIDE_CHEATSHEET.md](GUIDE_CHEATSHEET.md): every line of the guide
   language on one page, with an example each.
 - [PACK_FORMAT.md](PACK_FORMAT.md): the pack rules: `pack.json`, ids, the
-  folder rule, the TOC and Lua the compiler writes, what Polestar refuses and
+  folder rule, the TOC and Lua the compiler writes, what Northstar refuses and
   the statuses it shows.
 - `polestar help <command>`: every option of every command.

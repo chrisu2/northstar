@@ -2,8 +2,8 @@
 // Routed walks (docs/legacy/SIMULATION-js.md §1 "Walks"): walking distances between the
 // world's points from a walking router: the node router (router: 'node', the
 // default: tools/lib/nav/router.js on the local walking grid, data/local/nav4,
-// on worker threads sharing one decoded copy) or Polestar's own (router: 'lua':
-// addon/Polestar_Nav run standalone by `nav eval`'s harness), so the simulator
+// on worker threads sharing one decoded copy) or Northstar's own (router: 'lua':
+// addon/Northstar_Nav run standalone by `nav eval`'s harness), so the simulator
 // walks round cliffs, mountains and water as the arrow does, not straight through
 // them. Without them every walk is the straight line × the continent's detour
 // factor, which is right on average (1.3) but prices a walk through a mountain
@@ -142,11 +142,11 @@ const STYLE = 'balanced';
 // balanced, 2026-10-18): median 0.964, p10 0.941, p90 0.983, tightest above 1,000 yd
 // (0.96-0.97). The cache and the walks file keep the router's yards; attachWalks applies this.
 const SMOOTH = 0.965;
-const NAV_DIR = path.join(ROOT, 'addon', 'Polestar_Nav');
-const { GRID_DIR } = require('../nav/router'); // the local walking grid (nav build; $POLESTAR_GRID), when built
+const NAV_DIR = path.join(ROOT, 'addon', 'Northstar_Nav');
+const { GRID_DIR } = require('../nav/router'); // the local walking grid (nav build; $NORTHSTAR_GRID), when built
 const CHUNK = 8; // queries per worker job (progress granularity)
 // The routers sim walks can route with: 'node' (tools/lib/nav/router.js on the grid in GRID_DIR, worker
-// threads over one shared decoded copy) or 'lua' (Polestar_Nav's in-game router through nav eval's harness).
+// threads over one shared decoded copy) or 'lua' (Northstar_Nav's in-game router through nav eval's harness).
 const ROUTERS = ['node', 'lua'];
 const NODE_CHUNK = 16; // node router: searches per worker job, from neighbouring starts
 const NODE_WORKER_GB = 0.6; // node router: a worker's own memory (caches, scratch) besides the shared maps

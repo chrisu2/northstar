@@ -1,9 +1,9 @@
-//! Polestar on Blizzard's map frames (addon/Polestar/Nav/MapCanvas.lua): the world map and the battlefield map
-//! are only read. With the keyboard and mouse interface and with the gamepad one, every drawing Polestar makes on
+//! Northstar on Blizzard's map frames (addon/Northstar/Nav/MapCanvas.lua): the world map and the battlefield map
+//! are only read. With the keyboard and mouse interface and with the gamepad one, every drawing Northstar makes on
 //! them shows (Nav's pins, areas, regions and trail; Maps' zone levels, info bar, route lines and unexplored
 //! areas), and no code of the addon writes into the maps' tables: in game a value it wrote there taints the
 //! gamepad interface's secure code, and the game blocks its protected calls as the map opens and closes ("An
-//! action was blocked because of taint from Polestar - SetPreferredGamepadInteractTarget()"). stub.guardMap
+//! action was blocked because of taint from Northstar - SetPreferredGamepadInteractTarget()"). stub.guardMap
 //! (tests/lua/wow_stub.lua) makes such a write fail and lists what the addon reads. Nor does the addon call
 //! CreateFrame with a parent on the maps (or the minimap): the gamepad interface hooks it and rebuilds the open
 //! map's buttons in the caller's code, tainted (wow_stub.lua's stub.underGameFrames). Core, Theme, Nav, Maps and
@@ -31,19 +31,19 @@ fn before(style: &str) -> String {
 }
 
 const SCRIPT: &str = r#"
-local M, m, P, N = Polestar.Maps, stub.maps, Polestar.Pins, Polestar.Nav
+local M, m, P, N = Northstar.Maps, stub.maps, Northstar.Pins, Northstar.Nav
 C_Map.GetMapArtLayers = function(id)
 	if id == 9000 then return { { layerWidth = 1002, layerHeight = 668, tileWidth = 256, tileHeight = 256 } } end
 	return {}
 end
 C_Map.GetMapArtID = function(id) return id == 9000 and 9001 or nil end
 C_MapExplorationInfo = { GetExploredMapTextures = function() return {} end }
-Polestar.UI.ZoneArt.RegisterOverlays("test", { [9001] = { 256, 256, { 300, 200, 600, 100, 501, 502 }, { 100, 100, 50, 300, 503 } } })
+Northstar.UI.ZoneArt.RegisterOverlays("test", { [9001] = { 256, 256, { 300, 200, 600, 100, 501, 502 }, { 100, 100, 50, 300, 503 } } })
 M.RegisterZoneLevels({ [9000] = { 10, 20, 50, 50 } })
-Polestar.Set("maps.reveal", "tint")
-Polestar.Set("maps.coords", true)
-Polestar.Set("maps.zoneLevels", true)
-Polestar.Set("maps.dungeonPins", true)
+Northstar.Set("maps.reveal", "tint")
+Northstar.Set("maps.coords", true)
+Northstar.Set("maps.zoneLevels", true)
+Northstar.Set("maps.dungeonPins", true)
 
 local clicked
 P.SetLayer("test.marks", {
@@ -67,7 +67,7 @@ local function drawn()
 		if rawget(f, "Range") and f:IsVisible() then labels = labels + 1 end
 	end
 	-- The way to the target: the route lines (Maps/RouteLines.lua), or the trail's dots while they draw nothing.
-	local R = Polestar.RouteLines
+	local R = Northstar.RouteLines
 	local lines = R and R.GetWorldFrame() and R.GetWorldFrame():IsVisible() and R.GetStrokes("world").n or 0
 	-- The marks and the target; the route's steps (pins with a step) come and
 	-- go with Nav/Travel.lua's choice of way and are left out.
@@ -84,7 +84,7 @@ m.showMap(9100)                                      -- the continent: its zones
 m.cursor = { 0.4, 0.3 }
 stub.advance(0.5)
 r.continent = drawn()
-r.bar = stub.frame("PolestarMapInfo").Zone:GetText()
+r.bar = stub.frame("NorthstarMapInfo").Zone:GetText()
 m.showMap(9000)                                      -- the zone
 stub.advance(0.5)
 r.zone = drawn()
@@ -149,7 +149,7 @@ fn run(style: &str, script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_maps.lua"],
 		before: before(style),
-		addons: vec![Addon::files("Polestar", &FILES)],
+		addons: vec![Addon::files("Northstar", &FILES)],
 		login: true,
 		script: script.into(),
 		..Default::default()
@@ -157,7 +157,7 @@ fn run(style: &str, script: &str) -> Value {
 	.remove(0)
 }
 
-// What Polestar may call or read on a map frame: Blizzard_MapCanvas getters that return a field or work one out
+// What Northstar may call or read on a map frame: Blizzard_MapCanvas getters that return a field or work one out
 // (Blizzard_MapCanvas.lua, MapCanvas_ScrollContainerMixin.lua, MapCanvas_PinFrameLevelsManager.lua), and the
 // client's own frame methods, all reads. The one call that hands the map something is Nav/Journey.lua's
 // AddCanvasClickHandler: the map keeps such handlers in Blizzard_MapCanvasSecureUtil's registry, a table of its
@@ -215,7 +215,7 @@ fn check(style: &str) {
 		let list: Vec<Value> = expected["WorldMapFrame"].as_array().unwrap().iter().filter(|k| k.as_str() != Some("AddCanvasClickHandler")).cloned().collect();
 		expected["WorldMapFrame"] = Value::Array(list);
 	}
-	assert_eq!(out["reads"], expected, "what Polestar reads on the maps");
+	assert_eq!(out["reads"], expected, "what Northstar reads on the maps");
 }
 
 #[test]
@@ -238,10 +238,10 @@ fn a_map_listener_that_errors_is_reported_once_left_out_until_the_map_reopens_an
 		r#"
 local reported, broken, fine = 0, 0, 0
 geterrorhandler = function() return function() reported = reported + 1 end end
-Polestar.MapCanvas.Watch(WorldMapFrame, function(_, what)
+Northstar.MapCanvas.Watch(WorldMapFrame, function(_, what)
 	if what == "tick" then broken = broken + 1; error("boom") end
 end)
-Polestar.MapCanvas.Watch(WorldMapFrame, function(_, what) if what == "tick" then fine = fine + 1 end end)
+Northstar.MapCanvas.Watch(WorldMapFrame, function(_, what) if what == "tick" then fine = fine + 1 end end)
 stub.maps.showMap(9000)
 for _ = 1, 5 do stub.runMapFrame(WorldMapFrame, 0.01) end
 local open = { reported = reported, broken = broken, fine = fine }

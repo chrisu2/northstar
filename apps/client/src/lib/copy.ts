@@ -24,5 +24,5 @@ export const COLLECTED = [
 	{ glyph: 'icon-kill', text: 'Creatures you meet and kill, their levels, and what they drop' },
 	{ glyph: 'icon-vendor', text: 'Vendors, trainers and flight masters, and what they offer' },
 	{ glyph: 'icon-level', text: 'Your character’s race, class, level and faction, and the game’s version' },
-	{ glyph: 'flag', text: 'Which Polestar guide step you were on' },
+	{ glyph: 'flag', text: 'Which Northstar guide step you were on' },
 ];

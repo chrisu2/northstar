@@ -28,7 +28,7 @@ use super::release::read_table;
 pub const ADDON: &str = "LibForeverData";
 /// The read API's version (the first part of a lib-v tag).
 pub const API: u32 = 1;
-/// The client this library loads on (addon/Polestar/Polestar.toc's Interface).
+/// The client this library loads on (addon/Northstar/Northstar.toc's Interface).
 pub const INTERFACE: &str = "16001";
 
 const OFFSET: i64 = 1 << 17;
@@ -248,7 +248,7 @@ pub fn write(dir: &Path, into: &Path) -> Result<(usize, u64), String> {
 
 fn toc<'a>(version: &str, client: &str, files: impl Iterator<Item = &'a str>) -> String {
 	let mut s = format!(
-		"## Interface: {INTERFACE}\n## Title: LibForeverData\n## Notes: World of Warcraft: Forever quest data (forever-db {version}, client {client}): quests, NPCs, objects, items, spawns and quest steps for other addons.\n## Author: Polestar contributors\n## Version: {API}.{version}\n## X-License: GPL-3.0 (the database); CC BY 4.0 (our own layer: quest steps and notes)\n## X-Credits: EG Link (Efficient Games, CC BY 4.0), CMaNGOS classic-db, VMaNGOS through pfQuest, pfQuest (Shagu, MIT), Factoruide, ForeverTDB, QuestieDB, the game client's tables; see NOTICE.md\n## X-Website: https://github.com/fitzforge/polestar/tree/main/forever-db\n## X-ForeverDB-Version: {version}\n## X-ForeverDB-ClientBuild: {client}\n\n"
+		"## Interface: {INTERFACE}\n## Title: LibForeverData\n## Notes: World of Warcraft: Forever quest data (forever-db {version}, client {client}): quests, NPCs, objects, items, spawns and quest steps for other addons.\n## Author: Northstar contributors\n## Version: {API}.{version}\n## X-License: GPL-3.0 (the database); CC BY 4.0 (our own layer: quest steps and notes)\n## X-Credits: EG Link (Efficient Games, CC BY 4.0), CMaNGOS classic-db, VMaNGOS through pfQuest, pfQuest (Shagu, MIT), Factoruide, ForeverTDB, QuestieDB, the game client's tables; see NOTICE.md\n## X-Website: https://github.com/fitzforge/polestar/tree/main/forever-db\n## X-ForeverDB-Version: {version}\n## X-ForeverDB-ClientBuild: {client}\n\n"
 	);
 	for f in files {
 		s.push_str(&f.replace('/', "\\"));

@@ -10,7 +10,7 @@ pub(super) const USAGE: &str = "usage: forge writer apply-route <route.json> --w
                            [--guides <dir>] [--data <dir>] [--root <checkout>] [--checkout <dir>] [--walks <file>]
                            [--format-0-3] [--no-engine] [--no-along] [--no-use] [--no-when] [--no-level]
                            [--no-tips] [--no-warnings] [--no-groups]
-                           [--no-route-legs] [--no-repair]
+                           [--no-route-legs] [--no-repair] [--fresh-openers flag|move|off]
 
 Copies the guides (default <root>/guides) to --out and rewrites the route's chain in the route's order:
 the guides' own lines move with their step's tips, added quests become accept, objective and turn-in
@@ -22,7 +22,7 @@ Westfall on) are written once, from the shared order of every route of the facti
   --world          the simulator world the route's points index (world-horde.json, world-alliance.json)
   --walks          the walk file for walking yards (default walks-<faction>.bin beside --world)
   --data           the game data (default <root>/data/forever)
-  --root           the Polestar checkout (default: the nearest folder above here with data/forever)
+  --root           the Northstar checkout (default: the nearest folder above here with data/forever)
   --checkout       the checkout whose data/places.json and data/guide-fixes.json are applied to the
                    written guides, last (default: --root); each record's state is printed
   --no-route-legs  keep the guides' own travel lines, checked by playing them (--no-repair: unchecked)
@@ -33,9 +33,13 @@ Westfall on) are written once, from the shared order of every route of the facti
   --no-tips        no notes on where a goal's NPC or object stands (upstairs, below ground, in a cave,
                    under water) or that an NPC walks around
   --no-warnings    no `Careful:` tips from the quest notes (ambushes, stealthed mobs, adds)
+  --fresh-openers  a guide's accepts in its first 10 steps that need a quest only an earlier guide hands
+                   in (a player loading the guide fresh cannot take them): `flag` (default) lists them
+                   (`fresh opener: …`), `move` takes each to the guide's later visit to its giver where
+                   it has one, `off` skips the check
   --no-groups      the route's elite and group quests unasked: no `when group`, no elite tip or group
                    size on them, no solo grind for a player who skips them
-  --format-0-3     also `when group`, `task`/`cast`, `abandon`, `skipto` (guide pack format 5, Polestar 0.3.0)
+  --format-0-3     also `when group`, `task`/`cast`, `abandon`, `skipto` (guide pack format 5, Northstar 0.3.0)
 
 usage: forge writer apply-routes <routes dir> --sim <dir> --out <dir> [--starts Orc,Human,...]
                            [--guides <dir>] [--data <dir>] [--root <checkout>] [--checkout <dir>]
@@ -272,7 +276,7 @@ fn run(args: &[String]) -> Result<Result<(), String>, String> {
 	while i < args.len() {
 		let a = args[i].as_str();
 		match a {
-			"--world" | "--out" | "--guides" | "--route" | "--root" | "--checkout" | "--data" | "--walks" => {
+			"--world" | "--out" | "--guides" | "--route" | "--root" | "--checkout" | "--data" | "--walks" | "--fresh-openers" => {
 				let Some(v) = args.get(i + 1) else {
 					return Ok(Err(format!("{a} needs a value")));
 				};
@@ -335,6 +339,12 @@ fn run(args: &[String]) -> Result<Result<(), String>, String> {
 			tips: !opt.contains_key("--no-tips"),
 			warnings: !opt.contains_key("--no-warnings"),
 			groups: !opt.contains_key("--no-groups"),
+		},
+		fresh_openers: match opt.get("--fresh-openers").map(String::as_str) {
+			None | Some("flag") => forge_writer::post::FreshOpeners::Flag,
+			Some("move") => forge_writer::post::FreshOpeners::Move,
+			Some("off") => forge_writer::post::FreshOpeners::Off,
+			Some(x) => return Ok(Err(format!("--fresh-openers takes flag, move or off, not {x}"))),
 		},
 	};
 	let ro = forge_writer::native::run_paths(&pin, &ropts, &forge_writer::native::SharedCache::default())?;

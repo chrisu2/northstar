@@ -1554,7 +1554,7 @@ pub fn search(p: &Problem, seed: &Order, opts: &SearchOpts, ck: Option<&Unit>) -
 				m.take(b);
 			}
 		}
-		// The convergence curve (POLESTAR_BUILD_TIMES): the best order's hours after 1, 2, 4, ... rounds.
+		// The convergence curve (NORTHSTAR_BUILD_TIMES): the best order's hours after 1, 2, 4, ... rounds.
 		if forge_core::timing::on() && ((r + 1).is_power_of_two() || r + 1 == rounds) {
 			let tries: u64 = ms.iter().map(|m| m.stats.tries).sum();
 			let who = format!("{}{}", p.model.run.race, if p.ctxs.len() > 1 { " tail" } else { "" });

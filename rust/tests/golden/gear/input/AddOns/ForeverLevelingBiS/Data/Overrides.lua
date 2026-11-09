@@ -1,6 +1,6 @@
 local _, ns = ...
 
--- Synthetic: written for Polestar's golden tests, not the addon's data.
+-- Synthetic: written for Northstar's golden tests, not the addon's data.
 ns.Overrides = {
     [25] = false,
     [5587] = { quality = 3, stats = { sta = 2, spi = 1 } },

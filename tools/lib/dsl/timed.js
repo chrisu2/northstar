@@ -135,7 +135,7 @@ function perItem(data, goal, L) {
 }
 
 // A flight: yards along the taxi path a second, and seconds per hop (take-off,
-// landing), the addon planner's (addon/Polestar/Nav/Travel.lua FLIGHT_SPEED,
+// landing), the addon planner's (addon/Northstar/Nav/Travel.lua FLIGHT_SPEED,
 // FLIGHT_STOP; the sim's v2/travel2.js uses the same). travel.json's leg `cost`
 // is TaxiPath.dbc's price in copper, not seconds.
 const FLIGHT_SPEED = 30;

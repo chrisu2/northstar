@@ -6,8 +6,8 @@
 //! <checkout>/data/sim with the default data) reads world-<faction>.json's `excluded` for the solo policy,
 //! skipping a world built from other data.
 //!
-//! `forge guide bake --guides <dir>[,<dir>...] [--grid <dir>] [--leffe <dir>] [--root <repo>] [--data <dir>] [--threads N]`:
-//! the baked legs of written guide trees (forge::bake).
+//! `forge guide bake --guides <dir>[,<dir>...] [--grid <dir>] [--leffe <dir>] [--root <repo>] [--data <dir>] [--chokepoints <file>] [--threads N]`:
+//! the baked legs of written guide trees (forge::bake). The grid must already have walk/ from `forge nav prepare`.
 
 use forge_guide::data::Data;
 use forge_guide::diag::{format_diagnostics, Diag, Diagnostics};
@@ -16,10 +16,10 @@ use forge_guide::project::{build_pack, find_guide_files, find_pack_dir, load_pro
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
-/// The Polestar checkout: the nearest folder above the working directory, else above the forge binary,
-/// holding addon/Polestar/Polestar.toc and guides/pack.json.
+/// The Northstar checkout: the nearest folder above the working directory, else above the forge binary,
+/// holding addon/Northstar/Northstar.toc and guides/pack.json.
 fn find_root() -> Option<PathBuf> {
-	let is_root = |d: &&Path| d.join("addon/Polestar/Polestar.toc").exists() && d.join("guides/pack.json").exists();
+	let is_root = |d: &&Path| d.join("addon/Northstar/Northstar.toc").exists() && d.join("guides/pack.json").exists();
 	let cwd = std::env::current_dir().unwrap_or_default();
 	let exe = std::env::current_exe().unwrap_or_default();
 	cwd.ancestors().find(is_root).or_else(|| exe.ancestors().find(is_root)).map(Path::to_path_buf)
@@ -124,10 +124,10 @@ fn generated(cmd: &str, args: &[String]) -> i32 {
 	};
 	let checkout = match opt("--checkout").map(abs) {
 		Some(c) if c.join(forge::CHECKOUT_MARK).is_file() => c,
-		Some(c) => return usage(&format!("--checkout {}: not a Polestar checkout (no {})", c.display(), forge::CHECKOUT_MARK)),
+		Some(c) => return usage(&format!("--checkout {}: not a Northstar checkout (no {})", c.display(), forge::CHECKOUT_MARK)),
 		None => match forge::find_checkout(&cwd) {
 			Some(c) => c,
-			None => return usage(&format!("no Polestar checkout ({}) above here: pass --checkout <dir>", forge::CHECKOUT_MARK)),
+			None => return usage(&format!("no Northstar checkout ({}) above here: pass --checkout <dir>", forge::CHECKOUT_MARK)),
 		},
 	};
 	match cmd {
@@ -184,7 +184,7 @@ fn bake(args: &[String]) -> i32 {
 		eprintln!("forge guide: {m}\n(forge guide --help for the options)");
 		2
 	};
-	if let Err(e) = super::check_args(args, &["--guides", "--grid", "--leffe", "--root", "--data", "--threads"], &[], 0) {
+	if let Err(e) = super::check_args(args, &["--guides", "--grid", "--leffe", "--root", "--data", "--chokepoints", "--threads"], &[], 0) {
 		return usage(&e);
 	}
 	let opt = |k: &str| args.iter().position(|a| a == k).and_then(|i| args.get(i + 1)).cloned().or_else(|| args.iter().find_map(|a| a.strip_prefix(k)?.strip_prefix('=').map(String::from)));
@@ -192,7 +192,7 @@ fn bake(args: &[String]) -> i32 {
 	let Some(trees) = opt("--guides") else { return usage("bake needs --guides <written tree>[,<tree>...]") };
 	let trees: Vec<PathBuf> = trees.split(',').map(|t| cwd.join(t.trim())).collect();
 	let Some(root) = opt("--root").map(|r| cwd.join(r)).or_else(find_root) else {
-		return usage("no Polestar checkout (addon/Polestar/Polestar.toc and guides/pack.json) above here or the forge binary: pass --root <checkout>");
+		return usage("no Northstar checkout (addon/Northstar/Northstar.toc and guides/pack.json) above here or the forge binary: pass --root <checkout>");
 	};
 	let data = opt("--data").map(|d| cwd.join(d)).unwrap_or_else(|| root.join("data/forever"));
 	let grid = forge::grid_dir(opt("--grid").map(|g| cwd.join(g)).as_deref(), &root);
@@ -205,6 +205,7 @@ fn bake(args: &[String]) -> i32 {
 	let src = forge_world::data::DirSource::repo(&root);
 	let Some(build) = forge_world::data::forever_build(&src) else { return usage(&format!("no cached Forever AreaTable in {}/data/sources/wago", root.display())) };
 	let area_table = root.join(format!("data/sources/wago/{build}/AreaTable.csv"));
+	let chokepoints = opt("--chokepoints").map(|c| cwd.join(c)).unwrap_or_else(|| root.join("addon/Northstar_Nav/Nav/Chokepoints.lua"));
 	let say = |m: &str| eprintln!("forge guide bake: {m}");
 	let r = forge::bake::bake_trees(&forge::bake::BakeIn {
 		trees: &trees,
@@ -213,7 +214,7 @@ fn bake(args: &[String]) -> i32 {
 		leffe: leffe.as_deref(),
 		area_table: &area_table,
 		zones: &data.join("zones.json"),
-		chokepoints: &root.join("addon/Polestar_Nav/Nav/Chokepoints.lua"),
+		chokepoints: &chokepoints,
 		threads,
 		log: &say,
 	});
@@ -265,7 +266,7 @@ fn guidecheck(args: &[String]) -> i32 {
 	let data_dir = match (opt("--data"), &root) {
 		(Some(d), _) => cwd.join(d),
 		(None, Some(r)) => r.join("data/forever"),
-		(None, None) => return usage("no Polestar checkout above here: pass --data <dir> or --root <checkout>"),
+		(None, None) => return usage("no Northstar checkout above here: pass --data <dir> or --root <checkout>"),
 	};
 	let data = match forge_guide::data::load_data(&data_dir) {
 		Ok(d) => d,
@@ -427,7 +428,7 @@ fn run() -> i32 {
 		}
 	}
 	let Some(root) = opt("--root").map(at).or_else(find_root) else {
-		return usage("no Polestar checkout (addon/Polestar/Polestar.toc and guides/pack.json) above here or the forge binary: pass --root <checkout>");
+		return usage("no Northstar checkout (addon/Northstar/Northstar.toc and guides/pack.json) above here or the forge binary: pass --root <checkout>");
 	};
 	if !root.join("guides/pack.json").is_file() {
 		eprintln!("forge guide {cmd}: no guides/pack.json in {}: pass --root <checkout>", root.display());
@@ -489,6 +490,24 @@ fn run() -> i32 {
 		(data, context_data)
 	};
 	let t_data = t0.elapsed();
+	if !no_data && summary && !data.has_professions {
+		eprintln!(
+			"forge guide {cmd}: professions.json is not in {}. forge data build does not write it, so learn and craft lines error. Next: forge data professions --data {} --sources {}",
+			data_dir.display(),
+			data_dir.display(),
+			root.join("data").join("sources").display()
+		);
+		eprintln!("forge guide {cmd}: that command reads cached wago profession tables (SkillLine, SkillLineAbility, SpellName, and the rest of professions::tables::OWN). It does not read the wowf client, and the era-only cache fetch does not include those tables.");
+	}
+	if !no_data && summary && !data.has_trainers {
+		eprintln!(
+			"forge guide {cmd}: trainers.json is not in {}. Class train lines error without it. Next: forge data trainers --data {} --guides {} --recordings {}",
+			data_dir.display(),
+			data_dir.display(),
+			root.join("guides").display(),
+			root.join("data").join("recordings").display()
+		);
+	}
 	let context = context_dir.as_ref().map(|dir| Context { sources: read_sources(dir, &find_guide_files(dir, false)), data: context_data.as_ref().unwrap_or(&data) });
 	let opts = BuildOpts { include_drafts: flag("--include-drafts"), context, force: flag("--force") };
 	let built = match build_pack(&root, &pack_dir, &manifest, extra, &data, data_diag, opts) {
@@ -565,6 +584,24 @@ fn run() -> i32 {
 	} else if summary {
 		let steps: usize = guides.iter().map(|g| g.get("steps").len()).sum();
 		println!("compiled {} ({}) from {} into {}; {}", plural(guides.len(), "guide"), plural(steps, "step"), plural(files, "file"), out.display(), plural(w, "warning"));
+		if let Some(written) = built.files.as_ref() {
+			let mut legs: Vec<&str> = Vec::new();
+			for (name, _) in written {
+				if let Some(race) = name.strip_prefix("../Northstar_Guides_").and_then(|r| r.strip_suffix("/Legs.lua")) {
+					legs.push(race);
+				}
+			}
+			legs.sort();
+			let absent: Vec<&str> = forge_guide::races::RACE_FILES.iter().copied().filter(|r| !legs.iter().any(|x| x == r)).collect();
+			if legs.is_empty() {
+				println!("parts: leveling guides are in Northstar_Guides_Alliance and Northstar_Guides_Horde. No race folder was written: baked legs did not match (forge guide bake, after the 70862 nav pack).");
+			} else {
+				println!("parts: leveling guides are in Northstar_Guides_Alliance and Northstar_Guides_Horde. Baked legs for {}.", legs.join(", "));
+				if !absent.is_empty() {
+					println!("parts: no baked legs for {} (Undead is the Scourge folder). Their leveling guides are still in the faction part.", absent.join(", "));
+				}
+			}
+		}
 		// Place ids (places.rs): how many place goals got an area, getfp goals a taxi node.
 		let p = forge_guide::places::place_counts(guides);
 		let n = |v: &V, k: &str| v.get(k).num() as usize;
@@ -591,7 +628,7 @@ fn run() -> i32 {
 				plural(n(&h, "spots"), "spawn spot")
 			);
 		} else {
-			println!("heights: none (no spawnz.json in the reference data; `forge data build` writes it)");
+			println!("heights: none (no spawnz.json). A data build writes it only when the classic-db extract is in the cache. Goals keep their map point and have no z.");
 		}
 	}
 	i32::from(e > 0)

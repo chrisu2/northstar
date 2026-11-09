@@ -46,16 +46,16 @@ test('a translated report parses by shape, not by its words', () => {
 	const de = [
 		'**Was ist schiefgelaufen:** Der Pfeil zeigt ins Wasser.',
 		'```',
-		'Polestar 0.2.4 Beta · Client 1.60.1 (70425) · deDE',
+		'Northstar 0.2.4 Beta · Client 1.60.1 (70425) · deDE',
 		'Zwerg Jäger · Stufe 9 (12%) · Allianz',
-		'Leitfaden: Dun Morogh (forever/alliance/dwarf/01-dun-morogh) · Paket Polestar Guides 0.2.4',
+		'Leitfaden: Dun Morogh (forever/alliance/dwarf/01-dun-morogh) · Paket Northstar Guides 0.2.4',
 		'Schritt 7 von 40: Kharanos',
 		'[>] Sprich mit Rybrad · quest 400 · npc 1690 · map 1426 @46.82,52.36',
 		'Pfeil: Rybrad · 120 yd',
 		'Ort: Dun Morogh, Kharanos · map 1426 @46.00,52.00 live',
 		'Routen: roads · travel planner off',
 		'Fehler:',
-		'  3x Polestar/Nav/Arrow.lua:88: attempt to index nil',
+		'  3x Northstar/Nav/Arrow.lua:88: attempt to index nil',
 		'```',
 	].join('\n');
 	const r = parseReport(de);
@@ -64,7 +64,7 @@ test('a translated report parses by shape, not by its words', () => {
 	assert.equal(r.details.guideId, 'forever/alliance/dwarf/01-dun-morogh');
 	assert.deepEqual([r.details.step, r.details.stepCount, r.details.liveStep], [7, 40, undefined]);
 	assert.equal(r.details.zone, 'Dun Morogh, Kharanos');
-	assert.deepEqual(r.details.errors, [{ count: 3, message: 'Polestar/Nav/Arrow.lua:88: attempt to index nil' }]);
+	assert.deepEqual(r.details.errors, [{ count: 3, message: 'Northstar/Nav/Arrow.lua:88: attempt to index nil' }]);
 	assert.equal(r.details.routes, 'roads · travel planner off', 'the route settings, found by their words under a translated label');
 	assert.match(I.issueBody({ report: r, reporter: 'x', guild: '1', thread: '2' }), /^\| Routes \| roads · travel planner off \|$/m);
 	assert.ok(I.labelsFor(r).includes('lua-error'));
@@ -74,7 +74,7 @@ test('a Chinese report, its labels in full-width colons and brackets, reads like
 	const zh = [
 		'**出了什么问题：** 箭头指向水里',
 		'```',
-		'Polestar 0.2.4 Beta · 客户端 1.60.1（70338） · zhCN',
+		'Northstar 0.2.4 Beta · 客户端 1.60.1（70338） · zhCN',
 		'Human Warrior · 4级 · Alliance',
 		'指南：Elwynn Forest（forever/alliance/human/01-elwynn-forest）',
 		'步骤 3/8：Kobold Camp',
@@ -84,7 +84,7 @@ test('a Chinese report, its labels in full-width colons and brackets, reads like
 		'位置：Elwynn Forest · map 1429 @47.00,35.00 live',
 		'路线：balanced',
 		'错误：',
-		'  1x Polestar/Nav/Arrow.lua:40: bad argument',
+		'  1x Northstar/Nav/Arrow.lua:40: bad argument',
 		'```',
 	].join('\n');
 	const r = parseReport(zh);
@@ -97,11 +97,11 @@ test('a Chinese report, its labels in full-width colons and brackets, reads like
 	assert.equal(d.arrow, '箭头：Kill Kobold Vermin · 42 yd', 'the goals are passed over, not read as the arrow or the place');
 	assert.deepEqual([d.zone, d.map, d.routes], ['Elwynn Forest', 1429, 'balanced']);
 	assert.ok(I.labelsFor(r).includes('guide:01-elwynn-forest'));
-	assert.equal(I.issueTitle('**出了什么问题：** 箭头指向水里 ``` Polestar'), '箭头指向水里');
+	assert.equal(I.issueTitle('**出了什么问题：** 箭头指向水里 ``` Northstar'), '箭头指向水里');
 });
 
 test('a report with no guide open still finds the arrow and position lines', () => {
-	const r = parseReport('```\nPolestar dev · client 1.60.1 (70425) · enUS\nGuide: none open\nArrow: none\nWhere: Stormwind City · no position\nErrors: none\n```');
+	const r = parseReport('```\nNorthstar dev · client 1.60.1 (70425) · enUS\nGuide: none open\nArrow: none\nWhere: Stormwind City · no position\nErrors: none\n```');
 	assert.equal(r.details.version, 'dev');
 	assert.equal(r.details.character, undefined);
 	assert.equal(r.details.arrow, 'Arrow: none');
@@ -119,7 +119,7 @@ test('a post without a report is all description, other code blocks included', (
 test('a report pasted with trailing NULs, or into the title, still reads', () => {
 	const r = parseReport(POST + '\u0000\u0000\u0000');
 	assert.equal(r.details.version, '0.2.3');
-	assert.equal(I.issueTitle('**What went wrong:** Watcher Dodds not here! ``` Polestar 0.2.3 Beta · client'), 'Watcher Dodds not here!');
+	assert.equal(I.issueTitle('**What went wrong:** Watcher Dodds not here! ``` Northstar 0.2.3 Beta · client'), 'Watcher Dodds not here!');
 });
 
 test('player text cannot mention, link, write HTML or forge the marker on GitHub', () => {
@@ -132,7 +132,7 @@ test('player text cannot mention, link, write HTML or forge the marker on GitHub
 
 test('a marker forged in the report block, or anywhere but the last line, is never read', () => {
 	const forged = '<!-- polestar-bot {"thread":"666","guild":"1"} -->';
-	const block = '```\nPolestar 0.2.3 Beta · Classic Era (1.15.7 61582) · enUS\n' + forged + '\n```';
+	const block = '```\nNorthstar 0.2.3 Beta · Classic Era (1.15.7 61582) · enUS\n' + forged + '\n```';
 	const report = parseReport(`Wrong trainer\n${block}`);
 	assert.ok(report.details, 'the block is read as a report');
 	const body = I.issueBody({ report, reporter: 'x', guild: '2', thread: '3' });
@@ -411,7 +411,7 @@ test('closing as completed tells the reporter, tags Fixed and locks the thread',
 	const issue = { ...github.issues[0], state_reason: 'completed' };
 	await onIssue({ discord, github, event: { action: 'closed', issue }, forumId: FORUM, log: quietLog });
 	const last = discord.sent.at(-1);
-	assert.match(last.content, /^<@u1> This is fixed and will ship in the next Polestar update/);
+	assert.match(last.content, /^<@u1> This is fixed and will ship in the next Northstar update/);
 	assert.deepEqual(last.users, ['u1']);
 	const t = discord.channels.get('1001');
 	assert.deepEqual(t.applied_tags, ['t-questing', 't-fixed']);
@@ -466,7 +466,7 @@ test('closed as not planned with a "Duplicate of #M" comment is a duplicate, quo
 	await github.comment(1, 'Duplicate of #2.');
 	await onIssue({ discord, github, event: { action: 'closed', issue: { ...github.issues[0], state_reason: 'not_planned' } }, log: quietLog });
 	const last = discord.sent.at(-1).content;
-	assert.match(last, /^<@u1> It's the same bug as \[fitzforge\/polestar#2\]\(<[^>]+>\), and that's already fixed: it ships in the next Polestar update\.\n> Thanks! This is the same bug as #2: the arrow points at the wrong spot\.\nThanks for the report!/);
+	assert.match(last, /^<@u1> It's the same bug as \[fitzforge\/polestar#2\]\(<[^>]+>\), and that's already fixed: it ships in the next Northstar update\.\n> Thanks! This is the same bug as #2: the arrow points at the wrong spot\.\nThanks for the report!/);
 	assert.doesNotMatch(last, /not to change|> Duplicate of/);
 	const t = discord.channels.get('1001');
 	assert.deepEqual(t.applied_tags, ['t-questing', 't-dup']);
@@ -476,8 +476,8 @@ test('closed as not planned with a "Duplicate of #M" comment is a duplicate, quo
 test("a duplicate's message says where the issue it duplicates stands", async () => {
 	const long = 'x'.repeat(400);
 	const cases = [
-		[{ state: 'closed', state_reason: 'completed' }, [], null, /It's the same bug as \[fitzforge\/polestar#2\]\S+, and that's already fixed: it ships in the next Polestar update\./],
-		[{ state: 'closed', state_reason: 'completed' }, ['released:v0.2.6'], null, /It's the same bug as \[fitzforge\/polestar#2\]\S+, and the fix is out in Polestar 0\.2\.6: update Polestar to get it\./],
+		[{ state: 'closed', state_reason: 'completed' }, [], null, /It's the same bug as \[fitzforge\/polestar#2\]\S+, and that's already fixed: it ships in the next Northstar update\./],
+		[{ state: 'closed', state_reason: 'completed' }, ['released:v0.2.6'], null, /It's the same bug as \[fitzforge\/polestar#2\]\S+, and the fix is out in Northstar 0\.2\.6: update Northstar to get it\./],
 		[{ state: 'closed', state_reason: 'not_planned' }, [], 'Works as designed: the arrow points at the giver.', /It's the same as \[fitzforge\/polestar#2\]\S+, and we've decided not to change it:\n> Works as designed: the arrow points at the giver\.\n\n> Same arrow\./],
 		[{ state: 'closed', state_reason: 'not_planned' }, ['resolution:cannot-reproduce'], long, /It's the same as \[fitzforge\/polestar#2\]\S+, and we couldn't reproduce that one\.\n> Same arrow\./],
 		[{ state: 'open' }, [], null, /This was already reported, so we're tracking it in \[fitzforge\/polestar#2\]\S+\.\n> Same arrow\./],
@@ -508,14 +508,14 @@ test('a release tells the threads of duplicates of what it ships, once, wherever
 	close(4, { state_reason: 'not_planned' });
 	await github.comment(4, 'Duplicate of #9'); // not in this release
 	github.releasesList.push({ id: 1, tag_name: 'v0.2.5', published_at: '2026-10-14T00:00:00Z' });
-	const release = { id: 2, tag_name: 'v0.2.6', name: 'Polestar 0.2.6', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.6', published_at: '2026-10-16T00:00:00Z' };
+	const release = { id: 2, tag_name: 'v0.2.6', name: 'Northstar 0.2.6', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.6', published_at: '2026-10-16T00:00:00Z' };
 	github.releasesList.push(release);
 
 	const before = discord.sent.length;
 	assert.deepEqual(await onRelease({ discord, github, event: { release }, log: quietLog }), { told: 3, failed: 0 });
 	const told = discord.sent.slice(before);
 	assert.deepEqual(told.map((s) => s.channel), ['1', '2', '3']);
-	assert.match(told[1].content, /^<@u1> The fix for \[fitzforge\/polestar#1\]\S+, the same bug as yours, is out in \*\*Polestar 0\.2\.6\*\*/);
+	assert.match(told[1].content, /^<@u1> The fix for \[fitzforge\/polestar#1\]\S+, the same bug as yours, is out in \*\*Northstar 0\.2\.6\*\*/);
 	assert.match(told[2].content, /The fix for \[fitzforge\/polestar#5\]/);
 	for (const n of [2, 3]) assert.ok(github.issues[n - 1].labels.some((l) => l.name === 'released:v0.2.6'));
 
@@ -534,7 +534,7 @@ test('a release tells the threads of fixes closed since the last release, once',
 	close(3, 'not_planned', '2026-10-15T00:00:00Z');
 	close(4, 'completed', '2026-10-15T01:00:00Z');
 	github.releasesList.push({ id: 1, tag_name: 'v0.2.3', published_at: '2026-10-14T16:50:15Z' });
-	const release = { id: 2, tag_name: 'v0.2.5', name: 'Polestar 0.2.5', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.5', published_at: '2026-10-16T00:00:00Z' };
+	const release = { id: 2, tag_name: 'v0.2.5', name: 'Northstar 0.2.5', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.5', published_at: '2026-10-16T00:00:00Z' };
 	github.releasesList.push(release);
 	discord.channels.get('4').thread_metadata = { archived: true, locked: true };
 
@@ -542,7 +542,7 @@ test('a release tells the threads of fixes closed since the last release, once',
 	assert.deepEqual(await onRelease({ discord, github, event: { release }, log: quietLog }), { told: 2, failed: 0 });
 	const told = discord.sent.slice(before);
 	assert.deepEqual(told.map((s) => s.channel), ['4', '2']);
-	assert.match(told[0].content, /^<@u1> The fix is out in \*\*Polestar 0\.2\.5\*\*/);
+	assert.match(told[0].content, /^<@u1> The fix is out in \*\*Northstar 0\.2\.5\*\*/);
 	assert.ok(discord.edits.some((e) => e.id === '4' && e.archived === false));
 	assert.ok(github.issues[1].labels.some((l) => l.name === 'released:v0.2.5'));
 
@@ -568,7 +568,7 @@ test('a Forge, data, library or data pack release tells no thread and is never t
 	assert.equal(discord.sent.length, before);
 	assert.ok(github.issues.every((i) => !(i.labels || []).some((l) => /^released:/.test(l.name))));
 	// The addon release after them counts from v0.2.3: both fixes ship in it.
-	const release = { id: 6, tag_name: 'v0.2.5', name: 'Polestar 0.2.5', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.5', published_at: '2026-10-18T00:00:00Z' };
+	const release = { id: 6, tag_name: 'v0.2.5', name: 'Northstar 0.2.5', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.5', published_at: '2026-10-18T00:00:00Z' };
 	github.releasesList.push(release);
 	assert.deepEqual(await onRelease({ discord, github, event: { release }, log: quietLog }), { told: 2, failed: 0 });
 });
@@ -583,7 +583,7 @@ test('a pre-release (a test build) tells no thread, and the next full release st
 	close(1, '2026-10-15T00:00:00Z'); // before the test build
 	close(2, '2026-10-16T12:00:00Z'); // after it
 	github.releasesList.push({ id: 1, tag_name: 'v0.2.4', published_at: '2026-10-14T00:00:00Z' });
-	const test = { id: 2, tag_name: 'v0.2.5-test.1', name: 'Polestar 0.2.5 test build', prerelease: true, published_at: '2026-10-16T00:00:00Z' };
+	const test = { id: 2, tag_name: 'v0.2.5-test.1', name: 'Northstar 0.2.5 test build', prerelease: true, published_at: '2026-10-16T00:00:00Z' };
 	github.releasesList.push(test);
 
 	const before = discord.sent.length;
@@ -591,7 +591,7 @@ test('a pre-release (a test build) tells no thread, and the next full release st
 	assert.equal(discord.sent.length, before);
 	assert.ok(github.issues.every((i) => !i.labels.some((l) => String(l.name || l).startsWith('released:'))));
 
-	const release = { id: 3, tag_name: 'v0.2.5', name: 'Polestar 0.2.5', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.5', published_at: '2026-10-20T00:00:00Z' };
+	const release = { id: 3, tag_name: 'v0.2.5', name: 'Northstar 0.2.5', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.5', published_at: '2026-10-20T00:00:00Z' };
 	github.releasesList.push(release);
 	assert.deepEqual(await onRelease({ discord, github, event: { release }, log: quietLog }), { told: 2, failed: 0 });
 });
@@ -622,7 +622,7 @@ test('a prerelease tells no thread and pings the testers once, with the player e
 	github.files.set(`${tag}:changes/README.md`, '# Changelog fragments\n');
 	github.files.set(`${tag}:changes/b-arrow.md`, '---\nsection: players\n---\n- The arrow walks\n  real paths.\n');
 	github.files.set(`${tag}:changes/a-tooling.md`, '---\nsection: contributors\n---\n- A new command.\n');
-	github.files.set(`${tag}:changes/c-french.md`, '---\nsection: players\n---\n- Polestar is in French.\n');
+	github.files.set(`${tag}:changes/c-french.md`, '---\nsection: players\n---\n- Northstar is in French.\n');
 	// A tester asking about it first is not the bot's ping.
 	discord.messages.set(TESTERS.channel, []);
 	discord.say(TESTERS.channel, { author: 'u9', content: `is **${tag}** out yet?` });
@@ -639,7 +639,7 @@ test('a prerelease tells no thread and pings the testers once, with the player e
 	assert.ok(sent[0].content.includes(`<#${FORUM}>`));
 	assert.ok(sent[0].content.includes(release.html_url));
 	const arrow = sent[0].content.indexOf('- The arrow walks real paths.');
-	assert.ok(arrow > 0 && arrow < sent[0].content.indexOf('- Polestar is in French.'));
+	assert.ok(arrow > 0 && arrow < sent[0].content.indexOf('- Northstar is in French.'));
 	assert.doesNotMatch(sent[0].content, /A new command/);
 	assert.equal(discord.edits.length, edits);
 	assert.ok(github.issues.every((i) => !i.labels.some((l) => l.name.startsWith('released:'))));
@@ -657,7 +657,7 @@ test('a full release counts its fixes from the full release before it, never fro
 	);
 	const rc = github.releasesList[2];
 	await onRelease({ discord, github, event: { release: rc }, forumId: FORUM, testers: null, log: quietLog });
-	const release = { id: 4, tag_name: 'v0.3.0', name: 'Polestar 0.3.0', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.3.0', published_at: '2026-10-16T00:00:00Z' };
+	const release = { id: 4, tag_name: 'v0.3.0', name: 'Northstar 0.3.0', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.3.0', published_at: '2026-10-16T00:00:00Z' };
 	github.releasesList.push(release);
 
 	const before = discord.sent.length;
@@ -679,7 +679,7 @@ test('a patch tells the fixes closed by hand, not those closed by a commit only 
 	github.tagCommits.set('v0.2.5', new Set(['c-old', 'c-patch']));
 	github.tagCommits.set('v0.3.0', new Set(['c-old', 'c-patch', 'c-next', 'c-pr']));
 	github.releasesList.push({ id: 1, tag_name: 'v0.2.4', published_at: '2026-10-10T00:00:00Z' });
-	const patch = { id: 2, tag_name: 'v0.2.5', name: 'Polestar 0.2.5', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.5', published_at: '2026-10-14T00:00:00Z' };
+	const patch = { id: 2, tag_name: 'v0.2.5', name: 'Northstar 0.2.5', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.2.5', published_at: '2026-10-14T00:00:00Z' };
 	github.releasesList.push(patch);
 
 	let before = discord.sent.length;
@@ -687,7 +687,7 @@ test('a patch tells the fixes closed by hand, not those closed by a commit only 
 	assert.deepEqual(discord.sent.slice(before).map((s) => s.channel), ['2']);
 	assert.ok(github.issues[0].labels.every((l) => l.name !== 'released:v0.2.5'));
 
-	const feature = { id: 3, tag_name: 'v0.3.0', name: 'Polestar 0.3.0', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.3.0', published_at: '2026-10-16T00:00:00Z' };
+	const feature = { id: 3, tag_name: 'v0.3.0', name: 'Northstar 0.3.0', html_url: 'https://github.com/fitzforge/polestar/releases/tag/v0.3.0', published_at: '2026-10-16T00:00:00Z' };
 	github.releasesList.push(feature);
 	before = discord.sent.length;
 	assert.deepEqual(await onRelease({ discord, github, event: { release: feature }, forumId: FORUM, log: quietLog }), { told: 2, failed: 0 });

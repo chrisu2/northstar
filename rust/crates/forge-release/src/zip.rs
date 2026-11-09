@@ -140,7 +140,7 @@ pub fn write_zip(file: &Path, entries: &[Entry]) -> Result<(), String> {
 	std::fs::rename(&tmp, file).map_err(|e| format!("{}: {e}", file.display()))
 }
 
-/// Entries for whole folder trees, each stored under its own name: `Polestar/`, `Polestar/Polestar.toc`,
+/// Entries for whole folder trees, each stored under its own name: `Northstar/`, `Northstar/Northstar.toc`,
 /// ... Hidden files and folders (a leading `.`) are skipped; names sort by UTF-16 code units (as JS
 /// compares strings).
 pub fn directory_entries(dirs: &[&Path]) -> Result<Vec<Entry>, String> {
@@ -262,7 +262,7 @@ mod tests {
 
 	#[test]
 	fn an_entry_inflating_past_its_size_or_an_archive_past_the_cap_is_refused() {
-		let mut bomb = build_zip(&[Entry::file("Polestar_Guides/Guides/a.lua", vec![45u8; 4 * 1024 * 1024])]).unwrap();
+		let mut bomb = build_zip(&[Entry::file("Northstar_Guides/Guides/a.lua", vec![45u8; 4 * 1024 * 1024])]).unwrap();
 		let cd = bomb.windows(4).position(|w| w == [0x50, 0x4b, 0x01, 0x02]).unwrap();
 		bomb[cd + 24..cd + 28].copy_from_slice(&16u32.to_le_bytes());
 		assert!(read_zip(&bomb, u64::MAX).unwrap_err().contains("corrupt entry"));

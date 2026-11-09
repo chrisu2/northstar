@@ -1,7 +1,7 @@
 //! Quests/QuestLevels.lua: "[12] " before quest titles in the quest log, the objective tracker, gossip and
 //! greeting quest lists and quest detail titles, against fakes of the camelot UI (tests/lua/stub_questlog.lua).
 //! Added once, never on top of a level the client drew, never when the level is unknown, never when it would
-//! wrap an already laid-out title; qol.questLevels off puts back exactly the text Polestar changed.
+//! wrap an already laid-out title; qol.questLevels off puts back exactly the text Northstar changed.
 
 use forge_addontest::{emitted, Addon, RunAddon};
 use serde_json::{json, Value};
@@ -30,7 +30,7 @@ fn run_with(script: &str, setup: &str) -> Vec<Value> {
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_quests.lua", "stub_questlog.lua"],
 		before: format!("{BEFORE}{setup}"),
-		addons: vec![Addon::name("Polestar")],
+		addons: vec![Addon::name("Northstar")],
 		script: format!("{PRELUDE}{script}"),
 		..Default::default()
 	})
@@ -118,7 +118,7 @@ fn greeting_titles_get_the_level_on_show_and_on_a_direct_refresh_from_the_quest_
 		"{}{}",
 		forge_addontest::questdb::ADD_RECORDS_LUA,
 		r#"
-local Q = Polestar.QuestDB
+local Q = Northstar.QuestDB
 Q.SetMeta({})
 AddRecords("quests", { [61] = { [Q.F.LEVEL] = 7 } })
 emit(texts(ql.greeting({ 18 }, { 7, 61, 33 })))
@@ -158,15 +158,15 @@ ql.updateTracker(7)
 gossip = ql.gossip({ { 7, level = 12 } })
 greet = ql.greeting({}, { 18 })
 ql.detail(7, true)
-Polestar.Set("qol.questLevels", false)
+Northstar.Set("qol.questLevels", false)
 emit(all())
 ql.updateLog()
 ql.updateTracker(7)
 emit({ logTexts(), ql.trackerText(7) })
-Polestar.Set("qol.questLevels", true)
+Northstar.Set("qol.questLevels", true)
 emit(all())
-Polestar.Set("qol.questLevels", false)
-Polestar.ResetSettings("qol")
+Northstar.Set("qol.questLevels", false)
+Northstar.ResetSettings("qol")
 emit(all())"#);
 	let plain = json!([
 		["Kobold Camp Cleanup", "Gathering Wood", "Mystery Errand"],
@@ -193,7 +193,7 @@ fn turning_it_off_leaves_a_level_the_client_drew_itself() {
 	let out = run_with(
 		r#"
 ql.updateLog()
-Polestar.Set("qol.questLevels", false)
+Northstar.Set("qol.questLevels", false)
 emit(logTexts())"#,
 		"ql.native = true",
 	);

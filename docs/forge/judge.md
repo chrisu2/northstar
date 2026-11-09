@@ -296,7 +296,7 @@ forge judge check out/guides --start Orc --json
 The fast check of a build's written guides, independent of the search and the
 writer. It reads the build's files beside the guides folder (`../routes`,
 `../.forge/root`, `../.forge/sim`, `../fixes.json`) and the deliberate orders
-in the route fixes (`--route-fixes`, else `$POLESTAR_ROUTE_FIXES`, else this
+in the route fixes (`--route-fixes`, else `$NORTHSTAR_ROUTE_FIXES`, else this
 checkout's `data/route-fixes.json`). It prints one line per broken rule:
 
 ```
@@ -391,7 +391,7 @@ inputs. An issue can carry a fenced `route-override` JSON block, read as
 given. Specs the reader does not understand are listed as manual, and issues
 no feedback row cites as untriaged; neither is guessed. `--out` is
 `data/route-fixes.json` with those overrides added; point the sim at it with
-`POLESTAR_ROUTE_FIXES`.
+`NORTHSTAR_ROUTE_FIXES`.
 
 ## Reading report.md and report.json
 
@@ -492,4 +492,4 @@ cd rust && cargo test --release -p forge-judge -- --test-threads=2
 
 Parity tests compare against saved JavaScript references and skip, with a note,
 when their inputs are absent. The seeded-defect test accepts
-`POLESTAR_SEEDED_N=<sites per class>` and `POLESTAR_SEEDED_ONLY=<class,...>`.
+`NORTHSTAR_SEEDED_N=<sites per class>` and `NORTHSTAR_SEEDED_ONLY=<class,...>`.

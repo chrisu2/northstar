@@ -83,15 +83,15 @@ fn the_fixture_packs_match_the_expected_files() {
 	for (name, text) in &got {
 		assert_eq!(untagged(text), untagged(&want[name]), "{name}");
 	}
-	let toc = &got["Polestar_frFR/Polestar_frFR.toc"];
+	let toc = &got["Northstar_frFR/Northstar_frFR.toc"];
 	assert_eq!(*toc, forge_guide::toc::language_toc("frFR", &toc_line(toc, "Interface"), &toc_line(toc, "Version")), "the language folder's TOC, as `forge guide compile` writes it");
-	for line in ["## LoadOnDemand: 1", "## Dependencies: Polestar", "## Group: Polestar", "Names.lua", "Texts.lua"] {
+	for line in ["## LoadOnDemand: 1", "## Dependencies: Northstar", "## Group: Northstar", "Interface.lua", "Names.lua", "Texts.lua"] {
 		assert!(toc.lines().any(|l| l == line), "{line}");
 	}
-	let lic = &got["Polestar_frFR/LICENSE-DATA.txt"];
+	let lic = &got["Northstar_frFR/LICENSE-DATA.txt"];
 	assert!(lic.contains(&"a".repeat(40)) && lic.contains(&sha(&fix().join("ding/Ding/DB/Locales/frFR.lua"))), "the DingDB pin");
 	assert!(lic.contains("GPL-3.0") && lic.contains("MIT License"));
-	assert_eq!(got["Polestar_frFR/CREDITS.md"], std::fs::read_to_string(fix().join("ding/Ding/DB/CREDITS.md")).unwrap());
+	assert_eq!(got["Northstar_frFR/CREDITS.md"], std::fs::read_to_string(fix().join("ding/Ding/DB/CREDITS.md")).unwrap());
 	// A second build writes the same bytes.
 	names::run(&fixture_options(&out, &cache), &|_| {}).unwrap();
 	assert_eq!(files_of(&out), got);
@@ -198,22 +198,22 @@ fn no_questie_pfquest_only_and_a_language_without_names_loses_its_names_but_keep
 	assert_eq!(pairs(&out["frFR"].names[0]), [(7, "Nettoyer le camp des kobolds"), (176, "Avis de recherche (pfQuest)")]);
 	let tmp = scratch("names-noquestie");
 	let (dir, cache) = (tmp.join("out"), tmp.join("cache"));
-	for d in ["Polestar_esMX", "Polestar_frFR", "Polestar_Names_esMX", "Polestar_Names_frFR"] {
+	for d in ["Northstar_esMX", "Northstar_frFR", "Northstar_Names_esMX", "Northstar_Names_frFR"] {
 		std::fs::create_dir_all(dir.join(d)).unwrap();
 		std::fs::write(dir.join(d).join("Names.lua"), "-- stale\n").unwrap();
 	}
 	// Our guides' texts (`forge guide compile`) share the language folder.
-	std::fs::write(dir.join("Polestar_esMX/Texts.lua"), "-- texts\n").unwrap();
-	std::fs::write(dir.join("Polestar_frFR/Texts.lua"), "-- texts\n").unwrap();
+	std::fs::write(dir.join("Northstar_esMX/Texts.lua"), "-- texts\n").unwrap();
+	std::fs::write(dir.join("Northstar_frFR/Texts.lua"), "-- texts\n").unwrap();
 	std::fs::create_dir_all(&cache).unwrap();
 	let mut o = fixture_options(&dir, &cache);
 	o.no_questie = true;
 	let r = names::run(&o, &|_| {}).unwrap();
 	assert_eq!(r.written.iter().map(|w| w.locale.as_str()).collect::<Vec<_>>(), ["deDE", "frFR"]);
-	assert!(!dir.join("Polestar_esMX/Names.lua").exists(), "the stale names are gone");
-	assert!(dir.join("Polestar_esMX/Texts.lua").exists() && dir.join("Polestar_frFR/Texts.lua").exists(), "the texts stay");
-	assert!(!dir.join("Polestar_Names_esMX").exists() && !dir.join("Polestar_Names_frFR").exists(), "the old folders are gone");
-	assert!(!dir.join("Polestar_frFR/CREDITS.md").exists());
+	assert!(!dir.join("Northstar_esMX/Names.lua").exists(), "the stale names are gone");
+	assert!(dir.join("Northstar_esMX/Texts.lua").exists() && dir.join("Northstar_frFR/Texts.lua").exists(), "the texts stay");
+	assert!(!dir.join("Northstar_Names_esMX").exists() && !dir.join("Northstar_Names_frFR").exists(), "the old folders are gone");
+	assert!(!dir.join("Northstar_frFR/CREDITS.md").exists());
 	let pin = fixture_pin(&fix().join("ding"));
 	let ding_only: Vec<String> =
 		["Maréchal Dughan", "Les loups à la frontière", "Viande de loup coriace", "Alguacil Dughan"].map(String::from).into_iter().chain(pin.files.iter().map(|f| f.1.clone())).collect();
@@ -222,7 +222,12 @@ fn no_questie_pfquest_only_and_a_language_without_names_loses_its_names_but_keep
 			assert!(!text.contains(d.as_str()), "{name} holds {d}");
 		}
 	}
-	assert!(files_of(&dir)["Polestar_frFR/Names.lua"].contains("Lardeur (pfQuest)"));
+	assert!(files_of(&dir)["Northstar_frFR/Names.lua"].contains("Lardeur (pfQuest)"));
+	// The interface strings (Interface.lua) keep the folder too, without the texts.
+	std::fs::remove_file(dir.join("Northstar_esMX/Texts.lua")).unwrap();
+	std::fs::write(dir.join("Northstar_esMX/Interface.lua"), "-- interface strings\n").unwrap();
+	names::run(&o, &|_| {}).unwrap();
+	assert!(dir.join("Northstar_esMX/Interface.lua").exists(), "the interface strings stay");
 	let json: serde_json::Value = serde_json::from_str(&r.json()).unwrap();
 	assert!(json["ding"].is_null() && json["wago"].is_null() && json["web"].is_null());
 	assert_eq!(json["locales"]["frFR"]["names"]["npc"], 2);

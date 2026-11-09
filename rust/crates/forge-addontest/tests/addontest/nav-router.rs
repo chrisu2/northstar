@@ -1,4 +1,4 @@
-//! Polestar's walking router (addon/Polestar_Nav/Routing) prices a step by the ground class of the node it
+//! Northstar's walking router (addon/Northstar_Nav/Routing) prices a step by the ground class of the node it
 //! enters and the player's faction (Routing/Costs.lua): on synthetic one-tile maps written by forge-nav's
 //! fixture writer (forge_addontest::navmap) with a hand-made `class` field (maps format 2), a road is taken
 //! while it is at most 1/0.8 = 1.25 times the straight way, a hostile hub is gone round and one's own crossed,
@@ -128,17 +128,17 @@ fn call(x: &Q) -> String {
 	}
 }
 
-/// Polestar_Nav without its maps: the TOC's Routing files and API.lua.
+/// Northstar_Nav without its maps: the TOC's Routing files and API.lua.
 fn ours() -> Addon {
-	let files: Vec<String> = toc_entries(&addons_dir().join("Polestar_Nav")).unwrap().into_iter().filter(|f| !f.ends_with(".xml")).collect();
-	Addon::Files("Polestar_Nav".into(), files)
+	let files: Vec<String> = toc_entries(&addons_dir().join("Northstar_Nav")).unwrap().into_iter().filter(|f| !f.ends_with(".xml")).collect();
+	Addon::Files("Northstar_Nav".into(), files)
 }
 
 /// Runs the queries on the map with the router `addon` -> { id: { cost, points?, yards?, hubs? } }.
 fn route_with(addon: Addon, map: &MapDir, queries: &[Q], from: P, to: P, tail: &str) -> Value {
 	let script = format!(
 		r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local frames = {{}}
 Path.after = function(fn) frames[#frames + 1] = fn end
 local function str(v) return type(v) == "number" and string.format("%.17g", v) or (v ~= nil and tostring(v) or nil) end
@@ -198,7 +198,7 @@ fn costs_lua_the_ground_classes_the_multipliers_and_the_faction_profiles() {
 	let got = emitted(&RunAddon {
 		addons: vec![ours()],
 		script: r#"
-local K = Polestar_NavCosts
+local K = Northstar_NavCosts
 local function m(c, p) return K.Mult(c, p) end
 local function six(t) return { t[0], t[1], t[2], t[3], t[4], t[5] } end
 emit({
@@ -238,7 +238,7 @@ emit({
 			assert_eq!(want, if hostile { m * 20.0 } else { m }, "class byte {c}, profile {i}");
 		}
 	}
-	let toc: Vec<String> = toc_entries(&addons_dir().join("Polestar_Nav")).unwrap().iter().map(|f| f.replace('\\', "/")).collect();
+	let toc: Vec<String> = toc_entries(&addons_dir().join("Northstar_Nav")).unwrap().iter().map(|f| f.replace('\\', "/")).collect();
 	let (c, g) = (toc.iter().position(|f| f == "Routing/Costs.lua"), toc.iter().position(|f| f == "Routing/PathGrid.lua"));
 	assert!(c.is_some() && c < g, "Costs.lua loads before the other Routing files");
 }
@@ -321,16 +321,16 @@ fn the_fifth_argument_a_boolean_is_waterwalking_a_table_is_opts() {
 /// A router of an older commit (its Routing files and API.lua from git), or None outside a checkout.
 fn router_at(rev: &str, rels: &[&str]) -> Option<(TempDir, Addon)> {
 	let show =
-		|rel: &str| std::process::Command::new("git").arg("-C").arg(root()).arg("show").arg(format!("{rev}:addon/Polestar_Nav/{rel}")).output().ok().filter(|o| o.status.success()).map(|o| o.stdout);
+		|rel: &str| std::process::Command::new("git").arg("-C").arg(root()).arg("show").arg(format!("{rev}:addon/Northstar_Nav/{rel}")).output().ok().filter(|o| o.status.success()).map(|o| o.stdout);
 	show("API.lua")?;
 	let tmp = TempDir::new("polestar-router-base-");
-	let dir = tmp.path().join("Polestar_Nav");
+	let dir = tmp.path().join("Northstar_Nav");
 	std::fs::create_dir_all(dir.join("Routing")).unwrap();
 	for rel in rels {
 		std::fs::write(dir.join(rel), show(rel).unwrap_or_else(|| panic!("git show {rev}:{rel}"))).unwrap();
 	}
-	std::fs::write(dir.join("Polestar_Nav.toc"), format!("{}\n", rels.join("\n"))).unwrap();
-	Some((tmp, Addon::dir("Polestar_Nav", dir)))
+	std::fs::write(dir.join("Northstar_Nav.toc"), format!("{}\n", rels.join("\n"))).unwrap();
+	Some((tmp, Addon::dir("Northstar_Nav", dir)))
 }
 
 fn strip_new(v: &mut Value) {
@@ -1103,7 +1103,7 @@ out.outside = held(function() return Path.SurfacesAt({MAP}, -50, 5, t) end)"#
 }
 
 // Lifts: two strips of ground with no walkable cell between them (a mesa top and the plain below, as the grid has
-// them: nothing joins them), and the pack's lift chokepoints (PolestarNavChokepoints[map]) naming a bottom landing
+// them: nothing joins them), and the pack's lift chokepoints (NorthstarNavChokepoints[map]) naming a bottom landing
 // at the near strip's end and its top at the far strip's start.
 const LIFT_GAP: usize = 8;
 fn lift_files(with_lift: bool) -> MapDir {
@@ -1116,7 +1116,7 @@ fn lift_files(with_lift: bool) -> MapDir {
 		std::fs::write(
 			&choke,
 			format!(
-				"PolestarNavChokepoints = {{ [{MAP}] = {{\n\t{{ wx = {}, wy = {}, z = 0, r = 6, kind = \"lift\", liftEnd = \"bottom\", pair = 2 }},\n\t{{ wx = {}, wy = {}, z = 0, r = 6, kind = \"lift\", liftEnd = \"top\", pair = 1 }},\n\t{{ wx = {}, wy = {}, z = 0, r = 10, kind = \"gate\" }},\n}} }}\n",
+				"NorthstarNavChokepoints = {{ [{MAP}] = {{\n\t{{ wx = {}, wy = {}, z = 0, r = 6, kind = \"lift\", liftEnd = \"bottom\", pair = 2 }},\n\t{{ wx = {}, wy = {}, z = 0, r = 6, kind = \"lift\", liftEnd = \"top\", pair = 1 }},\n\t{{ wx = {}, wy = {}, z = 0, r = 10, kind = \"gate\" }},\n}} }}\n",
 				js(bottom.x),
 				js(bottom.y),
 				js(top.x),
@@ -1170,7 +1170,7 @@ fn arc_files() -> MapDir {
 		b32(v, &mut field);
 	}
 	let file = map.dir.path().join("Arcs.lua");
-	std::fs::write(&file, format!("PolestarPathData[{MAP}].arc = {{ [1] = \"{field}\" }}\n")).unwrap();
+	std::fs::write(&file, format!("NorthstarPathData[{MAP}].arc = {{ [1] = \"{field}\" }}\n")).unwrap();
 	map.files.push(file);
 	map
 }
@@ -1214,7 +1214,7 @@ fn sight_the_arrows_line_check_open_ground_walls_water_indoor_ground_hostile_tow
 	let map = map_files(&cells, true, Opts::default());
 	let script = format!(
 		r#"
-local Path = Polestar_NavEngine
+local Path = Northstar_NavEngine
 local CS, X0, X1, Y0 = {cs}, {X0}, {X1}, {Y0}
 local function w(x, y) return (x + 0.5) * CS, (y + 0.5) * CS end
 local function sight(x1, y1, x2, y2, z1, z2, profile)

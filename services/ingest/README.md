@@ -1,6 +1,6 @@
 # polestar-ingest
 
-The server side of Polestar's recording program. Polestar Client registers
+The server side of Northstar's recording program. Polestar Client registers
 with it for a token, then sends it the Recorder's chunks; it checks every
 chunk with the recording library (`rust/crates/polestar-recording`), stores
 it, and serves the totals, each contributor's own view and deletion, the
@@ -117,6 +117,13 @@ archive: the archive is the maintainer's `data/recordings`, which
   still answered `duplicate` and not stored twice. Seqs more than 1000 below
   their install's highest are forgotten once their chunk is gone (the addon
   never holds chunks that old).
+- `rejects`: per UTC day, how many chunks were rejected under each reason
+  class: the reason without what was sent (the quoted value dropped,
+  numbers as `N`: `turnin: field money: bad value`), never the contributor.
+  At most 100 classes a day (more count as `other`), kept 30 days, public in
+  `/v1/stats` `rejects`; each reject also logs `rejected chunk: <class>`. A
+  validator rule that turns real game values away shows here within
+  minutes.
 - `settings`: the acknowledged export id, the distinct-quest total and the
   database's `instance` id (random, made once; on every export line, so
   forge restarts its cursor when the database is restored or replaced).

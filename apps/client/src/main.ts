@@ -20,5 +20,5 @@ playIntro().catch((e) => {
 	document.documentElement.classList.remove('intro');
 });
 void api.onOpening(() => void replayIntro().catch((e) => console.error('intro', e)));
-// POLESTAR_FRAME_METER=1 shows the frame-rate overlay from the start (for the intro's numbers).
+// NORTHSTAR_FRAME_METER=1 shows the frame-rate overlay from the start (for the intro's numbers).
 void api.diagnostics().then((d) => d.frameMeter && (diagnostics.frames = true), () => {});

@@ -1,5 +1,5 @@
 //! `forge nav grid`: the navigation grid (data/local/nav4) from the installed client (forge-navbuild);
-//! `forge nav pack` and `forge nav check`: Polestar's walking maps in addon/Polestar_Nav (forge-nav pack).
+//! `forge nav pack` and `forge nav check`: Northstar's walking maps in addon/Northstar_Nav (forge-nav pack).
 use super::{usage, Fail};
 use forge_navbuild::build::{run, Client, Opts};
 use std::path::{Path, PathBuf};
@@ -12,8 +12,8 @@ Builds the navigation grid of every continent map-frames.json names (or --contin
 client's geometry: walkable surfaces, links, regions and the abstract graph per ADT tile, on
 --threads threads (default 6), into --out (tiles/<c>/, graph/<c>.bin.gz, index.json, lifts.json).
 A tile already built is kept unless --force. --wow: the World of Warcraft folder (default
-$POLESTAR_WOW_DIR or the detected install); --product (default wow_classic_beta). --root: the
-Polestar checkout (default: the nearest folder above the working directory with data/forever);
+$NORTHSTAR_WOW_DIR or the detected install); --product (default wow_classic_beta). --root: the
+Northstar checkout (default: the nearest folder above the working directory with data/forever);
 --data its game data (default <root>/data/forever), --defs the WoWDBDefs checkout (default
 <root>/data/sources/wowdbdefs). An install that lacks files the continents use (stale archive
 slots, files not downloaded: forge gamedata check) is refused, since the grid would be wrong
@@ -21,10 +21,10 @@ there: run Scan and Repair in the launcher, or pass --allow-incomplete.
 
 usage: forge nav pack [--dir <grid>] [--layers <dir>] [--out <addon dir>] [--cells N] [--date YYYY-MM-DD] [--root <dir>] [--leffe <dir> [--leffe-maps 0,1,2991] [--literals zlib|base64]]
 
-Writes Polestar's walking maps of maps 0, 1 and 2991 from the grid (--dir, default $POLESTAR_GRID,
+Writes Northstar's walking maps of maps 0, 1 and 2991 from the grid (--dir, default $NORTHSTAR_GRID,
 else <root>/data/local/nav4; grid format 4) and the ground layers (--layers, default
 <root>/data/local/nav-layers: roads/ and hubs.json, from forge nav layers) into the addon folder
-(--out, default <root>/addon/Polestar_Nav): Nav/Nav<map>*.lua (maps format 2: a ground class per
+(--out, default <root>/addon/Northstar_Nav): Nav/Nav<map>*.lua (maps format 2: a ground class per
 surface, every graph edge priced per faction; format 3 with each surface's WMO group area when the
 grid has its area sidecars, tiles/<c>/<tile>.area.gz and areas.json), Nav/Chokepoints.lua (lifts,
 bridges, gates, tunnels, cave and building mouths, passes; from the grid, its lifts.json and
@@ -37,13 +37,13 @@ instead (his format-4 Nav folder, or the folder holding it; same client build an
 surfaces, floors, classes, zones and entrance graph, his jumps and drops as one-way arcs, and each
 surface's area from the grid's surface nearest it (maps format 5); the chokepoints stay the grid's.
 --leffe-maps names the maps taken from his (default all three); the rest stay the grid's. His
-continents' map parts ship in their own load-on-demand addons beside the folder (Polestar_Nav_EK,
-Polestar_Nav_Kalimdor; their metadata stays in Polestar_Nav), and their blocks as zlib bytes in the
+continents' map parts ship in their own load-on-demand addons beside the folder (Northstar_Nav_EK,
+Northstar_Nav_Kalimdor; their metadata stays in Northstar_Nav), and their blocks as zlib bytes in the
 string literals (--literals base64 keeps base64).
 
 usage: forge nav check [--out <addon dir>] [--root <dir>]
 
-Checks the walking maps in the addon folder (default <root>/addon/Polestar_Nav) against its
+Checks the walking maps in the addon folder (default <root>/addon/Northstar_Nav) against its
 PACK.json: every listed file present and unchanged, none unlisted, Nav/Nav.xml listing them.
 Exit 1 when one differs.
 
@@ -66,7 +66,7 @@ The hubs layer: each faction's towns and outposts from its guards and service NP
 vendors, trainers, flight masters, innkeepers, bankers, repairers) in the CMaNGOS classic-db spawns
 and creature templates (the cached dump under <root>/data/sources/cmangos), judged by the client's
 FactionTemplate table, clustered, named by the AreaTable area under them (the grid's area ids:
---dir, default $POLESTAR_GRID, else <root>/data/local/nav4; the tables cached for the grid's build
+--dir, default $NORTHSTAR_GRID, else <root>/data/local/nav4; the tables cached for the grid's build
 under <root>/data/sources/wago), into <layers>/hubs.json.";
 
 pub fn main() {
@@ -229,7 +229,7 @@ fn pack(args: &[String]) -> Result<(), Fail> {
 		return Err(usage("--date needs YYYY-MM-DD"));
 	}
 	let root = root_of(&o)?;
-	let grid: PathBuf = o.get("--dir").map(PathBuf::from).or_else(|| std::env::var_os("POLESTAR_GRID").map(PathBuf::from)).unwrap_or_else(|| root.join("data/local/nav4"));
+	let grid: PathBuf = o.get("--dir").map(PathBuf::from).or_else(|| std::env::var_os("NORTHSTAR_GRID").map(PathBuf::from)).unwrap_or_else(|| root.join("data/local/nav4"));
 	let index = grid.join("index.json");
 	if !index.is_file() {
 		return Err(format!("no navigation grid in {} (forge nav grid)", grid.display()).into());
@@ -240,7 +240,7 @@ fn pack(args: &[String]) -> Result<(), Fail> {
 		return Err(format!("{} is grid format {version}: the walking maps' classes need format 4's slope per surface; rebuild it with `forge nav grid`", grid.display()).into());
 	}
 	let layers = o.get("--layers").map_or_else(|| root.join("data/local/nav-layers"), PathBuf::from);
-	let out = o.get("--out").map_or_else(|| root.join("addon/Polestar_Nav"), PathBuf::from);
+	let out = o.get("--out").map_or_else(|| root.join("addon/Northstar_Nav"), PathBuf::from);
 	let area_table = newest_area_table(&root)?;
 	let data = root.join("data/forever");
 	let log = |m: &str| eprintln!("{m}");
@@ -274,7 +274,7 @@ fn check(args: &[String]) -> Result<(), Fail> {
 	let o = options(args, &["--out", "--root"])?;
 	let out = match o.get("--out") {
 		Some(d) => PathBuf::from(d),
-		None => root_of(&o)?.join("addon/Polestar_Nav"),
+		None => root_of(&o)?.join("addon/Northstar_Nav"),
 	};
 	let problems = forge_nav::pack::check_pack(&out);
 	for p in &problems {
@@ -420,7 +420,7 @@ fn roads_layer(args: &[String]) -> Result<(), Fail> {
 fn hubs_layer(args: &[String]) -> Result<(), Fail> {
 	let o = options(args, &["--dir", "--root", "--layers"])?;
 	let root = root_of(&o)?;
-	let grid_dir: PathBuf = o.get("--dir").map(PathBuf::from).or_else(|| std::env::var_os("POLESTAR_GRID").map(PathBuf::from)).unwrap_or_else(|| root.join("data/local/nav4"));
+	let grid_dir: PathBuf = o.get("--dir").map(PathBuf::from).or_else(|| std::env::var_os("NORTHSTAR_GRID").map(PathBuf::from)).unwrap_or_else(|| root.join("data/local/nav4"));
 	if !grid_dir.join("index.json").is_file() {
 		return Err(format!("no navigation grid at {} (its area ids name the hubs): run forge nav grid", grid_dir.display()).into());
 	}
@@ -429,15 +429,25 @@ fn hubs_layer(args: &[String]) -> Result<(), Fail> {
 	let t0 = Instant::now();
 	let table = |name: &str| -> Result<Vec<rustc_hash::FxHashMap<String, String>>, Fail> {
 		let f = root.join("data/sources/wago").join(&build).join(format!("{name}.csv"));
-		let text = std::fs::read_to_string(&f).map_err(|e| format!("{}: {e} (the grid's build {build}: cache its tables with forge data build)", f.display()))?;
+		let text = std::fs::read_to_string(&f).map_err(|e| format!("{}: {e} (the grid's build {build}: https://wago.tools/db2/{name}/csv?build={build})", f.display()))?;
 		Ok(forge_nav::hubs::csv_rows(&text))
 	};
-	let factions = table("FactionTemplate")?;
 	let areas = table("AreaTable")?;
 	let sources = root.join("data/sources");
 	let to_json = |v: &forge_guide::js::V| -> Result<serde_json::Value, String> { serde_json::from_str(&forge_guide::js::stringify(v, None)).map_err(|e| e.to_string()) };
-	let spawns = to_json(&forge_data::cmangos::load_spawn_heights(&sources, false)?.npc)?;
-	let templates = to_json(&forge_data::cmangos::load_creature_templates(&sources)?)?;
+	let (spawns, templates, factions) = match (forge_data::cmangos::load_spawn_heights(&sources, false), forge_data::cmangos::load_creature_templates(&sources)) {
+		(Ok(h), Ok(t)) => (to_json(&h.npc)?, to_json(&t)?, table("FactionTemplate")?),
+		(Err(e), _) | (_, Err(e)) => {
+			eprintln!("hubs: classic-db extract is not in this cache ({e}); using data/forever/npcs.json and map-frames.json");
+			let data = root.join("data/forever");
+			let read = |f: &str| -> Result<serde_json::Value, String> {
+				let p = data.join(f);
+				serde_json::from_slice(&std::fs::read(&p).map_err(|err| format!("{}: {err}", p.display()))?).map_err(|err| format!("{}: {err}", p.display()))
+			};
+			let (spawns, templates) = forge_nav::hubs::npcs_to_hub_tables(&read("npcs.json")?, &read("map-frames.json")?);
+			(spawns, templates, Vec::new())
+		}
+	};
 	let data = root.join("data/forever");
 	let read =
 		|f: &str| -> Result<serde_json::Value, String> { serde_json::from_slice(&std::fs::read(data.join(f)).map_err(|e| format!("{}: {e}", data.join(f).display()))?).map_err(|e| e.to_string()) };

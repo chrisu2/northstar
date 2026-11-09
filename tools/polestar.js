@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// Polestar's command line. Each command is a module in tools/commands/
+// Northstar's command line. Each command is a module in tools/commands/
 // exporting { name, summary, usage, run(argv) -> exit code }; this file only
 // finds and dispatches them, so adding a command never edits a shared file.
 // `<command> ... --help` (or -h) prints the command's usage and never runs it.

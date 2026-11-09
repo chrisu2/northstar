@@ -72,7 +72,7 @@
 // and get a label pill, { done } recede; handles carry a tint and with
 // explicit === false are hollow; dots and areas carry a tint, kind 'alt'
 // fainter; a handle { selected } is labelled first. Option reserved() ->
-// client rects the labels keep clear of (the page's map controls). The character is the Polestar arrow, turned to { heading }
+// client rects the labels keep clear of (the page's map controls). The character is the Northstar arrow, turned to { heading }
 // (radians clockwise from north on screen). The clear colour is the art's
 // sea colour (the tiles' own filler) when art is present, else --sea.
 
@@ -793,7 +793,7 @@ export class MapView {
 		return this._tokens.get(name);
 	}
 
-	// The character: the Polestar arrow over its glow, turned to its heading.
+	// The character: the Northstar arrow over its glow, turned to its heading.
 	_drawCharacter(f) {
 		const ch = this.character;
 		if (!ch) return;

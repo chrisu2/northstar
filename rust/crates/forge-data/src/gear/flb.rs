@@ -12,7 +12,7 @@ use crate::jsv::math_round;
 pub const ADDON: &str = "ForeverLevelingBiS";
 const FILES: [&str; 5] = ["Data/Tables.lua", "Data/Items.lua", "Data/Quests.lua", "Data/Overrides.lua", "Racials.lua"];
 
-/// The web stat keys (as the addon stores them) -> Polestar stat keys.
+/// The web stat keys (as the addon stores them) -> Northstar stat keys.
 fn stat_map(k: &str) -> Option<&'static [&'static str]> {
 	Some(match k {
 		"str" => &["str"],
@@ -108,19 +108,19 @@ impl NumOr for V {
 	}
 }
 
-const EXPR: &str = "local ns = POLESTAR_NS
+const EXPR: &str = "local ns = NORTHSTAR_NS
 return {
   info = ns.DataInfo,
-  items = POLESTAR_pairs(ns.Items),
-  overrides = POLESTAR_pairs(ns.Overrides),
-  quests = POLESTAR_pairs(ns.Quests),
-  chains = POLESTAR_pairs(ns.QuestChains),
-  factions = POLESTAR_pairs(ns.FactionNames),
-  zones = POLESTAR_pairs(ns.ZoneNames),
+  items = NORTHSTAR_pairs(ns.Items),
+  overrides = NORTHSTAR_pairs(ns.Overrides),
+  quests = NORTHSTAR_pairs(ns.Quests),
+  chains = NORTHSTAR_pairs(ns.QuestChains),
+  factions = NORTHSTAR_pairs(ns.FactionNames),
+  zones = NORTHSTAR_pairs(ns.ZoneNames),
   races = ns.Races,
-  racials = POLESTAR_pairs(ns.Racials),
-  weaponProf = POLESTAR_pairs(ns.WeaponProficiencies),
-  armorProf = POLESTAR_pairs(ns.ArmorProficiencies),
+  racials = NORTHSTAR_pairs(ns.Racials),
+  weaponProf = NORTHSTAR_pairs(ns.WeaponProficiencies),
+  armorProf = NORTHSTAR_pairs(ns.ArmorProficiencies),
   dungeons = ns.Dungeons,
   patterns = ns.Patterns,
 }";

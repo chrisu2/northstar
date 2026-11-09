@@ -1,4 +1,4 @@
-//! Navigation (addon/Polestar/Nav): target model, arrow geometry and states, minimap projection, world map
+//! Navigation (addon/Northstar/Nav): target model, arrow geometry and states, minimap projection, world map
 //! pins, TomTom/Blizzard bridges, live settings. Runs the real Core/Init.lua + Nav/Nav.xml against
 //! tests/lua/stub_nav.lua.
 
@@ -8,9 +8,9 @@ use std::f64::consts::PI;
 
 // Shared Lua locals for every script.
 const PRELUDE: &str = r#"
-local N = Polestar.Nav
+local N = Northstar.Nav
 local A = N.arrow
-local Pins = Polestar.Pins
+local Pins = Northstar.Pins
 local function targetPin() return Pins.GetMinimapFrames("nav.target")[1] end
 local nav = stub.nav
 local function target(wx, wy, label)
@@ -34,7 +34,7 @@ end
 fn run(script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Nav/Nav.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Nav/Nav.xml"])],
 		login: true,
 		script: format!("{PRELUDE}{script}"),
 		..Default::default()
@@ -45,7 +45,7 @@ fn run(script: &str) -> Value {
 fn run_themed(script: &str) -> Value {
 	emitted(&RunAddon {
 		stubs: vec!["stub_nav.lua"],
-		addons: vec![Addon::files("Polestar", &["Core/Init.lua", "Theme/Theme.xml", "Nav/Nav.xml"])],
+		addons: vec![Addon::files("Northstar", &["Core/Init.lua", "Theme/Theme.xml", "Nav/Nav.xml"])],
 		login: true,
 		script: format!("{PRELUDE}{script}"),
 		..Default::default()
@@ -103,7 +103,7 @@ fn arrow_points_at_the_target_relative_to_facing_in_all_four_quadrants_in_both_s
 		}
 		local out = {}
 		for _, style in ipairs({ "3d", "flat" }) do
-			Polestar.Set("nav.arrowStyle", style)
+			Northstar.Set("nav.arrowStyle", style)
 			for _, c in ipairs(cases) do
 				nav.facing = c[4]
 				target(c[2], c[3])
@@ -207,16 +207,16 @@ fn switching_nav_arrowstyle_live_keeps_heading_colour_and_the_arrived_state() {
 		target(0, 100)                      -- west: heading +90 degrees
 		stub.advance(1)
 		r.solid = snap()
-		Polestar.Set("nav.arrowStyle", "flat")
+		Northstar.Set("nav.arrowStyle", "flat")
 		r.flat = snap()
-		Polestar.Set("nav.arrowStyle", "3d")
+		Northstar.Set("nav.arrowStyle", "3d")
 		r.back = snap()
 		nav.place(0, 96)                    -- arrive
 		stub.advance(0.2)
 		r.arrived3d = snap()
-		Polestar.Set("nav.arrowStyle", "flat")
+		Northstar.Set("nav.arrowStyle", "flat")
 		r.arrivedFlat = snap()
-		r.default = Polestar.GetDefault("nav.arrowStyle")
+		r.default = Northstar.GetDefault("nav.arrowStyle")
 		emit(r)"#);
 	assert_eq!(out["default"], "skin", "the skin's arrow by default: the 3D one in the house style");
 	let solid = &out["solid"];
@@ -261,7 +261,7 @@ fn in_metres_the_arrow_redraws_its_distance_at_once_without_waiting_for_it_to_ch
 		target(300, 400)                   -- 500 yd
 		stub.advance(0.2)
 		local yards = A.distText:GetText()
-		Polestar.Set("nav.distanceUnit", "metres")
+		Northstar.Set("nav.distanceUnit", "metres")
 		emit({ yards = yards, metres = A.distText:GetText() })"#);
 	assert_eq!(out, json!({ "yards": "500 yd", "metres": "457 m" }));
 }
@@ -270,7 +270,7 @@ fn in_metres_the_arrow_redraws_its_distance_at_once_without_waiting_for_it_to_ch
 fn era_frame_targets_convert_through_the_registered_era_bounds() {
 	let out = run(r#"
 		-- Era frame of map 9000 is offset from the live one: era (50, 50) is world (30, -40).
-		Polestar.RegisterMapFrames({ era = { [9000] = { c = 0, top = 1030, bottom = -970, left = 960, right = -1040 } } })
+		Northstar.RegisterMapFrames({ era = { [9000] = { c = 0, top = 1030, bottom = -970, left = 960, right = -1040 } } })
 		N.SetTarget(9000, 50, 50, "Era point", "e")
 		local era = N.GetDistance()
 		local _, _, rel = N.Sample()
@@ -286,7 +286,7 @@ fn era_frame_targets_convert_through_the_registered_era_bounds() {
 fn reaching_the_target_switches_to_the_arrived_state_with_hysteresis_one_chime_and_one_nav_arrived() {
 	let out = run(r#"
 		local seen, arrivals = {}, 0
-		Polestar.On("NAV_ARRIVED", function(t) if t == N.GetTarget() then arrivals = arrivals + 1 end end)
+		Northstar.On("NAV_ARRIVED", function(t) if t == N.GetTarget() then arrivals = arrivals + 1 end end)
 		target(20, 0)
 		stub.advance(0.2)
 		seen[#seen + 1] = { A.GetMode(), A.distText:GetText(), #stub.sounds }
@@ -299,13 +299,13 @@ fn reaching_the_target_switches_to_the_arrived_state_with_hysteresis_one_chime_a
 		nav.place(0, 0)                    -- 20 yd: travelling again
 		stub.advance(0.2)
 		seen[#seen + 1] = { A.GetMode(), A.distText:GetText(), A.ring:IsShown() }
-		Polestar.Set("nav.arrivalSound", false)
+		Northstar.Set("nav.arrivalSound", false)
 		nav.place(18, 0)
 		stub.advance(0.2)
 		seen[#seen + 1] = { A.GetMode(), #stub.sounds }
 		seen[#seen + 1] = arrivals
 		emit(seen)"#);
-	assert_eq!(out, json!([["travel", "20 yd", 0], ["arrived", "Arrived", 1, true, false], ["arrived", 1], ["travel", "20 yd", false], ["arrived", 1], 2]));
+	assert_eq!(out, json!([["travel", "20 yd", 0], ["arrived", "Here", 1, true, false], ["arrived", 1], ["travel", "20 yd", false], ["arrived", 1], 2]));
 }
 
 #[test]
@@ -340,13 +340,13 @@ fn during_the_catch_up_the_arrow_shows_an_hourglass_turning_over_then_comes_back
 		local function tex(t) return (t:GetTexture() or ""):match("([^\\]+)$") end
 		target(300, 400)
 		stub.advance(0.2)
-		Polestar.Fire("CATCH_UP", true)
+		Northstar.Fire("CATCH_UP", true)
 		local busy = { glass = A.glass:IsShown(), dial = A.dial:GetAlpha(), text = A.distText:GetAlpha(), tex = tex(A.glassBody), sand = tex(A.glassSand), busy = A.IsBusy() }
 		stub.advance(0.3)
 		local upright = A.glassBody:GetRotation()
 		stub.advance(0.35)
 		local turning = A.glassBody:GetRotation()
-		Polestar.Fire("CATCH_UP", false)
+		Northstar.Fire("CATCH_UP", false)
 		emit({ busy = busy, upright = upright, turning = turning, after = { glass = A.glass:IsShown(), dial = A.dial:GetAlpha(), text = A.distText:GetAlpha(), busy = A.IsBusy() } })"#,
 	);
 	assert_eq!(out["busy"], json!({ "glass": true, "dial": 0, "text": 0, "tex": "hourglass", "sand": "hourglass-sand", "busy": true }));
@@ -366,13 +366,13 @@ fn the_skins_darts_the_skin_s_arrow_by_default_accent_far_and_arrival_green_with
 		target(300, 400)
 		stub.advance(0.2)
 		out.house = A.GetStyle()
-		Polestar.Set("ui.skin", "halo")
+		Northstar.Set("ui.skin", "halo")
 		stub.advance(0.2)
 		out.halo = { style = A.GetStyle(), dart = A.dart:IsShown(), sheet = A.sheet:IsShown(), tint = rgb(A.dart), edge = rgb(A.dartEdge) }
 		nav.place(300, 360)                -- 40 yd away: inside 40 m
 		stub.advance(0.2)
 		out.haloNear = { tint = rgb(A.dart), edge = rgb(A.dartEdge) }
-		Polestar.Set("ui.skin", "hearth")
+		Northstar.Set("ui.skin", "hearth")
 		nav.place(300, 0)
 		stub.advance(0.2)
 		out.bliz = { style = A.GetStyle(), tex = tex(A.dart), tint = rgb(A.dart), edge = rgb(A.dartEdge) }
@@ -384,13 +384,13 @@ fn the_skins_darts_the_skin_s_arrow_by_default_accent_far_and_arrival_green_with
 		out.arrived = { mode = A.GetMode(), ring = A.skinRing:IsShown(), houseRing = A.ring:IsShown(), check = A.skinCheck:IsShown(), dart = A.dart:IsShown() }
 		stub.advance(0.7)
 		out.checked = A.skinCheck:IsShown()
-		Polestar.Set("nav.arrowStyle", "flat")
+		Northstar.Set("nav.arrowStyle", "flat")
 		out.flat = A.GetStyle()
-		Polestar.Set("nav.arrowStyle", "skin")
+		Northstar.Set("nav.arrowStyle", "skin")
 		out.looks = {}
-		Polestar.Theme._testShowHidden = true
+		Northstar.Theme._testShowHidden = true
 		for _, k in ipairs({ "forever", "blizzard", "classic" }) do
-			Polestar.Set("ui.skin", k)
+			Northstar.Set("ui.skin", k)
 			out.looks[#out.looks + 1] = A.GetStyle()
 		end
 		emit(out)"#,
@@ -417,14 +417,14 @@ fn the_skins_darts_the_skin_s_arrow_by_default_accent_far_and_arrival_green_with
 fn chosen_arrow_colours_far_and_near_both_styles_and_the_arrival_ring_the_target_pin_follows_dark_picks_stay_legible() {
 	let out = run_themed(
 		r#"
-		local T = Polestar.Theme
+		local T = Northstar.Theme
 		local function rgb(t) local r, g, b = t:GetVertexColor() return { r, g, b } end
-		Polestar.Set("nav.arrowColor", { 0.2, 0.45, 1 })
-		Polestar.Set("nav.arrowNearColor", { 1, 0.4, 0.8 })
+		Northstar.Set("nav.arrowColor", { 0.2, 0.45, 1 })
+		Northstar.Set("nav.arrowNearColor", { 1, 0.4, 0.8 })
 		target(300, 400)
 		stub.advance(0.2)
 		local out = { far3d = rgb(A.sheet), pinFar = rgb(targetPin().edge) }
-		Polestar.Set("nav.arrowStyle", "flat")
+		Northstar.Set("nav.arrowStyle", "flat")
 		out.farFlat = rgb(A.body)
 		nav.place(299, 399)
 		stub.advance(0.2)
@@ -432,20 +432,20 @@ fn chosen_arrow_colours_far_and_near_both_styles_and_the_arrival_ring_the_target
 		local r, g, b = A.distText:GetTextColor()
 		out.arrivedText, out.nearText = { r, g, b }, { T.Color("arrowNearText") }
 		out.arrivedContrast = T.Contrast(out.arrivedText, T.LightestGround())
-		Polestar.Set("nav.arrowColor", { 0.9, 0.3, 0.1 })
+		Northstar.Set("nav.arrowColor", { 0.9, 0.3, 0.1 })
 		stub.advance(0.1)
 		out.pinLive = rgb(targetPin().edge)
 		-- A navy pick: the arrow keeps it, the text that wears it is lifted.
-		Polestar.Set("nav.arrowNearColor", { 0.05, 0.05, 0.2 })
+		Northstar.Set("nav.arrowNearColor", { 0.05, 0.05, 0.2 })
 		local dark = { T.Color("arrowNear") }
 		local text = { T.Color("arrowNearText") }
 		out.darkKept = { dark[1], dark[2], dark[3] }
 		out.darkContrast = T.Contrast(text, T.LightestGround())
-		Polestar.Set("nav.arrowNearColor", { 0.95, 0.95, 0.85 })
+		Northstar.Set("nav.arrowNearColor", { 0.95, 0.95, 0.85 })
 		local light = { T.Color("arrowNearText") }
 		out.lightText = { light[1], light[2], light[3] }
-		Polestar.Set("nav.arrowColor", nil)
-		Polestar.Set("nav.arrowNearColor", nil)
+		Northstar.Set("nav.arrowColor", nil)
+		Northstar.Set("nav.arrowNearColor", nil)
 		out.resetFar, out.resetNear, out.accent, out.success = { T.Color("arrow") }, { T.Color("arrowNear") }, { T.Accent() }, { T.Color("success") }
 		emit(out)"#,
 	);
@@ -494,8 +494,8 @@ fn an_area_target_is_arrived_anywhere_inside_it_shows_the_distance_to_its_edge_o
 		out["seen"],
 		json!([
 			["travel", "140 yd", "Kill Bristlebacks", 140],
-			["arrived", "Arrived", "Kill Bristlebacks", 0],
-			["arrived", "Arrived", "Kill Bristlebacks", 0],
+			["arrived", "Here", "Kill Bristlebacks", 0],
+			["arrived", "Here", "Kill Bristlebacks", 0],
 			["travel", "15 yd", "Kill Bristlebacks", 15]
 		])
 	);
@@ -594,7 +594,7 @@ fn the_world_map_marks_every_other_spot_of_an_area_objective_clicking_one_search
 		local after = 0
 		for _, pin in ipairs(nav.pins()) do if pin.data.layer.name == "nav.spots" then after = after + 1 end end
 		r.after = after
-		Polestar.Set("nav.worldPins", false)
+		Northstar.Set("nav.worldPins", false)
 		r.off = #nav.pins()
 		emit(r)"#,
 	]
@@ -682,10 +682,10 @@ fn the_regions_the_step_s_open_goals_spawn_in_are_on_the_map_the_target_s_goal_s
 		stub.advance(0.3)
 		r.manual = { Pins.GetLayer("nav.areas") ~= nil, #Pins.GetLayer("nav.goalAreas") }
 		N.ReleaseTarget()
-		Polestar.Set("nav.minimapPins", false)
+		Northstar.Set("nav.minimapPins", false)
 		stub.advance(0.3)
 		r.minimapOff = minimap()
-		Polestar.Set("nav.worldPins", false)
+		Northstar.Set("nav.worldPins", false)
 		r.worldOff = #nav.pins("hulls")
 		emit(r)"#,
 	]
@@ -849,7 +849,7 @@ fn hidden_on_a_taxi_in_an_instance_and_without_a_target_zone_name_on_another_con
 		nav.taxi = false
 		stub.advance(1.1); snap("landed")
 		nav.instance = true
-		Polestar.Nav.Refresh(); snap("instance")
+		Northstar.Nav.Refresh(); snap("instance")
 		nav.instance = false
 		stub.advance(1.1); snap("left instance")
 		nav.place(0, 0, 1)                 -- other continent
@@ -930,7 +930,7 @@ fn releasetarget_drops_only_the_override_and_guides_to_the_engine_waypoint_again
 fn settarget_overrides_the_engine_waypoint_until_the_step_changes() {
 	let out = run(r#"
 		local announced = {}
-		Polestar.On("WAYPOINT_CHANGED", function(w) announced[#announced + 1] = w and w.label or "nil" end)
+		Northstar.On("WAYPOINT_CHANGED", function(w) announced[#announced + 1] = w and w.label or "nil" end)
 		local seen = {}
 		local function snap() local t = N.GetTarget(); seen[#seen + 1] = t and t.label or "nil" end
 		nav.setWaypoint(wp(100, 0, "Engine A")); snap()
@@ -955,7 +955,7 @@ fn polestar_way_decimal_points_or_commas_in_both_a_comma_separator_labels_range_
 		local function way(line)
 			N.SetTarget(9000, 1, 1, "Before")
 			local before = #stub.messages
-			SlashCmdList.POLESTAR("way " .. line)
+			SlashCmdList.NORTHSTAR("way " .. line)
 			local t = N.GetTarget()
 			return { t and t.x or false, t and t.y or false, t and t.label or false, #stub.messages > before }
 		end
@@ -1058,15 +1058,15 @@ fn minimap_projection_honours_view_radius_rotation_and_clamps_to_the_rim() {
 fn tomtom_mirrors_the_target_one_waypoint_replaced_on_change_removed_when_cleared_or_disabled() {
 	let out = run(r#"
 		nav.withTomTom()
-		Polestar.RegisterMapFrames({ era = { [9000] = { c = 0, top = 1030, bottom = -970, left = 960, right = -1040 } } })
+		Northstar.RegisterMapFrames({ era = { [9000] = { c = 0, top = 1030, bottom = -970, left = 960, right = -1040 } } })
 		target(100, 0, "First")
 		target(0, 100, "Second")
 		N.SetTarget(9000, 50, 50, "Era", "e")
 		N.ClearTarget()
 		target(-100, 0, "Third")
-		Polestar.Set("nav.useTomTomArrow", true)
+		Northstar.Set("nav.useTomTomArrow", true)
 		local arrowWithTomTom = A.frame:IsShown()
-		Polestar.Set("nav.tomtom", false)
+		Northstar.Set("nav.tomtom", false)
 		emit({ calls = TomTom.calls, arrowWithTomTom = arrowWithTomTom, arrowAfter = A.frame:IsShown() })"#);
 	let calls: Vec<String> = out["calls"]
 		.as_array()
@@ -1089,15 +1089,48 @@ fn tomtom_mirrors_the_target_one_waypoint_replaced_on_change_removed_when_cleare
 			"remove#5",
 		]
 	);
-	// Polestar draws its own pins, so TomTom's are off.
+	// Northstar draws its own pins, so TomTom's are off.
 	assert_eq!(out["calls"][0]["minimap"], false);
 	assert_eq!(out["calls"][0]["world"], false);
 	assert_eq!(out["arrowWithTomTom"], false, "TomTom arrow replaces ours");
 	assert_eq!(out["arrowAfter"], true, "ours returns when the bridge is off");
 }
 
+// #1325: TomTom's arrow hides itself for a waypoint on another continent (it measures no distance there), so
+// with "Use TomTom's arrow" a goal across the sea showed no arrow at all. Polestar's own arrow guides until the
+// player reaches the goal's continent, then gives way to TomTom's; the mirror keeps TomTom's arrow on it.
+#[test]
+fn with_tomtom_s_arrow_polestar_s_guides_to_another_continent_and_gives_way_on_arriving_1325() {
+	let out = run(r#"
+		nav.withTomTom()
+		Northstar.Set("nav.useTomTomArrow", true)
+		local out = {}
+		N.SetTarget(9001, 50, 50, "Farland goal") -- the player stands on continent 0
+		out.away, out.guides = A.frame:IsShown(), N.TomTomArrowGuides()
+		out.crazy = TomTom.calls[#TomTom.calls].crazy
+		nav.place(0, 0, 1) -- landed on the goal's continent
+		stub.fire("ZONE_CHANGED_NEW_AREA")
+		out.arrived, out.guidesThere = A.frame:IsShown(), N.TomTomArrowGuides()
+		nav.place(0, 0, 0)
+		stub.fire("ZONE_CHANGED_NEW_AREA")
+		out.back = A.frame:IsShown()
+		target(100, 0, "Near goal")
+		out.near = A.frame:IsShown()
+		Northstar.Set("nav.useTomTomArrow", false)
+		out.off = N.TomTomArrowGuides()
+		emit(out)"#);
+	assert_eq!(out["away"], true, "Polestar's arrow guides to another continent");
+	assert_eq!(out["guides"], false);
+	assert_eq!(out["crazy"], true, "TomTom's arrow still holds the mirrored goal");
+	assert_eq!(out["arrived"], false, "on the goal's continent TomTom's arrow takes over");
+	assert_eq!(out["guidesThere"], true);
+	assert_eq!(out["back"], true, "leaving the continent brings Polestar's arrow back");
+	assert_eq!(out["near"], false, "a goal on the player's continent is TomTom's");
+	assert_eq!(out["off"], false);
+}
+
 // Waypoint UI's public API (WaypointUIAPI.Navigation) and the game's quest tracking, recording
-// what Polestar asks of them. `log` = quests in the quest log.
+// what Northstar asks of them. `log` = quests in the quest log.
 const WAYPOINT_UI: &str = r#"
 	local calls, current, log, tracked = {}, nil, {}, 0
 	WaypointUIAPI = { Navigation = {
@@ -1119,27 +1152,27 @@ const WAYPOINT_UI: &str = r#"
 fn with_waypoint_ui_a_target_is_a_pin_named_after_it_and_only_ours_is_cleared() {
 	let out = run(&format!(
 		r#"{WAYPOINT_UI}
-		Polestar.Set("nav.blizzardWaypoint", true)
+		Northstar.Set("nav.blizzardWaypoint", true)
 		target(100, 0, "Talk to Executor Arren")
 		target(0, 100, "Walk to Brill")
 		N.ClearTarget()
-		-- The player picks their own waypoint in Waypoint UI: Polestar leaves it alone.
+		-- The player picks their own waypoint in Waypoint UI: Northstar leaves it alone.
 		target(-100, 0, "Third")
 		current = {{ name = "Mine", flags = "TomTom_Waypoint" }}
 		N.ClearTarget()
 		target(-100, 0, "Fourth")
-		Polestar.Set("nav.blizzardWaypoint", false)
+		Northstar.Set("nav.blizzardWaypoint", false)
 		emit({{ calls = calls, native = #nav.userWaypoints }})"#
 	));
 	assert_eq!(
 		out["calls"],
 		json!([
 			// A new target replaces our pin; clearing the target clears it.
-			["pin", "Talk to Executor Arren", 9000, 50, 45, "Polestar", true],
-			["pin", "Walk to Brill", 9000, 45, 50, "Polestar", true],
+			["pin", "Talk to Executor Arren", 9000, 50, 45, "Northstar", true],
+			["pin", "Walk to Brill", 9000, 45, 50, "Northstar", true],
 			["clear pin"],
-			["pin", "Third", 9000, 50, 55, "Polestar", true],
-			["pin", "Fourth", 9000, 50, 55, "Polestar", true],
+			["pin", "Third", 9000, 50, 55, "Northstar", true],
+			["pin", "Fourth", 9000, 50, 55, "Northstar", true],
 			["clear pin"]
 		])
 	);
@@ -1151,7 +1184,7 @@ fn with_waypoint_ui_a_target_is_a_pin_named_after_it_and_only_ours_is_cleared() 
 fn with_waypoint_ui_a_quest_goal_in_the_log_tracks_the_quest_and_only_a_quest_we_tracked_is_untracked() {
 	let out = run(&format!(
 		r#"{WAYPOINT_UI}
-		Polestar.Set("nav.blizzardWaypoint", true)
+		Northstar.Set("nav.blizzardWaypoint", true)
 		log[376] = true
 		-- Accepting: the quest is not in the log yet, so a named pin.
 		nav.setWaypoint(wp(100, 0, "Accept The Damned", {{ kind = "accept", quest = 376 }}))
@@ -1169,15 +1202,15 @@ fn with_waypoint_ui_a_quest_goal_in_the_log_tracks_the_quest_and_only_a_quest_we
 	assert_eq!(
 		out["calls"],
 		json!([
-			["pin", "Accept The Damned", 9000, 50, 45, "Polestar", true],
+			["pin", "Accept The Damned", 9000, 50, 45, "Northstar", true],
 			["clear pin"],
 			// The objective, then the turn-in of the same quest: tracked once.
 			["quest", 376],
 			["quest", 0],
-			["pin", "Kill for a quest not in the log", 9000, 55, 50, "Polestar", true],
+			["pin", "Kill for a quest not in the log", 9000, 55, 50, "Northstar", true],
 			["clear pin"],
 			["quest", 376],
-			["pin", "Go to Deathknell", 9000, 50, 45, "Polestar", true]
+			["pin", "Go to Deathknell", 9000, 50, 45, "Northstar", true]
 		])
 	);
 	assert_eq!(out["tracked"], 404, "the player's own tracked quest stays tracked");
@@ -1187,15 +1220,15 @@ fn with_waypoint_ui_a_quest_goal_in_the_log_tracks_the_quest_and_only_a_quest_we
 fn with_waypoint_ui_an_objective_over_an_area_is_a_named_pin_at_polestar_s_spot_not_the_quest() {
 	let out = run(&format!(
 		r#"{WAYPOINT_UI}
-		Polestar.Set("nav.blizzardWaypoint", true)
+		Northstar.Set("nav.blizzardWaypoint", true)
 		log[756] = true
-		-- Collecting among spawns: the game points nowhere inside the area, Polestar's target is a spot.
+		-- Collecting among spawns: the game points nowhere inside the area, Northstar's target is a spot.
 		nav.setWaypoint(wp(100, 0, "Collect for Thunderhorn Totem", {{ kind = "collect", quest = 756, area = 60 }}))
 		-- The turn-in is one NPC: the quest is tracked.
 		nav.setWaypoint(wp(0, 100, "Turn in Thunderhorn Totem", {{ kind = "turnin", quest = 756, area = 0 }}))
 		emit({{ calls = calls }})"#
 	));
-	assert_eq!(out["calls"], json!([["pin", "Collect for Thunderhorn Totem", 9000, 50, 45, "Polestar", true], ["clear pin"], ["quest", 756]]));
+	assert_eq!(out["calls"], json!([["pin", "Collect for Thunderhorn Totem", 9000, 50, 45, "Northstar", true], ["clear pin"], ["quest", 756]]));
 }
 
 #[test]
@@ -1205,7 +1238,7 @@ fn a_target_set_before_waypoint_ui_s_api_is_ready_is_named_once_it_is() {
 		-- Waypoint UI is loaded but has not filled its API yet.
 		local api = WaypointUIAPI.Navigation
 		WaypointUIAPI.Navigation = nil
-		Polestar.Set("nav.blizzardWaypoint", true)
+		Northstar.Set("nav.blizzardWaypoint", true)
 		target(100, 0, "Talk to Executor Arren")
 		local before = #calls
 		WaypointUIAPI.Navigation = api
@@ -1213,15 +1246,32 @@ fn a_target_set_before_waypoint_ui_s_api_is_ready_is_named_once_it_is() {
 		emit({{ before = before, calls = calls, native = #nav.userWaypoints }})"#
 	));
 	assert_eq!(out["before"], 0);
-	assert_eq!(out["calls"], json!([["pin", "Talk to Executor Arren", 9000, 50, 45, "Polestar", true]]));
+	assert_eq!(out["calls"], json!([["pin", "Talk to Executor Arren", 9000, 50, 45, "Northstar", true]]));
 	assert_eq!(out["native"], 2, "the plain pin first (set and tracked), then Waypoint UI's");
+}
+
+#[test]
+fn a_plain_pin_set_before_waypoint_ui_s_api_is_ready_is_cleared_when_the_quest_is_tracked_instead() {
+	let out = run(&format!(
+		r#"{WAYPOINT_UI}
+		local api = WaypointUIAPI.Navigation
+		WaypointUIAPI.Navigation = nil
+		Northstar.Set("nav.blizzardWaypoint", true)
+		log[376] = true
+		nav.setWaypoint(wp(-100, 0, "Turn in The Damned", {{ kind = "turnin", quest = 376 }}))
+		WaypointUIAPI.Navigation = api
+		stub.advance(2.1)
+		emit({{ calls = calls, native = nav.userWaypoints }})"#
+	));
+	assert_eq!(out["calls"], json!([["quest", 376]]));
+	assert_eq!(out["native"], json!([["set", 9000, 0.5, 0.55], ["track", true], ["clear"]]), "our plain pin goes once the quest is tracked");
 }
 
 #[test]
 fn with_waypoint_ui_a_re_announced_target_is_not_sent_again_a_moved_spot_is() {
 	let out = run(&format!(
 		r#"{WAYPOINT_UI}
-		Polestar.Set("nav.blizzardWaypoint", true)
+		Northstar.Set("nav.blizzardWaypoint", true)
 		log[756] = true
 		local collect = {{ kind = "collect", quest = 756, area = 60, search = 40 }}
 		-- The engine announces the same spot again (progress, a refresh): one pin.
@@ -1241,9 +1291,9 @@ fn with_waypoint_ui_a_re_announced_target_is_not_sent_again_a_moved_spot_is() {
 	assert_eq!(
 		out["calls"],
 		json!([
-			["pin", "Collect for Thunderhorn Totem", 9000, 50, 45, "Polestar", true],
-			["pin", "Collect for Thunderhorn Totem", 9000, 45, 50, "Polestar", true],
-			["pin", "Collect for Thunderhorn Totem", 9000, 45, 50, "Polestar", true],
+			["pin", "Collect for Thunderhorn Totem", 9000, 50, 45, "Northstar", true],
+			["pin", "Collect for Thunderhorn Totem", 9000, 45, 50, "Northstar", true],
+			["pin", "Collect for Thunderhorn Totem", 9000, 45, 50, "Northstar", true],
 			["clear pin"],
 			["quest", 756]
 		])
@@ -1253,7 +1303,7 @@ fn with_waypoint_ui_a_re_announced_target_is_not_sent_again_a_moved_spot_is() {
 #[test]
 fn without_waypoint_ui_the_game_waypoint_is_set_as_before() {
 	let out = run(r#"
-		Polestar.Set("nav.blizzardWaypoint", true)
+		Northstar.Set("nav.blizzardWaypoint", true)
 		nav.setWaypoint(wp(0, 100, "Kill Young Scavengers", { kind = "kill", quest = 376 }))
 		emit({ native = nav.userWaypoints })"#);
 	assert_eq!(out["native"], json!([["set", 9000, 0.45, 0.5], ["track", true]]));
@@ -1309,40 +1359,40 @@ fn settings_apply_live_scale_alpha_visibility_pins_position_and_blizzard_waypoin
 		local r = {}
 		target(100, 0)
 		stub.advance(0.1)
-		Polestar.Set("nav.arrowScale", 1.5)
-		Polestar.Set("nav.arrowAlpha", 0.6)
+		Northstar.Set("nav.arrowScale", 1.5)
+		Northstar.Set("nav.arrowAlpha", 0.6)
 		-- A lock saved by an older build is ignored: the arrow takes the mouse and drags.
-		PolestarDB.settings.nav.arrowLocked = true
-		Polestar.Set("nav.arrowScale", 1.5)
+		NorthstarDB.settings.nav.arrowLocked = true
+		Northstar.Set("nav.arrowScale", 1.5)
 		r.scale, r.alpha, r.mouse = A.frame:GetScale(), A.frame:GetAlpha(), A.frame:IsMouseEnabled()
 		stub.RunScript(A.frame, "OnDragStart")
 		r.drags = A.frame:IsMovable() and A.frame.moving == true
 		A.frame:StopMovingOrSizing()
-		Polestar.Set("nav.arrow", false)
+		Northstar.Set("nav.arrow", false)
 		r.hidden = not A.frame:IsShown()
-		Polestar.Set("nav.arrow", true)
+		Northstar.Set("nav.arrow", true)
 		r.back = A.frame:IsShown()
-		Polestar.Set("nav.minimapPins", false)
+		Northstar.Set("nav.minimapPins", false)
 		r.pinOff = targetPin() == nil
-		Polestar.Set("nav.minimapPins", true)
+		Northstar.Set("nav.minimapPins", true)
 		r.pinOn = targetPin() ~= nil and targetPin():IsShown()
 
 		-- Dragging saves the position; it is re-applied from settings.
 		A.frame:ClearAllPoints()
 		A.frame:SetPoint("CENTER", UIParent, "CENTER", 120, -40)
 		stub.RunScript(A.frame, "OnDragStop")
-		r.saved = PolestarDB.settings.nav.arrowPos
+		r.saved = NorthstarDB.settings.nav.arrowPos
 		A.frame:ClearAllPoints()
-		Polestar.Set("nav.arrowScale", 1)
+		Northstar.Set("nav.arrowScale", 1)
 		local p, _, rp, x, y = A.frame:GetPoint(1)
 		r.reapplied = { p, rp, x, y }
 		N.ResetArrowPosition()
 		p, _, rp, x, y = A.frame:GetPoint(1)
 		r.reset = { p, rp, x, y }
 
-		Polestar.Set("nav.blizzardWaypoint", true)
+		Northstar.Set("nav.blizzardWaypoint", true)
 		target(0, 100, "Blizz")
-		Polestar.Set("nav.blizzardWaypoint", false)
+		Northstar.Set("nav.blizzardWaypoint", false)
 		r.userWaypoints = nav.userWaypoints
 		emit(r)"#);
 	assert_eq!(out["scale"], 1.5);
@@ -1379,7 +1429,7 @@ fn with_the_lock_on_only_a_shift_drag_moves_the_arrow_and_the_movable_wash_shows
 			return started
 		end
 		r.unlocked = { drag(), hover() }
-		Polestar.Set("ui.lockHud", true)
+		Northstar.Set("ui.lockHud", true)
 		r.locked = { drag(), hover() }
 		r.mouse = f:IsMouseEnabled()
 		stub.keys.shift = true
@@ -1390,7 +1440,7 @@ fn with_the_lock_on_only_a_shift_drag_moves_the_arrow_and_the_movable_wash_shows
 		f:ClearAllPoints()
 		f:SetPoint("CENTER", UIParent, "CENTER", 80, 20)
 		stub.RunScript(f, "OnDragStop")
-		r.saved = PolestarDB.settings.nav.arrowPos
+		r.saved = NorthstarDB.settings.nav.arrowPos
 		r.stopped = f.moving
 		emit(r)"#);
 	assert_eq!(out["unlocked"], json!([true, [true, "Drag to move."]]), "off by default: a plain drag moves it");
@@ -1407,14 +1457,14 @@ fn with_the_lock_on_a_drag_that_does_not_move_the_arrow_does_not_save_its_spot()
 		target(100, 0)
 		stub.advance(0.1)
 		local f = A.frame
-		Polestar.Set("ui.lockHud", true)
+		Northstar.Set("ui.lockHud", true)
 		stub.RunScript(f, "OnDragStart")
 		stub.RunScript(f, "OnDragStop")
-		local refused = Polestar.Get("nav.arrowPos") == nil
+		local refused = Northstar.Get("nav.arrowPos") == nil
 		stub.keys.shift = true
 		stub.RunScript(f, "OnDragStart")
 		stub.RunScript(f, "OnDragStop")
-		emit({ refused = refused, shift = Polestar.Get("nav.arrowPos") ~= nil })"#);
+		emit({ refused = refused, shift = Northstar.Get("nav.arrowPos") ~= nil })"#);
 	assert_eq!(out["refused"], true, "a plain drag on the locked arrow leaves nav.arrowPos alone");
 	assert_eq!(out["shift"], true, "a Shift-drag still saves the spot");
 }
@@ -1432,7 +1482,7 @@ fn eta_appears_while_closing_in_at_running_speed() {
 		local shown, text = A.etaText:IsShown(), A.etaText:GetText()
 		local _, size = A.etaText:GetFont()
 		local color = { A.etaText:GetTextColor() }
-		Polestar.Set("nav.arrowEta", false)
+		Northstar.Set("nav.arrowEta", false)
 		emit({ before = before, shown = shown, text = text, off = not A.etaText:IsShown(), size = size, color = color,
 			mover = { N.Wash("mover") } })"#);
 	assert_eq!(out["before"], false);
@@ -1470,10 +1520,10 @@ fn world_map_pins_target_and_open_goals_on_the_viewed_map_with_tooltip_and_click
 		nav.click(pins[2], "LeftButton")
 		r.retarget = N.GetTarget().label
 		r.after = #nav.pins()
-		Polestar.Set("nav.worldPins", false)
+		Northstar.Set("nav.worldPins", false)
 		r.off = #nav.pins()
 		nav.showWorldMap(9001)
-		Polestar.Set("nav.worldPins", true)
+		Northstar.Set("nav.worldPins", true)
 		r.otherMap = #nav.pins()
 		emit(r)"#);
 	assert_eq!(out["count"], 2);
@@ -1491,14 +1541,14 @@ fn a_step_change_waits_for_the_engine_waypoint_no_stale_re_apply_no_second_chime
 	let out = run(r#"
 		nav.withTomTom()
 		local announced = {}
-		Polestar.On("WAYPOINT_CHANGED", function(w) announced[#announced + 1] = w and w.label or "nil" end)
+		Northstar.On("WAYPOINT_CHANGED", function(w) announced[#announced + 1] = w and w.label or "nil" end)
 		-- The real Engine order: STEP_CHANGED while the old waypoint is still stored,
 		-- then the new waypoint and WAYPOINT_CHANGED.
 		local function engineStep(i, w)
 			nav.engine.step = i
-			Polestar.Fire("STEP_CHANGED", i)
+			Northstar.Fire("STEP_CHANGED", i)
 			nav.engine.waypoint = w
-			Polestar.Fire("WAYPOINT_CHANGED", w)
+			Northstar.Fire("WAYPOINT_CHANGED", w)
 		end
 		nav.setWaypoint(wp(20, 0, "Goto A"))
 		nav.place(15, 0)                                 -- arrive at A
@@ -1521,7 +1571,7 @@ fn a_step_change_waits_for_the_engine_waypoint_no_stale_re_apply_no_second_chime
 		-- Same waypoint, no WAYPOINT_CHANGED: the override still goes, after the dispatch.
 		N.SetTarget(m, x, y, "Mine again")
 		nav.engine.step = 4
-		Polestar.Fire("STEP_CHANGED", 4)
+		Northstar.Fire("STEP_CHANGED", 4)
 		r.duringDispatch = N.GetTarget().label
 		stub.advance(0.1)
 		r.settled = N.GetTarget().label
@@ -1561,7 +1611,7 @@ fn polestar_way_without_a_position_here_says_so_not_how_to_type_it() {
 	let out = run(r#"
 		local function way(msg)
 			stub.messages = {}
-			SlashCmdList.POLESTAR(msg)
+			SlashCmdList.NORTHSTAR(msg)
 			local t = N.GetTarget()
 			return { msgs = #stub.messages > 0 and stub.messages or "none", target = t and t.label or "nil" }
 		end
@@ -1575,11 +1625,11 @@ fn polestar_way_without_a_position_here_says_so_not_how_to_type_it() {
 	assert_eq!(
 		out["noPosition"],
 		json!({
-			"msgs": ["|cff4fd1c5Polestar|r: No position here: the game gives none in instances and on some maps."],
+			"msgs": ["|cff4fd1c5Northstar|r: No position here: the game gives none in instances and on some maps."],
 			"target": "nil"
 		})
 	);
-	assert_eq!(out["malformed"], json!({ "msgs": ["|cff4fd1c5Polestar|r: Usage: /polestar way <x> <y> [label]"], "target": "nil" }));
+	assert_eq!(out["malformed"], json!({ "msgs": ["|cff4fd1c5Northstar|r: Usage: /northstar way <x> <y> [label]"], "target": "nil" }));
 	assert_eq!(out["valid"], json!({ "msgs": "none", "target": "Mine" }));
 }
 
@@ -1593,10 +1643,10 @@ fn the_steps_ahead_get_numbered_pins_fading_with_distance_steps_together_share_o
 			[6] = { title = "The inn", status = "upcoming", goals = { { map = 1429, x = 42.2, y = 65.1, status = "pending" } } },
 			[7] = { title = "Mine", status = "upcoming", goals = { { map = 1429, x = 38, y = 80, status = "pending" } } },
 		}
-		Polestar.Engine = { GetLiveStep = function() return 3 end, GetStepCount = function() return 7 end, GetStepView = function(i) return views[i] end }
-		Polestar.Set("ui.upcoming", 3)
+		Northstar.Engine = { GetLiveStep = function() return 3 end, GetStepCount = function() return 7 end, GetStepView = function(i) return views[i] end }
+		Northstar.Set("ui.upcoming", 3)
 		local pins = N.upcoming.Build()
-		local out = { off = Polestar.Get("nav.upcomingPins") }
+		local out = { off = Northstar.Get("nav.upcomingPins") }
 		for i, p in ipairs(pins) do out[i] = { text = p.text, tip = p.tooltip, alpha = p.color[4] } end
 		emit(out)"#);
 	assert_eq!(out["off"], false);

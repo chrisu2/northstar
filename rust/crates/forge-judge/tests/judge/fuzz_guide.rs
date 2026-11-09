@@ -2,9 +2,9 @@
 //!
 //! Property: whatever the addon refuses, the Rust compile and lint refuse too (an error diagnostic), and
 //! parse/compile/lint/emit never panic. The oracle is the addon itself: tests/fuzz/oracle.lua loads
-//! addon/Polestar/Core/Guides.lua under lua5.1 and runs each compiled guide's emitted Guides.lua chunk
+//! addon/Northstar/Core/Guides.lua under lua5.1 and runs each compiled guide's emitted Guides.lua chunk
 //! (deferred race parts too) through `Guides.OwnsId("guides", id)` and `Guides.Validate`, as
-//! `Polestar.RegisterGuide` and `Guides.Steps` do in the client. A chunk that does not load or run is
+//! `Northstar.RegisterGuide` and `Guides.Steps` do in the client. A chunk that does not load or run is
 //! refused as well. Only guides Rust compiles without an error are asked: a disagreement is the compiler
 //! (or lint) accepting a guide the addon refuses.
 //!
@@ -15,15 +15,15 @@
 //!
 //! - `fuzz_guide_agrees`: bolero's random mode (1 s by default; `BOLERO_RANDOM_TEST_TIME_MS`,
 //!   `BOLERO_RANDOM_ITERATIONS`, `BOLERO_RANDOM_SEED` set it). A disagreement whose signature is not in
-//!   [`KNOWN`] fails the test. With `POLESTAR_FUZZ_OUT=<dir>` nothing fails: each new signature's input is
+//!   [`KNOWN`] fails the test. With `NORTHSTAR_FUZZ_OUT=<dir>` nothing fails: each new signature's input is
 //!   minimised (lines, then words) and written to `<dir>/<signature>.guide`.
 //! - `fuzz_guide_regressions`: every tests/fuzz/*.guide: `ok-*` must agree, `gap-*` (expected-fail) must
 //!   show exactly the signatures of its leading `# fuzz: <signature>` lines, each listed in [`KNOWN`]; when
 //!   the compiler is fixed, rename it to `ok-*` and drop its [`KNOWN`] entries.
 //! - `fuzz_guide_seeds`: the oracle's sanity, every seed compiles clean and registers.
-//! - `fuzz_guide_probe`: `POLESTAR_FUZZ_PROBE=<file>` prints the verdict of each guide in the file.
+//! - `fuzz_guide_probe`: `NORTHSTAR_FUZZ_PROBE=<file>` prints the verdict of each guide in the file.
 //!
-//! Guides and data come from $POLESTAR_CHECKOUT (a checkout with built data/forever). Skipped with a
+//! Guides and data come from $NORTHSTAR_CHECKOUT (a checkout with built data/forever). Skipped with a
 //! note when it is unset or lacks the data or guides, or lua5.1 is absent.
 
 use bolero::{check, produce, TypeGenerator};
@@ -85,13 +85,13 @@ thread_local! {
 }
 
 fn load_world() -> Option<World> {
-	let Some(checkout) = std::env::var_os("POLESTAR_CHECKOUT").map(PathBuf::from) else {
-		eprintln!("note: POLESTAR_CHECKOUT unset: guide fuzzing skipped");
+	let Some(checkout) = std::env::var_os("NORTHSTAR_CHECKOUT").map(PathBuf::from) else {
+		eprintln!("note: NORTHSTAR_CHECKOUT unset: guide fuzzing skipped");
 		return None;
 	};
 	let (guides, data_dir) = (checkout.join("guides/forever"), checkout.join("data/forever"));
 	if !data_dir.is_dir() || !guides.is_dir() || Command::new("lua5.1").arg("-v").output().is_err() {
-		eprintln!("note: POLESTAR_CHECKOUT's data or guides, or lua5.1 missing: guide fuzzing skipped");
+		eprintln!("note: NORTHSTAR_CHECKOUT's data or guides, or lua5.1 missing: guide fuzzing skipped");
 		return None;
 	}
 	let data = load_data(&data_dir).expect("data loads");
@@ -135,7 +135,7 @@ struct Oracle {
 fn spawn_oracle() -> Oracle {
 	let mut child = Command::new("lua5.1")
 		.arg(crate_dir().join("tests/fuzz/oracle.lua"))
-		.arg(root().join("addon/Polestar/Core/Guides.lua"))
+		.arg(root().join("addon/Northstar/Core/Guides.lua"))
 		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.spawn()
@@ -991,10 +991,10 @@ fn record(data: &Data, dir: &Path, text: &str, sig: &str) {
 // ---------------------------------------------------------------------------
 
 #[test]
-#[ignore = "needs POLESTAR_CHECKOUT (guides, data/forever) and lua5.1"]
+#[ignore = "needs NORTHSTAR_CHECKOUT (guides, data/forever) and lua5.1"]
 fn fuzz_guide_agrees() {
-	assert!(have_world(), "guide fuzzing needs POLESTAR_CHECKOUT (guides/forever, data/forever) and lua5.1");
-	let out = std::env::var_os("POLESTAR_FUZZ_OUT").map(PathBuf::from);
+	assert!(have_world(), "guide fuzzing needs NORTHSTAR_CHECKOUT (guides/forever, data/forever) and lua5.1");
+	let out = std::env::var_os("NORTHSTAR_FUZZ_OUT").map(PathBuf::from);
 	COUNTS.with(|c| c.set([0; 4]));
 	check!().with_type::<Case>().with_test_time(Duration::from_secs(1)).for_each(|case| {
 		with_world(|w| {
@@ -1018,9 +1018,9 @@ fn fuzz_guide_agrees() {
 }
 
 #[test]
-#[ignore = "needs POLESTAR_CHECKOUT (guides, data/forever) and lua5.1"]
+#[ignore = "needs NORTHSTAR_CHECKOUT (guides, data/forever) and lua5.1"]
 fn fuzz_guide_regressions() {
-	assert!(have_world(), "guide fuzzing needs POLESTAR_CHECKOUT (guides/forever, data/forever) and lua5.1");
+	assert!(have_world(), "guide fuzzing needs NORTHSTAR_CHECKOUT (guides/forever, data/forever) and lua5.1");
 	with_world(regressions);
 }
 
@@ -1055,9 +1055,9 @@ fn regressions(w: &World) {
 
 /// The oracle's sanity: every seed (as the fuzzer cuts it) compiles clean and the addon registers it.
 #[test]
-#[ignore = "needs POLESTAR_CHECKOUT (guides, data/forever) and lua5.1"]
+#[ignore = "needs NORTHSTAR_CHECKOUT (guides, data/forever) and lua5.1"]
 fn fuzz_guide_seeds() {
-	assert!(have_world(), "guide fuzzing needs POLESTAR_CHECKOUT (guides/forever, data/forever) and lua5.1");
+	assert!(have_world(), "guide fuzzing needs NORTHSTAR_CHECKOUT (guides/forever, data/forever) and lua5.1");
 	with_world(|w| {
 		let mut failures = Vec::new();
 		for (i, seed) in w.seeds.iter().enumerate() {
@@ -1071,13 +1071,13 @@ fn fuzz_guide_seeds() {
 	});
 }
 
-/// `POLESTAR_FUZZ_PROBE=<file>`: prints the verdict and signatures for each guide in the file (guides
+/// `NORTHSTAR_FUZZ_PROBE=<file>`: prints the verdict and signatures for each guide in the file (guides
 /// separated by a line `====`).
 #[test]
-#[ignore = "needs POLESTAR_FUZZ_PROBE=<file>, POLESTAR_CHECKOUT (guides, data/forever) and lua5.1"]
+#[ignore = "needs NORTHSTAR_FUZZ_PROBE=<file>, NORTHSTAR_CHECKOUT (guides, data/forever) and lua5.1"]
 fn fuzz_guide_probe() {
-	let file = std::env::var_os("POLESTAR_FUZZ_PROBE").expect("the probe needs POLESTAR_FUZZ_PROBE=<file>");
-	assert!(have_world(), "guide fuzzing needs POLESTAR_CHECKOUT (guides/forever, data/forever) and lua5.1");
+	let file = std::env::var_os("NORTHSTAR_FUZZ_PROBE").expect("the probe needs NORTHSTAR_FUZZ_PROBE=<file>");
+	assert!(have_world(), "guide fuzzing needs NORTHSTAR_CHECKOUT (guides/forever, data/forever) and lua5.1");
 	let all = std::fs::read_to_string(file).unwrap();
 	with_world(|w| {
 		for text in all.split("\n====\n") {

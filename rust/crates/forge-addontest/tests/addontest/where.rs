@@ -1,4 +1,4 @@
-//! /polestar where (addon/Polestar/Core/Commands.lua): the player's map and position as two guide lines,
+//! /northstar where (addon/Northstar/Core/Commands.lua): the player's map and position as two guide lines,
 //! `zone map <uiMapID>` and `goto <x>,<y> live` (the compiler's two decimals; the client's coordinates are the
 //! live frame), printed with the `@x,y live` form for other goals, and shown in a box to copy (UI/Copy.lua).
 
@@ -13,16 +13,16 @@ const SCRIPT: &str = r#"
 			stub.login()
 			@SETUP@
 			local before = #stub.messages
-			SlashCmdList.POLESTAR("where")
+			SlashCmdList.NORTHSTAR("where")
 			local printed = {}
 			for i = before + 1, #stub.messages do printed[#printed + 1] = stub.messages[i] end
-			local box = PolestarCopy and PolestarCopy:IsShown() and PolestarCopy.Box:GetText() or false
-			local out = { printed = printed, box = box, focused = box and stub.focus == PolestarCopy.Box or false }
+			local box = NorthstarCopy and NorthstarCopy:IsShown() and NorthstarCopy.Box:GetText() or false
+			local out = { printed = printed, box = box, focused = box and stub.focus == NorthstarCopy.Box or false }
 			@AFTER@
 			emit(out)"#;
 
 fn run_where(setup: &str, after: &str) -> Value {
-	emitted(&RunAddon { stubs: vec!["stub_world.lua"], addons: vec!["Polestar".into()], script: SCRIPT.replace("@SETUP@", setup).replace("@AFTER@", after), ..Default::default() }).remove(0)
+	emitted(&RunAddon { stubs: vec!["stub_world.lua"], addons: vec!["Northstar".into()], script: SCRIPT.replace("@SETUP@", setup).replace("@AFTER@", after), ..Default::default() }).remove(0)
 }
 
 fn printed(out: &Value) -> Vec<&str> {
@@ -80,14 +80,14 @@ fn the_copy_box_is_read_only_typing_puts_the_text_back_escape_closes_the_window(
 	let out = run_where(
 		"stub.world.moveTo(1429, 45.12, 62.34)",
 		r#"
-		local b = PolestarCopy.Box
+		local b = NorthstarCopy.Box
 		b:SetText("zone map 1429\ngoto 45.12,62.34 livex")
 		stub.RunScript(b, "OnTextChanged", true)
 		out.typed = b:GetText()
 		stub.RunScript(b, "OnEscapePressed")
-		out.closed = not PolestarCopy:IsShown()
+		out.closed = not NorthstarCopy:IsShown()
 		out.special = false
-		for _, name in ipairs(UISpecialFrames) do if name == "PolestarCopy" then out.special = true end end"#,
+		for _, name in ipairs(UISpecialFrames) do if name == "NorthstarCopy" then out.special = true end end"#,
 	);
 	assert_eq!(out["typed"], "zone map 1429\ngoto 45.12,62.34 live");
 	assert_eq!(out["closed"], true);

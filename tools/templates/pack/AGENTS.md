@@ -1,11 +1,11 @@
 # Working in this pack
 
-This folder is a pack, the source of a community addon for Polestar:
+This folder is a pack, the source of a community addon for Northstar:
 `pack.json` describes it and
-`guides/*.guide` hold its guides, written in Polestar's guide format
+`guides/*.guide` hold its guides, written in Northstar's guide format
 (docs/GUIDE_CHEATSHEET.md on one page, docs/GUIDE_FORMAT.md in full, in
-Polestar's source). Every guide id starts with `{{id}}/`. The `polestar`
-command comes from a Polestar clone (`npm link` in it) and `forge` from the
+Northstar's source). Every guide id starts with `{{id}}/`. The `polestar`
+command comes from a Northstar clone (`npm link` in it) and `forge` from the
 same clone (`cargo build --release -p forge` in its `rust/`, on your PATH);
 run both from this folder.
 
@@ -17,7 +17,7 @@ the guide format on one page in its `references/guide-format.md`.
 ## Never guess an id, a name or a coordinate
 
 Quest, NPC, object and item ids, guide ids, inn and flight point names and
-coordinates come from Polestar's reference data. Look up every one before
+coordinates come from Northstar's reference data. Look up every one before
 you write it:
 
     polestar find "Westfall Stew" --json
@@ -49,5 +49,5 @@ try it, and `forge release pack` writes the release zip to `dist/`.
 
 Write guides from the author's own material: their notes, routes they played
 (`polestar record`), guides they wrote. Never copy text, step lists or
-routes from other guides, websites or addons, and never copy Polestar's own
-guide text: a `next` line may hand over to one of Polestar's guides instead.
+routes from other guides, websites or addons, and never copy Northstar's own
+guide text: a `next` line may hand over to one of Northstar's guides instead.

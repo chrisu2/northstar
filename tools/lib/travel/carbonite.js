@@ -17,13 +17,13 @@
 // most crossings in a hand-made set use).
 //
 // Open borders are not Carbonite's: `open` holds the zone pairs whose border
-// Polestar's navigation grid finds walkable along its length (`nav aids`),
+// Northstar's navigation grid finds walkable along its length (`nav aids`),
 // such as a river the walking engine swims. A re-import keeps those of the
 // file it replaces (`keep`) and says so in `source`.
 
 const RADIUS = 30;
 const WALK = 1;
-const OPEN_NOTE = "open borders (open): from Polestar's navigation grid (nav aids)";
+const OPEN_NOTE = "open borders (open): from Northstar's navigation grid (nav aids)";
 
 // Lua source -> [{ flags, kind, a: { map, x, y }, b: { map, x, y } }].
 function parseZoneConnections(text) {

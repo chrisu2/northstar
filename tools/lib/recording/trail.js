@@ -1,5 +1,5 @@
 'use strict';
-// A session's position trails (/psrec trail, addon/Polestar_Recorder/Trail.lua),
+// A session's position trails (/nsrec trail, addon/Northstar_Recorder/Trail.lua),
 // for `record trail`. In a schema 2 session (docs/RECORDING.md) a trail is the
 // `pos` events with the trail flag (`trail: true`, flag 64) between a `mark`
 // "trail on: <label>" and its "trail off: <label> (<n> points, <yd> yd,

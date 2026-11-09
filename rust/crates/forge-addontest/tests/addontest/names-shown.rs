@@ -1,6 +1,6 @@
 //! Names from the guide or the data shown in the client's language on a fake
 //! Russian client (`forge i18n leaks`, "English name from the guide or data,
-//! Polestar.Names not asked"): a `complete` goal's objectives read ahead of the
+//! Northstar.Names not asked"): a `complete` goal's objectives read ahead of the
 //! quest log (the guide window's rows, its folded lists' tooltips and its
 //! "Then:" line all read them), the pace line's quest and the class-quest
 //! card's giver. An English client keeps the data's English.
@@ -69,7 +69,7 @@ fn ru_pack() -> NamesPack {
 }
 
 const GUIDE: &str = r#"
-Polestar.RegisterGuide({
+Northstar.RegisterGuide({
 	id = "test/shown", pack = "test", title = "Shown", minLevel = 1, maxLevel = 20,
 	steps = {
 		{ title = "Goldshire", goals = {
@@ -87,17 +87,6 @@ Polestar.RegisterGuide({
 })
 "#;
 
-// The interface files stay out (their "%1$s" formats need the client's string.format): these tests
-// are about the names.
-const NO_INTERFACE_FILE: &str = r#"
-do
-	local load = loadfile
-	function loadfile(file)
-		if file:match("[/\\]Locales[/\\]%a%a%u%u%.lua$") then return function() end end
-		return load(file)
-	end
-end"#;
-
 fn run(locale: Option<&str>, script: &str) -> Vec<Value> {
 	let pack = ru_pack();
 	let codex = codex();
@@ -106,7 +95,6 @@ fn run(locale: Option<&str>, script: &str) -> Vec<Value> {
 		stubs: vec!["stub_world.lua"],
 		before: format!(
 			r#"{locale}
-{NO_INTERFACE_FILE}
 {}
 {}
 function C_QuestLog.RequestLoadQuestByID() end
@@ -116,7 +104,7 @@ w.moveTo(1429, 48, 42)
 "#,
 			pack.stub_lua, codex.stub_lua
 		),
-		addons: vec![Addon::name("Polestar")],
+		addons: vec![Addon::name("Northstar")],
 		script: format!("{TEST_PACK}\n{TEST_SOURCE}\n{GUIDE}\nstub.login()\nstub.advance(0.6)\n{script}"),
 		..Default::default()
 	})
@@ -125,7 +113,7 @@ w.moveTo(1429, 48, 42)
 // The step's goals as the window reads them (UI.GoalLine: its rows and the folded lists' tooltips;
 // UI.GoalText: "Then:"), then every text the shown window holds.
 const WINDOW: &str = r#"
-local E, UI = Polestar.Engine, Polestar.UI
+local E, UI = Northstar.Engine, Northstar.UI
 E.SetGuide("test/shown"); stub.advance(0.3)
 local goals = {}
 for i, g in ipairs(E.GetStepView(2).goals) do
@@ -133,7 +121,7 @@ for i, g in ipairs(E.GetStepView(2).goals) do
 end
 emit(goals)
 E.Goto(2)
-if PolestarGuideFrame then PolestarGuideFrame:Show() end
+if NorthstarGuideFrame then NorthstarGuideFrame:Show() end
 stub.advance(0.3)
 local all = {}
 for _, fs in ipairs(stub.strings) do
@@ -174,9 +162,9 @@ fn an_english_client_reads_the_data_s_objectives_as_before() {
 #[test]
 fn the_pace_line_names_its_quest_in_the_client_s_words() {
 	let script = r#"
-local E = Polestar.Engine
+local E = Northstar.Engine
 E.SetGuide("test/shown"); stub.advance(0.3)
-local h = Polestar.Levels.StepHint(1)
+local h = Northstar.Levels.StepHint(1)
 emit({ title = h and h.title or false, quest = h and h.quest or false })"#;
 	assert_eq!(run(Some("ruRU"), script)[0], json!({ "title": "Узы", "quest": 1689 }));
 	assert_eq!(run(None, script)[0], json!({ "title": "The Binding", "quest": 1689 }));
@@ -188,7 +176,7 @@ fn the_class_quest_card_names_its_giver_in_the_client_s_words_and_points_the_arr
 local w = stub.world
 w.class, w.className, w.race, w.raceName, w.faction = "WARLOCK", "Warlock", "Scourge", "Undead", "Horde"
 w.level = 10
-local m = Polestar.UI.ClassToast.Model(1478)
+local m = Northstar.UI.ClassToast.Model(1478)
 emit({ giver = m and m.giver or false, who = m and m.who or false })"#;
 	let ru = run(Some("ruRU"), script).remove(0);
 	assert!(shown(&ru["giver"]).contains("Агерон Каргал"), "{ru}");

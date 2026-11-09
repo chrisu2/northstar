@@ -190,7 +190,7 @@ function GetActionInfo(slot)
 	if a then return a[1], a[2] end
 end
 function UseAction() end
--- What a /psrec trail sample reads: world position with height (UnitPosition
+-- What a /nsrec trail sample reads: world position with height (UnitPosition
 -- from the map's world bounds and W.z; W.noUnitPosition for a client that
 -- answers nil), facing, speed and movement flags.
 function UnitPosition(unit)
@@ -886,5 +886,5 @@ end
 -- Recording is opt-in. Recorder tests record unless they restore their own
 -- DB (`saved` replaces this before ADDON_LOADED); the ids are fixed so a
 -- chunk's text is the same on every machine.
-PolestarRecorderDB = { enabled = true, install = "testinstall1" }
-PolestarRecorderCharDB = { id = "char000001" }
+NorthstarRecorderDB = { enabled = true, install = "testinstall1" }
+NorthstarRecorderCharDB = { id = "char000001" }

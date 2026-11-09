@@ -6,8 +6,8 @@
 *                       @fitzforge
 
 # Code that runs in the game or on the maintainer's machine.
-/addon/Polestar/        @fitzforge
-/addon/Polestar_Recorder/ @fitzforge
+/addon/Northstar/        @fitzforge
+/addon/Northstar_Recorder/ @fitzforge
 /tools/                 @fitzforge
 /tests/lua/             @fitzforge
 

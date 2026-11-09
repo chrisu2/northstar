@@ -1,7 +1,7 @@
 {
 	"schema": 1,
 	"frame": "e",
-	"source": "Carbonite (github.com/IrcDirk/Carbonite-Classic, GPL-3.0) at 4d062800ae0c77c3f52ecf436b175bf06dcced4a: Carbonite/Data/classic/ZoneConnections.lua, the walks between zones; open borders (open): from Polestar's navigation grid (nav aids)",
+	"source": "Carbonite (github.com/IrcDirk/Carbonite-Classic, GPL-3.0) at 4d062800ae0c77c3f52ecf436b175bf06dcced4a: Carbonite/Data/classic/ZoneConnections.lua, the walks between zones; open borders (open): from Northstar's navigation grid (nav aids)",
 	"crossings": [
 		{
 			"id": "carbonite-arathi-highlands--hillsbrad-foothills",
@@ -981,7 +981,7 @@
 			"id": "undercity-south-lift",
 			"name": "Undercity",
 			"open": "both",
-			"note": "Polestar's fixed way in and out of the Undercity, by its south lift: the nodes follow Fitz's own walk (2026-10-23), their heights from Polestar's walking grid. The three nodes after the Ruins mouth cover the courtyard and gate the client already calls the Undercity (map 1458), so a player there is on the way out, not routed down and back up (Fitz, 2026-10-25)",
+			"note": "Northstar's fixed way in and out of the Undercity, by its south lift: the nodes follow Fitz's own walk (2026-10-23), their heights from Northstar's walking grid. The three nodes after the Ruins mouth cover the courtyard and gate the client already calls the Undercity (map 1458), so a player there is on the way out, not routed down and back up (Fitz, 2026-10-25)",
 			"nodes": [
 				{
 					"map": 1420,
@@ -1059,7 +1059,7 @@
 			"id": "darkcloud-pinnacle-climb",
 			"name": "Darkcloud Pinnacle",
 			"open": "both",
-			"note": "Up from the canyon floor and across Darkcloud Pinnacle's rope bridges to its south-east mesas: Leffe's navigation maps lack the bridges (2026-10-25), so the nodes follow Polestar's walking grid's way over them (grid-70532-ramps), their heights from it",
+			"note": "Up from the canyon floor and across Darkcloud Pinnacle's rope bridges to its south-east mesas: Leffe's navigation maps lack the bridges (2026-10-25), so the nodes follow Northstar's walking grid's way over them (grid-70532-ramps), their heights from it",
 			"nodes": [
 				{ "map": 1441, "x": 31.2, "y": 36.72, "z": -46, "radius": 12 },
 				{ "map": 1441, "x": 33.1, "y": 35.58, "z": 4, "radius": 8 },
@@ -1082,7 +1082,7 @@
 			"id": "darkcloud-pinnacle-mesas",
 			"name": "Darkcloud Pinnacle",
 			"open": "both",
-			"note": "Across Darkcloud Pinnacle's rope bridges between its west and south mesas: Leffe's navigation maps lack the bridges (2026-10-25), so the nodes follow Polestar's walking grid's way over them (grid-70532-ramps), their heights from it",
+			"note": "Across Darkcloud Pinnacle's rope bridges between its west and south mesas: Leffe's navigation maps lack the bridges (2026-10-25), so the nodes follow Northstar's walking grid's way over them (grid-70532-ramps), their heights from it",
 			"nodes": [
 				{ "map": 1441, "x": 33.87, "y": 38.96, "z": 89, "radius": 12 },
 				{ "map": 1441, "x": 34.23, "y": 38.28, "z": 88, "radius": 8 },

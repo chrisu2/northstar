@@ -1,7 +1,7 @@
 # The report window's "Open on GitHub" fills these fields by their ids
-# (addon/Polestar/UI/Report.lua, R.IssueURL): rename one there too.
+# (addon/Northstar/UI/Report.lua, R.IssueURL): rename one there too.
 name: Bug report
-description: A Lua error, or something in Polestar that does not work.
+description: A Lua error, or something in Northstar that does not work.
 title: "Bug: "
 labels: ["bug"]
 body:
@@ -24,7 +24,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Polestar version
+      label: Northstar version
       description: Shown at the foot of the Options sidebar and in the game's AddOns list.
     validations:
       required: true

@@ -1,4 +1,4 @@
-//! Polestar.QuestDB at runtime (addon/Polestar/Quests) on a database built by
+//! Northstar.QuestDB at runtime (addon/Northstar/Quests) on a database built by
 //! `forge data questdb` from tests/fixtures/questdb: load-on-demand, lookups,
 //! available-quest filtering (prerequisites, level, race, class, faction,
 //! exclusive groups, holidays), objective and turn-in markers through the
@@ -12,7 +12,7 @@ use serde_json::{json, Value};
 
 // The map marker layers are off by default; these tests exercise them, so the
 // default saved profile turns them on.
-const MARKERS_ON: &str = "PolestarDB = { schema = 1, settings = { qol = { mapObjectives = true, minimapObjectives = true, turnInMarkers = true, availableQuests = true } } }";
+const MARKERS_ON: &str = "NorthstarDB = { schema = 1, settings = { qol = { mapObjectives = true, minimapObjectives = true, turnInMarkers = true, availableQuests = true } } }";
 
 const BEFORE: &str = r#"
 local w = stub.world
@@ -22,7 +22,7 @@ for q, t in pairs({ [7] = "Kobold Camp Cleanup", [18] = "Gathering Wood", [33] =
 "#;
 
 const PRELUDE: &str = r#"
-local w, sq, Q = stub.world, stub.quests, Polestar.QuestDB
+local w, sq, Q = stub.world, stub.quests, Northstar.QuestDB
 sq.installPins()
 stub.login()
 stub.advance(0.3)
@@ -44,8 +44,8 @@ fn run_saved(db: &QuestDb, script: &str, setup: &str, saved: &str) -> Vec<Value>
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua", "stub_quests.lua"],
 		before: format!("stub.quests.dbFiles = {}\n{BEFORE}{setup}", db.lua_files()),
-		addons: vec![Addon::name("Polestar")],
-		saved: vec![("Polestar".into(), saved.into())],
+		addons: vec![Addon::name("Northstar")],
+		saved: vec![("Northstar".into(), saved.into())],
 		script: format!("{PRELUDE}{script}"),
 		..Default::default()
 	})
@@ -80,7 +80,7 @@ emit(Q.GetNpc(6))
 emit(Q.GetObjectiveMobs(60, 1))
 emit(Q.GetItemDroppers(772))
 emit(Q.GetItem(772))
-emit(Polestar.MapFrames.era[1429])
+emit(Northstar.MapFrames.era[1429])
 "#,
 		"",
 	);
@@ -116,7 +116,7 @@ fn does_not_load_the_database_when_qol_questdb_is_off() {
 		&db,
 		r#"local c = {}; for _, call in ipairs(sq.pins.calls) do if call[2]:find("^quests%.") then c[#c + 1] = call end end; emit({ Q.IsLoaded(), sq.loadCalls, Q.IsRunning(), #c })"#,
 		"",
-		"PolestarDB = { schema = 1, settings = { qol = { questDB = false } } }",
+		"NorthstarDB = { schema = 1, settings = { qol = { questDB = false } } }",
 	);
 	assert_eq!(out[0], json!([false, 0, false, 0]));
 }
@@ -134,7 +134,7 @@ emit(Q.GetAvailableQuests())
 w.setLevel(10)                      -- 10 opens up; level <= 4 quests turn grey
 stub.advance(0.3)
 emit(Q.GetAvailableQuests())
-Polestar.Set("qol.lowLevelQuests", true)
+Northstar.Set("qol.lowLevelQuests", true)
 stub.advance(0.3)
 emit(Q.GetAvailableQuests())
 emit({ Q.WhyUnavailable(5), Q.WhyUnavailable(9), Q.WhyUnavailable(13), Q.WhyUnavailable(12), Q.WhyUnavailable(14), Q.WhyUnavailable(19) })
@@ -620,9 +620,9 @@ sq.hoverUnit(6)
 GameTooltip.AddDoubleLine = add
 local function same(c, name) local t = Q.Color(name); return c[1] == t.r and c[2] == t.g and c[3] == t.b end
 emit({ same(seen[1][2], "quest"), same(seen[1][3], "success"), same(seen[2][2], "quest"), same(seen[2][3], "textDim") })
-Polestar.Set("qol.questTooltips", false)
+Northstar.Set("qol.questTooltips", false)
 emit(sq.hoverUnit(6))
-Polestar.Set("qol.questTooltips", true)
+Northstar.Set("qol.questTooltips", true)
 stub.advance(0.3)
 emit(sq.hoverUnit(6, true))         -- GUID is a secret value (combat): no lines, no error
 "#,
@@ -636,6 +636,33 @@ emit(sq.hoverUnit(6, true))         -- GUID is a secret value (combat): no lines
 	assert_eq!(out[5], json!(["?"]));
 }
 
+// The "New in Forever" mark (Quests/NewQuests.lua): a quest Forever added carries its ∞ after its name on the quest
+// lines of a mob's and an item's tooltip ("Starts a quest" too); ui.newInForever off takes it away. Kobold Camp
+// Cleanup (7) and A Strange Note (1972's) stand in for Forever's quests here.
+#[test]
+fn a_forever_quest_s_tooltip_lines_carry_the_new_in_forever_mark() {
+	let db = fixture();
+	let out = run(
+		&db,
+		r#"
+local note = Q.StartedBy(1972)[1]
+Northstar.NewQuests.Register(6, string.format("%06d%06d", math.min(7, note), math.max(7, note)))
+w.accept(7, { { text = "Kobold Vermin slain: 0/10", type = "monster", required = 10 } })
+w.accept(60, { { text = "Large Candle: 0/8", type = "item", required = 8 } })
+stub.advance(0.3)
+emit(sq.hoverUnit(6))
+emit(sq.hoverItem(1972))
+Northstar.Set("ui.newInForever", false)
+emit(sq.hoverUnit(6))
+"#,
+		"w.complete({ 783 })",
+	);
+	let mark = " |TInterface\\AddOns\\Northstar\\Media\\UI\\icon-forever:8:16:0:0|t";
+	assert_eq!(out[0], json!(["?", format!("Kobold Camp Cleanup{mark}: | Kill Kobold Vermin 0/10"), "Kobold Candles: | Large Candle 0/8"]));
+	assert_eq!(out[1], json!(["?", format!("Starts a quest: | A Strange Note{mark}")]));
+	assert_eq!(out[2], json!(["?", "Kobold Camp Cleanup: | Kill Kobold Vermin 0/10", "Kobold Candles: | Large Candle 0/8"]));
+}
+
 // An item a quest still needs is marked in the bags and named on its tooltip
 // until the quest is handed in: through the log, and (not accepted yet) through
 // the running guide's steps from the live one on.
@@ -645,12 +672,12 @@ fn an_item_a_quest_needs_is_flagged_while_the_quest_is_in_the_log_or_ahead_in_th
 	let out = run(
 		&db,
 		r#"
-local E = Polestar.Engine
+local E = Northstar.Engine
 local function guideAhead() E.GetGuide = function() return { id = "test", steps = { { goals = { { t = "accept", quest = 60 } } } } } end end
 guideAhead()
 E.GetLiveStep = function() return 1 end
 E.Applies = function() return true end
-Polestar.Fire("GUIDE_CHANGED", nil); stub.advance(0.3)
+Northstar.Fire("GUIDE_CHANGED", nil); stub.advance(0.3)
 emit({ Q.IsItemNeeded(772), sq.hoverItem(772) })
 w.accept(60, { { text = "Large Candle: 0/8", type = "item", required = 8 } })
 stub.advance(0.3)
@@ -658,7 +685,7 @@ emit({ Q.IsItemNeeded(772), sq.hoverItem(772) })
 w.turnIn(60); stub.advance(0.3)
 emit({ Q.IsItemNeeded(772), sq.hoverItem(772) })
 E.GetGuide = function() return nil end
-Polestar.Fire("GUIDE_CHANGED", nil); stub.advance(0.3)
+Northstar.Fire("GUIDE_CHANGED", nil); stub.advance(0.3)
 emit({ Q.IsItemNeeded(772) })
 "#,
 		"w.complete({ 783 })",
@@ -678,12 +705,12 @@ fn quest_items_ahead_from_the_live_step_only_steps_for_you_with_the_count_you_ca
 	let out = run(
 		&db,
 		r#"
-local E = Polestar.Engine
+local E = Northstar.Engine
 local steps = { { goals = { { t = "goto" } } }, { goals = { { t = "accept", quest = 60 } } }, { goals = { { t = "goto" } } } }
 local applies = { true, true, true }
 E.GetGuide = function() return { id = "test", steps = steps } end
 E.Applies = function(i) return applies[i] == true end
-local function again() Polestar.Fire("GUIDE_CHANGED", nil); stub.advance(0.3) end
+local function again() Northstar.Fire("GUIDE_CHANGED", nil); stub.advance(0.3) end
 E.GetStepIndex = function() return 2 end   -- looking back at the accept
 E.GetLiveStep = function() return 3 end    -- the guide has moved past it
 again()
@@ -697,7 +724,7 @@ applies[2] = true
 w.items[772] = 3
 again()
 emit(sq.hoverItem(772))
-Polestar.Set("qol.questBagMarks", false)
+Northstar.Set("qol.questBagMarks", false)
 again()
 emit({ Q.IsItemNeeded(772) })
 "#,
@@ -722,7 +749,7 @@ fn the_applejack_still_s_apples_are_protected_from_the_guide_until_it_is_past_th
 	let out = run(
 		&db,
 		r#"
-local E = Polestar.Engine
+local E = Northstar.Engine
 local steps = {
 	{ title = "The Stonefield Farm", goals = { { t = "turnin", quest = 88 }, { t = "turnin", quest = 87 }, { t = "buy", item = 4536, count = 4 } } },
 	{ title = "The Applejack Still", goals = { { t = "accept", quest = 91736 }, { t = "turnin", quest = 91736 }, { t = "collect", item = 247824, count = 1 } } },
@@ -732,7 +759,7 @@ local live = 1
 E.GetGuide = function() return { id = "forever/alliance/human/01-elwynn-forest", steps = steps } end
 E.GetLiveStep = function() return live end
 E.Applies = function() return true end
-local function at(i) live = i; Polestar.Fire("STEP_CHANGED"); stub.advance(0.3) end
+local function at(i) live = i; Northstar.Fire("STEP_CHANGED"); stub.advance(0.3) end
 GetCursorInfo = function() return "item", 4536 end
 local function deleteText()
 	local text = { s = "Do you want to destroy Shiny Red Apple?" }
@@ -758,7 +785,7 @@ emit({ Q.IsItemNeeded(4536), sq.hoverItem(4536), deleteText() })
 	);
 	assert_eq!(
 		out[0],
-		json!([true, ["?", "Applejack Still: | 1/1 (not accepted)"], "Do you want to destroy Shiny Red Apple?//Needed for: Applejack Still"]),
+		json!([true, ["?", "Applejack Still: | 1/1 (not accepted)"], "Do you want to destroy Shiny Red Apple?//Needed for: “Applejack Still”"]),
 		"bought at the Stonefield Farm: the still ahead needs them"
 	);
 	assert_eq!(out[1], json!([true]), "at the still");
@@ -803,7 +830,7 @@ emit(show("DELETE_GOOD_ITEM"))
 "#,
 		"w.complete({ 783 })",
 	);
-	assert_eq!(out[0], json!(["Do you want to destroy X?//Needed for: Kobold Candles", 124]));
+	assert_eq!(out[0], json!(["Do you want to destroy X?//Needed for: “Kobold Candles”", 124]));
 	assert_eq!(out[1], json!(["Do you want to destroy X?", 100]), "an item no quest needs: dialog untouched");
 	assert_eq!(out[2], json!(["Do you want to destroy X?", 100]), "quest handed in: dialog untouched");
 }
@@ -817,7 +844,7 @@ fn selling_an_item_a_quest_needs_offers_the_buyback_and_buys_it_back_only_when_a
 		&db,
 		r#"
 local bag = { { itemID = 772, stackCount = 8 }, { itemID = 5, stackCount = 3 } }
-Polestar.QoL = { Client = {
+Northstar.QoL = { Client = {
 	NumBags = function() return 0 end,
 	NumSlots = function() return #bag end,
 	SlotInfo = function(_, slot) return bag[slot] end,
@@ -842,11 +869,11 @@ Q.CheckSold()
 emit(shown)
 local data = shown[1] and shown[1][3]
 emit(#bought)                        -- asked, not bought
-StaticPopupDialogs.POLESTAR_QUEST_BUYBACK.OnAccept(nil, data)
+StaticPopupDialogs.NORTHSTAR_QUEST_BUYBACK.OnAccept(nil, data)
 emit(bought)
 money = 5
 shown[1] = nil
-StaticPopupDialogs.POLESTAR_QUEST_BUYBACK.OnAccept(nil, data)
+StaticPopupDialogs.NORTHSTAR_QUEST_BUYBACK.OnAccept(nil, data)
 emit(bought)
 "#,
 		"w.complete({ 783 })",
@@ -854,7 +881,7 @@ emit(bought)
 	assert_eq!(out[0], 0, "nothing asked while the bags are unchanged");
 	let shown = arr(&out[1]);
 	assert_eq!(shown.len(), 1);
-	assert_eq!(shown[0][0], "POLESTAR_QUEST_BUYBACK");
+	assert_eq!(shown[0][0], "NORTHSTAR_QUEST_BUYBACK");
 	assert_eq!(shown[0][2], 772);
 	let text = shown[0][1].as_str().unwrap();
 	for want in ["Large Candle", "Kobold Candles", "24c"] {
@@ -946,7 +973,7 @@ fn a_progress_count_alone_rebuilds_no_marker_and_calls_no_pins_tooltips_read_it_
 w.accept(7, { { text = "Kobold Vermin slain: 0/10", type = "monster", required = 10 } })
 stub.advance(0.3)
 local updates = 0
-Polestar.On("QUESTDB_UPDATED", function() updates = updates + 1 end)
+Northstar.On("QUESTDB_UPDATED", function() updates = updates + 1 end)
 local function snap() return { rebuilds = Q.stats.rebuilds, calls = #sq.pins.calls, pins = #layer("quests.objectives"), updates = updates } end
 emit(snap())
 w.progress(7, 1, 4)
@@ -993,13 +1020,13 @@ fn marker_settings_reach_the_pins_layers() {
 		r#"
 w.accept(7, { { text = "Kobold Vermin slain: 0/10", type = "monster", required = 10 } })
 stub.advance(0.3)
-Polestar.Set("qol.minimapObjectives", false)
+Northstar.Set("qol.minimapObjectives", false)
 stub.advance(0.3)
 emit({ sq.pins.layers["quests.objectives"].opts, sq.pins.layers["quests.available"].opts })
-Polestar.Set("qol.mapObjectives", false)
+Northstar.Set("qol.mapObjectives", false)
 stub.advance(0.3)
 emit(sq.pins.layers["quests.objectives"] == nil)
-Polestar.Set("qol.availableQuests", false)
+Northstar.Set("qol.availableQuests", false)
 stub.advance(0.3)
 emit({ sq.pins.layers["quests.available"] == nil, #Q.GetAvailableQuests() })
 "#,
@@ -1018,7 +1045,7 @@ fn nameplate_icons_mark_objective_mobs_until_the_objective_is_done() {
 	let out = run(
 		&db,
 		r#"
-Polestar.Set("qol.nameplateIcons", true)
+Northstar.Set("qol.nameplateIcons", true)
 w.accept(7, { { text = "Kobold Vermin slain: 0/10", type = "monster", required = 10 } })
 stub.advance(0.3)
 sq.addPlate("nameplate1", 6)
@@ -1043,7 +1070,7 @@ fn nameplate_icons_do_not_show_a_progress_count_the_client_shows_it_in_the_namep
 	let out = run(
 		&db,
 		r#"
-Polestar.Set("qol.nameplateIcons", true)
+Northstar.Set("qol.nameplateIcons", true)
 w.accept(7, { { text = "Kobold Vermin slain: 0/10", type = "monster", required = 10 } })
 w.progress(7, 1, 3)
 stub.advance(0.3)
@@ -1071,7 +1098,7 @@ fn nameplate_icons_sit_beside_the_health_bar_the_player_sees_above_the_frame_tha
 	let out = run(
 		&db,
 		r#"
-Polestar.Set("qol.nameplateIcons", true)
+Northstar.Set("qol.nameplateIcons", true)
 w.accept(7, { { text = "Kobold Vermin slain: 0/10", type = "monster", required = 10 } })
 stub.advance(0.3)
 local function frame(kind, parent, label, level, wd, ht)
@@ -1154,7 +1181,7 @@ fn nameplate_icon_position_moves_the_icon_and_its_count_right_or_above() {
 	let out = run(
 		&db,
 		r#"
-Polestar.Set("qol.nameplateIcons", true)
+Northstar.Set("qol.nameplateIcons", true)
 w.accept(7, { { text = "Kobold Vermin slain: 3/10", type = "monster", required = 10 } })
 w.progress(7, 1, 3)
 stub.advance(0.3)
@@ -1182,19 +1209,19 @@ local function where(unit)
 	return { icon = point .. " " .. rel(r) .. " " .. relPoint .. " " .. x .. "," .. y,
 		count = cp .. " " .. (cr == f and "icon" or rel(cr)) .. " " .. crp .. " " .. cx }
 end
-emit(Polestar.GetDefault("qol.nameplateIconSide"))
+emit(Northstar.GetDefault("qol.nameplateIconSide"))
 sq.addPlate("nameplate1", 6, false, blizzard)
 local seen = { left = where("nameplate1") }
-Polestar.Set("qol.nameplateIconSide", "right")
+Northstar.Set("qol.nameplateIconSide", "right")
 seen.right = where("nameplate1")
-Polestar.Set("qol.nameplateIconSide", "above")
+Northstar.Set("qol.nameplateIconSide", "above")
 seen.above = where("nameplate1")
 -- a new plate takes the side too; with no level badge, the bar's end
 sq.addPlate("nameplate2", 6, false, function(plate) blizzard(plate); plate.UnitFrame.PlayerLevelDiffFrame:Hide() end)
 seen.newAbove = where("nameplate2")
-Polestar.Set("qol.nameplateIconSide", "right")
+Northstar.Set("qol.nameplateIconSide", "right")
 seen.noBadge = where("nameplate2")
-Polestar.Set("qol.nameplateIconSide", "nonsense")
+Northstar.Set("qol.nameplateIconSide", "nonsense")
 seen.unknown = where("nameplate2")
 emit(seen)
 emit(Q.NameplateCount("nameplate1"))
@@ -1224,7 +1251,7 @@ fn turning_the_database_off_clears_every_layer() {
 		r#"
 w.accept(7, { { text = "Kobold Vermin slain: 0/10", type = "monster", required = 10 } })
 stub.advance(0.3)
-Polestar.Set("qol.questDB", false)
+Northstar.Set("qol.questDB", false)
 local n = 0
 for name in pairs(sq.pins.layers) do if name:find("^quests%.") then n = n + 1 end end
 emit({ n, Q.IsRunning(), Q.ObjectivesForNpc(6) == nil })
@@ -1246,10 +1273,10 @@ fn registers_its_settings_on_the_questing_page_and_its_markers_on_the_map_page()
 local keys = { "questDB", "mapObjectives", "minimapObjectives", "objectiveSpots", "objectiveAreaAlpha", "questMarkerSize", "turnInMarkers", "availableQuests",
 	"lowLevelQuests", "questLevelWindow", "questTooltips", "nameplateIcons", "nameplateIconSide", "questLevels", "guideHighlight", "guideDim" }
 local d, mine = {}, {}
-for _, k in ipairs(keys) do d[k] = Polestar.GetDefault("qol." .. k); mine["qol." .. k] = true end
+for _, k in ipairs(keys) do d[k] = Northstar.GetDefault("qol." .. k); mine["qol." .. k] = true end
 emit(d)
 local out, other = { Questing = {}, Map = {} }, {}
-local reg = Polestar.Widgets and Polestar.Widgets.OptionsRegistry or {}
+local reg = Northstar.Widgets and Northstar.Widgets.OptionsRegistry or {}
 if #reg == 0 then reg = Q.OPTIONS end
 for _, spec in ipairs(reg) do
 	for _, c in ipairs(spec.controls) do
@@ -1298,7 +1325,7 @@ emit(other)
 
 #[test]
 fn with_the_shipped_database_and_the_real_pins_service_quest_7_gets_objective_markers() {
-	let shipped = root().join("addon/Polestar_QuestDB");
+	let shipped = root().join("addon/Northstar_QuestDB");
 	if !shipped.join("Quests.lua").exists() {
 		eprintln!("skipped: not generated");
 		return;
@@ -1314,17 +1341,17 @@ w.moveTo(1429, 48, 40)
 w.complete({{ 783 }})"#,
 			files.join(", ")
 		),
-		addons: vec![Addon::name("Polestar")],
-		saved: vec![("Polestar".into(), MARKERS_ON.into())],
+		addons: vec![Addon::name("Northstar")],
+		saved: vec![("Northstar".into(), MARKERS_ON.into())],
 		login: true,
 		script: r#"
-local w, Q = stub.world, Polestar.QuestDB
+local w, Q = stub.world, Northstar.QuestDB
 stub.advance(0.3)
 local avail = #Q.GetAvailableQuests()
 w.accept(7, { { text = "Kobold Vermin slain: 0/10", type = "monster", required = 10 } }, "Kobold Camp Cleanup")
 stub.advance(0.3)
-local pins = Polestar.Pins.GetLayer("quests.objectives") or {}
-emit({ avail = avail, pins = #pins, header = pins[1] and pins[1].header, era = Polestar.MapFrames.era[1429] ~= nil, avail7 = Q.IsAvailable(7) })"#
+local pins = Northstar.Pins.GetLayer("quests.objectives") or {}
+emit({ avail = avail, pins = #pins, header = pins[1] and pins[1].header, era = Northstar.MapFrames.era[1429] ~= nil, avail7 = Q.IsAvailable(7) })"#
 			.into(),
 	})
 	.remove(0);
@@ -1370,11 +1397,11 @@ fn level_window_quests_more_than_n_levels_above_yours_are_hidden_high_10_shows_a
 		&format!(
 			r#"
 {why}
-Polestar.Set("qol.questLevelWindow", 1); stub.advance(0.3)
+Northstar.Set("qol.questLevelWindow", 1); stub.advance(0.3)
 {why}
-Polestar.Set("qol.questLevelWindow", 0); stub.advance(0.3)
+Northstar.Set("qol.questLevelWindow", 0); stub.advance(0.3)
 {why}
-Polestar.Set("qol.questLevelWindow", 10); stub.advance(0.3)
+Northstar.Set("qol.questLevelWindow", 10); stub.advance(0.3)
 {why}
 local n = 0
 for _, p in ipairs(layer("quests.available")) do for _, q in ipairs(p.refs) do if q == 9420 then n = n + 1 end end end
@@ -1429,17 +1456,17 @@ local function look(name)
 end
 emit(look("quests.objectives"))
 -- a guide whose current step kills for quest 7
-local E = Polestar.Engine
+local E = Northstar.Engine
 E.GetGuide = function() return { id = "test", steps = { { goals = { { t = "kill", quest = 7, target = "Kobold Vermin" } } } } } end
 E.GetStepIndex = function() return 1 end
-Polestar.Fire("STEP_CHANGED", 1); stub.advance(0.3)
+Northstar.Fire("STEP_CHANGED", 1); stub.advance(0.3)
 emit({ look("quests.objectives"), look("quests.turnin"), look("quests.available") })
-Polestar.Set("qol.guideDim", true); stub.advance(0.3)
+Northstar.Set("qol.guideDim", true); stub.advance(0.3)
 emit({ look("quests.objectives"), look("quests.turnin"), look("quests.available") })
 E.GetGuide = function() return nil end
-Polestar.Fire("GUIDE_CHANGED", nil); stub.advance(0.3)
+Northstar.Fire("GUIDE_CHANGED", nil); stub.advance(0.3)
 emit({ look("quests.objectives"), look("quests.available") })
-Polestar.Set("qol.turnInMarkers", false); stub.advance(0.3)
+Northstar.Set("qol.turnInMarkers", false); stub.advance(0.3)
 emit(sq.pins.layers["quests.turnin"] == nil)
 "#,
 		"w.complete({ 783 })",
@@ -1482,12 +1509,12 @@ fn the_database_loads_on_demand_not_while_every_quest_feature_is_off_at_once_whe
 		&db,
 		r#"
 emit({ Q.IsLoaded(), sq.loadCalls, Q.IsRunning() })
-Polestar.Set("qol.questTooltips", true)
+Northstar.Set("qol.questTooltips", true)
 stub.advance(0.3)
 emit({ Q.IsLoaded(), sq.loadCalls, Q.IsRunning() })
 "#,
 		"",
-		&format!("PolestarDB = {{ schema = 1, settings = {{ qol = {all_off} }} }}"),
+		&format!("NorthstarDB = {{ schema = 1, settings = {{ qol = {all_off} }} }}"),
 	);
 	assert_eq!(out[0], json!([false, 0, false]));
 	assert_eq!(out[1], json!([true, 1, true]));
@@ -1550,15 +1577,15 @@ w.accept(9600, {{ {{ text = "Murloc Forager slain: 0/5", type = "monster", requi
 stub.advance(0.3)
 emit(look())
 emit(sq.pinTooltip(centre()))
-Polestar.Set("qol.objectiveAreaAlpha", 0.3); stub.advance(0.3)
+Northstar.Set("qol.objectiveAreaAlpha", 0.3); stub.advance(0.3)
 emit(look())
-Polestar.Set("qol.questMarkerSize", 1.5); stub.advance(0.3)
+Northstar.Set("qol.questMarkerSize", 1.5); stub.advance(0.3)
 emit(look())
-Polestar.Set("qol.objectiveSpots", "icons"); stub.advance(0.3)
+Northstar.Set("qol.objectiveSpots", "icons"); stub.advance(0.3)
 emit(look())
-Polestar.Set("qol.objectiveSpots", "areas"); stub.advance(0.3)
+Northstar.Set("qol.objectiveSpots", "areas"); stub.advance(0.3)
 emit(look())
-Polestar.Set("qol.minimapObjectives", false); stub.advance(0.3)
+Northstar.Set("qol.minimapObjectives", false); stub.advance(0.3)
 emit(look().opts)
 "#
 		),
@@ -1607,12 +1634,12 @@ w.accept(9600, { { text = "Murloc Forager slain: 0/5", type = "monster", require
 stub.advance(0.3)
 local function area() for _, p in ipairs(layer("quests.objectives")) do if p.hull then return p end end end
 local first = area()
-local calls, of = 0, Polestar.Regions.Of
-Polestar.Regions.Of = function(...) calls = calls + 1; return of(...) end
-for _, mode in ipairs({ "icons", "areas", "groups" }) do Polestar.Set("qol.objectiveSpots", mode); stub.advance(0.3) end
-Polestar.Set("qol.objectiveAreaAlpha", 0.4); stub.advance(0.3)
-Polestar.Set("qol.questMarkerSize", 0.8); stub.advance(0.3)
-Polestar.Fire("STEP_CHANGED", 1); stub.advance(0.3)
+local calls, of = 0, Northstar.Regions.Of
+Northstar.Regions.Of = function(...) calls = calls + 1; return of(...) end
+for _, mode in ipairs({ "icons", "areas", "groups" }) do Northstar.Set("qol.objectiveSpots", mode); stub.advance(0.3) end
+Northstar.Set("qol.objectiveAreaAlpha", 0.4); stub.advance(0.3)
+Northstar.Set("qol.questMarkerSize", 0.8); stub.advance(0.3)
+Northstar.Fire("STEP_CHANGED", 1); stub.advance(0.3)
 emit(calls)
 w.progress(9600, 1, 2); stub.advance(0.3)
 emit(calls)
@@ -1636,18 +1663,18 @@ fn with_the_objective_and_turn_in_markers_off_a_quest_log_change_builds_no_marke
 	let out = run_saved(
 		&db,
 		r#"
-local calls, of = 0, Polestar.Regions.Of
-Polestar.Regions.Of = function(...) calls = calls + 1; return of(...) end
+local calls, of = 0, Northstar.Regions.Of
+Northstar.Regions.Of = function(...) calls = calls + 1; return of(...) end
 local rebuilds = Q.stats.rebuilds
 w.accept(9600, { { text = "Murloc Forager slain: 0/5", type = "monster", required = 5 } })
 stub.advance(0.3)
-Polestar.Fire("STEP_CHANGED", 1); stub.advance(0.3)
+Northstar.Fire("STEP_CHANGED", 1); stub.advance(0.3)
 emit({ Q.stats.rebuilds - rebuilds, calls, sq.pins.layers["quests.objectives"] == nil, Q.ObjectivesForNpc(9600) ~= nil })
-Polestar.Set("qol.mapObjectives", true); stub.advance(0.3)
+Northstar.Set("qol.mapObjectives", true); stub.advance(0.3)
 emit({ Q.stats.rebuilds - rebuilds, calls, #layer("quests.objectives") > 0 })
 "#,
 		"",
-		"PolestarDB = { schema = 1, settings = { qol = { mapObjectives = false, minimapObjectives = false, turnInMarkers = false, questTooltips = true } } }",
+		"NorthstarDB = { schema = 1, settings = { qol = { mapObjectives = false, minimapObjectives = false, turnInMarkers = false, questTooltips = true } } }",
 	);
 	assert_eq!(out[0], json!([0, 0, true, true]), "no markers or regions; the tooltip index still knows the forager");
 	assert_eq!(out[1], json!([1, 1, true]), "turned on: built and grouped once");
@@ -1661,14 +1688,14 @@ fn objective_areas_fade_with_their_marker_under_guide_dim_and_a_step_quest_s_sta
 		&format!(
 			r#"{SPOTS_LOOK}
 w.accept(9600, {{ {{ text = "Murloc Forager slain: 0/5", type = "monster", required = 5 }} }})
-Polestar.Set("qol.guideDim", true)
-local E = Polestar.Engine
+Northstar.Set("qol.guideDim", true)
+local E = Northstar.Engine
 E.GetGuide = function() return {{ id = "test", steps = {{ {{ goals = {{ {{ t = "kill", quest = 7, target = "Kobold Vermin" }} }} }} }} }} end
 E.GetStepIndex = function() return 1 end
-Polestar.Fire("STEP_CHANGED", 1); stub.advance(0.3)
+Northstar.Fire("STEP_CHANGED", 1); stub.advance(0.3)
 emit({{ look(), centre().focus }})
 E.GetGuide = function() return {{ id = "test", steps = {{ {{ goals = {{ {{ t = "kill", quest = 9600, target = "Murloc Forager" }} }} }} }} }} end
-Polestar.Fire("STEP_CHANGED", 1); stub.advance(0.3)
+Northstar.Fire("STEP_CHANGED", 1); stub.advance(0.3)
 emit({{ look(), centre().focus }})
 "#
 		),

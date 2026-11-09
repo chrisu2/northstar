@@ -1,7 +1,7 @@
 //! Class trainers (port of tools/lib/dsl/trainers.js buildTrainers and tools/commands/trainers.js):
 //! data/forever/trainers.json from the curated name list (resolved against npcs.json), every
 //! `train <npcId> only <Class>` goal under guides/, and recorded trainer visits (trusted as
-//! recordings.rs "Trust" says); plus addon/Polestar/Core/ClassTrainers.lua.
+//! recordings.rs "Trust" says); plus addon/Northstar/Core/ClassTrainers.lua.
 
 use std::path::Path;
 

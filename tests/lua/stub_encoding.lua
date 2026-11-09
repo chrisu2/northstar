@@ -1,5 +1,5 @@
 -- C_EncodingUtil for tests: DecodeBase64 and DecompressString (zlib), in plain
--- Lua 5.1 (no bit library), so Polestar_Nav's walking maps decode the way the
+-- Lua 5.1 (no bit library), so Northstar_Nav's walking maps decode the way the
 -- client decodes them. Inflate follows RFC 1950/1951 (puff's canonical
 -- Huffman decoding); the Adler-32 trailer is not checked.
 

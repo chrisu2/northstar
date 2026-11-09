@@ -135,7 +135,7 @@ async function serve(argv) {
 	}
 	ws.lintAll();
 	const guides = [...ws.sources.values()].filter((s) => s.id).length;
-	console.log(`Polestar planner: ${server.url}  (${ws.packs.map((p) => p.id).join(', ')}: ${guides} guides; started in ${Date.now() - t0} ms)`);
+	console.log(`Northstar planner: ${server.url}  (${ws.packs.map((p) => p.id).join(', ')}: ${guides} guides; started in ${Date.now() - t0} ms)`);
 	console.log(`${artNote(ws.artDir)}. Inspired by Nivek_Gaming (@Nivek_Gaming on X). Ctrl-C to stop.`);
 	if (o.open) openBrowser(server.url);
 	await untilStopped(async () => {

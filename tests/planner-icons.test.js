@@ -1,5 +1,5 @@
 'use strict';
-// The planner's icons: Polestar's glyphs rendered at any size
+// The planner's icons: Northstar's glyphs rendered at any size
 // (tools/planner/glyphs.js), the game's icons resolved from client tables and
 // paths to PNGs with a fake wago.tools and CASC (tools/planner/icons.js), and
 // the server routes that serve both, with their key checks.

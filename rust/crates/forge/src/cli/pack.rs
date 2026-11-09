@@ -1,7 +1,7 @@
-//! `forge release pack`: the release archives. In the checkout: dist/Polestar-<version>.zip (Polestar,
-//! Polestar_Guides, Polestar_Nav, the Codex and the built data addons) and
-//! dist/Polestar_Recorder-<version>.zip, each with the GPL in its first folder (and the players'
-//! README.txt in Polestar/), plus dist/SHA256SUMS for both. Given another pack (a folder argument,
+//! `forge release pack`: the release archives. In the checkout: dist/Northstar-<version>.zip (Northstar,
+//! Northstar_Guides, Northstar_Nav, the Codex and the built data addons) and
+//! dist/Northstar_Recorder-<version>.zip, each with the GPL in its first folder (and the players'
+//! README.txt in Northstar/), plus dist/SHA256SUMS for both. Given another pack (a folder argument,
 //! --pack, or the nearest pack.json): <pack>/dist/<folder>-<version>.zip holding its built addon folder.
 
 use super::release::{checkout, opt, positional};
@@ -17,13 +17,13 @@ use std::path::{Path, PathBuf};
 
 pub const USAGE: &str = "usage: forge release pack [<dir>] [options]
 
-In the checkout: compiles our guides into addon/Polestar_Guides, then writes dist/Polestar-<version>.zip
-(Polestar, Polestar_Guides with its faction parts and race parts, Polestar_Nav, Polestar_QuestDB and
-Polestar_ItemDB when built, Polestar_Codex, and the language folders Polestar_<locale>: our guides' texts
+In the checkout: compiles our guides into addon/Northstar_Guides, then writes dist/Northstar-<version>.zip
+(Northstar, Northstar_Guides with its faction parts and race parts, Northstar_Nav, Northstar_QuestDB and
+Northstar_ItemDB when built, Northstar_Codex, and the language folders Northstar_<locale>: our guides' texts
 and the game's names),
-dist/Polestar_Recorder-<version>.zip and dist/SHA256SUMS (the format `sha256sum -c` reads), the version
-taken from package.json. Polestar/ in the zip also carries LICENSE and README.txt (install steps),
-Polestar_Recorder/ the LICENSE. The Codex must be built first (forge data codex) from release-safe inputs:
+dist/Northstar_Recorder-<version>.zip and dist/SHA256SUMS (the format `sha256sum -c` reads), the version
+taken from package.json. Northstar/ in the zip also carries LICENSE and README.txt (install steps),
+Northstar_Recorder/ the LICENSE. The Codex must be built first (forge data codex) from release-safe inputs:
 pack stops on a missing Codex or a local-extras one.
 
 Given another pack (<dir>, --pack, or run inside one): builds it with our guides as context, then writes
@@ -36,7 +36,7 @@ reference data (forge data build) pack stops with one error; another pack can be
 
 options:
   <dir>, --pack <dir>   the pack folder, holding pack.json (default: the nearest pack.json, else our guides)
-  --root <dir>          the Polestar checkout (default: the one above here, else above the forge binary)
+  --root <dir>          the Northstar checkout (default: the one above here, else above the forge binary)
   --data <dir>          reference data (default <root>/data/forever/)
   --context <dir>       our guides, read as context for another pack (default <root>/guides/)
   --context-data <dir>  reference data for the context (default <root>/data/forever/)
@@ -114,7 +114,7 @@ pub fn run(args: &[String]) -> Result<(), super::Fail> {
 	}
 }
 
-/// Our release: dist/Polestar-<version>.zip, dist/Polestar_Recorder-<version>.zip, dist/SHA256SUMS.
+/// Our release: dist/Northstar-<version>.zip, dist/Northstar_Recorder-<version>.zip, dist/SHA256SUMS.
 fn pack_release(args: &[String], root: &Path, data_dir: &Path) -> Result<(), super::Fail> {
 	let at = |p: String| forge_release::absolute(Path::new(&p));
 	let guides = opt(args, "--guides").map_or_else(|| root.join("guides"), at);
@@ -132,7 +132,7 @@ fn pack_release(args: &[String], root: &Path, data_dir: &Path) -> Result<(), sup
 		eprintln!("warning: guides/pack.json says version {said}, package.json says {version}");
 	}
 	let product = release_addons(&addons);
-	// The Codex is part of Polestar (Lookup, Dungeons, Rares): built from release-safe inputs, or no release.
+	// The Codex is part of Northstar (Lookup, Dungeons, Rares): built from release-safe inputs, or no release.
 	if let Some(why) = codex_refusal(&addons.join(CODEX)) {
 		return Err(format!("{CODEX} {why}").into());
 	}
@@ -187,8 +187,8 @@ fn pack_release(args: &[String], root: &Path, data_dir: &Path) -> Result<(), sup
 
 	let gpl = Entry::file("LICENSE", license);
 	let archives = [
-		(format!("Polestar-{version}.zip"), &product.names, vec![("Polestar", vec![gpl.clone(), Entry::file("README.txt", readme(&version, &product.names))])]),
-		(format!("Polestar_Recorder-{version}.zip"), &recorder, vec![(RECORDER, vec![gpl])]),
+		(format!("Northstar-{version}.zip"), &product.names, vec![("Northstar", vec![gpl.clone(), Entry::file("README.txt", readme(&version, &product.names))])]),
+		(format!("Northstar_Recorder-{version}.zip"), &recorder, vec![(RECORDER, vec![gpl])]),
 	];
 	let mut sums = String::new();
 	for (file, names, extras) in &archives {

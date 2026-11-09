@@ -4,7 +4,7 @@
 // (the sim evaluator isn't in Rust yet), and the sim view it read (run quests, world quest ids, excluded,
 // packages). guidetext.js is read, not edited: its source is compiled with one line added that hands its
 // goals and world to this script.
-// usage: node guidetext-dump.js <guidetext.js> <target> <out.json>   (POLESTAR_JUDGE_* env as guidetext.js)
+// usage: node guidetext-dump.js <guidetext.js> <target> <out.json>   (NORTHSTAR_JUDGE_* env as guidetext.js)
 const fs = require('node:fs');
 const Module = require('node:module');
 const [, , GT, target, out] = process.argv;

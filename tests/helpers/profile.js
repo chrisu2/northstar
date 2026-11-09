@@ -8,8 +8,8 @@
 //   // handler), r.functions [{ key, name, samples }] (inclusive stack samples),
 //   // r.lines [{ key, samples }] (self samples), r.result (SIMULATE's output)
 //
-// packs: true makes the local data packs (Polestar_QuestDB, Polestar_Codex,
-// Polestar_ItemDB, when built) loadable on demand, so the Quests, Lookup,
+// packs: true makes the local data packs (Northstar_QuestDB, Northstar_Codex,
+// Northstar_ItemDB, when built) loadable on demand, so the Quests, Lookup,
 // Rares and Gear modules run the way they do in game (localPacks() gives the
 // stubs and setup for any runAddon call).
 //
@@ -27,7 +27,7 @@ const path = require('node:path');
 const { buildSimPack, playGuide, SIMULATE } = require('../../tools/lib/playtest');
 const { tocFiles, ADDONS } = require('./lua');
 
-const PACKS = ['Polestar_QuestDB', 'Polestar_Codex', 'Polestar_ItemDB'];
+const PACKS = ['Northstar_QuestDB', 'Northstar_Codex', 'Northstar_ItemDB'];
 
 // A quantized reading may be one clock step high; never grant more than 1 ms.
 function withinBudget(value, budget, scale, resolution) {
@@ -66,9 +66,9 @@ function profileGuide(pack, g, { race, faction, cls, sample = 0, top = 40, packs
 	return { wall: (Date.now() - t0) / 1000, result, ...report };
 }
 
-// The module a handler or function key belongs to: addon/Polestar/<Module>/...
+// The module a handler or function key belongs to: addon/Northstar/<Module>/...
 function moduleOf(key) {
-	const m = key.match(/^Polestar\/([^/]+)\/([^:]+)/);
+	const m = key.match(/^Northstar\/([^/]+)\/([^:]+)/);
 	if (m) return m[1] === 'Core' ? `Core/${m[2]}` : m[1];
 	if (key.startsWith('lua/')) return 'harness';
 	return key.split(':')[0];

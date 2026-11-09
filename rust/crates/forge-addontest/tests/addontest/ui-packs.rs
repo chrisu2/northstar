@@ -1,4 +1,4 @@
-//! The Community guides page (addon/Polestar/UI/Packs.lua, registered by UI/Options.lua) against the real
+//! The Community guides page (addon/Northstar/UI/Packs.lua, registered by UI/Options.lua) against the real
 //! Core + Theme + UI manifests. The UI's fake Engine comes from tests/lua/stub_ui.lua; the guide registry is the
 //! real one (Core/Guides.lua), so the rows come from the core's own records and its scan of the AddOns list.
 
@@ -12,8 +12,8 @@ const FILES: [&str; 3] = ["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"];
 const ADDONS: &str = r#"
 ADDON_INTERFACE_VERSION = "Out of date"
 stub.addons = {
-	{ name = "Polestar", loaded = true },
-	{ name = "Polestar_Guides", loaded = true },
+	{ name = "Northstar", loaded = true },
+	{ name = "Northstar_Guides", loaded = true },
 	{ name = "JoeAddon", loaded = true },
 	{ name = "EmptyAddon", loaded = true },
 	{ name = "Off", reason = "DISABLED", enabled = false },
@@ -24,16 +24,16 @@ stub.addons = {
 	{ name = "Dung", loaded = true },
 }
 local function toc(id, title, extra)
-	local m = { ["X-Polestar-Pack"] = id, ["X-Polestar-Format"] = "1", Title = title, Author = title .. " Author", Version = "2.0", ["X-License"] = "CC0-1.0", ["X-Website"] = "https://example.org/" .. id }
+	local m = { ["X-Northstar-Pack"] = id, ["X-Northstar-Format"] = "1", Title = title, Author = title .. " Author", Version = "2.0", ["X-License"] = "CC0-1.0", ["X-Website"] = "https://example.org/" .. id }
 	for k, v in pairs(extra or {}) do m[k] = v end
 	return m
 end
-stub.addonMeta.Polestar_Guides = toc("guides", "Polestar Guides")
+stub.addonMeta.Northstar_Guides = toc("guides", "Northstar Guides")
 stub.addonMeta.JoeAddon = toc("joe", "Joe's Routes")
 stub.addonMeta.EmptyAddon = toc("empty", "Empty")
 stub.addonMeta.Off = toc("off", "Switched Off")
 stub.addonMeta.Old = toc("old", "Old Pack")
-stub.addonMeta.Future = toc("future", "Future Pack", { ["X-Polestar-Format"] = "99", ["X-Polestar-Needs"] = "0.4.0" })
+stub.addonMeta.Future = toc("future", "Future Pack", { ["X-Northstar-Format"] = "99", ["X-Northstar-Needs"] = "0.4.0" })
 stub.addonMeta.Crash = toc("crash", "Crashing Pack")
 stub.addonMeta.Probs = toc("probs", "Problem Pack")
 stub.addonMeta.Dung = toc("dung", "Dungeon Pack")
@@ -41,7 +41,7 @@ stub.addonMeta.Dung = toc("dung", "Dungeon Pack")
 
 const PACKS: &str = r#"
 uistub.install()
-Polestar.Guides = uistub.realGuides
+Northstar.Guides = uistub.realGuides
 G = uistub.realGuides
 local function meta(addon, id, title, extra)
 	local m = { addon = addon, id = id, format = 1, title = title, author = title .. " Author", version = "1.2.0", license = "MIT" }
@@ -51,37 +51,37 @@ end
 local function guide(id, pack, extra)
 	local g = { id = id, pack = pack, title = "T " .. id, minLevel = 10, maxLevel = 20, steps = { { goals = { { t = "level", level = 20 } } } } }
 	for k, v in pairs(extra or {}) do g[k] = v end
-	return Polestar.RegisterGuide(g)
+	return Northstar.RegisterGuide(g)
 end
-assert(Polestar.RegisterPack(meta("Polestar_Guides", "guides", "Polestar Guides", { author = "Polestar", license = "GPL-3.0" })))
+assert(Northstar.RegisterPack(meta("Northstar_Guides", "guides", "Northstar Guides", { author = "Northstar", license = "GPL-3.0" })))
 guide("forever/a", "guides")
 guide("forever/b", "guides")
-assert(Polestar.RegisterPack(meta("JoeAddon", "joe", JOE_TITLE or "Joe's Routes", { author = "Joe", license = "CC-BY-4.0",
+assert(Northstar.RegisterPack(meta("JoeAddon", "joe", JOE_TITLE or "Joe's Routes", { author = "Joe", license = "CC-BY-4.0",
 	website = "https://github.com/joe/routes", source = JOE_SOURCE or "Written from my own play" })))
 guide("joe/a", "joe")
-assert(Polestar.RegisterPack(meta("EmptyAddon", "empty", "Empty")))
-assert(Polestar.RegisterPack(meta("Probs", "probs", "Problem Pack")))
+assert(Northstar.RegisterPack(meta("EmptyAddon", "empty", "Empty")))
+assert(Northstar.RegisterPack(meta("Probs", "probs", "Problem Pack")))
 guide("probs/ok", "probs")
 guide("elsewhere/one", "probs")
 guide("elsewhere/two", "probs")
-assert(Polestar.RegisterPack(meta("Dung", "dung", "Dungeon Pack")))
+assert(Northstar.RegisterPack(meta("Dung", "dung", "Dungeon Pack")))
 guide("dung/deadmines", "dung", { category = "Dungeons" })
 stub.login()
-UI, O, P = Polestar.UI, Polestar.UI.Options, Polestar.UI.Packs
+UI, O, P = Northstar.UI, Northstar.UI.Options, Northstar.UI.Packs
 function openPage() UI.ShowOptions("guidepacks"); return P.view end
 function rowOf(addon)
 	for _, r in ipairs(P.view.rows) do if r:IsShown() and r.psRecord.addon == addon then return r end end
 end
 function shownText(fs) return fs:IsShown() and fs:GetText() or false end
 function navDot()
-	for _, b in ipairs(PolestarOptions.navButtons) do
+	for _, b in ipairs(NorthstarOptions.navButtons) do
 		if b:IsShown() and b.psKey == "guidepacks" then return b.Dot:IsShown() end
 	end
 end
 "#;
 
 fn run_with(script: &str, before: &str) -> Value {
-	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], before: format!("{ADDONS}{before}"), addons: vec![Addon::files("Polestar", &FILES)], script: format!("{PACKS}\n{script}"), ..Default::default() })
+	emitted(&RunAddon { stubs: vec!["stub_ui.lua"], before: format!("{ADDONS}{before}"), addons: vec![Addon::files("Northstar", &FILES)], script: format!("{PACKS}\n{script}"), ..Default::default() })
 		.remove(0)
 }
 
@@ -106,15 +106,15 @@ fn one_row_per_pack_ours_first_credits_count_website_source_and_each_status() {
 					website = r.Website:IsShown() and r.Website.Label:GetText() or false, source = shownText(r.Source) }
 			end
 		end
-		emit({ rows = rows, title = PolestarOptions.Title:GetText() })"#);
+		emit({ rows = rows, title = NorthstarOptions.Title:GetText() })"#);
 	let rows = out["rows"].as_array().unwrap();
 	let by = |a: &str| rows.iter().find(|r| r["addon"] == a).cloned().unwrap_or(Value::Null);
 	assert_eq!(out["title"], "Community guides");
 	let addons: Vec<&str> = rows.iter().map(|r| r["addon"].as_str().unwrap()).collect();
-	assert_eq!(addons, vec!["Polestar_Guides", "Crash", "Dung", "EmptyAddon", "Future", "JoeAddon", "Old", "Probs", "Off"]);
+	assert_eq!(addons, vec!["Northstar_Guides", "Crash", "Dung", "EmptyAddon", "Future", "JoeAddon", "Old", "Probs", "Off"]);
 	assert_eq!(
-		by("Polestar_Guides"),
-		json!({ "addon": "Polestar_Guides", "title": "Polestar Guides", "credits": "Polestar  ·  1.2.0  ·  GPL-3.0",
+		by("Northstar_Guides"),
+		json!({ "addon": "Northstar_Guides", "title": "Northstar Guides", "credits": "Northstar  ·  1.2.0  ·  GPL-3.0",
 			"count": "2 guides", "switch": true, "enable": false, "status": false, "problems": false, "website": false, "source": false })
 	);
 	assert_eq!(
@@ -130,7 +130,7 @@ fn one_row_per_pack_ours_first_credits_count_website_source_and_each_status() {
 	assert_eq!(by("Off")["status"], "turned off in the AddOns list");
 	assert_eq!(by("Off")["enable"], true);
 	assert_eq!(by("Old")["status"], "not loaded: Out of date");
-	assert_eq!(by("Future")["status"], "needs Polestar 0.4.0 or newer");
+	assert_eq!(by("Future")["status"], "needs Northstar 0.4.0 or newer");
 	assert_eq!(by("Probs")["problems"], "2 problems");
 	assert_eq!(by("Probs")["switch"], true);
 	assert_eq!(by("Probs")["count"], "1 guide");
@@ -138,8 +138,8 @@ fn one_row_per_pack_ours_first_credits_count_website_source_and_each_status() {
 
 #[test]
 fn a_too_new_pack_without_x_polestar_needs_needs_a_newer_polestar() {
-	let out = run_with(r#"openPage(); emit({ status = shownText(rowOf("Future").Status) })"#, r#"stub.addonMeta.Future["X-Polestar-Needs"] = nil"#);
-	assert_eq!(out["status"], "needs a newer Polestar");
+	let out = run_with(r#"openPage(); emit({ status = shownText(rowOf("Future").Status) })"#, r#"stub.addonMeta.Future["X-Northstar-Needs"] = nil"#);
+	assert_eq!(out["status"], "needs a newer Northstar");
 }
 
 #[test]
@@ -151,7 +151,7 @@ fn the_switch_hides_and_shows_a_pack_through_guides_setpackshown() {
 		G.SetPackShown = function(id, shown) calls[#calls + 1] = { id, shown }; return set(id, shown) end
 		local row = rowOf("JoeAddon")
 		row.Switch:Click()
-		local off = { status = G.Pack("joe").status, checked = rowOf("JoeAddon").Switch.checked, stored = PolestarDB.packs.joe.off }
+		local off = { status = G.Pack("joe").status, checked = rowOf("JoeAddon").Switch.checked, stored = NorthstarDB.packs.joe.off }
 		rowOf("JoeAddon").Switch:Click()
 		emit({ calls = calls, off = off, on = G.Pack("joe").status })"#);
 	assert_eq!(out["calls"], json!([["joe", false], ["joe", true]]));
@@ -198,7 +198,7 @@ fn show_lists_the_problems_copy_report_fills_a_selected_box_with_the_pack_versio
 	}
 	assert!(is_match(report, r"(?m)^Community addon: probs \(Probs\)$"));
 	assert!(is_match(report, r"Community addon version: 1\.2\.0"));
-	assert!(is_match(report, r"Polestar version: 0\.1\.0-test"));
+	assert!(is_match(report, r"Northstar version: 0\.1\.0-test"));
 	assert!(is_match(report, r"1\.60\.1 \(70338\)"));
 	assert_eq!(out["focused"], true, "the report box takes focus, its text selected");
 }
@@ -242,7 +242,7 @@ fn the_report_box_grows_to_fit_a_long_problem_message_as_it_wraps() {
 #[test]
 fn a_refused_pack_says_why() {
 	let out = run(r#"
-		Polestar.RegisterPack({ addon = "JoeCopy", id = "joe", format = 1, title = "Joe Again", author = "X", version = "1", license = "MIT" })
+		Northstar.RegisterPack({ addon = "JoeCopy", id = "joe", format = 1, title = "Joe Again", author = "X", version = "1", license = "MIT" })
 		openPage()
 		local row = rowOf("JoeCopy")
 		emit({ status = shownText(row.Status), switch = row.Switch:IsShown() })"#);
@@ -253,7 +253,7 @@ fn a_refused_pack_says_why() {
 #[test]
 fn a_refused_pack_s_id_and_addon_kept_as_given_print_literally_in_the_row_title_and_the_report() {
 	let out = run(r#"
-		Polestar.RegisterPack({ addon = "Bad|Addon", id = "bad|cffid", format = 1 })
+		Northstar.RegisterPack({ addon = "Bad|Addon", id = "bad|cffid", format = 1 })
 		openPage()
 		local row = rowOf("Bad|Addon")
 		local title = row.Title:GetText()
@@ -301,12 +301,12 @@ fn suggest_guides_from_lists_polestar_and_packs_with_leveling_guides_choosing_on
 		local view = openPage()
 		view.Source.Button:Click()
 		local choices = {}
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() then choices[#choices + 1] = r.Text:GetText() end end
-		for _, r in ipairs(PolestarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Joe's Routes" then r:Click() end end
-		emit({ choices = choices, setting = Polestar.Get("behavior.suggestFrom"), source = G.SuggestSource(),
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() then choices[#choices + 1] = r.Text:GetText() end end
+		for _, r in ipairs(NorthstarMenu.rows) do if r:IsShown() and r.Text:GetText() == "Joe's Routes" then r:Click() end end
+		emit({ choices = choices, setting = Northstar.Get("behavior.suggestFrom"), source = G.SuggestSource(),
 			shown = view.Source.Button.Label:GetText(), sources = G.SuggestSources() })"#);
 	assert_eq!(out["sources"], json!(["guides", "joe", "probs"]), "the page lists what the core allows");
-	assert_eq!(out["choices"], json!(["Polestar", "Joe's Routes", "Problem Pack"]));
+	assert_eq!(out["choices"], json!(["Northstar", "Joe's Routes", "Problem Pack"]));
 	assert_eq!(out["setting"], "joe");
 	assert_eq!(out["source"], "joe");
 	assert_eq!(out["shown"], "Joe's Routes");
@@ -321,16 +321,16 @@ fn the_navigation_dot_shows_while_a_pack_has_problems_and_goes_with_them() {
 	assert_eq!(out["with"], true);
 	let clean = emitted(&RunAddon {
 		stubs: vec!["stub_ui.lua"],
-		addons: vec![Addon::files("Polestar", &FILES)],
+		addons: vec![Addon::files("Northstar", &FILES)],
 		script: r#"uistub.install()
-			Polestar.Guides = uistub.realGuides
-			assert(Polestar.RegisterPack({ addon = "Polestar_Guides", id = "guides", format = 1, title = "Polestar Guides", author = "Polestar", version = "1", license = "GPL-3.0" }))
-			assert(Polestar.RegisterGuide({ id = "forever/a", pack = "guides", title = "A", steps = { { goals = { { t = "level", level = 2 } } } } }))
+			Northstar.Guides = uistub.realGuides
+			assert(Northstar.RegisterPack({ addon = "Northstar_Guides", id = "guides", format = 1, title = "Northstar Guides", author = "Northstar", version = "1", license = "GPL-3.0" }))
+			assert(Northstar.RegisterGuide({ id = "forever/a", pack = "guides", title = "A", steps = { { goals = { { t = "level", level = 2 } } } } }))
 			stub.login()
-			Polestar.UI.ShowOptions("guide")
+			Northstar.UI.ShowOptions("guide")
 			local dot
-			for _, b in ipairs(PolestarOptions.navButtons) do if b:IsShown() and b.psKey == "guidepacks" then dot = b.Dot:IsShown() end end
-			emit({ dot = dot, problems = Polestar.Guides.ProblemCount() })"#
+			for _, b in ipairs(NorthstarOptions.navButtons) do if b:IsShown() and b.psKey == "guidepacks" then dot = b.Dot:IsShown() end end
+			emit({ dot = dot, problems = Northstar.Guides.ProblemCount() })"#
 			.into(),
 		..Default::default()
 	});
@@ -340,8 +340,8 @@ fn the_navigation_dot_shows_while_a_pack_has_problems_and_goes_with_them() {
 #[test]
 fn polestar_packs_opens_the_page() {
 	let out = run(r#"
-		SlashCmdList.POLESTAR("packs")
-		emit({ shown = PolestarOptions:IsShown(), title = PolestarOptions.Title:GetText() })"#);
+		SlashCmdList.NORTHSTAR("packs")
+		emit({ shown = NorthstarOptions:IsShown(), title = NorthstarOptions.Title:GetText() })"#);
 	assert_eq!(out, json!({ "shown": true, "title": "Community guides" }));
 }
 
@@ -353,24 +353,24 @@ fn the_website_and_the_docs_line_are_links_that_open_the_copy_window_without_x_w
 		local seen = { label = view.DocsLabel:GetText(), link = view.Docs:IsShown() and view.Docs.Label:GetText() or false,
 			kind = view.Docs:GetObjectType() }
 		view.Docs:Click()
-		seen.docsTitle, seen.docsCopy = PolestarCopy.Title:GetText(), PolestarCopy.Box:GetText()
+		seen.docsTitle, seen.docsCopy = NorthstarCopy.Title:GetText(), NorthstarCopy.Box:GetText()
 		rowOf("JoeAddon").Website:Click()
-		seen.siteTitle, seen.siteCopy = PolestarCopy.Title:GetText(), PolestarCopy.Box:GetText()
+		seen.siteTitle, seen.siteCopy = NorthstarCopy.Title:GetText(), NorthstarCopy.Box:GetText()
 		emit(seen)"#,
-		r#"stub.addonMeta.Polestar = { ["X-Website"] = "https://github.com/polestar/polestar/" }"#,
+		r#"stub.addonMeta.Northstar = { ["X-Website"] = "https://github.com/northstar/northstar/" }"#,
 	);
 	assert_eq!(
 		with_site,
 		json!({
-			"label": "Read more:", "link": "github.com/polestar/polestar/blob/HEAD/docs/GUIDE_PACKS.md", "kind": "Button",
-			"docsTitle": "Community guides, explained", "docsCopy": "https://github.com/polestar/polestar/blob/HEAD/docs/GUIDE_PACKS.md",
+			"label": "Read more:", "link": "github.com/northstar/northstar/blob/HEAD/docs/GUIDE_PACKS.md", "kind": "Button",
+			"docsTitle": "Community guides, explained", "docsCopy": "https://github.com/northstar/northstar/blob/HEAD/docs/GUIDE_PACKS.md",
 			"siteTitle": "Joe's Routes website", "siteCopy": "https://github.com/joe/routes",
 		})
 	);
 	let without = run(r#"
 		local view = openPage()
 		emit({ label = view.DocsLabel:GetText(), link = view.Docs:IsShown() })"#);
-	assert_eq!(without, json!({ "label": "Read more: docs/GUIDE_PACKS.md in Polestar's source", "link": false }));
+	assert_eq!(without, json!({ "label": "Read more: docs/GUIDE_PACKS.md in Northstar's source", "link": false }));
 }
 
 #[test]

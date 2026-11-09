@@ -32,7 +32,7 @@ fn status_lists_every_locale_with_its_status_and_translators() {
 		assert_eq!(l["locale"], want.code);
 		assert_eq!(l["status"], want.status);
 		assert_eq!(l["translators"].as_array().unwrap().len(), want.translators.len());
-		let file = root().join("addon/Polestar/Locales").join(format!("{}.lua", want.code)).exists();
+		let file = root().join(format!("addon/Northstar_{}/Interface.lua", want.code)).exists();
 		assert_eq!(l["file"], file);
 		if file {
 			let n = l["translated"].as_u64().unwrap();
@@ -45,8 +45,8 @@ fn status_lists_every_locale_with_its_status_and_translators() {
 fn check_passes_on_the_shipped_files_and_refuses_an_unknown_locale() {
 	let r = forge(&["check"]);
 	assert_eq!(r.status, 0, "{}", r.stderr);
-	assert!(r.stdout.starts_with("Polestar:\n"), "{}", r.stdout);
-	assert!(r.stdout.contains("\nPolestar_Recorder:\n"));
+	assert!(r.stdout.starts_with("Northstar:\n"), "{}", r.stdout);
+	assert!(r.stdout.contains("\nNorthstar_Recorder:\n"));
 	let bad = forge(&["check", "xxXX"]);
 	assert_eq!(bad.status, 2);
 	assert!(bad.stderr.starts_with("forge i18n: unknown locale \"xxXX\""), "{}", bad.stderr);
@@ -73,7 +73,7 @@ fn guides_sync_writes_every_text_with_its_names_and_check_fails_on_a_lost_token_
 	let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join(format!("i18n-texts-{}", std::process::id()));
 	let _ = std::fs::remove_dir_all(&dir);
 	std::fs::create_dir_all(dir.join("guides")).unwrap();
-	std::fs::write(dir.join("pack.json"), r#"{"id":"texts","title":"Texts Pack","author":"Ann","version":"1.0.0","license":"CC0-1.0","folder":"PolestarPack_Texts"}"#).unwrap();
+	std::fs::write(dir.join("pack.json"), r#"{"id":"texts","title":"Texts Pack","author":"Ann","version":"1.0.0","license":"CC0-1.0","folder":"NorthstarPack_Texts"}"#).unwrap();
 	std::fs::write(dir.join("guides/main.guide"), GUIDE).unwrap();
 	let data = root().join("tests/fixtures/dsl/data");
 	let (d, p) = (data.to_string_lossy().into_owned(), dir.to_string_lossy().into_owned());

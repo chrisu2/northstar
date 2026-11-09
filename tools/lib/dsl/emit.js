@@ -18,8 +18,8 @@ const WHEN_KEYS = ['k', 'neg', 'op', 'n', 'frac', 'q', 'item', 'spell', 'name', 
 // `z` (heights.js) follows y, `node` and `area` (places.js) precede map: a
 // goal without them is emitted as before.
 const GOAL_KEYS = [
-	't', 'class', 'spell', 'spellName', 'faction', 'factionName', 'standing', 'achievement', 'achievementName', 'criteria',
-	'quest', 'title', 'target', 'npc', 'npcName', 'object', 'objName', 'item', 'itemName', 'count', 'oi', 'skill', 'skillLine', 'rank', 'rankMax', 'level', 'frac', 'money', 'untilSkill',
+	't', 'class', 'zone', 'spell', 'spellName', 'faction', 'factionName', 'standing', 'achievement', 'achievementName', 'criteria',
+	'quest', 'title', 'target', 'npc', 'npcName', 'object', 'objName', 'item', 'itemName', 'count', 'oi', 'skill', 'skillLine', 'rank', 'rankMax', 'level', 'frac', 'grind', 'money', 'untilSkill',
 	'reagents', 'location', 'minLevel', 'qlvl', 'pre', 'preAll', 'closedBy', 'preTitles', 'text', 'node', 'area', 'map', 'x', 'y', 'z', 'f', 'r', 'spots', 'spread', 'optional', 'only', 'profLine', 'profName', 'profRank', 'note',
 	'from', 'fromKind', 'fromRank', 'fromFaction', 'fromAlso', 'fromId', 'fromAlsoId', 'fromNpcs', 'candidates', 'rewards', 'group', 'direct', 'escort',
 ];
@@ -208,7 +208,7 @@ function stepLines(steps, ind, shared) {
 // `deferred` (a race part's guide, docs/PACK_FORMAT.md "Race parts"): the
 // steps as one source string (`stepsSrc`, `return { ... }`, run on first
 // read) with `stepCount`, and the guide registers only for a character of
-// one of its classes (Polestar.PartWants).
+// one of its classes (Northstar.PartWants).
 function emitGuide(guide, sourceRel, { deferred = false } = {}) {
 	const out = [];
 	if (sourceRel) out.push(`-- Source: ${sourceRel.replace(/[\r\n]/g, ' ')}`);
@@ -216,7 +216,7 @@ function emitGuide(guide, sourceRel, { deferred = false } = {}) {
 	out.push('do', '\tlocal function register()');
 	// Deferred steps carry their shared candidates inside their own source.
 	if (!deferred) for (const line of shared.lines) out.push(`\t\t${line}`);
-	out.push('\t\tPolestar.RegisterGuide({');
+	out.push('\t\tNorthstar.RegisterGuide({');
 	for (const k of GUIDE_KEYS) {
 		const v = guide[k];
 		if (v === undefined || v === null) continue;
@@ -248,7 +248,7 @@ function emitGuide(guide, sourceRel, { deferred = false } = {}) {
 		else out.push(`\t\t\t${k} = ${scalar(v)},`);
 	}
 	const classes = deferred && Array.isArray(guide.classes) && guide.classes.length ? guide.classes : null;
-	out.push('\t\t})', '\tend', classes ? `\tif Polestar.PartWants(${list(classes)}) then register() end` : '\tregister()', 'end');
+	out.push('\t\t})', '\tend', classes ? `\tif Northstar.PartWants(${list(classes)}) then register() end` : '\tregister()', 'end');
 	return `${out.join('\n')}\n`;
 }
 
@@ -335,15 +335,15 @@ function emitGuides(entries, opts) {
 function emitPack(manifest, format = FORMAT) {
 	const parts = ['addon = ADDON', `id = ${luaString(manifest.id)}`, `format = ${format}`];
 	for (const k of PACK_KEYS.slice(1)) if (manifest[k] !== undefined && manifest[k] !== null) parts.push(`${k} = ${luaString(manifest[k])}`);
-	return `${header('lua', 'forge guide compile', 'pack.json')}\nlocal ADDON = ...\n\nPolestar.RegisterPack({ ${parts.join(', ')} })\n`;
+	return `${header('lua', 'forge guide compile', 'pack.json')}\nlocal ADDON = ...\n\nNorthstar.RegisterPack({ ${parts.join(', ')} })\n`;
 }
 
-// <folder>.toc: the pack's metadata for the client and for Polestar's pack
+// <folder>.toc: the pack's metadata for the client and for Northstar's pack
 // list (optional lines only when the value exists), then the fixed file set.
-// A pack other than ours reads "Polestar Community: <title>" in the AddOns list.
-// Every pack sits in Polestar's group there, under Polestar's own entry;
-// Polestar's menus show the plain title (Pack.lua). A title
-// already carrying that prefix or the legacy "Polestar Pack: " is kept.
+// A pack other than ours reads "Northstar Community: <title>" in the AddOns list.
+// Every pack sits in Northstar's group there, under Northstar's own entry;
+// Northstar's menus show the plain title (Pack.lua). A title
+// already carrying that prefix or the legacy "Northstar Pack: " is kept.
 function emitToc(manifest, iface, format = FORMAT) {
 	const ours = manifest.id === 'guides';
 	const prefixed = [TOC_TITLE_PREFIX, LEGACY_TOC_TITLE_PREFIX].some((p) => manifest.title.startsWith(p));
@@ -351,19 +351,19 @@ function emitToc(manifest, iface, format = FORMAT) {
 	const lines = [
 		`## Interface: ${iface}`,
 		`## Title: ${title}`,
-		`## Notes: ${manifest.notes || `Community addon for Polestar by ${manifest.author}`}`,
-		// Polestar's own pack: the AddOns list in the client's language too.
-		...(ours ? require('../i18n/toc').tocLines('Polestar_Guides') : []),
+		`## Notes: ${manifest.notes || `Community addon for Northstar by ${manifest.author}`}`,
+		// Northstar's own pack: the AddOns list in the client's language too.
+		...(ours ? require('../i18n/toc').tocLines('Northstar_Guides') : []),
 		`## Author: ${manifest.author}`,
 		`## Version: ${manifest.version}`,
-		'## Category: Polestar',
-		'## Group: Polestar',
+		'## Category: Northstar',
+		'## Group: Northstar',
 	];
 	lines.push(
-		'## Dependencies: Polestar',
-		`## X-Polestar-Pack: ${manifest.id}`,
-		`## X-Polestar-Format: ${format}`,
-		`## X-Polestar-Needs: ${NEEDS[format]}`,
+		'## Dependencies: Northstar',
+		`## X-Northstar-Pack: ${manifest.id}`,
+		`## X-Northstar-Format: ${format}`,
+		`## X-Northstar-Needs: ${NEEDS[format]}`,
 		`## X-License: ${manifest.license}`,
 	);
 	if (manifest.website) lines.push(`## X-Website: ${manifest.website}`);
@@ -372,10 +372,10 @@ function emitToc(manifest, iface, format = FORMAT) {
 }
 
 // A pack's race part (tools/lib/dsl/project.js buildPackFiles): the leveling
-// guides for one race, <folder>_<race file>, which Polestar loads on demand
+// guides for one race, <folder>_<race file>, which Northstar loads on demand
 // once the pack is in, for a player of that race only (Core/Guides.lua). Its
 // guides register into the pack; its TOC names the pack and the race, and
-// (Polestar's own) the AddOns list in every client language. `files`:
+// (Northstar's own) the AddOns list in every client language. `files`:
 // whether it holds guides (Guides.lua) and baked legs (Legs.lua).
 function emitPartToc(manifest, race, iface, { guides = true, legs = false } = {}) {
 	// The displayed race name: the client's race token Scourge reads Undead.
@@ -386,15 +386,15 @@ function emitPartToc(manifest, race, iface, { guides = true, legs = false } = {}
 		guides
 			? `## Notes: Leveling guides of ${manifest.title} for ${label} characters. Loaded on demand for that race.`
 			: `## Notes: The walks of ${manifest.title}'s leveling guides for ${label} characters. Loaded on demand for that race.`,
-		...(manifest.id === 'guides' ? require('../i18n/toc').tocLines(`Polestar_Guides_${race}`) : []),
+		...(manifest.id === 'guides' ? require('../i18n/toc').tocLines(`Northstar_Guides_${race}`) : []),
 		`## Author: ${manifest.author}`,
 		`## Version: ${manifest.version}`,
-		'## Category: Polestar',
-		'## Group: Polestar',
+		'## Category: Northstar',
+		'## Group: Northstar',
 		'## LoadOnDemand: 1',
-		`## Dependencies: Polestar, ${manifest.folder}`,
-		`## X-Polestar-Part: ${manifest.id}`,
-		`## X-Polestar-Race: ${race}`,
+		`## Dependencies: Northstar, ${manifest.folder}`,
+		`## X-Northstar-Part: ${manifest.id}`,
+		`## X-Northstar-Race: ${race}`,
 		`## X-License: ${manifest.license}`,
 		TOC_MARKER,
 		'',
@@ -406,13 +406,13 @@ function emitPartToc(manifest, race, iface, { guides = true, legs = false } = {}
 
 // A race part's Legs.lua (docs/PACK_FORMAT.md, "Format 7"): the baked legs of
 // the leveling guides a player of that race may follow, one
-// Polestar.RegisterLegs call per grid they were baked on, guides by id, each
+// Northstar.RegisterLegs call per grid they were baked on, guides by id, each
 // step's leg as one string (forge::bake, Nav/Baked.lua).
 function emitLegs(packId, guides) {
 	const grids = [...new Set(guides.map((g) => g._legsGrid))].sort();
 	const out = [header('lua', 'forge guide compile', 'legs.json'), ''];
 	for (const grid of grids) {
-		out.push(`Polestar.RegisterLegs(${luaString(packId)}, ${luaString(grid)}, {`);
+		out.push(`Northstar.RegisterLegs(${luaString(packId)}, ${luaString(grid)}, {`);
 		for (const g of guides.filter((x) => x._legsGrid === grid).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) {
 			const steps = Object.keys(g._legs).map(Number).sort((x, y) => x - y);
 			out.push(`\t[${luaString(g.id)}] = { ${steps.map((s) => `[${s}] = ${luaString(g._legs[s])}`).join(', ')} },`);
@@ -423,16 +423,16 @@ function emitLegs(packId, guides) {
 }
 
 // The ids of guides a cutover retired (retired.json), after the pack's guides
-// in Guides.lua: Polestar opens a saved tab of one as its successor.
+// in Guides.lua: Northstar opens a saved tab of one as its successor.
 function emitRetired(packId, ids) {
-	return `\nPolestar.RetireGuides(${luaString(packId)}, {\n${ids.map((id) => `\t${luaString(id)},`).join('\n')}\n})\n`;
+	return `\nNorthstar.RetireGuides(${luaString(packId)}, {\n${ids.map((id) => `\t${luaString(id)},`).join('\n')}\n})\n`;
 }
 
 // A pack's texts addon for one language (docs/TRANSLATING.md, "Guide
-// texts"): <folder>_<locale>, which Polestar loads on demand on that client
+// texts"): <folder>_<locale>, which Northstar loads on demand on that client
 // only, once the pack's own files are in (Core/GuideTexts.lua). Its TOC
-// names the pack it translates; the client lists it under Polestar. Our own
-// pack's texts go into the language folder Polestar_<locale> beside the
+// names the pack it translates; the client lists it under Northstar. Our own
+// pack's texts go into the language folder Northstar_<locale> beside the
 // game's names (tools/lib/i18n/toc.js languageToc).
 function emitTextsToc(manifest, locale, language, iface) {
 	if (manifest.id === 'guides') return require('../i18n/toc').languageToc(locale, iface, manifest.version);
@@ -442,12 +442,12 @@ function emitTextsToc(manifest, locale, language, iface) {
 		`## Notes: ${language} texts of ${manifest.title}. Loaded on demand on a ${language} client.`,
 		`## Author: ${manifest.author}`,
 		`## Version: ${manifest.version}`,
-		'## Category: Polestar',
-		'## Group: Polestar',
+		'## Category: Northstar',
+		'## Group: Northstar',
 		'## LoadOnDemand: 1',
-		'## Dependencies: Polestar',
-		`## X-Polestar-Texts: ${manifest.id}`,
-		`## X-Polestar-Locale: ${locale}`,
+		'## Dependencies: Northstar',
+		`## X-Northstar-Texts: ${manifest.id}`,
+		`## X-Northstar-Locale: ${locale}`,
 		`## X-License: ${manifest.license}`,
 		TOC_MARKER,
 		'',
@@ -464,7 +464,7 @@ function emitTexts(packId, locale, t) {
 	const out = [header('lua', 'forge guide compile', `the pack's locales/${locale}/ files`), '', 'local t = { guides = {} }', 't.pack = {', ...entries(t.pack || {}), '}'];
 	const guides = t.guides || {};
 	for (const id of Object.keys(guides).sort()) out.push(`t.guides[${luaString(id)}] = (function() return {`, ...entries(guides[id]).map((l) => `\t${l}`), '} end)()');
-	out.push('', `Polestar.RegisterGuideTexts(${luaString(locale)}, ${luaString(packId)}, t)`, '');
+	out.push('', `Northstar.RegisterGuideTexts(${luaString(locale)}, ${luaString(packId)}, t)`, '');
 	return out.join('\n');
 }
 
@@ -473,7 +473,7 @@ function emitMapFrames(frames, packId) {
 	const ids = Object.keys(frames)
 		.map(Number)
 		.sort((a, b) => a - b);
-	const out = [HEADER, '', 'Polestar.RegisterMapFrames({', '\tera = {'];
+	const out = [HEADER, '', 'Northstar.RegisterMapFrames({', '\tera = {'];
 	for (const id of ids) out.push(`\t\t[${id}] = ${inline(frames[id], FRAME_KEYS, 4)},`);
 	out.push('\t},', `}, ${luaString(packId)})`);
 	return `${out.join('\n')}\n`;
@@ -537,7 +537,7 @@ const LEGS_NOTICE = [
 	'Baked walking legs',
 	'------------------',
 	'The walks into the guides\' steps (Legs.lua in the race parts) were routed on',
-	"Leffe's navigation maps, used with Leffe's permission given to Polestar's author.",
+	"Leffe's navigation maps, used with Leffe's permission given to Northstar's author.",
 	"Credit: Leffe's navigation maps.",
 	'',
 ];
@@ -545,10 +545,10 @@ const LEGS_NOTICE = [
 function emitLicense(meta, legs = false) {
 	const sources = (meta && Array.isArray(meta.sources) ? meta.sources : []).slice().sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
 	const out = [
-		'Polestar guide data: third-party notices',
+		'Northstar guide data: third-party notices',
 		'========================================',
 		'',
-		'The guides in this folder were written for Polestar. Quest titles, names and',
+		'The guides in this folder were written for Northstar. Quest titles, names and',
 		'coordinates in them were filled in from the reference data sources below.',
 		'',
 	];
@@ -573,11 +573,11 @@ function emitLicense(meta, legs = false) {
 	out.push(
 		'Guide pack permission',
 		'---------------------',
-		"This folder was produced by Polestar's compiler. Polestar's LICENSE-EXCEPTION.md",
+		"This folder was produced by Northstar's compiler. Northstar's LICENSE-EXCEPTION.md",
 		'gives permission to distribute guide packs produced by the compiler, including',
-		"the parts of Polestar's reference data placed in them, under terms of your",
-		"choice. It does not cover guide text copied from Polestar's own guides, or",
-		"Polestar's code.",
+		"the parts of Northstar's reference data placed in them, under terms of your",
+		"choice. It does not cover guide text copied from Northstar's own guides, or",
+		"Northstar's code.",
 		'',
 	);
 	return `${out.join('\n').trimEnd()}\n`;

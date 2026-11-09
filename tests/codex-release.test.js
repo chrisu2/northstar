@@ -243,16 +243,16 @@ test('release merge: rares from npc ranks (4 rare, 2 rare elite) with spawns and
 
 test('buildCodex: a release build says so in its meta and ships its notices; a --local-extras build says so', async () => {
 	const tmp = tmpdir('polestar-codex-release-');
-	const safe = await buildCodex({ inputs: releaseInputs(), outDir: path.join(tmp, 'out'), packDir: path.join(tmp, 'safe', 'Polestar_Codex'), version: '1.0.0', measure: false });
+	const safe = await buildCodex({ inputs: releaseInputs(), outDir: path.join(tmp, 'out'), packDir: path.join(tmp, 'safe', 'Northstar_Codex'), version: '1.0.0', measure: false });
 	assert.equal(safe.codex.meta.localExtras, false);
 	assert.ok(!safe.codex.meta.sources.some((s) => /AtlasLoot|RareScanner|DungeonJournal/.test(s.name)));
 	const notice = fs.readFileSync(path.join(safe.packDir, 'LICENSE-DATA.txt'), 'utf8');
-	assert.match(notice, /^Polestar Codex: third-party notices/);
+	assert.match(notice, /^Northstar Codex: third-party notices/);
 	assert.match(notice, /^pfQuest\n-------\nVersion: abc\nLicence: MIT$/m);
 	assert.doesNotMatch(notice, /LOCAL BUILD/);
 
 	const local = { ...releaseInputs(), localExtras: true, atlasloot: { meta: { version: 'Forever 1.60.1', licence: 'GPL-2.0' }, instances: [], collections: [], crafting: [], factions: [], pvp: [] } };
-	const x = await buildCodex({ inputs: local, outDir: path.join(tmp, 'outx'), packDir: path.join(tmp, 'local', 'Polestar_Codex'), version: '1.0.0', measure: false });
+	const x = await buildCodex({ inputs: local, outDir: path.join(tmp, 'outx'), packDir: path.join(tmp, 'local', 'Northstar_Codex'), version: '1.0.0', measure: false });
 	assert.equal(x.codex.meta.localExtras, true);
 	assert.match(fs.readFileSync(path.join(x.packDir, 'LICENSE-DATA.txt'), 'utf8'), /LOCAL BUILD \(--local-extras\)/);
 	assert.match(fs.readFileSync(path.join(x.packDir, 'Meta.lua'), 'utf8'), /\blocalExtras = true\b/);

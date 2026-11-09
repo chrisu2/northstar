@@ -1,6 +1,6 @@
-# Translating Polestar
+# Translating Northstar
 
-Polestar follows the game's language: a German client reads Polestar's
+Northstar follows the game's language: a German client reads Northstar's
 interface in German, and any text without a translation in English. The
 translation tools are adapted from Ding! by Yendi (@moust4ki), GPL-3.0.
 `forge i18n` is Forge's command ([forge/i18n.md](forge/i18n.md); in a checkout,
@@ -15,11 +15,13 @@ notes). The list, with each language's status and translators, is
 `rust/crates/forge-guide/src/locales.rs` (and `tools/lib/i18n/locales.js` beside it for the JS tools).
 
 - **reviewed**: written or checked by a native speaker. The tools never fill
-  or rewrite its translations. German (`deDE`, thecodingcortex), Latin
+  or rewrite its translations. German (`deDE`, Cortexyn), Latin
   American Spanish (`esMX`, CDVolvik), French (`frFR`, Yendi).
 - **ai**: made by a machine. On that client, Options > About says so and
   links to the Discord. Spanish of Spain (`esES`), Korean (`koKR`), Brazilian
-  Portuguese (`ptBR`), Russian (`ruRU`), Chinese (`zhCN`, `zhTW`).
+  Portuguese (`ptBR`), Russian (`ruRU`), Chinese (`zhCN`, `zhTW`). An AI-made
+  language may name translators who reviewed part of it (`zhCN`: 山猫, the
+  Westfall guide).
 
 Spain's and Latin America's clients use different words for game terms
 (mazmorra, calabozo), so `esES` and `esMX` are separate files. English clients
@@ -27,15 +29,17 @@ Spain's and Latin America's clients use different words for game terms
 
 ## The file
 
-Each language has one file, `addon/Polestar/Locales/<locale>.lua`, and one
-for the optional Recorder's few chat lines,
-`addon/Polestar_Recorder/Locales/<locale>.lua`, written the same way:
+Each language has one file, `Interface.lua` in its language folder
+`addon/Northstar_<locale>` (only a client in that language loads the folder),
+and one for the optional Recorder's few chat lines,
+`addon/Northstar_Recorder/Locales/<locale>.lua`, written the same way (the
+Recorder's starts with `local _, ns = ...` and the plain locale check):
 
 ```lua
 -- German (deDE). ...
 
-local _, ns = ...
-if not (GetLocale and GetLocale() == "deDE") then return end
+local ns = Polestar
+if not (ns and GetLocale and GetLocale() == "deDE") then return end
 local L = ns.L
 
 -- Core/Commands.lua
@@ -52,6 +56,10 @@ L["Toggle guide window"] = "Guide-Fenster ein-/ausblenden"
   headers stay as you wrote them.
 - A key `"context: text"` (`"boss: Chest"`) is one meaning of a word: translate
   the text after the colon, in that meaning.
+- `"quote marks: “%s”"` is how a quest's name sits in a sentence ("Turn
+  in “Your Place in the World”"): write your language's quote marks around
+  the `%s` („%s“, « %s » with no-break spaces, «%s», 「%s」). Use marks the
+  game font draws; the shipped files show which.
 - The block at the end, `-- No longer in the code (its English changed or it
   went away): reuse or delete.`, keeps your translations of texts the code no
   longer has, commented out. When the English of a text changed, its new key
@@ -67,7 +75,7 @@ Keep `|4singular:plural;` (translate both forms), `|cAARRGGBB…|r` colours and
 
 ## Game terms and the glossary
 
-Where the game names something itself, Polestar shows the game's word and
+Where the game names something itself, Northstar shows the game's word and
 there is nothing to translate: reputation standings, item qualities, the
 Alliance and the Horde, gear slots, the Dungeon Journal.
 
@@ -98,11 +106,11 @@ for your language from
   gained to the file, commented out at the end of its file's group, and moves
   translations of texts the code lost to the block at the end. It never
   changes a line that holds a translation. A language named that has no file
-  gets one, loaded from `addon/Polestar/Core/Core.xml` (a new Recorder file
-  goes in `Polestar_Recorder.toc` by hand). Without a locale it updates every
-  existing file. It covers Polestar and the Recorder; `--addon
-  Polestar_Recorder` (or `Polestar`) limits it, and `status`, `keys` and
-  `import` to that one (Polestar's by default).
+  gets one, loaded from `addon/Northstar/Core/Core.xml` (a new Recorder file
+  goes in `Northstar_Recorder.toc` by hand). Without a locale it updates every
+  existing file. It covers Northstar and the Recorder; `--addon
+  Northstar_Recorder` (or `Northstar`) limits it, and `status`, `keys` and
+  `import` to that one (Northstar's by default).
 - `forge i18n check [<locale>...]` lists each language's
   translated and missing counts and fails on a file Lua cannot load, a stale
   key (a translated text the code no longer has, outside the end block), a key
@@ -158,10 +166,10 @@ text looked up through a variable (`L[category]`) must be listed in
 read from `data/codex/attunements.json` there); a generator writes its
 prose as literal keys (`forge data talents build`: the plan notes in `Talents/Builds.lua`).
 Data that names a game thing carries its id, never its English name alone, so
-the display can ask `Polestar.Names` for it. A game term the client names
+the display can ask `Northstar.Names` for it. A game term the client names
 (`ITEM_QUALITY3_DESC`, `FACTION_HORDE`…) is read from the client, not put in
 `L`, and its English value goes in `tests/lua/wow_stub.lua`. Tests that need a
-translated client fake a language Polestar does not ship:
+translated client fake a language Northstar does not ship:
 `fakeLocale('itIT', { ... })` (`tests/helpers/locale.js`; in Rust,
 `forge_addontest::locale::fake_locale`).
 
@@ -177,7 +185,7 @@ the player's name) comes back as a placeholder holding no word. Scenes then
 drive the windows: the guide window step by step with every tooltip, all
 guides (both with every step shown, whatever class, race or faction it is
 for), the welcome, the picker, Options, Lookup, Dungeons, Rares, talents,
-the journey planner, Polestar's tooltip lines, every slash command, the world
+the journey planner, Northstar's tooltip lines, every slash command, the world
 map and alerts, and the Recorder. Every text the addons put up is recorded
 (font strings and buttons, tooltips, chat, popups, menus) with its scene and
 the line that set it.
@@ -191,9 +199,9 @@ the language's own or `data/i18n/leaks-allow.json` allows it:
   what is the same in every language (products, slash commands and their
   arguments, tokens, formats): a translation that equals its English, or
   copies most of it, teaches nothing.
-- **Names the client gave.** Every name `Polestar.Names` returned in the run
+- **Names the client gave.** Every name `Northstar.Names` returned in the run
   is the client's, in whole and by its words.
-- **The allow list**: product and people's names (Polestar, Discord, TomTom,
+- **The allow list**: product and people's names (Northstar, Discord, TomTom,
   the font credits...), terms every client shows in English (XP, PvP, Shift,
   Ctrl+C), patterns for links, files, versions, slash commands with their
   documented arguments (`slashArguments` and every registered command; the
@@ -208,17 +216,17 @@ text repeats it. Each finding names its source:
   empty (`i18n sync`, then translate it);
 - **guide text not translated**: a guide text its texts file leaves empty
   (`i18n guides sync`);
-- **name missing from the names pack**: `Polestar.Names` was asked and had no
+- **name missing from the names pack**: `Northstar.Names` was asked and had no
   name, so the guide's English showed (`forge data names`);
-- **English name, Polestar.Names not asked**: the code shows a name from a
-  guide or the data without asking `Polestar.Names` for it by its id;
+- **English name, Northstar.Names not asked**: the code shows a name from a
+  guide or the data without asking `Northstar.Names` for it by its id;
 - **English a translation keeps**: the words are ones a translation of the
   language writes as in English (a Forever-only place such as Hyjal Summit);
 - **English in the code**: a literal or a data text that does not go through
   `L`.
 
 `data/i18n/leaks-baseline.json` lists, per language, what cannot be
-fixed in Polestar yet, each with a reason and the scenes it shows in: names
+fixed in Northstar yet, each with a reason and the scenes it shows in: names
 as `"kind:id"` (`no-source`: no source of `forge data names` has it, mostly
 Forever's own NPCs, objects and items, which the client shows once the
 player has seen them; `same-as-english`: every source names it as in
@@ -243,7 +251,7 @@ install with its own warnings, so the scenes skip, as on CI; run
 `i18n leaks` before a pull request that changes what the addon shows. A text that is right
 to show in Latin letters goes on the allow list with the reason in its group,
 never to make a finding go away. Developer output stays English on purpose:
-the guide lines `/polestar where` prints and the details block of a bug
+the guide lines `/northstar where` prints and the details block of a bug
 report, both read by maintainers, are on the allow list.
 
 ## Game names
@@ -251,8 +259,8 @@ report, both read by maintainers, are on the allow list.
 Names of quests, NPCs, objects, items, instances, dungeon encounters,
 factions and flight points are not translated by hand: they are the game's
 own. A client in another language reads them from the client where it has
-them (quest titles, item names) and from Polestar's names of its
-language (`Names.lua` in the language folder `Polestar_<locale>`), loaded only on that client. A name no
+them (quest titles, item names) and from Northstar's names of its
+language (`Names.lua` in the language folder `Northstar_<locale>`), loaded only on that client. A name no
 source has stays English. The client is the truth: a name it shows in play
 (an NPC targeted, moused over or talked to, a quest-giving object opened) is
 kept, per language, and shown from then on. docs/ARCHITECTURE.md, "Names",
@@ -295,19 +303,19 @@ has the details.
 
 The game's AddOns list shows each addon's title and notes in the client's
 language from its TOC's `## Title-<locale>` and `## Notes-<locale>`. Every
-Polestar addon's are written once in `rust/crates/forge-guide/src/toc.rs`, and in `tools/lib/i18n/toc.js` for the JS builders (Polestar and
+Northstar addon's are written once in `rust/crates/forge-guide/src/toc.rs`, and in `tools/lib/i18n/toc.js` for the JS builders (Northstar and
 Codex stay as they are); the generated TOCs take them from there, the
-hand-written ones (Polestar, Polestar_Nav, Polestar_ItemDB,
-Polestar_Recorder) carry the same lines, and the forge-i18n tests check
+hand-written ones (Northstar, Northstar_Nav, Northstar_ItemDB,
+Northstar_Recorder) carry the same lines, and the forge-i18n tests check
 that every TOC under `addon/` has all nine and that they match. Our guides'
-race parts (`Polestar_Guides_<race>`, class chains and baked legs) fill one
-title and notes with the race's name as `addon/Polestar/Locales/` has it.
+race parts (`Northstar_Guides_<race>`, class chains and baked legs) fill one
+title and notes with the race's name as the interface files (`addon/Northstar_<locale>/Interface.lua`) have it.
 
 ## Guide texts
 
 A guide's own words (its title, why and route-choice lines, each step's title
 and tip, each goal's note and label) are translated per pack, in the
-pack's `locales/` folder: `guides/locales/<locale>/` for Polestar's own, one
+pack's `locales/` folder: `guides/locales/<locale>/` for Northstar's own, one
 file per guide at the guide's path (`forever/alliance/02-westfall.lua`), plus
 `_pack.lua` for the pack's own texts (its title and notes, its guides' menu
 folders). A file returns the English of each text with its translation:
@@ -334,7 +342,7 @@ return {
 - A name the text uses in the English plural stays words ("Harvest
   Watchers"): the comment `-- plural, as words: Harvest Watchers = {npc:115}
   Harvest Watcher` gives its NPC. Translate the plural yourself from the
-  game's singular name (`Polestar_<locale>/Names.lua`, `forge data names`), or, where
+  game's singular name (`Northstar_<locale>/Names.lua`, `forge data names`), or, where
   the game has no name for it in your language, write the singular's token
   in the translation: `"Bandidos ({npc:251918})"`, `"{npc:251918} ×8"`. A
   token of that line is allowed though the English has none.
@@ -348,9 +356,9 @@ return {
 
 The compiler puts each language's translations into the pack's texts addon
 for it, `<pack folder>_<locale>`, which only that client loads, on demand
-(docs/PACK_FORMAT.md, "Texts addons"). Polestar's own guides are the
-exception: their texts go into the language folder `Polestar_<locale>`
-(`Polestar_deDE`), beside the game's names in that language, one folder per
+(docs/PACK_FORMAT.md, "Texts addons"). Northstar's own guides are the
+exception: their texts go into the language folder `Northstar_<locale>`
+(`Northstar_deDE`), beside the game's names in that language, one folder per
 language in the AddOns list. Commit the locale files and the texts `compile`
 writes.
 
@@ -370,7 +378,7 @@ writes.
 ## Adding a language
 
 Add it to `LOCALES` in `rust/crates/forge-guide/src/locales.rs` and `tools/lib/i18n/locales.js` with its status and
-translators (and to `ns.AI_LOCALES` in `addon/Polestar/Core/Init.lua` when its
+translators (and to `ns.AI_LOCALES` in `addon/Northstar/Core/Init.lua` when its
 status is `ai`), then run `forge i18n sync <locale>`.
 
 ## Reviewing an AI-made language
@@ -378,4 +386,4 @@ status is `ai`), then run `forge i18n sync <locale>`.
 Play with it, correct what reads wrong, and open a pull request that also
 sets its `status` to `"reviewed"` with your name in `translators`
 (`rust/crates/forge-guide/src/locales.rs` and `tools/lib/i18n/locales.js`) and removes it from `ns.AI_LOCALES`
-(`addon/Polestar/Core/Init.lua`).
+(`addon/Northstar/Core/Init.lua`).
