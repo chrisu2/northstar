@@ -557,7 +557,7 @@ fn every_texture_the_ui_shows_and_every_goal_verb_icon_exists_as_a_valid_tga() {
 	let paths: Vec<&str> = paths.as_array().unwrap().iter().map(|p| p.as_str().unwrap()).collect();
 	let prefix = "Interface\\AddOns\\Northstar\\Media\\UI\\";
 	let ours: Vec<&str> = paths.iter().filter_map(|p| p.strip_prefix(prefix)).collect();
-	let others: Vec<&str> = paths.iter().copied().filter(|p| !p.starts_with(prefix)).collect();
+	let others: Vec<&str> = paths.iter().copied().filter(|p| !p.starts_with(prefix) && !p.starts_with("Interface\\Buttons\\") && !p.starts_with("Interface\\DialogFrame\\")).collect();
 	assert_eq!(others, Vec::<&str>::new(), "the UI only uses its own textures");
 	for v in verbs {
 		assert!(ours.contains(&format!("icon-{v}").as_str()));

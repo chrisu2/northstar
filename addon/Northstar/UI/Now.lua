@@ -194,7 +194,12 @@ function Now.Compose(view)
 			end
 		end
 	end
-	return { step = step, title = title, next = nextText, more = more }
+	local checks = {}
+	for i = 1, #view.goals do
+		local g = view.goals[i]
+		checks[#checks + 1] = { text = UI.PlainGoalText(g), done = g.status == "done" or g.status == "skipped" }
+	end
+	return { step = step, title = title, next = nextText, more = more, checks = checks }
 end
 
 -- Facing-relative words. 0 is straight ahead. This is not the floating dart.
@@ -233,6 +238,16 @@ function Now.ReadCourse()
 	if not Nav or not Nav.Sample then return "", "", nil end
 	local mode, dist, angle = Nav.Sample()
 	return Now.BearingWord(angle), Now.DistanceLine(mode, dist), angle
+end
+
+-- One plain line: "Ahead, 375 yd" or "At the point".
+function Now.CourseLine()
+	local bear, dist = Now.ReadCourse()
+	if dist == "at the point" then return "At the point" end
+	if type(bear) ~= "string" or bear == "" then return dist or "" end
+	local nice = bear:gsub("^%l", string.upper)
+	if type(dist) == "string" and dist ~= "" then return nice .. ", " .. dist end
+	return nice
 end
 
 Sheet.SLEEP_ID = "forever/miscellaneous/cozy-sleeping-bag"
@@ -369,43 +384,35 @@ function Now.ClassRows()
 	return view.rows
 end
 
-local function plate(parent, name)
-	local frame = CreateFrame("Frame", name, parent, BackdropTemplateMixin and "BackdropTemplate" or nil)
-	if frame.SetBackdrop then
-		frame:SetBackdrop({
-			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-			tile = true, tileSize = 16, edgeSize = 0,
-			insets = { left = 0, right = 0, top = 0, bottom = 0 },
-		})
-		frame:SetBackdropColor(0.10, 0.11, 0.12, 0.96)
-		if frame.SetBackdropBorderColor then frame:SetBackdropBorderColor(0, 0, 0, 0) end
-	end
-	local bar = frame:CreateTexture(nil, "ARTWORK")
-	bar:SetColorTexture(0.42, 0.26, 0.16, 1)
-	bar:SetPoint("TOPLEFT", 0, 0)
-	bar:SetPoint("BOTTOMLEFT", 0, 0)
-	bar:SetWidth(5)
-	frame.Bar = bar
-	return frame
+local function questColors()
+	local T = ns.Theme
+	return (T and T.QUEST) or {
+		title = { 0.28, 0.14, 0.04, 1 }, body = { 0.32, 0.18, 0.06, 1 }, muted = { 0.45, 0.30, 0.16, 1 },
+		wash = { 0.78, 0.66, 0.42, 0.45 }, check = "Interface\\Buttons\\UI-CheckBox-Check",
+		bg = "Interface\\DialogFrame\\UI-DialogBox-Background", edge = "Interface\\DialogFrame\\UI-DialogBox-Border",
+	}
 end
 
-local function label(parent, font, r, g, b)
+local function ink(fs, key)
+	local c = questColors()[key] or questColors().body
+	fs:SetTextColor(c[1], c[2], c[3], c[4] or 1)
+end
+
+local function label(parent, font, key)
 	local fs = parent:CreateFontString(nil, "OVERLAY", font)
 	fs:SetJustifyH("LEFT")
 	fs:SetJustifyV("TOP")
-	fs:SetTextColor(r, g, b)
+	ink(fs, key or "body")
 	return fs
 end
 
 local function button(parent, text, width, onClick)
-	local b = CreateFrame("Button", nil, parent)
-	b:SetSize(width or 120, 15)
-	local fs = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	fs:SetAllPoints()
-	fs:SetJustifyH("LEFT")
-	fs:SetText(text)
-	fs:SetTextColor(0.72, 0.70, 0.64)
-	b.Label = fs
+	local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+	b:SetSize(width or 120, 22)
+	b:SetText(text)
+	b.Label = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	b.Label:SetAllPoints()
+	b.Label:SetText(text)
 	b:SetScript("OnClick", onClick)
 	return b
 end
@@ -419,15 +426,21 @@ local function openListed(id)
 end
 
 local AREAS = {
-	{ id = "quest", label = "Quest" },
+	{ id = "quest", label = "Leveling" },
 	{ id = "class", label = "Class" },
-	{ id = "trade", label = "Trade" },
+	{ id = "trade", label = "Professions" },
 	{ id = "pvp", label = "PvP" },
 }
 
+local function areaLabel(id)
+	for _, spec in ipairs(AREAS) do if spec.id == id then return spec.label end end
+	return "Leveling"
+end
+
 local function build()
 	if f then return f end
-	f = plate(UIParent, "NorthstarNow")
+	local Q = questColors()
+	f = CreateFrame("Frame", "NorthstarNow", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
 	f:SetSize(BAR_W, COMPACT_H)
 	f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -120)
 	f:SetFrameStrata("MEDIUM")
@@ -437,70 +450,158 @@ local function build()
 	f:SetScript("OnDragStart", function(self) if not ns.DragLocked() then self:StartMoving() end end)
 	f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 	f:SetClampedToScreen(true)
+	if f.SetBackdrop then
+		f:SetBackdrop({
+			bgFile = Q.bg, edgeFile = Q.edge,
+			tile = true, tileSize = 32, edgeSize = 32,
+			insets = { left = 11, right = 12, top = 12, bottom = 11 },
+		})
+		if f.SetBackdropColor then f:SetBackdropColor(1, 1, 1, 1) end
+	end
 
-	f.Area = label(f, "GameFontHighlightSmall", 0.55, 0.42, 0.32)
-	f.Area:SetPoint("TOPLEFT", 16, -28)
-	f.Step = label(f, "GameFontHighlightSmall", 0.62, 0.60, 0.54)
-	f.Step:SetPoint("TOPLEFT", 72, -28)
-	f.Step:SetPoint("TOPRIGHT", -12, -28)
+	f.Menu = CreateFrame("Frame", "NorthstarNowMenu", f, "UIDropDownMenuTemplate")
+	f.Menu:SetPoint("TOPLEFT", 4, -8)
+	if UIDropDownMenu_SetWidth then UIDropDownMenu_SetWidth(f.Menu, 140) end
+	if UIDropDownMenu_Initialize then
+		UIDropDownMenu_Initialize(f.Menu, function()
+			for _, spec in ipairs(AREAS) do
+				local info = UIDropDownMenu_CreateInfo and UIDropDownMenu_CreateInfo() or {}
+				info.text = spec.label
+				info.checked = area == spec.id
+				info.func = function() area = spec.id; UIDropDownMenu_SetText(f.Menu, spec.label); Now.Refresh() end
+				if UIDropDownMenu_AddButton then UIDropDownMenu_AddButton(info) end
+			end
+		end)
+	end
+	if UIDropDownMenu_SetText then UIDropDownMenu_SetText(f.Menu, areaLabel(area)) end
+
+	f.Tools = button(f, "Tools", 54, function()
+		if f.ToolsBox:IsShown() then f.ToolsBox:Hide() else f.ToolsBox:Show() end
+	end)
+	f.Tools:SetPoint("TOPRIGHT", -16, -16)
+	f.ToolsBox = CreateFrame("Frame", nil, f, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	f.ToolsBox:SetSize(150, 88)
+	f.ToolsBox:SetPoint("TOPRIGHT", f.Tools, "BOTTOMRIGHT", 0, -2)
+	f.ToolsBox:Hide()
+	if f.ToolsBox.SetBackdrop then
+		f.ToolsBox:SetBackdrop({ bgFile = Q.bg, edgeFile = Q.edge, tile = true, tileSize = 32, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
+	end
+
+	f.Area = label(f, "GameFontNormal", "title")
+	f.Area:SetPoint("TOPLEFT", 24, -22)
+	f.Step = label(f, "GameFontNormalSmall", "muted")
+	f.Step:SetPoint("TOPLEFT", 24, -42)
+	f.Head = label(f, "GameFontNormal", "title")
+	f.Head:SetPoint("TOPLEFT", 24, -56)
+	f.Head:SetPoint("TOPRIGHT", -20, -56)
+	f.Course = label(f, "GameFontHighlightSmall", "body")
+	f.Course:SetPoint("TOPLEFT", 24, -74)
+	f.Course:SetPoint("TOPRIGHT", -20, -74)
+	-- Kept for the course numbers. The line the player reads is Course.
+	f.Bear = label(f, "GameFontHighlightSmall", "body")
+	f.Bear:SetPoint("TOPLEFT", 24, -74)
+	f.Bear:Hide()
+	f.Dist = label(f, "GameFontHighlightSmall", "body")
+	f.Dist:SetPoint("TOPLEFT", 24, -74)
+	f.Dist:Hide()
 	f.Tick = f:CreateTexture(nil, "OVERLAY")
-	f.Tick:SetColorTexture(0.93, 0.90, 0.84, 1)
-	f.Tick:SetSize(3, 14)
-	f.Tick:SetPoint("TOPLEFT", 16, -46)
-	f.Bear = label(f, "GameFontHighlightSmall", 0.93, 0.90, 0.84)
-	f.Bear:SetPoint("TOPLEFT", 24, -46)
-	f.Dist = label(f, "GameFontHighlight", 0.93, 0.90, 0.84)
-	f.Dist:SetPoint("TOPLEFT", 120, -44)
-	f.Head = label(f, "GameFontHighlight", 0.93, 0.90, 0.84)
-	f.Head:SetPoint("TOPLEFT", 16, -64)
-	f.Head:SetPoint("TOPRIGHT", -12, -64)
-	f.Next = label(f, "GameFontHighlight", 0.93, 0.90, 0.84)
-	f.Next:SetPoint("TOPLEFT", 16, -84)
-	f.Next:SetPoint("TOPRIGHT", -12, -84)
-	f.More = label(f, "GameFontHighlightSmall", 0.62, 0.60, 0.54)
-	f.More:SetPoint("TOPLEFT", 16, -104)
-	f.More:SetPoint("RIGHT", -12, 0)
-	f.More:SetHeight(36)
+	f.Tick:SetSize(1, 1)
+	f.Tick:Hide()
+	f.Next = label(f, "GameFontHighlight", "body")
+	f.Next:SetPoint("TOPLEFT", 44, -92)
+	f.Next:SetPoint("TOPRIGHT", -16, -92)
+	f.More = label(f, "GameFontHighlightSmall", "muted")
+	f.More:SetPoint("TOPLEFT", 24, -110)
+	f.More:SetPoint("RIGHT", -16, 0)
+	f.More:SetHeight(20)
+	f.More:Hide()
 
-	f.Wide = button(f, "Steps", 48, function()
+	f.Checks = {}
+	f.GoalLines = {}
+	for i = 1, 6 do
+		local mark = f:CreateTexture(nil, "OVERLAY")
+		mark:SetTexture(Q.check)
+		mark:SetSize(16, 16)
+		mark:SetPoint("TOPLEFT", 22, -90 - (i - 1) * ROW_H)
+		mark:Hide()
+		local line = label(f, "GameFontHighlightSmall", "body")
+		line:SetPoint("LEFT", mark, "RIGHT", 4, 0)
+		line:SetPoint("RIGHT", f, "RIGHT", -16, 0)
+		line:Hide()
+		f.Checks[i] = mark
+		f.GoalLines[i] = line
+	end
+
+	f.Strip = CreateFrame("Frame", nil, f, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	f.Strip:SetWidth(132)
+	f.Strip:SetPoint("TOPLEFT", f, "TOPRIGHT", -6, -12)
+	f.Strip:SetPoint("BOTTOMLEFT", f, "BOTTOMRIGHT", -6, 12)
+	if f.Strip.SetBackdrop then
+		f.Strip:SetBackdrop({ bgFile = Q.bg, edgeFile = Q.edge, tile = true, tileSize = 32, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
+	end
+	f.StripRows = {}
+	for i = 1, 8 do
+		local row = CreateFrame("Frame", nil, f.Strip)
+		row:SetHeight(ROW_H)
+		row:SetPoint("TOPLEFT", 8, -6 - (i - 1) * ROW_H)
+		row:SetPoint("TOPRIGHT", -8, -6 - (i - 1) * ROW_H)
+		row.Wash = row:CreateTexture(nil, "BACKGROUND")
+		row.Wash:SetAllPoints()
+		local w = Q.wash
+		row.Wash:SetColorTexture(w[1], w[2], w[3], w[4] or 0.45)
+		row.Wash:Hide()
+		row.Mark = row:CreateTexture(nil, "OVERLAY")
+		row.Mark:SetTexture(Q.check)
+		row.Mark:SetSize(14, 14)
+		row.Mark:SetPoint("LEFT", 0, 0)
+		row.Mark:Hide()
+		row.Text = label(row, "GameFontHighlightSmall", "body")
+		row.Text:SetPoint("LEFT", 16, 0)
+		row.Text:SetPoint("RIGHT", 0, 0)
+		row:Hide()
+		f.StripRows[i] = row
+	end
+
+	f.Wide = button(f, "Steps", 54, function()
 		stepsOpen = not stepsOpen
 		Now.Refresh()
 	end)
-	f.Wide:SetPoint("TOPRIGHT", -10, -10)
+	f.Wide:SetPoint("BOTTOMRIGHT", -16, 12)
 	f.Areas = {}
-	for i, spec in ipairs(AREAS) do
-		local b = button(f, spec.label, 52, function()
+	for _, spec in ipairs(AREAS) do
+		local b = button(f, spec.label, 90, function()
 			area = spec.id
+			if UIDropDownMenu_SetText then UIDropDownMenu_SetText(f.Menu, spec.label) end
 			Now.Refresh()
 		end)
 		b.areaId = spec.id
-		b:SetPoint("TOPLEFT", 16 + (i - 1) * 56, -8)
+		b:Hide()
 		f.Areas[spec.id] = b
 	end
 	f.Rows = {}
 	for i = 1, 12 do
-		local b = button(f, "", 300, function(self)
+		local b = button(f, "", 260, function(self)
 			if self.rowId then openListed(self.rowId) end
 		end)
-		b:SetPoint("TOPLEFT", 16, -96 - (i - 1) * ROW_H)
+		b:SetPoint("TOPLEFT", 20, -88 - (i - 1) * ROW_H)
 		b:Hide()
 		f.Rows[i] = b
 	end
-	f.Sleep = button(f, "Sleeping bag", 140, function() openListed(Sheet.SLEEP_ID) end)
-	f.Sleep:SetPoint("BOTTOMLEFT", 200, 12)
+	f.Sleep = button(f.ToolsBox, "Sleeping bag", 130, function() openListed(Sheet.SLEEP_ID) end)
+	f.Sleep:SetPoint("TOPLEFT", 8, -8)
 	f.Sleep:Hide()
-	f.FishTime = button(f, "Fish time", 70, function() Fish.ToggleSession() end)
-	f.FishTime:SetPoint("BOTTOMLEFT", 100, 78)
+	f.FishTime = button(f.ToolsBox, "Fish time", 64, function() Fish.ToggleSession() end)
+	f.FishTime:SetPoint("TOPLEFT", 8, -32)
 	f.FishTime:Hide()
-	f.FishTally = button(f, "Fish tally", 70, function() Fish.AddCatch() end)
-	f.FishTally:SetPoint("LEFT", f.FishTime, "RIGHT", 8, 0)
+	f.FishTally = button(f.ToolsBox, "Fish tally", 64, function() Fish.AddCatch() end)
+	f.FishTally:SetPoint("LEFT", f.FishTime, "RIGHT", 4, 0)
 	f.FishTally:Hide()
-	f.Release = button(f, "Release", 220, function()
+	f.Release = button(f.ToolsBox, "Release", 130, function()
 		local on = ns.Get and ns.Get("qol.autoReleasePvP")
 		if ns.Set then ns.Set("qol.autoReleasePvP", not on) end
 		Now.Refresh()
 	end)
-	f.Release:SetPoint("TOPLEFT", 16, -78)
+	f.Release:SetPoint("TOPLEFT", 8, -56)
 	f.Release:Hide()
 
 	Now.frame = f
@@ -522,86 +623,112 @@ local function showRows(frame, rows)
 	end
 end
 
-local function markAreas(frame)
-	for _, spec in ipairs(AREAS) do
-		local b = frame.Areas[spec.id]
-		local on = spec.id == area
-		b.Label:SetText((on and "· " or "  ") .. spec.label)
-		b.Label:SetTextColor(on and 0.93 or 0.55, on and 0.86 or 0.52, on and 0.72 or 0.46)
+local function paintChecks(frame, checks, nextText)
+	for i = 1, #frame.Checks do
+		local row = checks and checks[i]
+		local mark, line = frame.Checks[i], frame.GoalLines[i]
+		if row then
+			line:SetText(row.text or "")
+			line:Show()
+			if row.done then mark:Show() else mark:Hide() end
+		else
+			line:Hide()
+			mark:Hide()
+		end
 	end
+	frame.Next:SetText(nextText or "")
 end
 
-local function fit(frame, rows)
-	frame:SetHeight(COMPACT_H + rows * ROW_H)
+local function paintStrip(frame)
+	frame.Strip:SetShown(stepsOpen)
+	frame.Wide:SetText(stepsOpen and "Hide steps" or "Steps")
+	if frame.Wide.Label then frame.Wide.Label:SetText(stepsOpen and "Hide steps" or "Steps") end
+	local E = ns.Engine
+	local here = E and E.GetStepIndex and E.GetStepIndex() or 1
+	for i = 1, #frame.StripRows do
+		local row = frame.StripRows[i]
+		local index = here - 1 + i
+		local view = E and E.GetStepView and index >= 1 and E.GetStepView(index) or nil
+		if stepsOpen and view and view.title then
+			row.Text:SetText(view.title)
+			row.Wash:SetShown(index == here)
+			row.Mark:SetShown(index < here)
+			row:Show()
+		else
+			row:Hide()
+		end
+	end
 end
 
 function Now.Apply(composed)
 	local frame = build()
-	markAreas(frame)
+	frame.Area:SetText(areaLabel(area))
+	if UIDropDownMenu_SetText then UIDropDownMenu_SetText(frame.Menu, areaLabel(area)) end
 	frame.Sleep:Hide()
 	frame.FishTime:Hide()
 	frame.FishTally:Hide()
 	frame.Release:Hide()
+	frame.ToolsBox:Hide()
 	showRows(frame, {})
-	frame.Wide.Label:SetText(stepsOpen and "Less" or "Steps")
-	local headers = Sheet.Headers()
+	for i = 1, #frame.Checks do frame.Checks[i]:Hide(); frame.GoalLines[i]:Hide() end
+	frame.Tick:Hide()
 	frame.Bear:Hide()
 	frame.Dist:Hide()
-	frame.Tick:Hide()
+	local headers = Sheet.Headers()
 	if area == "class" then
 		local view = Sheet.ClassView(headers, Sheet.Player())
-		frame.Area:SetText("CLASS")
 		frame.Step:SetText("Not the leveling route")
 		frame.Head:SetText(view.text)
 		frame.Next:SetText("")
+		frame.Course:SetText("")
 		frame.More:SetText("")
 		showRows(frame, view.rows)
-		fit(frame, #view.rows)
+		frame:SetHeight(COMPACT_H + #view.rows * ROW_H)
 	elseif area == "trade" then
 		local view = Sheet.TradeView(headers, Sheet.NamedRank)
-		frame.Area:SetText("TRADE")
-		frame.Step:SetText("All loaded profession guides")
+		frame.Step:SetText("Loaded profession guides")
 		frame.Head:SetText(view.text)
 		local fish = Fish.Lines(nil, nil, Fish.Elapsed(), Fish.caught or 0)
 		frame.Next:SetText("")
+		frame.Course:SetText("")
 		frame.More:SetText(fish[#fish])
+		frame.More:Show()
 		local rows = {}
 		for i, row in ipairs(view.rows) do
 			rows[i] = { id = row.id, label = row.title .. "  " .. row.skill }
 		end
 		showRows(frame, rows)
-		fit(frame, #rows)
+		frame:SetHeight(COMPACT_H + #rows * ROW_H)
 		frame.FishTime:Show()
 		frame.FishTally:Show()
 	elseif area == "pvp" then
 		local view = Sheet.PvpView(headers)
-		frame.Area:SetText("PVP")
-		frame.Step:SetText("Battlegrounds, then what is not here")
+		frame.Step:SetText("Battlegrounds")
 		frame.Head:SetText(view.text)
 		frame.Next:SetText(view.world)
+		frame.Course:SetText("")
 		frame.More:SetText(view.companion)
+		frame.More:Show()
 		showRows(frame, view.battlegrounds)
-		fit(frame, #view.battlegrounds + 1)
+		frame:SetHeight(COMPACT_H + (#view.battlegrounds + 1) * ROW_H)
 		frame.Release:Show()
-		frame.Release.Label:SetText(Sheet.ReleaseLabel(ns.Get and ns.Get("qol.autoReleasePvP")))
+		if frame.Release.Label then frame.Release.Label:SetText(Sheet.ReleaseLabel(ns.Get and ns.Get("qol.autoReleasePvP"))) end
+		frame.Release:SetText(Sheet.ReleaseLabel(ns.Get and ns.Get("qol.autoReleasePvP")))
 	else
-		frame.Area:SetText("QUEST")
 		frame.Step:SetText(composed.step or "")
 		frame.Head:SetText(composed.title or "")
-		frame.Next:SetText(composed.next or "")
-		local bear, dist, angle = Now.ReadCourse()
+		paintChecks(frame, composed.checks, composed.next)
+		local bear, dist = Now.ReadCourse()
 		frame.Bear:SetText(bear)
 		frame.Dist:SetText(dist)
-		frame.Bear:Show()
-		frame.Dist:Show()
-		frame.Tick:Show()
-		if frame.Tick.SetRotation then frame.Tick:SetRotation(type(angle) == "number" and angle or 0) end
-		local more = stepsOpen and table.concat(composed.more or {}, "\n") or ""
+		frame.Course:SetText(Now.CourseLine())
+		frame.Course:Show()
 		local sleep = Sheet.Open(headers, Sheet.SLEEP_ID)
 		if sleep.ok then frame.Sleep:Show() end
-		frame.More:SetText(more)
-		fit(frame, (stepsOpen and more ~= "") and 2 or 0)
+		frame.More:SetText("")
+		frame:SetHeight(COMPACT_H)
 	end
+	paintStrip(frame)
 end
 
 function Now.Refresh()

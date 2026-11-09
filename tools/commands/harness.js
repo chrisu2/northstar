@@ -29,7 +29,7 @@ function evaluate(report) {
 	const fishing = rows.find((r) => r.startsWith('Fishing'));
 	const missing = report.missing || [];
 	return [
-		check('quest', report.quest && report.quest.next === 'Accept Synthetic Herb' && report.quest.areas.some((a) => a.includes('Quest')) && report.quest.areas.some((a) => a.includes('PvP')), report.quest && report.quest.next),
+		check('quest', report.quest && report.quest.next === 'Accept Synthetic Herb' && report.quest.areas.some((a) => a.includes('Leveling')) && report.quest.areas.some((a) => a.includes('PvP')), report.quest && report.quest.next),
 		check('class-druid', report.classDruid && /Tauren DRUID/.test(report.classDruid.head) && report.classDruid.rows.length === 1 && report.classDruid.rows[0].includes('Synthetic Cat Form'), report.classDruid && report.classDruid.head),
 		check('class-open-keeps-route', report.opened === 'synthetic/class/druid/form' && report.levelId === 'synthetic/leveling/camp', `${report.opened} / ${report.levelId}`),
 		check('class-unknown', report.classUnknown && /not reported/.test(report.classUnknown.head), report.classUnknown && report.classUnknown.head),

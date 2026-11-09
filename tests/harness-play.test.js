@@ -86,7 +86,7 @@ test('the local page serves the sheet and accepts a click', async () => {
 		const acted = await post(port, '/act', JSON.stringify({ t: 'area', id: 'pvp' }));
 		assert.equal(acted.status, 200);
 		const view = JSON.parse(acted.body);
-		assert.equal(view.area, 'PVP');
+		assert.equal(view.area, 'PvP');
 		const bad = await post(port, '/act', JSON.stringify({ t: 'eval', code: 'os.exit(1)' }));
 		assert.equal(bad.status, 400);
 	} finally {

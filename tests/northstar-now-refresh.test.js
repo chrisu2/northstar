@@ -50,7 +50,7 @@ test('accept then kill refreshes the sheet to the same line as the arrow', () =>
 });
 
 test('the default sheet is a short bar and does not open the wide guide', () => {
-	const [height, journal, wide, grown, arrow, schema] = load(`
+	const [height, journal, wide, grown, opened, arrow, schema] = load(`
 		local N = Northstar.UI.Now
 		Northstar.Engine.GetStepIndex = function() return 1 end
 		Northstar.Engine.GetGuide = function() return { id = "synthetic/leveling/camp", category = "Leveling" } end
@@ -65,18 +65,20 @@ test('the default sheet is a short bar and does not open the wide guide', () => 
 		emit(N.frame:GetHeight())
 		emit(Northstar.Get("ui.journal"))
 		emit(Northstar.Get("ui.wideGuide"))
+		local strip = N.frame.Strip:IsShown()
 		N.frame.Wide:Click()
 		emit(N.frame:GetHeight())
+		emit(N.frame.Strip:IsShown() ~= strip)
 		emit(Northstar.Get("nav.arrow"))
 		emit(NorthstarDB.schema)
 	`);
-	assert.ok(height >= 100 && height <= 160, `quest bar is ${height}`);
-	assert.ok(grown <= 220, `steps open is ${grown}`);
+	assert.ok(height >= 100 && height <= 160, `quest log is ${height}`);
+	assert.equal(grown, height, `the step strip does not stretch the log (${grown})`);
 	assert.equal(journal, true);
 	assert.equal(wide, false);
 	assert.equal(arrow, false);
 	assert.equal(schema, 2);
-	assert.ok(grown > height);
+	assert.equal(opened, true);
 });
 
 test('direction and distance sit on the action bar, and arrival keeps the action', () => {
@@ -137,9 +139,9 @@ test('class, trade and pvp stay on the bar and hide the course tick', () => {
 		N.frame.Areas.quest:Click()
 		emit(N.frame.Dist:GetText())
 	`);
-	assert.equal(klass, 'CLASS');
-	assert.equal(trade, 'TRADE');
-	assert.equal(pvp, 'PVP');
+	assert.equal(klass, 'Class');
+	assert.equal(trade, 'Professions');
+	assert.equal(pvp, 'PvP');
 	assert.equal(tick, false);
 	assert.match(back, /40/);
 });

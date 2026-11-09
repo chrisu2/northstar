@@ -78,8 +78,20 @@ local BRAND = {
 -- world), ink (the colour of hairlines and washes), shade (wells, text
 -- shadows, art fades), scrim (dark grounds for text on zone art), onAccent
 -- (text and glyphs on an accent fill) and shadow (window drop shadow).
+-- The quest log: stock parchment and the brown ink the client prints on it.
+-- Now.lua is the only window that reads this table.
+Theme.QUEST = {
+	title = { 0.28, 0.14, 0.04, 1 },
+	body = { 0.32, 0.18, 0.06, 1 },
+	muted = { 0.45, 0.30, 0.16, 1 },
+	wash = { 0.78, 0.66, 0.42, 0.45 },
+	check = "Interface\\Buttons\\UI-CheckBox-Check",
+	bg = "Interface\\DialogFrame\\UI-DialogBox-Background",
+	edge = "Interface\\DialogFrame\\UI-DialogBox-Border",
+}
+
 local SCHEMES = {
-	-- The default: Night lifted to dusk, still navy, clearly lighter.
+	-- Night lifted to dusk, still navy, clearly lighter.
 	dusk = {
 		bg = { 0.095, 0.115, 0.178, 0.97 },
 		panel = { 0.11, 0.133, 0.203, 0.98 },
