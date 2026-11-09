@@ -16,7 +16,7 @@ pub const FILE_NAME: &str = "Northstar_Recorder.lua";
 pub struct SavedVars {
 	pub schema: u32,
 	pub enabled: bool,
-	/// The player typed `/psrec off` (and not `/psrec on` since): Polestar Client's share flag
+	/// The player typed `/nsrec off` (and not `/nsrec on` since): Polestar Client's share flag
 	/// does not turn recording on for this account.
 	pub optout: bool,
 	/// 12 base-36 characters, made once per WoW account folder.

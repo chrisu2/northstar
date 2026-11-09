@@ -149,7 +149,7 @@ fn slash_command_bare_toggles_the_frame_names_dispatch_with_the_rest_of_the_line
 			local before = #stub.messages
 			SlashCmdList.NORTHSTAR("nope")
 			local printed = table.concat(stub.messages, "\n", before + 1)
-			emit({ got = got, mentionsUnknown = printed:find("nope", 1, true) ~= nil, listsGoto = printed:find("/polestar goto", 1, true) ~= nil })"#
+			emit({ got = got, mentionsUnknown = printed:find("nope", 1, true) ~= nil, listsGoto = printed:find("/northstar goto", 1, true) ~= nil })"#
 			.into(),
 		..Default::default()
 	});
@@ -175,7 +175,7 @@ fn polestar_help_prints_each_line_in_the_client_language_core_s_own_commands_too
 			SlashCmdList.NORTHSTAR("help")
 			local lines = {}
 			for _, m in ipairs(stub.messages) do
-				local name, help = m:match("/polestar (%S+)  |cff8a8f98(.*)|r$")
+				local name, help = m:match("/northstar (%S+)  |cff8a8f98(.*)|r$")
 				if name then lines[name] = help end
 			end
 			emit({ title = stub.messages[1]:find("Befehle", 1, true) ~= nil, show = lines.show, options = lines.options, debug = lines.debug, prev = lines.prev, hide = lines.hide })"#
@@ -201,7 +201,10 @@ fn lc_a_word_with_two_meanings_has_a_key_per_meaning_english_while_untranslated(
 		emitted(&RunAddon {
 			before: fake_locale("itIT", strings),
 			addons: vec![core()],
-			script: r#"emit({ button = Northstar.L["Back"], chest = Northstar.LC("boss", "Chest") })"#.into(),
+			// Only Init.lua: Core/Locale.lua's ask for the language folder, by hand.
+			script: r#"C_AddOns.LoadAddOn("Northstar_itIT")
+emit({ button = Northstar.L["Back"], chest = Northstar.LC("boss", "Chest") })"#
+				.into(),
 			..Default::default()
 		})
 		.remove(0)

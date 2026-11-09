@@ -42,9 +42,9 @@ ns.IssueURL = "https://github.com/fitzforge/polestar/issues/new"
 local pcall, type, pairs, select, tostring = pcall, type, pairs, select, tostring
 
 -- Translations: a key is the English text, and a missing key renders as
--- itself. A locale file loaded right after this one fills L for its client,
--- so nothing in this file reads L at load: the commands with their help
--- lines register in Commands.lua.
+-- itself. The client's language folder fills L when Core/Locale.lua loads
+-- it, so nothing in this file (nor any before Locale.lua) reads L at load:
+-- the commands with their help lines register in Commands.lua.
 local L = setmetatable({}, { __index = function(_, key) return key end })
 ns.L = L
 
@@ -54,6 +54,20 @@ ns.L = L
 -- "Chest" while there is none.
 function ns.LC(context, text)
 	return rawget(L, context .. ": " .. text) or text
+end
+
+-- A quest's name in running text, in the client's own quote marks ("Turn in
+-- “Your Place in the World”", Havi's suggestion): the translation of
+-- "quote marks: “%s”" (deDE „…“, frFR « … », ruRU «…», zhTW 「…」, ...).
+-- A name that already holds double quotes, guillemets or corner brackets
+-- keeps its own; nil and "" come back as they are.
+local OWN_QUOTES = { '"', "\226\128\156", "\226\128\157", "\226\128\158", "\194\171", "\194\187", "\227\128\140", "\227\128\141", "\227\128\142", "\227\128\143" }
+function ns.Quoted(name)
+	if type(name) ~= "string" or name == "" then return name end
+	for _, q in ipairs(OWN_QUOTES) do
+		if name:find(q, 1, true) then return name end
+	end
+	return ns.LC("quote marks", "\226\128\156%s\226\128\157"):format(name)
 end
 
 -- An amount of copper as the guide window writes it: "1g 50s", "7s", "25c"
@@ -459,11 +473,18 @@ local function lookup(root, keys)
 	return node
 end
 
+-- The table DB() made when there was none: before the saved variables load
+-- (a file reading a setting as it loads), the client replaces it with the
+-- saved one if there is one, so still holding it at ADDON_LOADED means a
+-- fresh install.
+local madeDB
+
 local function DB()
 	local db = NorthstarDB
 	if type(db) ~= "table" then
 		db = { schema = 1 }
 		NorthstarDB = db
+		madeDB = db
 	end
 	if type(db.settings) ~= "table" then db.settings = {} end
 	return db
@@ -558,17 +579,27 @@ function ns.CharState()
 	if type(s.flags) ~= "table" then s.flags = {} end
 	-- Quest id -> true: the quests the player pinned as along the way (#644; Engine.PinQuest).
 	if type(s.pinnedQuests) ~= "table" then s.pinnedQuests = {} end
-	-- Guide id -> true: the leveling guides whose end the player reached (Engine.lua, Own.noteEnd), told once.
-	if type(s.guideEnds) ~= "table" then s.guideEnds = {} end
+	-- Guide id -> true: the leveling guides whose end the player reached (Engine.lua, Own.noteEnd), told once; it stands only while that end holds, and is forgotten by a reset or when a pack update changes the guide's steps (checkShape).
+	-- Those saved before 0.3.6 (guideEndsV unset) are dropped once: 0.3.5 reused guide ids for other parts of the route, and ended guides by where the player stood (the Undercity at the start of Hillsbrad), so any of them can be false; one without a live step shows nothing either way.
+	if type(s.guideEnds) ~= "table" or s.guideEndsV ~= 2 then
+		s.guideEnds, s.guideEndsV = {}, 2
+	end
 	return s
 end
 
 -- A character Northstar had never seen: no saved NorthstarCharDB when the addon
 -- loaded. A /reload loads the saved table again, so it reads false after one.
 local newCharacter = false
+-- An account the same way: no saved NorthstarDB (a fresh install), or only
+-- the table DB() made while the files loaded.
+local newAccount = false
 
 function ns.IsNewCharacter()
 	return newCharacter
+end
+
+function ns.IsNewAccount()
+	return newAccount
 end
 
 ---------------------------------------------------------------------------
@@ -591,6 +622,7 @@ function ns.IsLoggedIn() return loggedIn end
 local function onAddonLoaded(_, name)
 	if name ~= ADDON then return end
 	ns.UnregisterEvent("ADDON_LOADED", onAddonLoaded)
+	newAccount = type(NorthstarDB) ~= "table" or NorthstarDB == madeDB
 	DB()
 	newCharacter = type(NorthstarCharDB) ~= "table"
 	ns.CharState()

@@ -34,7 +34,7 @@ fn listing(dir: &Path) -> Vec<String> {
 fn the_mini_pack_builds_exactly_the_fixed_file_set() {
 	let (manifest, files) = build();
 	assert_eq!(manifest.get("folder").to_js_string(), "NorthstarPack_MiniPack");
-	assert_eq!(files.keys().collect::<Vec<_>>(), ["Guides.lua", "LICENSE-DATA.txt", "MapFrames.lua", "Pack.lua", "NorthstarPack_MiniPack.toc"]);
+	assert_eq!(files.keys().collect::<Vec<_>>(), ["Guides.lua", "LICENSE-DATA.txt", "MapFrames.lua", "NorthstarPack_MiniPack.toc", "Pack.lua"]);
 }
 
 /// The pack check on a folder, as `playtest --honest` and the report compile a whole pack (forge

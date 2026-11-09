@@ -904,6 +904,38 @@ fn apply_loop(step: &V, s: &V, r: &mut R) {
 	step.set("goals", kept);
 }
 
+/// A step only a player who chose the group way follows: `when group <quest>`, `when dungeon "<Name>"`.
+fn opt_in_step(step: &V) -> bool {
+	step.get("when").items().iter().any(|p| !p.get("neg").truthy() && matches!(p.get("k").as_str(), Some("group") | Some("dungeon")))
+}
+
+/// The guide menu's "Group" chip (#1358): some goal on the route every player follows needs a group.
+/// Not an `optional` goal; not one in an opt-in step (opt_in_step) or of a quest accepted only in one
+/// (its later goals go with the accept, as validate's group_quests_of); not the turn-in of a dungeon or
+/// raid quest (the run was the group content, handing it in is not).
+fn route_needs_group(steps: &[V]) -> bool {
+	let mut only: FxHashMap<String, bool> = FxHashMap::default();
+	for step in steps {
+		for goal in step.get("goals").items() {
+			if goal.get("t").as_str() == Some("accept") && !goal.get("quest").is_undef() {
+				let k = stringify(&goal.get("quest"), None);
+				let prev = only.get(&k).copied();
+				only.insert(k, prev != Some(false) && opt_in_step(step));
+			}
+		}
+	}
+	steps.iter().filter(|s| !opt_in_step(s)).any(|step| {
+		step.get("goals").items().iter().any(|goal| {
+			let group = goal.get("group");
+			let quest = goal.get("quest");
+			group.truthy()
+				&& !goal.get("optional").truthy()
+				&& !(!quest.is_undef() && only.get(&stringify(&quest, None)) == Some(&true))
+				&& !(goal.get("t").as_str() == Some("turnin") && matches!(group.get("kind").as_str(), Some("dungeon") | Some("raid")))
+		})
+	})
+}
+
 /// `resolveGuide(ast, data, diag, { pack, author })`.
 pub fn resolve_guide(ast: &V, data: &Data, diag: &mut Diagnostics, pack: Option<&str>, author: Option<&str>) -> V {
 	let file = ast.get("file").as_str().unwrap_or("").to_string();
@@ -1239,7 +1271,7 @@ pub fn resolve_guide(ast: &V, data: &Data, diag: &mut Diagnostics, pack: Option<
 		}
 		gsteps.push(step);
 	}
-	if gsteps.items().iter().any(|s| s.get("goals").items().iter().any(|goal| goal.get("group").truthy() && !goal.get("optional").truthy())) {
+	if route_needs_group(&gsteps.items()) {
 		guide.set("group", true);
 	}
 	check_labels(&steps, r);
@@ -2227,6 +2259,10 @@ fn resolve_goal(g: &V, zone_map: &V, prev: &V, r: &mut R, ctx: &Ctx) -> V {
 						.filter(|e: &V| !e.get("classes").is_empty())
 						.collect();
 					smart(&sm, r, &goal, &entries, "class trainer");
+					// The step's zone: the Engine ranks its trainers first wherever the player stands (#1357).
+					if !ctx.zone_id.is_nullish() && goal.get("candidates").truthy() {
+						goal.set("zone", ctx.zone_id.clone());
+					}
 				}
 				if g.get("nearest").truthy() && v == "sethome" {
 					smart(&sm, r, &goal, &npcs("innkeeper"), "innkeeper");
@@ -2312,6 +2348,13 @@ fn resolve_goal(g: &V, zone_map: &V, prev: &V, r: &mut R, ctx: &Ctx) -> V {
 				goal.set("level", g.get("level"));
 				if g.get("frac").truthy() {
 					goal.set("frac", g.get("frac"));
+				}
+				// `grind <npc>`: the mob's spawn areas place the goal (below), so the arrow leads to the nearest of
+				// them; without spawns, the step's goto.
+				if !g.get("grind").is_undef() {
+					goal.set("grind", g.get("grind"));
+					set_if(&goal, "npcName", optional_name(r, "npc", &g.get("grind")));
+					candidates = vec![cand("npc", g.get("grind"))];
 				}
 			}
 			"money" => {
@@ -2717,14 +2760,18 @@ fn resolve_goal(g: &V, zone_map: &V, prev: &V, r: &mut R, ctx: &Ctx) -> V {
 				}
 			}
 		}
-		let area = v == "kill" || v == "collect" || v == "interact";
+		let area = v == "kill" || v == "collect" || v == "interact" || !goal.get("grind").is_undef();
 		if !explicit && !picked.get("x").is_undef() {
 			let srcs: Vec<V> = if area && picked.get("sources").truthy() { picked.get("sources").items() } else { vec![c.clone()] };
 			let elites: Vec<V> = if area { picked.get("elites").items() } else { Vec::new() };
 			let sp = spawn_spots(data, &srcs, &picked.get("map"), &picked.get("f"), picked.get("x").num(), picked.get("y").num(), &elites);
 			if let Some(sp) = sp {
-				goal.set("spots", sp.spots);
-				if v == "kill" || v == "collect" {
+				// A grind keeps its mob's places the arrow picks, not the alternatives (other places it spawns, walked
+				// by hand for a quest target): any of the mob will do, and a grind's spots cost memory (#1392).
+				let grind = !goal.get("grind").is_undef();
+				let kept: Vec<V> = sp.spots.iter().filter(|s| !(grind && s.get("alt").truthy())).cloned().collect();
+				goal.set("spots", if kept.is_empty() { sp.spots } else { kept });
+				if v == "kill" || v == "collect" || !goal.get("grind").is_undef() {
 					spot_levels(data, &goal, &srcs, &picked.get("map"), &picked.get("f"));
 				}
 				if sp.spread && area {
@@ -2811,6 +2858,9 @@ fn resolve_goal(g: &V, zone_map: &V, prev: &V, r: &mut R, ctx: &Ctx) -> V {
 			format!("`{v}` has no coordinates (no known spawns; add @x,y)"),
 			Some("add @x,y where the player finds the target (the map coordinates the game shows), so the arrow can lead there"),
 		);
+	}
+	if !goal.get("grind").is_undef() && goal.get("x").is_undef() {
+		r.warn(&ln, format!("`grind {}` has no known spawns here: the arrow keeps the step's goto", goal.get("grind")), None);
 	}
 	goal
 }

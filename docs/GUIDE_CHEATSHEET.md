@@ -53,6 +53,7 @@ Before the first `step`. `guide`, `title`, `levels` and `zone` are required.
 | `note <text>` | A line of information; never holds the player up | `note The camp is busy at night.` |
 | `level <N>` | Reach level N, grinding if need be | `level 2` |
 | `level <N>.<fraction>` / `level <N>+<XP>` | Reach a point inside level N: 12.5 is halfway through 12, 12+2500 is 2500 XP into it (to whole percent; needs Northstar 0.2.6) | `level 12.5` |
+| `grind <npcId>` | On `level`: the mob the level is reached on; the arrow leads to its nearest spawn area | `level 8 grind 6` |
 | `# <text>` | A note for you and other authors; players never see it | `# check the patrol route` |
 | `<goal> -- <text>` | Shows the text under that goal | `accept 783 -- He stands at the abbey gate` |
 
@@ -112,7 +113,7 @@ Before the first `step`. `guide`, `title`, `levels` and `zone` are required.
 | `talk <npc>` | Speak to an NPC | `talk 197` |
 | `train class` | Visit the nearest trainer of the player's class | `train class only Warrior,Mage` |
 | `train <npc>` | Visit that trainer | `train 911 only Warrior,Paladin` |
-| `vendor nearest` / `vendor <npc>` | Sell and repair, at the closest vendor or that one | `vendor nearest` |
+| `vendor nearest` / `vendor <npc>` | Sell and repair, at the closest vendor or that one; beside other goals it never holds the step, alone it waits for the merchant window (0.3.5) | `vendor nearest` |
 | `gossip <id>` | On `talk`, `vendor` and `train`: the gossip option (the client's `gossipOptionID`) Northstar picks at that NPC on this step | `talk 197 gossip 1` |
 | `buy <item> ["Name"]` | Buy an item; `nearest` picks the closest vendor selling it | `buy 159 x5 nearest` |
 | `money <amount>` | Hold that much money (`1g50s`, `7s`, `25c` or copper); stays done for the rest of the step (needs Northstar 0.3.0) | `money 1s` |

@@ -168,15 +168,15 @@ static TEXT: &[(&str, [&str; 9], [&str; 9])] = &[
 		"Northstar_Recorder",
 		["Northstar Recorder", "Northstar Recorder", "Northstar Recorder", "Northstar : enregistreur", "Northstar 기록기", "Northstar: gravador", "Northstar: запись", "Northstar 记录器", "Northstar 記錄器"],
 		[
-			"Zeichnet beim Spielen Quests, Wege und Weltdaten auf, um Northstar-Guides zu schreiben. /psrec",
-			"Graba misiones, rutas y datos del mundo mientras juegas, para crear guías de Northstar. /psrec",
-			"Graba misiones, rutas y datos del mundo mientras juegas, para crear guías de Northstar. /psrec",
-			"Enregistre les quêtes, les trajets et les données du monde pendant que vous jouez, pour écrire des guides Northstar. /psrec",
-			"플레이하는 동안 퀘스트, 경로, 월드 데이터를 기록해 Northstar 가이드 작성에 씁니다. /psrec",
-			"Grava missões, rotas e dados do mundo enquanto você joga, para criar guias do Northstar. /psrec",
-			"Записывает задания, маршруты и данные мира во время игры, для создания гайдов Northstar. /psrec",
-			"在游戏时记录任务、路线和世界数据，用于编写 Northstar 指南。/psrec",
-			"在遊戲時記錄任務、路線與世界資料，用於撰寫 Northstar 指南。/psrec",
+			"Zeichnet beim Spielen Quests, Wege und Weltdaten auf, um Northstar-Guides zu schreiben. /nsrec",
+			"Graba misiones, rutas y datos del mundo mientras juegas, para crear guías de Northstar. /nsrec",
+			"Graba misiones, rutas y datos del mundo mientras juegas, para crear guías de Northstar. /nsrec",
+			"Enregistre les quêtes, les trajets et les données du monde pendant que vous jouez, pour écrire des guides Northstar. /nsrec",
+			"플레이하는 동안 퀘스트, 경로, 월드 데이터를 기록해 Northstar 가이드 작성에 씁니다. /nsrec",
+			"Grava missões, rotas e dados do mundo enquanto você joga, para criar guias do Northstar. /nsrec",
+			"Записывает задания, маршруты и данные мира во время игры, для создания гайдов Northstar. /nsrec",
+			"在游戏时记录任务、路线和世界数据，用于编写 Northstar 指南。/nsrec",
+			"在遊戲時記錄任務、路線與世界資料，用於撰寫 Northstar 指南。/nsrec",
 		],
 	),
 ];
@@ -205,9 +205,10 @@ static PER_LANGUAGE: &[(&str, [(&str, &str); 9])] = &[(
 /// What a language folder's name starts with: Northstar_<locale>.
 pub const LANGUAGE_PREFIX: &str = "Northstar_";
 
-/// The language folder of `locale` (docs/ARCHITECTURE.md, "Names" and "Guide texts"): our guides'
-/// texts (Texts.lua, `forge guide compile`) and the game's names (Names.lua, `forge data names`) in
-/// that language, in one load-on-demand addon that both Core/GuideTexts.lua and Core/Names.lua load.
+/// The language folder of `locale` (docs/ARCHITECTURE.md, "Localisation", "Names" and "Guide texts"):
+/// Polestar's interface strings (Interface.lua, `forge i18n sync`), our guides' texts (Texts.lua,
+/// `forge guide compile`) and the game's names (Names.lua, `forge data names`) in that language, in one
+/// load-on-demand addon that Core/Locale.lua loads on a client in that language.
 pub fn language_addon(locale: &str) -> String {
 	format!("{LANGUAGE_PREFIX}{locale}")
 }
@@ -218,8 +219,12 @@ pub fn retired_language_addons(locale: &str) -> [String; 2] {
 	[format!("Northstar_Guides_{locale}"), format!("Northstar_Names_{locale}")]
 }
 
-/// The language folder's files, in load order: every writer of the folder lists both.
-pub const LANGUAGE_FILES: [&str; 2] = ["Names.lua", "Texts.lua"];
+/// The language folder's interface strings (`forge i18n sync` and the translators): never written or
+/// removed by `forge guide compile` or `forge data names`.
+pub const INTERFACE_FILE: &str = "Interface.lua";
+
+/// The language folder's files, in load order: every writer of the folder lists all three.
+pub const LANGUAGE_FILES: [&str; 3] = [INTERFACE_FILE, "Names.lua", "Texts.lua"];
 
 /// <Northstar_<locale>>.toc, written whole and alike by `forge guide compile` (Texts.lua) and
 /// `forge data names` (Names.lua), so either may run first. `version`: the release's.
@@ -277,7 +282,7 @@ static PER_RACE: [(&str, &str); 9] = [
 	("Northstar 指南（%2）", "Northstar 為%2角色提供的升級指南及其步行路線。按需載入。"),
 ];
 
-/// Each race in each language as addon/Northstar/Locales/ has it: RACE_NAMES[locale][race], LOCALE_CODES and
+/// Each race in each language as the interface files (addon/Northstar_<locale>/Interface.lua) have it: RACE_NAMES[locale][race], LOCALE_CODES and
 /// RACE_FILES order.
 static RACE_NAMES: [[&str; 9]; 9] = [
 	["Mensch", "Orc", "Zwerg", "Nachtelf", "Untoter", "Tauren", "Gnom", "Troll", "Himmelsgeborene"],

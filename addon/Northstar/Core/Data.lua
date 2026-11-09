@@ -105,7 +105,7 @@ end
 -- Folders the release zip puts beside Northstar. The first two must be there;
 -- the walking routes (Northstar_Nav), quest and item packs and the language
 -- folder of the client's language (Names.PackName(), none in English) are optional
--- (the arrow falls back to straight lines, names and guide texts to English; a source
+-- (the arrow falls back to straight lines, the interface, names and guide texts to English; a source
 -- install may not build the packs), but when present they must be the same
 -- version.
 local COMPANIONS = { "Northstar_Guides", "Northstar_Codex", "Northstar_Nav", "Northstar_QuestDB", "Northstar_ItemDB" }

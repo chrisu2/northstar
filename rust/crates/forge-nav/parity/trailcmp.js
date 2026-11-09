@@ -1,5 +1,5 @@
 'use strict';
-// Recorded trails against each walking backend: per walk the trail (a /psrec trail export: map x,y and
+// Recorded trails against each walking backend: per walk the trail (a /nsrec trail export: map x,y and
 // world wx,wy, no height), its ends, and each backend's walk between them (grid: router.js on
 // data/local/nav4, bit-equal to forge-nav; Leffe: the format-4 Node reader, tolerant, bit-equal to
 // forge-nav f4; hybrid: Leffe when his cost <= 1.2x the grid's; in-game engines: batch.lua jsonl

@@ -13,7 +13,7 @@ const cli = require('./helpers/cli');
 const { needs } = require('./helpers/data');
 
 const ARGS = ['--yes', '--id', 'ann-routes', '--title', "Ann's Routes", '--author', 'Ann'];
-const REPO = 'https://example.test/polestar.git';
+const REPO = 'https://example.test/northstar.git';
 
 function hasLua() {
 	return ['lua5.1', 'luajit', 'lua'].some((b) => {
@@ -53,7 +53,7 @@ test('new --yes writes the template with the values filled in', () => {
 	const agents = read(dir, 'AGENTS.md');
 	assert.match(agents, /`ann-routes\/`/);
 	for (const s of ['polestar find', '--json', 'forge guide lint --format json', 'polestar playtest', 'forge release pack']) assert.ok(agents.includes(s), s);
-	assert.ok(!/polestar (lint|pack)\b/.test(agents), 'lint and pack are forge commands');
+	assert.ok(!/northstar (lint|pack)\b/.test(agents), 'lint and pack are forge commands');
 	assert.match(read(dir, 'CLAUDE.md'), /AGENTS\.md/);
 	for (const f of ['pack.json', 'guides/example.guide', 'README.md', 'AGENTS.md']) assert.doesNotMatch(read(dir, f), /\{\{\w+\}\}/, f);
 });
@@ -134,7 +134,7 @@ test('with an origin URL the workflow and dev container install Northstar from i
 	assert.match(release, /^ {4}if: startsWith\(github\.ref, 'refs\/tags\/v'\)$/m);
 	assert.match(release, /^ {4}needs: check$/m);
 	assert.match(release, /^ {4}permissions:\n {6}contents: write$/m);
-	assert.doesNotMatch(release, /polestar|npm|git clone/, 'the release job runs no third-party code');
+	assert.doesNotMatch(release, /northstar|npm|git clone/, 'the release job runs no third-party code');
 	assert.match(release, /gh release create/);
 	const dc = JSON.parse(read(withRepo, '.devcontainer/devcontainer.json'));
 	assert.match(dc.image, /node:24/);
@@ -190,13 +190,13 @@ test('the default author is git config user.name, read from where new runs', () 
 
 test('origin URLs: SSH and http become https; credentials, query and fragment are dropped; anything else is skipped with the reason', () => {
 	for (const [origin, want] of [
-		['git@github.com:example/polestar.git', 'https://github.com/example/polestar.git'],
-		['ssh://git@github.com/example/polestar.git', 'https://github.com/example/polestar.git'],
-		['https://someone:s3cret@github.com/example/polestar.git', 'https://github.com/example/polestar.git'],
-		['http://github.com/example/polestar.git', 'https://github.com/example/polestar.git'],
+		['git@github.com:example/northstar.git', 'https://github.com/example/northstar.git'],
+		['ssh://git@github.com/example/northstar.git', 'https://github.com/example/northstar.git'],
+		['https://someone:s3cret@github.com/example/northstar.git', 'https://github.com/example/northstar.git'],
+		['http://github.com/example/northstar.git', 'https://github.com/example/northstar.git'],
 		['http://git.example.com:3000/o/r.git', 'https://git.example.com:3000/o/r.git'],
 		['ssh://git@git.example.com:2222/o/r.git', 'https://git.example.com/o/r.git'],
-		['https://github.com/example/polestar.git?ref=x;rm%20-rf#frag', 'https://github.com/example/polestar.git'],
+		['https://github.com/example/northstar.git?ref=x;rm%20-rf#frag', 'https://github.com/example/northstar.git'],
 	]) {
 		const dir = path.join(tmp(), 'p');
 		assert.equal(polestar(['new', dir, ...ARGS], { origin }).status, 0);
@@ -206,7 +206,7 @@ test('origin URLs: SSH and http become https; credentials, query and fragment ar
 		assert.ok(dc.postCreateCommand.includes(`git clone --depth 1 "${want}" `), origin);
 		assert.doesNotMatch(wf + dc.postCreateCommand, /s3cret|git@|http:|\?|#frag/);
 	}
-	for (const origin of ['/srv/git/polestar.git', 'ftp://example.test/polestar.git', 'https://example.test/$(id)/polestar.git']) {
+	for (const origin of ['/srv/git/northstar.git', 'ftp://example.test/northstar.git', 'https://example.test/$(id)/northstar.git']) {
 		const dir = path.join(tmp(), 'p');
 		const r = polestar(['new', dir, ...ARGS], { origin });
 		assert.equal(r.status, 0, r.stderr);

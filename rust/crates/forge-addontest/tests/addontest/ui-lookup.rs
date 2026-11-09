@@ -293,7 +293,7 @@ fn without_the_codex_pack_the_section_says_what_is_missing_and_still_finds_guide
 		is_match(text(&out["idle"]["note"]), r#"^The Northstar_Codex addon is not installed\. .*Releases page.*not "Source code""#),
 		"a missing Codex points at the release download, not the source zip"
 	);
-	assert!(!is_match(text(&out["idle"]["note"]), r"tools/polestar|codex build"), "no developer command in a player message");
+	assert!(!is_match(text(&out["idle"]["note"]), r"tools/northstar|codex build"), "no developer command in a player message");
 	assert!(is_match(text(&out["idle"]["list"]), r"search the guides"));
 	assert!(is_match(text(&out["idle"]["codex"]), r"Codex not installed"));
 	assert_eq!(out["idle"]["navs"], json!(["all"]), "no kind is offered that nothing was found in");

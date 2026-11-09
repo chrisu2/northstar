@@ -205,7 +205,7 @@ fn a_quest_its_giver_did_not_list_is_never_skipped_nor_kept_across_a_reload_161_
 	);
 	assert_eq!(first["at"], 1, "the guide stays at Thork");
 	assert_eq!(first["status"], "active");
-	assert_eq!(first["notice"], "Not offered by Thork? Report it with /polestar");
+	assert_eq!(first["notice"], "Not offered by Thork? Report it with /northstar");
 	assert_eq!(first["db"]["offers"], Value::Null, "nothing saved");
 	let script = r#"local g = E.GetStepView(1).goals[1]; emit({ at = E.GetStepIndex(), status = g.status, why = g.unavailable or false, notice = g.noticeText or false })"#;
 	let reload = run(GUIDE, &format!("{before}; w.onQuest(869, {{ 12 }})"), Some(&reload_of(&first["db"])), script);

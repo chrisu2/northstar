@@ -693,7 +693,7 @@ impl Engine {
 			s.paused = false;
 		});
 		match result {
-			Ok(()) => eprintln!("sharing is on by default (never chosen, no /psrec off)"),
+			Ok(()) => eprintln!("sharing is on by default (never chosen, no /nsrec off)"),
 			Err(e) => eprintln!("{e}"),
 		}
 	}
@@ -988,7 +988,7 @@ fn backoff_secs(attempts: u32, retry_after: Option<u64>) -> u64 {
 }
 
 /// What Ack.lua tells the Recorder: nothing (`None`) until sharing has been on once, so a
-/// `/psrec on` of someone whose client never shared stays theirs; then whether they share and
+/// `/nsrec on` of someone whose client never shared stays theirs; then whether they share and
 /// have not paused uploads. (`consent` covers settings saved before `ever_shared` existed.)
 fn sharing(settings: &Settings) -> Option<bool> {
 	(settings.ever_shared || settings.consent).then_some(settings.consent && !settings.paused)
@@ -996,9 +996,9 @@ fn sharing(settings: &Settings) -> Option<bool> {
 
 /// Whether sharing turns on by default now: the player never chose (sharing was never on, so
 /// they never stopped it either), the game is found (setup done, an install) and no account's
-/// Recorder was turned off with `/psrec off` (its `optout`). Every account's file must have been
+/// Recorder was turned off with `/nsrec off` (its `optout`). Every account's file must have been
 /// looked at (`poll_files`): none there, read, holding nothing yet, or schema 1 (from before
-/// `/psrec off` was an opt-out); a file that can't be read waits, since its opt-out is unknown.
+/// `/nsrec off` was an opt-out); a file that can't be read waits, since its opt-out is unknown.
 fn share_by_default(settings: &Settings, found: bool, accounts: &[Account]) -> bool {
 	if settings.consent || settings.ever_shared || !settings.setup_done || !found {
 		return false;
@@ -1104,7 +1104,7 @@ fn status(state: &State, game: &GameView, pending: u64, now: i64) -> StatusView 
 		return make("waiting", "Waiting for the first recording", "Log in to the game: the Recorder records while sharing is on. The game saves the recording when you log out or type /reload.".into(), None);
 	}
 	if files.iter().all(|f| !f.enabled) && pending == 0 {
-		return make("attention", "Recording is off in the game", "It turns on at your next login (or /reload) while sharing is on, unless you turned it off with /psrec off: then type /psrec on.".into(), None);
+		return make("attention", "Recording is off in the game", "It turns on at your next login (or /reload) while sharing is on, unless you turned it off with /nsrec off: then type /nsrec on.".into(), None);
 	}
 	if let Some((at, rejected)) = &state.rejected {
 		if now - at < REJECTED_SHOWN_MS {
@@ -1406,6 +1406,22 @@ mod tests {
 	}
 
 	#[test]
+	fn the_preview_reads_paid_turn_ins_and_frfr_kill_objectives() {
+		// Both were "would be turned away" in the 0.3.5 client's preview (and by the server then):
+		// a quest that costs 3 silver to hand in, and the frFR objective Recorder 0.3.5 writes with
+		// the client's |4 grammar escape (its name is emptied, the chunk kept).
+		let text = [
+			"chunk\t0\t7\t1794170000\tk3j9x0q2m7",
+			"objectives\t5\t52\tmonster:8:R\u{f4}deur\u{a0}  0/8 |4personnage tu\u{e9} personnages tu\u{e9}s ;item:1:Patte de r\u{f4}deur\u{a0}",
+			"turnin\t412\t2945\to\t142487\t\t\t\t31\t2700\t-300\t",
+		]
+		.join("\n");
+		let chunk = api::UploadChunk { seq: 7, text };
+		let reading = read_chunks(std::iter::once(&chunk), "would be turned away");
+		assert_eq!((reading.problems, reading.total_records), (Vec::<String>::new(), 2));
+	}
+
+	#[test]
 	fn ack_covers_only_what_was_sent() {
 		let sent: Vec<api::UploadChunk> = [3, 4, 5].iter().map(|&seq| api::UploadChunk { seq, text: String::new() }).collect();
 		assert_eq!(confirmed_ack(&sent, &[3, 4], &[5]), Some(5));
@@ -1417,7 +1433,7 @@ mod tests {
 	#[test]
 	fn no_share_flag_until_the_player_has_shared() {
 		let at = |consent, paused, ever_shared| sharing(&Settings { consent, paused, ever_shared, ..Settings::default() });
-		// Never shared: the Recorder is left to /psrec.
+		// Never shared: the Recorder is left to /nsrec.
 		assert_eq!(at(false, false, false), None);
 		assert_eq!(at(true, false, true), Some(true));
 		assert_eq!(at(true, true, true), Some(false));
@@ -1460,7 +1476,7 @@ mod tests {
 		let stopped = Settings { ever_shared: true, ..never.clone() };
 		assert!(!share_by_default(&stopped, true, &[]));
 		assert!(!share_by_default(&Settings { paused: true, ..stopped }, true, &[account(recording(false), None)]));
-		// /psrec off on any account of this game.
+		// /nsrec off on any account of this game.
 		assert!(!share_by_default(&never, true, &[account(recording(true), None)]));
 		assert!(!share_by_default(&never, true, &[account(recording(false), None), account(recording(true), None)]));
 		// A file that can't be read (its opt-out unknown), or that could not be read yet: wait.

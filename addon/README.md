@@ -13,13 +13,13 @@ page says which part is which.
 | `Northstar` | The addon: guide engine, waypoint arrow and travel planner, quest markers, gear advice, world map, quality of life, Lookup, Dungeons, Rares, Talents, Characters and every window. | Hand-written, apart from the generated files listed below | yes | yes, in `Northstar-<version>.zip` |
 | `Northstar_Guides` | Northstar's own guide pack (pack id `guides`): every guide under `guides/`, compiled to Lua. Loads with Northstar. | `compile`, from `guides/` | yes (generated) | yes, in `Northstar-<version>.zip` |
 | `Northstar_ItemDB` | Item stats for the gear advice (`Items.lua`) and Forever item stats with quest reward choices (`Forever.lua`). Loaded on demand. | `forge data itemdb`, then `forge data gear` | yes (generated) | yes, in `Northstar-<version>.zip` |
-| `Northstar_<locale>` | One language folder per client language (`deDE` … `zhTW`): our guides' texts in that language (`Texts.lua`, from `guides/locales/<locale>/`) and the quest, NPC, object and item names of Northstar's guides, quest database and Codex in it (`Names.lua`, from the client's tables, DingDB and pfQuest: `LICENSE-DATA.txt`, Ding's `CREDITS.md`). Loaded on demand by `Core/GuideTexts.lua` and `Core/Names.lua`, only the client's own; none on an English client. Before 0.3.0 these were two folders per language, `Northstar_Guides_<locale>` and `Northstar_Names_<locale>`. | `forge guide compile` (`Texts.lua`) and `forge data names` (`Names.lua`); both write the same TOC | yes (generated) | yes, in `Northstar-<version>.zip` |
+| `Northstar_<locale>` | One language folder per client language (`deDE` … `zhTW`): Northstar's interface strings in that language (`Interface.lua`, kept by translators and `forge i18n sync`), our guides' texts in that language (`Texts.lua`, from `guides/locales/<locale>/`) and the quest, NPC, object and item names of Northstar's guides, quest database and Codex in it (`Names.lua`, from the client's tables, DingDB and pfQuest: `LICENSE-DATA.txt`, Ding's `CREDITS.md`). Loaded on demand by `Core/Locale.lua` while Northstar loads, only the client's own; none on an English client. Before 0.3.0 these were two folders per language, `Northstar_Guides_<locale>` and `Northstar_Names_<locale>`. | `forge guide compile` (`Texts.lua`) and `forge data names` (`Names.lua`); both write the same TOC, which lists `Interface.lua` too | yes (generated) | yes, in `Northstar-<version>.zip` |
 | `Northstar_QuestDB` | The quest database behind the quest markers, available-quest markers, tooltips and nameplate icons. Loaded on demand. | `forge data questdb`, from `data/forever` | no (gitignored, built locally) | yes, in `Northstar-<version>.zip` when built |
 | `Northstar_Codex` | Lookup's Codex: items, mounts, pets, recipes, NPCs, rares, quests, zones, dungeons and treasures with where each comes from; also the Dungeons and Rares data. Loaded on demand. | `forge data codex` | no (gitignored, built locally) | no: `install` copies it when built, `pack` never packages it |
 | `Northstar_Nav` | The arrow's walking routes: Northstar's walking router (`Routing/`, started from [Shortest Path Forever](https://github.com/cjber/shortest-path-forever)'s by Cillian Berragan, GPL-3.0-or-later, used with his permission, and Northstar's since 2026-10-16; `CREDITS.md`), pricing each step by its ground class and the player's faction (`Routing/Costs.lua`), on the walking maps of Eastern Kingdoms, Kalimdor and Zephras Isle (maps format 5: Leffe's navigation maps, with the walk's chokepoints and our floors' area names; format 3 from our grid without `--leffe`). `API.lua` hands the engine to Northstar as `Northstar_NavEngine`; it reads only its own maps (`NorthstarPathData`), also with Shortest Path Forever installed. Loaded on demand at login. | the router hand-written; `forge nav pack --leffe` (the maps and `Chokepoints.lua`, `PACK.json`); the maps never edited by hand | yes (the maps generated) | yes, in `Northstar-<version>.zip` |
 | `Northstar_Nav_EK`, `Northstar_Nav_Kalimdor` | Each continent's map parts of Leffe's maps; Northstar_Nav's router loads the player's continent's the first time it searches there (never in combat). | `forge nav pack --leffe` | yes (generated) | yes, in `Northstar-<version>.zip` |
 | `Northstar_Travel` | Zone crossings for the travel planner, from the optional local crossings file `data/local/crossings.json`. Loads with Northstar. | `travel build` | no (gitignored, built locally) | no: `install` copies it when built, `pack` never packages it |
-| `Northstar_Recorder` | An optional, standalone recorder (no dependency on Northstar): quests, routes, world data and, while Northstar runs, guide progress, as compact records into `NorthstarRecorderDB` (schema 2, [docs/RECORDING.md](../docs/RECORDING.md)). Off until turned on (`/nsrec on`, or Polestar Client's share flag: sharing is on by default in the client; `/nsrec off` always wins). Polestar Client sends it; `forge record import` reads what it wrote. `Ack.lua` is the client's acknowledgement and share flag, shipped empty. | Hand-written | yes | yes, as its own `Northstar_Recorder-<version>.zip`; `install --recorder` |
+| `Northstar_Recorder` | An optional, standalone recorder (no dependency on Northstar): quests, routes, world data and, while Northstar runs, guide progress, as compact records into `NorthstarRecorderDB` (schema 2, [docs/RECORDING.md](../docs/RECORDING.md)). Off until turned on (`/nsrec on`, or Northstar Client's share flag: sharing is on by default in the client; `/nsrec off` always wins). Northstar Client sends it; `forge record import` reads what it wrote. `Ack.lua` is the client's acknowledgement and share flag, shipped empty. | Hand-written | yes | yes, as its own `Northstar_Recorder-<version>.zip`; `install --recorder` |
 
 The data addons Northstar can do without: with `Northstar_QuestDB`,
 `Northstar_Codex` or `Northstar_ItemDB` missing, the features that read them say
@@ -74,9 +74,10 @@ never in saved variables.
 
 | File | Public table | What it does |
 |---|---|---|
-| `Init.lua` | `Northstar` (`ns`) | The namespace and shared plumbing: lifecycle (`OnInit`, `OnLogin`), message bus (`On`, `Off`, `Fire`), game events, settings (`Get`, `Set`, `RegisterDefaults`), per-character state, the `/northstar` and `/ns` commands; translations (`L`, `LC`; `Locales/<locale>.lua` loads right after it from Core.xml), game terms in the client's words (`StandingName`, `QualityName`, `FactionName`) and `AI_LOCALES` |
+| `Init.lua` | `Northstar` (`ns`) | The namespace and shared plumbing: lifecycle (`OnInit`, `OnLogin`), message bus (`On`, `Off`, `Fire`), game events, settings (`Get`, `Set`, `RegisterDefaults`), per-character state, the `/northstar` and `/pole` commands; translations (`L`, `LC`; filled by the language folder `Locale.lua` loads), game terms in the client's words (`StandingName`, `QualityName`, `FactionName`) and `AI_LOCALES` |
 | `Compat.lua` | `Compat` | Every quest, map and unit client call, in one place, so tests can swap it for a fake; also the one copy of the client helpers every module shares: `IsSecret` and `Readable` (secret values from combat-restricted APIs), `Now` (the server clock) and `MapName` (the client's map name, else the Codex zone's) |
 | `Data.lua` | `Data` | Loads the load-on-demand data addons (`Data.Pack(name)`) |
+| `Locale.lua` | – | Loads the client's language folder `Northstar_<locale>` (interface strings, names, guide texts) right after `GuideTexts.lua`, before any file reads `L` at load; nothing on an English client, English when the folder is missing |
 | `Names.lua` | `Names` | Quest, NPC, object and item names in the client's language: the client's own, else its language folder `Northstar_<locale>`'s `Names.lua`, loaded on demand; nil (English) on an English client |
 | `Hooks.lua` | `Hooks` | The one owner of the tooltip and item-click hooks; modules add lines and handle clicks through it |
 | `Guides.lua` | `Guides` | The guide registry: packs, guides and map frames registered at load time, and the queries behind the guide menu (lists, suggestions) |
@@ -140,7 +141,7 @@ never in saved variables.
 | `ZoneLevels.lua` | (registers data) | Generated: each zone's level range |
 | `Reveal.lua` | `Maps` | The world map without fog of war |
 | `Coords.lua` | `Maps` | The player's coordinates under the minimap |
-| `MinimapButton.lua` | `Maps` | The optional Northstar button on the minimap's edge |
+| `MinimapButton.lua` | `Maps` | The Northstar button on the minimap's edge (on by default) |
 | `Dungeons.lua` | `Maps` | Dungeon entrance pins on the world map |
 | `TravelPins.lua` | `Maps` | Flight master and transport pins |
 | `FlightTimer.lua` | `Maps` | Destination and time left while on a flight |
@@ -190,6 +191,7 @@ never in saved variables.
 | `ZoneArt.lua` | `UI.ZoneArt` | A zone's world map painting, drawn from the player's own client |
 | `ZoneArtOverlays.lua` | (registers data) | Generated: every world map overlay of every zone map |
 | `GuideFrame.lua` | `UI.GuideFrame` | The guide window |
+| `Launcher.lua` | `UI.Launcher` | The optional floating Polestar button: show or hide the window, menu, drag |
 | `GearPick.lua` | `UI.GearPick` | The reward pick under a turn-in goal |
 | `Picker.lua` | `UI.Picker` | The hub: its section rail, sidebar and search, and its built-in Guides section (the guide menu); defines `UI.RegisterSection` |
 | `QuestLinks.lua` | (local) | Quest log and objective tracker menu entries: open the guide search at that quest, with its matching steps |
@@ -197,6 +199,7 @@ never in saved variables.
 | `Dungeons.lua` | `UI.DungeonsSection` | The hub's Dungeons section |
 | `RouteChoice.lua` | `UI.RouteChoice` | "Choose your path": one card per zone where a guide offers several next guides |
 | `Welcome.lua` | `UI.Welcome` | The welcome a character sees the first time Northstar meets it |
+| `WhatsNew.lua` | `UI.WhatsNew` | What's new: the release's notes, once per account on the first login after an update |
 | `Copy.lua` | `UI.ShowCopy` | A small window holding text to copy |
 | `Report.lua` | `UI.Report` | "Report a problem" (the guide window's bug button, `/northstar report`): a report on the step on screen to copy for the Polestar Discord; `UI.ShowDiscord`, the invite on its own |
 | `Packs.lua` | `UI.Packs` | The Community guides page of the options window |

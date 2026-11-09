@@ -19,7 +19,7 @@ package them. You can help without touching any code.
 - **Record a session.** The Northstar Recorder addon (its own download beside
   Northstar on the GitHub release; it runs with or without Northstar) logs your
   play: quests, routes, rares you see, what creatures and chests drop, the
-  dungeons you enter. Turn it on with `/psrec on` and play. No tools needed to
+  dungeons you enter. Turn it on with `/nsrec on` and play. No tools needed to
   share it: after logging out, send the file
   `WTF/Account/<your account>/SavedVariables/Northstar_Recorder.lua` on Discord
   or attach it to an issue. We import it with

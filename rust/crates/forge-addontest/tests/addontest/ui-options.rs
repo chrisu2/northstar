@@ -169,7 +169,7 @@ fn integrations_lists_questie_only_when_it_is_installed_or_loaded_else_says_none
 	assert_eq!(installed["toggle"], true);
 }
 
-// Players and macros still type the old page names (/polestar options navigation); each lands on the page and
+// Players and macros still type the old page names (/northstar options navigation); each lands on the page and
 // tab that holds those settings now.
 #[test]
 fn old_page_keys_open_the_page_and_tab_that_hold_their_settings_now() {
@@ -1173,7 +1173,7 @@ fn search_forgives_joined_words_typos_prefixes_and_synonyms_and_puts_the_best_ma
 #[test]
 fn search_on_a_german_client_matches_german_labels_and_the_english_terms_and_label() {
 	let out = run_mods(
-		"function GetLocale() return \"deDE\" end",
+		&format!("function GetLocale() return \"deDE\" end\n{}", forge_addontest::shipped_strings("deDE")),
 		r#"emit({ german = top("Plündern"), noAccent = top("plundern"), term = top("autoloot"), english = top("faster auto loot"), stone = top("ruhestein button") })"#,
 	);
 	for q in ["german", "noAccent", "term", "english"] {
@@ -1187,7 +1187,7 @@ fn search_on_a_german_client_matches_german_labels_and_the_english_terms_and_lab
 #[test]
 fn search_finds_single_non_ascii_characters_inside_translated_labels() {
 	for (locale, query, expected) in [("zhCN", "图", "maps.minimapButton"), ("zhTW", "圖", "maps.minimapButton"), ("koKR", "템", "qol.itemButton"), ("ruRU", "ш", "nav.arrowScale")] {
-		let out = run_mods(&format!("function GetLocale() return \"{locale}\" end"), &format!("emit(keys(\"{query}\"))"));
+		let out = run_mods(&format!("function GetLocale() return \"{locale}\" end\n{}", forge_addontest::shipped_strings(locale)), &format!("emit(keys(\"{query}\"))"));
 		assert!(out.as_array().is_some_and(|keys| keys.iter().any(|key| key.as_str() == Some(expected))), "{locale}: {query:?} did not find {expected}: {out}");
 	}
 }
@@ -1235,4 +1235,36 @@ fn search_with_no_match_suggests_the_nearest_settings() {
 	assert!(includes(&out["suggestions"], "Hearthstone button"), "{s:?}");
 	assert_eq!(out["nothing"]["n"], 0);
 	assert_eq!(out["nothing"]["suggestions"], json!({}), "nothing near: no suggestion (an empty list)");
+}
+
+// Fitz, 0.3.5 preview: "Version 0.3.5-preview.2f100bfb3" ran under the Discord mark, and the BETA chip after it
+// sat on the footer's "Reset page". The version line and its chip stay left of the mark; a version too long for
+// "Version " drops the word, then is cut.
+#[test]
+fn the_version_line_and_its_stage_chip_end_before_the_discord_mark_in_both_windows_a_long_version_drops_the_word_then_is_cut() {
+	let out = run(r#"
+		local function foot(f)
+			local st, mark = f.Status, f.Discord
+			local _, _, _, sx = st:GetPoint(1)
+			local _, _, _, mx = mark:GetPoint(1)
+			return { text = st:GetText(), right = sx + st:GetStringWidth(), chip = f.Stage:IsShown() and f.Stage:GetWidth() or 0,
+				markLeft = f.psSidebar + mx - mark:GetWidth() }
+		end
+		Northstar.version = "0.3.5"
+		UI.ShowOptions()
+		local short = foot(NorthstarOptions)
+		NorthstarOptions:Hide()
+		Northstar.version = "0.3.5-preview.2f100bfb3"
+		UI.ShowOptions()
+		local preview = foot(NorthstarOptions)
+		UI.ShowPicker()
+		emit({ short = short, preview = preview, hub = foot(NorthstarPicker) })"#);
+	assert_eq!(out["short"]["text"], "Version 0.3.5");
+	assert_eq!(out["preview"]["text"], "0.3.5-preview.2f100bfb3", "too long with the word: the number alone");
+	for key in ["short", "preview", "hub"] {
+		let f = &out[key];
+		assert!(n(&f["chip"]) > 0.0, "{key}: the BETA chip shows");
+		let end = n(&f["right"]) + 8.0 + n(&f["chip"]);
+		assert!(end <= n(&f["markLeft"]), "{key}: the line and its chip end at {end}, the Discord mark starts at {}", f["markLeft"]);
+	}
 }

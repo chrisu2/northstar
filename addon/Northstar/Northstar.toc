@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: Northstar
-## Notes: Northstar for World of Warcraft: Forever (Interface 16001). Routes and guide text are from Polestar.
+## Notes: Northstar for World of Warcraft: Forever (Interface 16001). Routes and guide text are from Northstar.
 ## Title-deDE: Northstar
 ## Notes-deDE: Leveling-Guides für World of Warcraft: Forever.
 ## Title-esES: Northstar
@@ -23,7 +23,7 @@
 ## X-License: GPL-3.0-only
 ## X-Website: https://github.com/chrisu2/northstar
 ## X-Northstar-Origin: https://github.com/fitzforge/polestar
-## Version: 0.3.4
+## Version: 0.3.5
 ## Category: Northstar
 ## IconTexture: Interface\AddOns\Northstar\Media\UI\logo
 ## AddonCompartmentFunc: Northstar_OnAddonCompartmentClick

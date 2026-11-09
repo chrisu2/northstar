@@ -30,7 +30,7 @@ the upload API, and the public list of what is never collected.
   once to players who already shared before 0.1.3 too. It never turns on for
   a player who stopped sharing (Settings' "Share my play" or the notice:
   `everShared` without `consent` in `settings.json`), nor while any account's
-  Recorder file says `/psrec off` (`optout`), nor while a file can't be read
+  Recorder file says `/nsrec off` (`optout`), nor while a file can't be read
   (its opt-out is unknown). With sharing off, the Recording section's "Help
   improve Northstar's guides" page (what is shared, what never is) offers
   "Start sharing" again.
@@ -169,8 +169,8 @@ the upload API, and the public list of what is never collected.
   same file carries `NorthstarRecorderShare = true|false` (sharing on and not
   paused), written whenever that changes and with every ack: at the next
   login (or `/reload`) the Recorder turns itself on and says so, unless the
-  player typed `/psrec off` (docs/RECORDING.md "Ack file"). A Recorder
-  installed without the client stays off until `/psrec on`. **Status** says
+  player typed `/nsrec off` (docs/RECORDING.md "Ack file"). A Recorder
+  installed without the client stays off until `/nsrec on`. **Status** says
   what it is doing (sharing on, sending, waiting for
   the game to save, can't reach the server and retrying, paused, some data
   skipped and why, or what needs your attention) and what this week's play

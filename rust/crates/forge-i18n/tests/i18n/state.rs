@@ -47,6 +47,7 @@ fn every_shipped_interface_file_loads_has_no_stale_or_twice_set_key_and_keeps_th
 		assert!(forge_guide::locales::locale(f.trim_end_matches(".lua")).is_some(), "Locales/{f}: not a locale Northstar ships");
 	}
 	let shipped = shipped();
+	assert!(!shipped.is_empty());
 	let st = locale_state(root(), &polestar(), &shipped, None).unwrap();
 	for (l, s) in &st.locales {
 		assert_eq!(s.error, None, "{l}");
@@ -60,7 +61,7 @@ fn every_shipped_interface_file_loads_has_no_stale_or_twice_set_key_and_keeps_th
 fn sync_keeps_every_translation_line_of_the_shipped_files_byte_for_byte() {
 	let keys = extract_keys(root(), &polestar()).unwrap().by_file();
 	for l in shipped() {
-		let file = polestar().join("Locales").join(format!("{l}.lua"));
+		let file = forge_guide::i18n_files::locale_file(&polestar(), &l);
 		let text = std::fs::read_to_string(&file).unwrap();
 		let shown = file.to_string_lossy();
 		let out = update_locale_text(&text, &shown, &keys, &V::obj(), &V::obj()).unwrap();
@@ -76,6 +77,7 @@ fn every_locale_has_its_language_status_and_translators() {
 	for l in &forge_guide::locales::LOCALES {
 		assert!(!l.language.is_empty(), "{}", l.code);
 		assert!(l.status == "ai" || l.status == "reviewed", "{}", l.code);
-		assert_eq!(l.translators.is_empty(), l.status == "ai", "{}: a reviewed locale names its translators", l.code);
+		// A reviewed locale names its translators; an AI-made one may name those who reviewed part of it.
+		assert!(l.status == "ai" || !l.translators.is_empty(), "{}: a reviewed locale names its translators", l.code);
 	}
 }

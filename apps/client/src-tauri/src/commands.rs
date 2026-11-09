@@ -179,7 +179,7 @@ pub async fn set_addon_prefs(engine: Engine_<'_>, channel: Option<Channel>, auto
 }
 
 /// Setup's "Continue": the game is found; the Addons page is ready to use. Sharing then turns on
-/// by default unless the player stopped it before or typed /psrec off (`engine::share_by_default`).
+/// by default unless the player stopped it before or typed /nsrec off (`engine::share_by_default`).
 #[tauri::command]
 pub fn finish_setup(engine: Engine_) -> Result<(), String> {
 	engine.save_settings(|s| s.setup_done = true)?;

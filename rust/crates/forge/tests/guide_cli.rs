@@ -72,8 +72,8 @@ fn compile_output_is_byte_identical_across_runs_and_skips_drafts() {
 			"Northstar_Guides/Guides.lua",
 			"Northstar_Guides/LICENSE-DATA.txt",
 			"Northstar_Guides/MapFrames.lua",
-			"Northstar_Guides/Pack.lua",
 			"Northstar_Guides/Northstar_Guides.toc",
+			"Northstar_Guides/Pack.lua",
 			"Northstar_Guides_Alliance/Guides.lua",
 			"Northstar_Guides_Alliance/LICENSE-DATA.txt",
 			"Northstar_Guides_Alliance/Northstar_Guides_Alliance.toc",
@@ -212,7 +212,7 @@ fn compile_reports_how_many_npc_and_object_goals_candidates_and_spawn_spots_got_
 	let none_out = tmp("heights-none");
 	let none = forge(&["compile", "--guides", &guides_dir(), "--data", d, "--out", none_out.to_str().unwrap()]);
 	assert_eq!(none.status, 0, "{}", none.stderr);
-	assert!(none.stdout.ends_with("\nheights: none (no spawnz.json in the reference data; `forge data build` writes it)\n"), "{}", none.stdout);
+	assert!(none.stdout.ends_with("\nheights: none (no spawnz.json). A data build writes it only when the classic-db extract is in the cache. Goals keep their map point and have no z.\n"), "{}", none.stdout);
 	assert!(!std::fs::read_to_string(none_out.join("LICENSE-DATA.txt")).unwrap().contains("classic-db"));
 	// Marshal McBride's world point (forge-guide heights::world_point of 48.92,41.61 on uiMap 1429).
 	let fixture = forge_guide::data::load_data(Path::new(&data_dir())).unwrap();

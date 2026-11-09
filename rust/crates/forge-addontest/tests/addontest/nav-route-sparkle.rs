@@ -368,7 +368,7 @@ fn the_route_lines_option_has_a_gear_that_opens_the_line_style_window_the_sparkl
 		stubs: vec!["stub_ui.lua"],
 		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Maps/RouteSparkle.lua", "UI/UI.xml"])],
 		script: r#"
-Northstar.RegisterDefaults("nav", { routeLines = true, lineStyle = "dots" })
+Northstar.RegisterDefaults("nav", { routeLines = true, lineStyle = "dots", dotColor = "route", minimapRouteAlpha = 1, minimapRouteSize = 1 })
 Northstar.RegisterDefaults("nav", Northstar.RouteSparkle.DEFAULTS)
 uistub.install()
 stub.login()
@@ -398,8 +398,81 @@ emit(r)"#
 	assert_eq!(out["shown"], true, "the gear opens the window");
 	assert_eq!(
 		out["keys"],
-		json!(["nav.lineStyle", "nav.sparkleColor", "nav.sparkleDensity", "nav.sparkleFlow", "nav.sparkleIntensity", "nav.sparkleLater", "nav.sparkleMax", "nav.sparkleSize", "nav.sparkleSubtlety"])
+		json!([
+			"nav.dotColor",
+			"nav.lineStyle",
+			"nav.minimapRouteAlpha",
+			"nav.minimapRouteSize",
+			"nav.sparkleColor",
+			"nav.sparkleDensity",
+			"nav.sparkleFlow",
+			"nav.sparkleIntensity",
+			"nav.sparkleLater",
+			"nav.sparkleMax",
+			"nav.sparkleSize",
+			"nav.sparkleSubtlety"
+		])
 	);
 	assert_eq!(out["offWhileDots"], true);
 	assert_eq!(out["onWhileSparkle"], true);
+}
+
+// Issue #1381: the dots' colour and the minimap line's opacity and size in the line style window, the
+// colour waiting for the dots style, every one reset by right-click; "Route line on the minimap" under
+// Map > Guide & quests, waiting for "Guide pin on the minimap", reset by right-click too.
+#[test]
+fn the_line_style_window_holds_the_dot_colour_and_the_minimap_look_and_the_map_page_the_minimap_route_switch_each_reset_by_right_click() {
+	let out = emitted(&RunAddon {
+		stubs: vec!["stub_ui.lua"],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "Maps/RouteSparkle.lua", "UI/UI.xml"])],
+		script: r#"
+Northstar.RegisterDefaults("nav", { routeLines = true, lineStyle = "dots", dotColor = "route", minimapRouteAlpha = 1, minimapRouteSize = 1 })
+Northstar.RegisterDefaults("nav", { worldPins = true, minimapPins = true, minimapRoute = true, upcomingPins = false, trailDots = true })
+Northstar.RegisterDefaults("nav", Northstar.RouteSparkle.DEFAULTS)
+uistub.install()
+stub.login()
+local UI, O, W = Northstar.UI, Northstar.UI.Options, Northstar.Widgets
+UI.ShowLineStyle()
+local win, c = _G.NorthstarLineStyle, UI.LineStyleControls()
+local r = { fits = win:GetHeight() <= UIParent:GetHeight(), height = win:GetHeight() }
+r.colourWithDots = W.Enabled(c["nav.dotColor"])
+r.alphaWithDots, r.sizeWithDots = W.Enabled(c["nav.minimapRouteAlpha"]), W.Enabled(c["nav.minimapRouteSize"])
+Northstar.Set("nav.lineStyle", "sparkle")
+r.colourWithSparkle = W.Enabled(c["nav.dotColor"])
+r.alphaWithSparkle, r.sizeWithSparkle = W.Enabled(c["nav.minimapRouteAlpha"]), W.Enabled(c["nav.minimapRouteSize"])
+Northstar.Set("nav.lineStyle", "dots")
+Northstar.Set("nav.dotColor", "cyan")
+Northstar.Set("nav.minimapRouteAlpha", 0.4)
+Northstar.Set("nav.minimapRouteSize", 0.6)
+r.set = { Northstar.Get("nav.dotColor"), Northstar.Get("nav.minimapRouteAlpha"), Northstar.Get("nav.minimapRouteSize") }
+for _, k in ipairs({ "nav.dotColor", "nav.minimapRouteAlpha", "nav.minimapRouteSize" }) do c[k]:Click("RightButton") end
+r.reset = { Northstar.Get("nav.dotColor"), Northstar.Get("nav.minimapRouteAlpha"), Northstar.Get("nav.minimapRouteSize") }
+UI.ShowOptions("map")
+O.Select("map", "Guide & quests")
+local toggle = O.Controls("map", "Guide & quests")["nav.minimapRoute"]
+r.toggle = toggle ~= nil
+r.toggleOn = W.Enabled(toggle)
+Northstar.Set("nav.minimapPins", false)
+r.toggleWithoutPin = W.Enabled(toggle)
+Northstar.Set("nav.minimapPins", true)
+Northstar.Set("nav.minimapRoute", false)
+r.off = Northstar.Get("nav.minimapRoute")
+toggle:Click("RightButton")
+r.toggleReset = Northstar.Get("nav.minimapRoute")
+emit(r)"#
+			.into(),
+		..Default::default()
+	});
+	let out = &out[0];
+	assert_eq!(out["fits"], true, "the window fits the screen: {} px", out["height"]);
+	assert_eq!(out["colourWithDots"], true);
+	assert_eq!(out["colourWithSparkle"], false, "the dot colour waits for the dots");
+	assert_eq!(json!([out["alphaWithDots"], out["sizeWithDots"], out["alphaWithSparkle"], out["sizeWithSparkle"]]), json!([true, true, true, true]), "the minimap look holds for either style");
+	assert_eq!(out["set"], json!(["cyan", 0.4, 0.6]));
+	assert_eq!(out["reset"], json!(["route", 1, 1]), "right-click restores each default");
+	assert_eq!(out["toggle"], true, "the switch is on Map > Guide & quests");
+	assert_eq!(out["toggleOn"], true);
+	assert_eq!(out["toggleWithoutPin"], false, "it waits for the minimap pin, which hides the line too");
+	assert_eq!(out["off"], false);
+	assert_eq!(out["toggleReset"], true);
 }

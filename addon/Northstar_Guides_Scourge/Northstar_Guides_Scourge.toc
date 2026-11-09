@@ -20,7 +20,7 @@
 ## Title-zhTW: Northstar 指南（不死族）
 ## Notes-zhTW: Northstar 為不死族角色提供的升級指南及其步行路線。按需載入。
 ## Author: Northstar
-## Version: 0.3.4
+## Version: 0.3.5
 ## Category: Northstar
 ## Group: Northstar
 ## LoadOnDemand: 1

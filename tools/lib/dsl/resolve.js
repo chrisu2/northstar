@@ -844,8 +844,23 @@ function resolveGuide(ast, data, diag, opts = {}) {
 		}
 		guide.steps.push(step);
 	}
-	// The guide menu's "Group" chip: some goal of the route needs a group.
-	if (guide.steps.some((s) => s.goals.some((goal) => goal.group && !goal.optional))) guide.group = true;
+	// The guide menu's "Group" chip (#1358): some goal on the route every player follows needs a group:
+	// not an `optional` one, not one in a step only the group way follows (`when group`, `when dungeon`)
+	// or of a quest accepted only in one, not a dungeon or raid quest's turn-in (the run was the group
+	// content).
+	const optIn = (s) => (s.when || []).some((p) => !p.neg && (p.k === 'group' || p.k === 'dungeon'));
+	const onlyOptIn = new Map();
+	for (const s of guide.steps) {
+		for (const goal of s.goals) {
+			if (goal.t === 'accept' && goal.quest !== undefined) onlyOptIn.set(goal.quest, onlyOptIn.get(goal.quest) !== false && optIn(s));
+		}
+	}
+	const needs = (goal) =>
+		goal.group &&
+		!goal.optional &&
+		!(goal.quest !== undefined && onlyOptIn.get(goal.quest) === true) &&
+		!(goal.t === 'turnin' && (goal.group.kind === 'dungeon' || goal.group.kind === 'raid'));
+	if (guide.steps.some((s) => !optIn(s) && s.goals.some(needs))) guide.group = true;
 	checkLabels(ast.steps, err);
 	checkAlongGoals(guide.steps, warn);
 	checkBackground(ast.steps, guide.steps, err);
@@ -1483,6 +1498,8 @@ function resolveGoal(g, zoneMap, prev, data, err, warn, ctx = { sides: ['Allianc
 					.map((t) => ({ npc: t.id, classes: t.classes.filter((c) => set.classes.includes(c)) }))
 					.filter((e) => e.classes.length);
 				smart(goal, entries, `class trainer`);
+				// The step's zone: the Engine ranks its trainers first wherever the player stands (#1357).
+				if (ctx.zoneId != null && goal.candidates) goal.zone = ctx.zoneId;
 			}
 			if (g.nearest && v === 'sethome') smart(goal, data.npcsWithRole('innkeeper').map((id) => ({ npc: id })), 'innkeeper');
 			// A located `sethome` naming no npc: its inn's innkeeper, for the
@@ -1558,6 +1575,13 @@ function resolveGoal(g, zoneMap, prev, data, err, warn, ctx = { sides: ['Allianc
 		case 'level':
 			goal.level = g.level;
 			if (g.frac) goal.frac = g.frac;
+			// `grind <npc>`: the mob's spawn areas place the goal (below), so the
+			// arrow leads to the nearest of them; without spawns, the step's goto.
+			if (g.grind !== undefined) {
+				goal.grind = g.grind;
+				setIf(goal, 'npcName', optionalName('npc', g.grind));
+				candidates = [{ kind: 'npc', id: g.grind }];
+			}
 			break;
 		case 'money':
 			goal.money = g.money;
@@ -1847,11 +1871,14 @@ function resolveGoal(g, zoneMap, prev, data, err, warn, ctx = { sides: ['Allianc
 		// the arrow led can move it on to the others (spawnSpots). Kill,
 		// collect and interact goals may be area objectives (`spread`, searched
 		// spot by spot); the others go to the nearest place.
-		const area = v === 'kill' || v === 'collect' || v === 'interact';
+		const area = v === 'kill' || v === 'collect' || v === 'interact' || goal.grind !== undefined;
 		if (!g.explicitCoords && picked.x !== undefined) {
 			const sp = spawnSpots(data, area ? picked.sources || [c] : [c], picked.map, picked.f, picked.x, picked.y, area ? picked.elites : undefined);
 			if (sp) {
-				goal.spots = sp.spots;
+				// A grind keeps its mob's places the arrow picks, not the alternatives (other places it spawns, walked
+				// by hand for a quest target): any of the mob will do, and a grind's spots cost memory (#1392).
+				const kept = goal.grind !== undefined ? sp.spots.filter((s) => !s.alt) : sp.spots;
+				goal.spots = kept.length ? kept : sp.spots;
 				if (sp.spread && area) goal.spread = true;
 				if (sp.at) {
 					goal.x = sp.at.x;
@@ -1915,6 +1942,7 @@ function resolveGoal(g, zoneMap, prev, data, err, warn, ctx = { sides: ['Allianc
 	if ((v === 'kill' || v === 'collect' || v === 'interact' || v === 'use') && goal.x === undefined && !goal.candidates && !g.nearest && !(ctx.loop && LOOP_VERBS.has(v))) {
 		warn(ln, `\`${v}\` has no coordinates (no known spawns; add @x,y)`, 'add @x,y where the player finds the target (the map coordinates the game shows), so the arrow can lead there');
 	}
+	if (goal.grind !== undefined && goal.x === undefined) warn(ln, `\`grind ${goal.grind}\` has no known spawns here: the arrow keeps the step's goto`);
 	return goal;
 }
 

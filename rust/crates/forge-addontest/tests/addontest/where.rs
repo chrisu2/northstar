@@ -1,4 +1,4 @@
-//! /polestar where (addon/Northstar/Core/Commands.lua): the player's map and position as two guide lines,
+//! /northstar where (addon/Northstar/Core/Commands.lua): the player's map and position as two guide lines,
 //! `zone map <uiMapID>` and `goto <x>,<y> live` (the compiler's two decimals; the client's coordinates are the
 //! live frame), printed with the `@x,y live` form for other goals, and shown in a box to copy (UI/Copy.lua).
 

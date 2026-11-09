@@ -19,9 +19,9 @@ pub fn polestar() -> PathBuf {
 	root().join("addon/Northstar")
 }
 
-/// The locales with a file in addon/Northstar/Locales.
+/// The locales whose language folder holds Northstar's interface strings (addon/Northstar_<locale>/Interface.lua).
 pub fn shipped() -> Vec<String> {
-	forge_guide::locales::LOCALE_CODES.iter().filter(|l| polestar().join("Locales").join(format!("{l}.lua")).exists()).map(|l| l.to_string()).collect()
+	forge_guide::locales::LOCALE_CODES.iter().filter(|l| forge_guide::i18n_files::locale_file(&polestar(), l).exists()).map(|l| l.to_string()).collect()
 }
 
 pub fn write(dir: &Path, rel: &str, text: &str) -> PathBuf {

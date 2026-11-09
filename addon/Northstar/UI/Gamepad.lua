@@ -347,6 +347,7 @@ G.ACTIONS = {
 	{ action = "NORTHSTAR_PREV_WAYPOINT", section = "guide", label = L["Previous waypoint"], run = "PrevWaypoint" },
 	{ action = "NORTHSTAR_FOCUS", section = "guide", label = L["Browse the guide with the gamepad"], run = "Focus" },
 	{ action = "NORTHSTAR_TOGGLE", section = "guide", label = L["Toggle guide window"], run = "Toggle" },
+	{ action = "NORTHSTAR_REOPEN_TAB", section = "guide", label = L["Reopen closed tab"], run = "ReopenTab" },
 	{ action = "NORTHSTAR_MENU", section = "windows", label = L["Open the guide menu"], run = "Menu" },
 	{ action = "NORTHSTAR_OPTIONS", section = "windows", label = L["Open Northstar options"], run = "Options" },
 	{ action = "NORTHSTAR_REPORT", section = "windows", label = L["Report a problem"], run = "Report" },

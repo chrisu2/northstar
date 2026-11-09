@@ -29,7 +29,7 @@ GPL-3.0-or-later, Copyright (C) 2026 Cillian Berragan.
 v1.16.0 by Cillian Berragan, with thanks; Polestar maintains it since
 2026-10-16. `Routing/PathGrid.lua`, `Routing/Path.lua` and
 `Routing/PathJobs.lua` began as his files of that commit (with one mechanical
-change: the data global is `PolestarPathData`); since then they are
+change: the data global is `NorthstarPathData`); since then they are
 Polestar's code, changed here and no longer copied from upstream: a step is
 priced by the ground class of the node it enters and the player's faction
 (`Routing/Costs.lua`, Polestar's). Each keeps his copyright and the GPL notice
@@ -93,7 +93,7 @@ of the floors (from its own grid) and `Nav/Chokepoints.lua`. Thank you, Leffe.
 
 ## With Shortest Path Forever installed too
 
-Polestar Nav always reads its own maps (`PolestarPathData`), never his
+Polestar Nav always reads its own maps (`NorthstarPathData`), never his
 `ShortestPathForeverPathData`: his engine evicts decoded entries from its
 tables while it works, which would pull them from under a search of ours. So
 with both addons installed, each holds its own copy of the maps.

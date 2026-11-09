@@ -2,7 +2,7 @@
 guide forever/alliance/05-duskwood
 title Duskwood
 faction Alliance
-levels 25-26
+levels 27-28
 zone Duskwood
 next forever/alliance/06-wetlands
 
@@ -31,10 +31,12 @@ next forever/alliance/06-wetlands
 #
 # Deviations from the export:
 # - Look To The Stars (174): the export finds the Bronze Tube on Venture Co.
-#   machines in Stonetalon (a 1-2% drop). Herble Baubbletump sells it in
-#   Darkshire, next to Viktori: handed in on the first visit, and its second
-#   part (175) handed to Blind Mary on her visit; the Insane Ghoul (177, level
-#   26) waits for the Duskwood return (07-thousand-needles).
+#   machines in Stonetalon (a 1-2% drop). The tube comes from the Stormwind
+#   Auction House on 04-redridge-mountains' Stormwind stop (Herble Baubbletump,
+#   next to Viktori, keeps one and is nearly always sold out, #1348): handed in
+#   on the first Darkshire visit, and its second part (175) handed to Blind
+#   Mary on her visit; the Insane Ghoul (177, level 26) waits for the Duskwood
+#   return (07-thousand-needles).
 # - Wolves at Our Heels (226) is turned in on the second visit to Sven's camp
 #   (Lars stands beside Sven) instead of walking back west for it.
 # - Hearthstone: none here. The second loop ends at Sven's camp in the west,
@@ -47,18 +49,19 @@ next forever/alliance/06-wetlands
 #   95999, Shadow Magic's Blackrock Shadowcasters 115) and Lieutenant Fangore
 #   (180, 26) are on 04-redridge-mountains' loop at about 25, where those
 #   quests fit: players finished them solo at 21-23 in the recordings, so they
-#   are in the route's steps with a tip to group up if you can; the four elite
-#   quests' goals are optional (the leveling rule for elite-only drops),
-#   Fangore's (not elite) is not.
+#   are in the route's steps with a tip to group up if you can; the elite
+#   Wanted posters' work (169, 95999) is on steps the player opts into
+#   (`when group`, #1415: an all-optional step was passed at once, so nobody
+#   was led there), Fangore's (not elite) is a plain goal.
 # - Worgen in the Woods (173) needs level 23: the step before it says so.
 #
 # Class quests: Rogues finish Mathias and the Defias with Klaven's Tower
 # (2360, 2359, Poisons) at the end: Agent Kearnen and the tower stand just
 # over the Westfall border from Raven Hill, and Mathias Shaw is in Stormwind
 # on the way to the boat. Optional for Rogues there: The Touch of Zanzil
-# (2607-2609, Doc Mixilpixil in the Barracks cellar; Wildflowers, a Leaded
-# Vial and a Bronze Tube from Stormwind vendors, the thread in the city),
-# 1,305 XP without leaving Stormwind.
+# (2607-2609, Doc Mixilpixil in the Barracks cellar; Wildflowers and a Leaded
+# Vial from Stormwind vendors, a Bronze Tube from the Auction House, the thread
+# in the city), 1,305 XP without leaving Stormwind.
 # Human Paladins hand the Defias Script (1787, from Henze Faulk in
 # 04-redridge-mountains) to Gazin Tenorm at the Stormwind stop and learn
 # Redemption from Duthorian Rall (1788).
@@ -170,7 +173,7 @@ step Sven's Camp
 step Westfall
   only Rogue
   zone Westfall
-  goto 68.5,70.1 "Westfall"
+  goto 68.5,70.1 "Agent Kearnen"
 
 # ---------------------------------------------------------------- Rogues: Klaven's Tower
 
@@ -196,7 +199,7 @@ step Master Mathias Shaw
   accept 2609 optional
   buy 3421 x1 npc 1302 optional               -- Simple Wildflowers: Bernard Gump
   buy 3372 x1 npc 1313 optional               -- Leaded Vial: Maria Lumere, Alchemy Supplies
-  buy 4371 x1 npc 5519 optional               -- Bronze Tube: Billibub Cogspinner, Dwarven District
+  collect 4371 x1 @61.2,71.3 map 1453 live optional -- Bronze Tube: the Auction House, Trade District; Billibub Cogspinner keeps one and is nearly always sold out
   collect 8431 quest 2609.4 optional @50.6,60.1 live -- Spool of Light Chartreuse Silk Thread
   turnin 2609 optional                        -- Doc Mixilpixil: Eau de Mixilpixil
 
@@ -204,7 +207,7 @@ step Elwynn Forest
   only !Rogue
   zone Elwynn Forest
   tip North from Raven Hill through Elwynn: Goldshire is on the road to Stormwind.
-  goto 43.5,65.3 "Elwynn Forest"
+  goto 43.5,65.3 "Goldshire"
 
 step Class trainer
   only Warrior,Paladin,Hunter,Priest,Mage,Warlock,Druid
@@ -222,7 +225,7 @@ step Gazin Tenorm
 step Stormwind City
   only Shaman
   zone Stormwind City
-  goto 64.5,7.5 "Stormwind City"
+  goto 64.5,7.5 "Stormwind's Dwarven District"
 
 step Tram to Ironforge
   only Shaman

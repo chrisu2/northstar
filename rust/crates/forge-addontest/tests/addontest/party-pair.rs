@@ -260,7 +260,7 @@ fn pair_a_panel_the_player_closed_stays_closed_through_more_messages_and_a_reloa
 	assert_eq!(get(&mut ana2, "seen()"), json!(["Ben 60:3/4"]));
 	assert_eq!(get(&mut ana2, "panelShown()"), false, "still closed after a reload");
 	ana2.run("Northstar.RunCommand('party')");
-	assert_eq!(get(&mut ana2, "panelShown()"), true, "/polestar party brings it back");
+	assert_eq!(get(&mut ana2, "panelShown()"), true, "/northstar party brings it back");
 }
 
 #[test]

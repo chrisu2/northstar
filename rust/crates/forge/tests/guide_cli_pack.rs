@@ -281,7 +281,7 @@ fn without_pack_lint_and_compile_use_the_nearest_pack_json_compile_writes_dist_f
 	let out = Path::new(&dir).join("dist/NorthstarPack_Joe");
 	let mut files: Vec<String> = std::fs::read_dir(&out).unwrap().flatten().map(|e| e.file_name().to_string_lossy().into_owned()).collect();
 	files.sort();
-	assert_eq!(files, ["Guides.lua", "LICENSE-DATA.txt", "MapFrames.lua", "Pack.lua", "NorthstarPack_Joe.toc"]);
+	assert_eq!(files, ["Guides.lua", "LICENSE-DATA.txt", "MapFrames.lua", "NorthstarPack_Joe.toc", "Pack.lua"]);
 	has(&std::fs::read_to_string(out.join("NorthstarPack_Joe.toc")).unwrap(), r"(?m)^## X-Northstar-Pack: joe$");
 	let lua = std::fs::read_to_string(out.join("Guides.lua")).unwrap();
 	has(&lua, r#"id = "joe/a""#);

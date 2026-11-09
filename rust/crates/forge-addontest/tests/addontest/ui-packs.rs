@@ -357,13 +357,13 @@ fn the_website_and_the_docs_line_are_links_that_open_the_copy_window_without_x_w
 		rowOf("JoeAddon").Website:Click()
 		seen.siteTitle, seen.siteCopy = NorthstarCopy.Title:GetText(), NorthstarCopy.Box:GetText()
 		emit(seen)"#,
-		r#"stub.addonMeta.Northstar = { ["X-Website"] = "https://github.com/polestar/polestar/" }"#,
+		r#"stub.addonMeta.Northstar = { ["X-Website"] = "https://github.com/northstar/northstar/" }"#,
 	);
 	assert_eq!(
 		with_site,
 		json!({
-			"label": "Read more:", "link": "github.com/polestar/polestar/blob/HEAD/docs/GUIDE_PACKS.md", "kind": "Button",
-			"docsTitle": "Community guides, explained", "docsCopy": "https://github.com/polestar/polestar/blob/HEAD/docs/GUIDE_PACKS.md",
+			"label": "Read more:", "link": "github.com/northstar/northstar/blob/HEAD/docs/GUIDE_PACKS.md", "kind": "Button",
+			"docsTitle": "Community guides, explained", "docsCopy": "https://github.com/northstar/northstar/blob/HEAD/docs/GUIDE_PACKS.md",
 			"siteTitle": "Joe's Routes website", "siteCopy": "https://github.com/joe/routes",
 		})
 	);

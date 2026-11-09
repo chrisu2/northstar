@@ -5,6 +5,10 @@
 //! read with `dofile` (written to a scratch folder first).
 
 use std::path::Path;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+/// One number per `measure` call, so each call gets scratch paths of its own (see `measure`).
+static CALLS: AtomicUsize = AtomicUsize::new(0);
 
 use mlua::{Lua, LuaOptions, StdLib};
 
@@ -34,8 +38,11 @@ pub fn measure(codex_lua: &Path, order: &[String], files: &[(String, String)]) -
 			codex_lua.display()
 		));
 	}
-	let pid = std::process::id();
-	let dir = std::env::temp_dir().join(format!("polestar-codex-pack-{pid}"));
+	// The scratch folder and script are named by the process AND this call, not by the process alone.
+	// `cargo test` runs tests as threads of one process, so two tests that build a pack at the same time
+	// used to share one folder: one call's remove_dir_all deleted the files the other was about to dofile.
+	let pid = format!("{}-{}", std::process::id(), CALLS.fetch_add(1, Ordering::Relaxed));
+	let dir = std::env::temp_dir().join(format!("northstar-codex-pack-{pid}"));
 	let _ = std::fs::remove_dir_all(&dir);
 	std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
 	let res = (|| {

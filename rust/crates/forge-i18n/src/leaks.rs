@@ -448,7 +448,7 @@ end)"#
 			script: r#"
 leaks.try("recorder", function()
 	for _, c in ipairs({ "", "help", "status", "on", "off", "new", "list", "note test", "mark", "finds", "progress", "route", "clear", "bogus" }) do
-		leaks.try("/psrec " .. c, function() leaks.typed(c); SlashCmdList.NORTHSTARREC(c); stub.advance(0.2) end)
+		leaks.try("/nsrec " .. c, function() leaks.typed(c); SlashCmdList.NORTHSTARREC(c); stub.advance(0.2) end)
 	end
 	leaks.hover()
 end)"#

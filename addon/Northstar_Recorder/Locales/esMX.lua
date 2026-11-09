@@ -20,14 +20,15 @@ L["trail on: %s (stops by itself after %d min; /nsrec trail off to end)"] = "ras
 L["trail off: %s, %d points"] = "rastro desactivado: %s, %d puntos"
 L["no trail running"] = "no hay ningún rastro activo"
 L["usage: /nsrec trail on [label] | trail off"] = "uso: /nsrec trail on [nombre] | trail off"
--- L["%d chunks waiting for the uploader (about %d KiB of %d KiB)"] = ""
--- L["last chunk the uploader confirmed: %d (newest: %d)"] = ""
--- L["the uploader has not confirmed a chunk yet (newest: %d)"] = ""
--- L["install id: %s"] = ""
--- L["commands: /nsrec on | off | ui | mark <text> | trail on [label] | trail off | clear"] = ""
--- L["mark not recorded (not in the world yet)"] = ""
--- L["every recording not yet uploaded was deleted"] = ""
--- L["this deletes every recording not yet uploaded. Type |cffffd100/nsrec clear confirm|r within %d seconds to proceed."] = ""
+L["%d chunks waiting for the uploader (about %d KiB of %d KiB)"] = "%d bloques esperando al cargador (unos %d KiB de %d KiB)"
+L["last chunk the uploader confirmed: %d (newest: %d)"] = "último bloque confirmado por el cargador: %d (más reciente: %d)"
+L["the uploader has not confirmed a chunk yet (newest: %d)"] = "el cargador aún no ha confirmado ningún bloque (más reciente: %d)"
+L["install id: %s"] = "id de instalación: %s"
+L["commands: /nsrec on | off | ui | mark <text> | trail on [label] | trail off | clear"] = "comandos: /nsrec on | off | ui | mark <texto> | trail on [nombre] | trail off | clear"
+L["mark not recorded (not in the world yet)"] = "marca no registrada (aún no estás en el mundo)"
+L["every recording not yet uploaded was deleted"] = "se borraron todas las grabaciones aún no subidas"
+L["this deletes every recording not yet uploaded. Type |cffffd100/nsrec clear confirm|r within %d seconds to proceed."] = "esto borra todas las grabaciones aún no subidas. Escribe |cffffd100/nsrec clear confirm|r en menos de %d segundos para continuar."
+L["/reload or log out to send what's recorded"] = "/reload o cierra sesión para enviar lo grabado"
 
 -- Trail.lua
 L["trail stopped after %d min: %s, %d points"] = "rastro detenido tras %d min: %s, %d puntos"
@@ -63,8 +64,8 @@ L["Recorder: start or stop the position trail"] = "Recorder: iniciar o detener e
 L["Recorder: show or hide the window"] = "Recorder: mostrar u ocultar la ventana"
 
 -- Recorder.lua
--- L["recordings from the previous Recorder (schema 1) were removed; recording now uses schema 2"] = ""
--- L["on, because sharing is on in Polestar Client. /nsrec off to stop."] = ""
+L["recordings from the previous Recorder (schema 1) were removed; recording now uses schema 2"] = "se eliminaron las grabaciones del Recorder anterior (esquema 1); ahora la grabación usa el esquema 2"
+L["on, because sharing is on in Polestar Client. /nsrec off to stop."] = "activada, porque compartir está activado en Northstar Client. /nsrec off para detenerla."
 
 -- No longer in the code (its English changed or it went away): reuse or delete.
 -- L["this client exposes no talent tree API"] = "este cliente no ofrece API de árbol de talentos"

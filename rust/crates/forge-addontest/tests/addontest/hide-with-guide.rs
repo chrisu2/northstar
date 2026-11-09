@@ -188,7 +188,7 @@ fn a_command_that_asks_for_the_arrow_says_so_only_while_the_guide_hides_the_arro
 				command()
 				local n = 0
 				for i = before + 1, #stub.messages do
-					if stub.messages[i]:find("/polestar show", 1, true) then n = n + 1 end
+					if stub.messages[i]:find("/northstar show", 1, true) then n = n + 1 end
 				end
 				emit(n)
 			end

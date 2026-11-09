@@ -147,8 +147,8 @@ A step must contain at least one goal.
 | `enter` | `"Location"` | Be in a zone or an area: done once the zone or subzone text reads that name (`"Darnassus"`, `"Goldshire"`; in the client's language when the compiler finds its area, "Places by ID"), and kept once the step had it, so walking on does not reopen it. Coordinates (`@x,y`) only point the arrow there. Lint warns about a name that is no zone or area of the client's tables. |
 | `train` | `[npcId]`, `<Profession> [Rank]`, or `class` | `train First Aid` / `train Mining Expert`: the nearest own-faction trainer of that profession and rank (`Apprentice`, `Journeyman`, `Expert`, `Artisan`; ranks taught by a book or quest point at its vendor or quest giver). Without a rank: the highest rank whose minimum skill (0/50/125/225) the last earlier `skill` (or `craft … until`) target for that profession in the guide reaches, Apprentice when there is none, and always above a rank the guide already trained. `train class`: the nearest trainer of the player's class. Resolved at runtime from the player's faction and position. |
 | `buy` | `<itemId> ["Item name"]` | Use `xN` for quantity. Add `nearest` to send the player to the closest own-faction vendor selling it. |
-| `vendor` | `[npcId]` or `nearest` | Sell junk / repair; `nearest` picks the closest own-faction vendor. |
-| `level` | `<N>`, `<N>.<fraction>` or `<N>+<XP>` | Reach level N (grind if needed). `level 12.5` reaches halfway through level 12 and `level 12+2500` 2500 XP into it (converted to a share of the level with the 1.12 XP table): done at level 12 with that share of the level's XP, or at any later level, and the guide window reads "Reach level 12 (50%)" with the XP still to earn under it ("1,240 XP to go"; any `level` goal shows this). The XP bar's guide mark puts its tick at that share of the bar while the character is in that level. The share is kept to whole percent; one that rounds to 0% or 100% is an error (write `level 12` or `level 13`), as is XP past the level's total; `level 12.0` is plain level 12. A guide that uses either form is written in pack format 4 (see "Conditions checked during play"). |
+| `vendor` | `[npcId]` or `nearest` | Sell junk / repair; `nearest` picks the closest own-faction vendor. Done when that merchant's window opens during the step; for `nearest`, also any merchant who repairs within 250 yards of one of its vendors (the same town: Polestar 0.3.6). A `vendor <npcId>` (a mount vendor, say) counts only at that NPC. Beside other goals of the step it is a stop on the way, not work: the step is done once those are, sold or not (Polestar 0.3.5). A step of only `vendor` goals waits for the window. |
+| `level` | `<N>`, `<N>.<fraction>` or `<N>+<XP>` | Reach level N (grind if needed). `level 12.5` reaches halfway through level 12 and `level 12+2500` 2500 XP into it (converted to a share of the level with the 1.12 XP table): done at level 12 with that share of the level's XP, or at any later level, and the guide window reads "Reach level 12 (50%)" with the XP still to earn under it ("1,240 XP to go"; any `level` goal shows this). The XP bar's guide mark puts its tick at that share of the bar while the character is in that level. The share is kept to whole percent; one that rounds to 0% or 100% is an error (write `level 12` or `level 13`), as is XP past the level's total; `level 12.0` is plain level 12. A guide that uses either form is written in pack format 4 (see "Conditions checked during play"). `level 35 grind 686` names the mob the level is reached on (an npc id): the compiler places the goal at that mob's spawn areas (as a `kill`'s, without the alternatives), and the arrow leads to the nearest of them, not to a `goto` before it in the step, which only leads where the mob has no known spawns (the compiler warns). The step's text stays the author's (`-- grind on Lashtail Raptor`). |
 | `money` | `<amount>` | Hold that much money: copper (`money 350`) or `1g50s` / `7s` / `25c`. Done once the bags hold it, and it stays done for the rest of its step if the money is spent before the step's other goals are done; the guide window reads "Have at least 1s 50c". For "loot until you can afford it"; pack format 5. |
 | `wait` | `<seconds>` | A countdown in the step: `wait 30 "the boat docks"`. It starts once every goal before it in the step is done and is done when the time is up (1 to 3600 seconds); the guide window shows the time left as a draining line. For a boat, an event or a speech to sit through. |
 | `task` | `"<text>"` | Something to do that Northstar cannot see (a logout skip, a tame, an emote): it holds the step until the player ticks it in the guide window; with `optional` it never holds it. Quotes optional when nothing follows the text. A task has a place with `@x,y` for the arrow. In an `along` step it never checks off (see "Along the way"). Pack format 5. |
@@ -201,6 +201,7 @@ Modifiers, in any order after the positional arguments:
 | `"text"` | Display text override (for `goto`: the label). A quoted token directly after the entity id of `kill`, `talk`, `interact`, `train` or `vendor` (like `collect`/`use`/`buy`) names that entity instead, for new Forever content missing from the data. |
 | `r <yards>` | Arrival radius (`goto`, default 8). |
 | `lvl <N>` | Minimum level shown on an `accept`. |
+| `grind <npcId>` | On `level`: the mob the level is reached on; the arrow leads to its nearest spawn area. |
 | `optional` | Never blocks the step. |
 | `group [N]` | Needs a group, of `N` players (2–40) when given (`kill 1234 group 3`, `accept 7583 group 5`). The guide window says "Group of 3 advised" (or "Group advised") under the goal. Overrides what the compiler derives: see "Group content". |
 | `only <cond>[,<cond>...]` | Goal applies only to matching characters. |
@@ -372,8 +373,11 @@ the other way round.
 
 Put `when group` on the quest's accept step: when it fails, the quest's
 turn-in and objective goals later in the guide go with it, as for any
-accept that does not apply. A solo way to the same objective is a step with
-`when !group`:
+accept that does not apply. Don't mark the goals of a `when group` (or
+`when dungeon`) step `optional`: only a player who chose it follows the step,
+and a step of optional goals only is done at once, so that player would get
+no arrow (lint: an error in our guides, a warning in other packs). A solo way
+to the same objective is a step with `when !group`:
 
 ```
 step Arachnophobia
@@ -817,8 +821,12 @@ getfp goals got a taxi node").
 
 Every goal that needs a group says so in the guide window, under the goal
 (once per card when several goals share it), and a guide with such a goal on
-its route (not `optional`) carries a "Group" chip in the guide menu. The
-compiler writes `group` on the goal, first match wins:
+the route every player follows carries a "Group" chip in the guide menu: not
+an `optional` goal, not one in a step with `when group <quest>` or `when
+dungeon "<Name>"` (only a player who chose the group way follows it) or of a
+quest accepted only in such a step, and not the turn-in of a dungeon or raid
+quest (the run was the group content). The compiler writes `group` on the
+goal, first match wins:
 
 1. the author's `group [N]`: `{ kind = "group", size = N }` ("Group of N
    advised"; "Group advised" without `N`);
@@ -832,8 +840,8 @@ compiler writes `group` on the goal, first match wins:
    "Raid: Molten Core");
 3. elite work, the same test as the Leveling-guide elite rule (Validation): a
    `kill` of an npc of rank 1–3 hostile to a side the goal applies to, or a
-   `collect` whose every located dropper is one: `{ kind = "elite", rank }`
-   ("Elite: group advised", "Rare elite: group advised", "Boss: group
+   `collect` whose every located dropper is one: `{ kind = "elite", rank, lvl }`
+   (`lvl`: the elites' highest level, when known; "Elite: group advised", "Rare elite: group advised", "Boss: group
    advised").
 
 The instances come from the Forever client's `Map.csv`, `AreaTable.csv` and
@@ -1172,7 +1180,20 @@ player's faction instead.
 ```
 
 `nearest` and `train class` pick the trainer or vendor at runtime, by the
-player's faction and where they stand. A `task` is for what Northstar cannot
+player's faction and where they stand. `train class` keeps to its step's
+`zone` when that zone has a trainer of the player's class (Northstar 0.3.7):
+write the training step in the town the route trains in (`zone Orgrimmar`, not
+`zone Durotar`), and a trainer within 100 yards of the player still counts
+as here. A `vendor` ticks when the merchant's window opens during its step
+(`vendor nearest`: any merchant who repairs in the same town, within 250 yards
+of one of its vendors, Northstar 0.3.6; a `vendor <npcId>` only that NPC's);
+beside other goals that hold the step (hand-ins,
+kills, travel) it never holds the step itself, so a player who has nothing to
+sell is not kept there once the rest is done (Northstar 0.3.5). It is listed
+while the step is live and the arrow leads there in its turn. A step whose
+only goals are `vendor` waits for the merchant window (or a tick or skip):
+write the stop as its own step only when the player must sell or repair
+there. A `task` is for what Northstar cannot
 see: the player ticks it; `abandon` and `destroy` check themselves against the quest log and the bags; a `note` never holds the step at all.
 
 ### Professions: `train`, `learn`, `craft`, `skill`

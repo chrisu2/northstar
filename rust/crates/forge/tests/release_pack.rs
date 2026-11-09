@@ -120,8 +120,8 @@ fn pack_zips_polestar_guides_nav_and_codex_and_the_recorder_separately_reproduci
 			"Northstar_Guides/Guides.lua",
 			"Northstar_Guides/LICENSE-DATA.txt",
 			"Northstar_Guides/MapFrames.lua",
-			"Northstar_Guides/Pack.lua",
 			"Northstar_Guides/Northstar_Guides.toc",
+			"Northstar_Guides/Pack.lua",
 			"Northstar_Nav/",
 			"Northstar_Nav/Main.lua",
 			"Northstar_Nav/Northstar_Nav.toc",
@@ -246,7 +246,7 @@ fn inside_a_pack_pack_writes_its_zip_with_exactly_its_five_files_reproducibly() 
 	let bytes = std::fs::read(&zip).unwrap();
 	let entries = read_zip(&bytes, u64::MAX).unwrap();
 	let want: Vec<String> = std::iter::once("NorthstarPack_MiniPack/".to_string())
-		.chain(["Guides.lua", "LICENSE-DATA.txt", "MapFrames.lua", "Pack.lua", "NorthstarPack_MiniPack.toc"].iter().map(|f| format!("NorthstarPack_MiniPack/{f}")))
+		.chain(["Guides.lua", "LICENSE-DATA.txt", "MapFrames.lua", "NorthstarPack_MiniPack.toc", "Pack.lua"].iter().map(|f| format!("NorthstarPack_MiniPack/{f}")))
 		.collect();
 	assert_eq!(entries.iter().map(|e| e.name.clone()).collect::<Vec<_>>(), want);
 	assert!(String::from_utf8_lossy(&entries.iter().find(|e| e.name.ends_with(".toc")).unwrap().data).contains("## Version: 0.3.0"));

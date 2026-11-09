@@ -282,6 +282,14 @@ end
 
 uistub.skipped = {} -- step index -> true: the step view says `skipped`
 
+-- A goal's line as the Engine writes it: a quest in the client's quote marks
+-- ("Accept “A Threat Within”", Northstar.Quoted).
+local function goalLine(goal)
+	local subject = goal.subject or ""
+	if goal.subjectKind == "quest" then subject = Northstar.Quoted(subject) end
+	return (goal.verb or "") .. " " .. subject
+end
+
 local function view(i)
 	local step = guide.steps[i]
 	local goals = {}
@@ -289,7 +297,7 @@ local function view(i)
 		local v = {}
 		for k, val in pairs(goal) do v[k] = val end
 		v.index = g
-		v.text = goal.text or ((goal.verb or "") .. " " .. (goal.subject or ""))
+		v.text = goal.text or goalLine(goal)
 		v.manual = goal.manual and true or false
 		v.optional = goal.optional and true or false
 		-- Every goal but a note ticks (Engine.ToggleGoal).
@@ -479,6 +487,8 @@ function Engine.GetAlong()
 	end
 	return out
 end
+-- "While you're here" (Engine.GetWhileHereList): nothing close by in the UI stub.
+function Engine.GetWhileHereList() return {} end
 local function move(i)
 	current = i
 	uistub.aim = nil
@@ -553,6 +563,11 @@ function Engine.SkipQuest(q, on)
 	return true
 end
 function Engine.IsQuestSkipped(q) return uistub.skippedQuests[q] == true end
+-- An accept's level and missing prerequisites: the goal's `gate` as the test sets it.
+function Engine.AcceptGate(s, g)
+	local goal = guide and guide.steps[s] and guide.steps[s].goals[g]
+	return goal and goal.gate or nil
+end
 -- Optional goals skip and come back.
 function Engine.SkipGoal(s, g)
 	record("SkipGoal", s, g)
@@ -574,7 +589,7 @@ function Engine.AimGoal(s, g)
 	return true
 end
 local function waypointOf(g, goal)
-	return { map = goal.map, x = goal.x, y = goal.y, f = goal.f, label = goal.verb .. " " .. goal.subject, stepIndex = current, goalIndex = g, kind = goal.t, r = 8 }
+	return { map = goal.map, x = goal.x, y = goal.y, f = goal.f, label = goalLine(goal), stepIndex = current, goalIndex = g, kind = goal.t, r = 8 }
 end
 function Engine.GetWaypoint()
 	if not (guide and current) then return nil end
@@ -670,6 +685,7 @@ function Nav.SetTarget(map, x, y, label, f, stop, z)
 	-- `stop` and `z` sit after a nil `f` for most callers, so they are kept here, not in the call record.
 	uistub.target = { map = map, x = x, y = y, label = label, f = f, stop = stop, z = z }
 	Northstar.Fire("WAYPOINT_CHANGED", uistub.target)
+	return uistub.target
 end
 function Nav.ClearTarget() record("ClearTarget"); uistub.target = nil end
 -- Drops a point picked by hand: the Engine's waypoint is the target again.
@@ -760,11 +776,12 @@ function uistub.install(opts)
 	if Northstar.GetDefault("behavior.autoAccept") == nil then
 		Northstar.RegisterDefaults("behavior", { autoAccept = true, autoTurnin = true, guideEnd = "ask", autoSelectGuide = true, skipGrey = false, offerClassQuests = true, groupQuests = "ask" })
 	end
-	-- An account and a character that have seen the welcome, so it never
-	-- opens over windows under test; tests/ui-welcome.test.js restores the
-	-- saved values.
+	-- An account and a character that have seen the welcome and the newest
+	-- notes, so neither opens over windows under test; ui-welcome.rs and
+	-- ui-whatsnew.rs restore the saved values.
 	Northstar.DB().welcomeSeen = 1
 	Northstar.CharState().welcomeSeen = 1
+	Northstar.DB().whatsNewSeen = Northstar.UI.WhatsNew and Northstar.UI.WhatsNew.LATEST or nil
 end
 
 -- Show guide `id` at step `step` in the active tab (opening a first tab).

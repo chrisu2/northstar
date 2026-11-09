@@ -765,7 +765,11 @@ fn check_corrections(ck: &mut Ck, c: &V) {
 		ck.keys(&at, &e, &["set", "remove", "source", "note"]);
 		ck.note(&at, &e);
 		ck.source(&at, &e);
-		if ck.exists("quests", &id) == Some(false) && !ck.created.contains(&("quests", id.clone())) {
+		// A `remove: true` record's quest is absent from any build that applied it: the build takes it
+		// out. Whether the sources still hold it (a stale record) is the build's call: its fixes ledger
+		// marks such a record `redundant` ("no such quest in the merged data").
+		let removes = matches!(e.get("remove"), V::Bool(true));
+		if !removes && ck.exists("quests", &id) == Some(false) && !ck.created.contains(&("quests", id.clone())) {
 			ck.err(&at, why(&quest_lacks(&e)).replace("no such record", &format!("no quest {id} in the data")));
 		}
 		// `remove: true` takes the quest out of the data; it stands alone, without `set`.
@@ -1355,9 +1359,10 @@ fn check_places(ck: &mut Ck, d: &V) {
 }
 
 /// data/guide-fixes.json: `{ about, fixes: [{ id, at: { quest, goal: accept | turnin | complete |
-/// objective, objective? }, tip | level (after?) | along: false | early | when, note, source, issue, pr }] }`. `along: false` (an
+/// objective, objective? }, tip | level (after?, only?) | along: false | early | when, note, source, issue, pr }] }`. `along: false` (an
 /// objective goal only): the writer never lists the objective "on the way" before its step. `after: true`
-/// (a level gate only): the gate goes right after the anchor goal, not before it. `early: { after: { quest, goal:
+/// (a level gate only): the gate goes right after the anchor goal, not before it. `only` (a level gate only): a
+/// class or race list the gate holds (`level N only Priest`), the others pass. `early: { after: { quest, goal:
 /// accept | turnin }, title, when?, tip? }` (an accept only): an `along until` step right after the step of `after`
 /// lists the quest's accept and objectives on the way to its own step (`when`: a predicate, e.g. `level>=5`).
 /// `when: "level>=N"`: the goal's step shows only from that level (optional work above the level the route
@@ -1377,10 +1382,17 @@ fn check_guide_fixes(ck: &mut Ck, d: &V) {
 	let mut slots: Vec<(String, String)> = Vec::new();
 	for (i, r) in list.items().iter().enumerate() {
 		let at = format!("fixes[{i}]");
-		ck.keys(&at, r, &["id", "at", "tip", "level", "after", "along", "early", "when", "background", "faction", "note", "source", "issue", "pr"]);
+		ck.keys(&at, r, &["id", "at", "tip", "level", "after", "only", "along", "early", "when", "background", "faction", "note", "source", "issue", "pr"]);
 		let after = r.get("after");
 		if !after.is_undef() && (!matches!(after, V::Bool(true)) || r.get("level").is_undef()) {
 			ck.err(format!("{at}.after"), "`after` is true, on a level gate");
+		}
+		let only = r.get("only");
+		if !only.is_undef()
+			&& (r.get("level").is_undef()
+				|| !only.as_str().is_some_and(|o| !o.is_empty() && o.split(',').all(|x| !x.trim().is_empty() && x.trim().chars().all(|c| c.is_ascii_alphabetic() || c == '!'))))
+		{
+			ck.err(format!("{at}.only"), "`only` is a class or race list (`Priest`, `Warrior,Hunter`), on a level gate");
 		}
 		check_record(ck, &at, r, &mut ids);
 		let a = r.get("at");
@@ -1634,6 +1646,19 @@ mod tests {
 		assert_eq!(findings(Some(&format!(r#"{{ "quests": {{ "10": {{ "remove": true, {src} }} }} }}"#)), None, None), Vec::<String>::new());
 		let bad = findings(Some(&format!(r#"{{ "quests": {{ "10": {{ "remove": 1, {src} }}, "11": {{ "remove": true, "set": {{ "xp": 1 }}, {src} }} }} }}"#)), None, None);
 		assert_eq!(bad.len(), 2, "{bad:?}");
+	}
+
+	#[test]
+	fn a_removed_quest_the_build_dropped_passes_a_missing_quest_still_errors() {
+		// 2358 (#948) is gone from every build that applied its own `remove`: that is the record working.
+		let src = r#""source": { "kind": "in-game-check", "ref": "issue 948" }, "note": "gone""#;
+		assert_eq!(findings(Some(&format!(r#"{{ "quests": {{ "2358": {{ "remove": true, {src} }} }} }}"#)), None, None), Vec::<String>::new());
+		// A correction that sets fields on a quest the data lacks is still an error.
+		let f = findings(Some(&format!(r#"{{ "quests": {{ "2358": {{ "set": {{ "xp": 1 }}, {src} }} }} }}"#)), None, None);
+		assert!(f.iter().any(|x| x.contains("no quest 2358 in the data, and the correction lacks title, start, end")), "{f:#?}");
+		// So is a link to the removed quest from another correction.
+		let f = findings(Some(&format!(r#"{{ "quests": {{ "2358": {{ "remove": true, {src} }}, "10": {{ "set": {{ "pre": [2358] }}, {src} }} }} }}"#)), None, None);
+		assert!(f.iter().any(|x| x.contains("no quest 2358 in the data")), "{f:#?}");
 	}
 
 	#[test]

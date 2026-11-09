@@ -26,6 +26,9 @@
 	<Binding name="NORTHSTAR_PREV_WAYPOINT" category="ADDONS">
 		Northstar.Bindings.PrevWaypoint()
 	</Binding>
+	<Binding name="NORTHSTAR_REOPEN_TAB" category="ADDONS">
+		Northstar.Bindings.ReopenTab()
+	</Binding>
 	<Binding name="CLICK NorthstarQuestItemButton:LeftButton" category="ADDONS"/>
 	<Binding name="CLICK NorthstarTargetButton:LeftButton" category="ADDONS"/>
 	<Binding name="CLICK NorthstarRareButton:LeftButton" category="ADDONS"/>
