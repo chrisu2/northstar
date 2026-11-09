@@ -17,6 +17,7 @@ Sheet.AREAS = { "quest", "class", "trade", "pvp" }
 
 local f
 local slip
+local way
 local area = "quest"
 local stepsOpen = true
 local COMPACT_H = 500
@@ -1004,9 +1005,41 @@ function Now.PlaceSlip()
 	if type(pos) == "table" and type(pos[1]) == "string" then
 		slip:SetPoint(pos[1], UIParent, pos[1], pos[2] or 0, pos[3] or 0)
 	else
-		-- Top-left, under the corner and clear of the right-hand quest tracker.
-		slip:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -140)
+		-- Right side, under the minimap, where the quest list sits.
+		slip:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -12, -190)
 	end
+end
+
+-- Original marks, not borrowed guide-addon art. Friz draws these.
+function Now.StepIcon(t)
+	if t == "accept" then return "!" end
+	if t == "turnin" or t == "complete" then return "?" end
+	if t == "kill" then return "/" end
+	if t == "collect" then return "o" end
+	if t == "fly" or t == "getfp" or t == "goto" then return ">" end
+	if t == "hearth" or t == "sethome" then return "H" end
+	if t == "train" or t == "learn" then return "B" end
+	return "·"
+end
+
+local function slipLine(parent)
+	local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	fs:SetJustifyH("LEFT")
+	fs:SetJustifyV("TOP")
+	fs:SetWordWrap(true)
+	return fs
+end
+
+local function slipButton(parent, text, onClick)
+	local b = CreateFrame("Button", nil, parent)
+	b:SetSize(18, 16)
+	b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	b.Label = slipLine(b)
+	b.Label:SetAllPoints()
+	b.Label:SetJustifyH("CENTER")
+	b.Label:SetText(text)
+	b:SetScript("OnClick", onClick)
+	return b
 end
 
 function Now.ShowSlip()
@@ -1026,17 +1059,78 @@ function Now.ShowSlip()
 		bg:SetPoint("BOTTOMRIGHT", -1, 1)
 		bg:SetColorTexture(0.05, 0.04, 0.03, 1)
 		slip.Bg = bg
-		local function line()
-			local fs = slip:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-			fs:SetJustifyH("LEFT")
-			fs:SetJustifyV("TOP")
-			fs:SetWordWrap(true)
-			return fs
+		slip.Head = slipLine(slip)
+		slip.Tick = slipLine(slip)
+		slip.Tick:SetText("v")
+		slip.Tick:Hide()
+		slip.Step = slipLine(slip)
+		local function tool(text, fn)
+			return slipButton(slip, text, fn)
 		end
-		slip.Head = line()
-		slip.Step = line()
-		slip.Rows = {}
-		for i = 1, 6 do slip.Rows[i] = line() end
+		slip.Prev = tool("<", function()
+			local E = ns.Engine
+			if E and E.Prev then E.Prev() end
+		end)
+		slip.Next = tool(">", function()
+			local E = ns.Engine
+			if E and E.Next then E.Next() end
+		end)
+		slip.Book = tool("B", function()
+			if ns.Set then ns.Set("ui.journal", true) end
+			slip:Hide()
+			if way then way:Hide() end
+			Now.Show()
+		end)
+		slip.Cog = tool("*", function()
+			local UI = ns.UI
+			if UI and UI.ShowOptions then UI.ShowOptions() end
+		end)
+		slip.Min = tool("_", function()
+			local on = ns.Get and ns.Get("ui.trackerCollapsed")
+			if ns.Set then ns.Set("ui.trackerCollapsed", not on) end
+			Now.PaintSlip()
+		end)
+		slip.Steps = {}
+		for i = 1, 5 do
+			local row = CreateFrame("Button", nil, slip)
+			row:SetHeight(16)
+			row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+			row.Band = row:CreateTexture(nil, "BACKGROUND")
+			row.Band:SetAllPoints()
+			row.Band:SetColorTexture(0.72, 0.58, 0.22, 0.35)
+			row.Band:Hide()
+			row.Num = slipLine(row)
+			row.Num:SetPoint("LEFT", 2, 0)
+			row.Icon = slipLine(row)
+			row.Icon:SetPoint("LEFT", 22, 0)
+			row.Text = slipLine(row)
+			row.Text:SetPoint("LEFT", 36, 0)
+			row.Text:SetPoint("RIGHT", -16, 0)
+			row.Tick = slipLine(row)
+			row.Tick:SetPoint("RIGHT", -2, 0)
+			row.Tick:SetText("v")
+			row.Tick:Hide()
+			row:SetScript("OnClick", function(_, button)
+				local E = ns.Engine
+				if not (E and row.stepIndex) then return end
+				if button == "RightButton" then
+					if E.Goto then E.Goto(row.stepIndex) end
+					if E.Skip then E.Skip() end
+				elseif E.Goto then
+					E.Goto(row.stepIndex)
+				end
+			end)
+			slip.Steps[i] = row
+		end
+		slip.Goals = {}
+		for i = 1, 4 do slip.Goals[i] = slipLine(slip) end
+		slip.Progress = slipLine(slip)
+		slip.Track = slip:CreateTexture(nil, "BORDER")
+		slip.Track:SetColorTexture(0.25, 0.22, 0.16, 1)
+		slip.Track:SetHeight(4)
+		slip.Fill = slip:CreateTexture(nil, "ARTWORK")
+		slip.Fill:SetColorTexture(0.72, 0.58, 0.22, 1)
+		slip.Fill:SetHeight(4)
 		slip:SetScript("OnDragStart", function(self)
 			if ns.Get and ns.Get("ui.trackerLocked") then return end
 			self:StartMoving()
@@ -1047,9 +1141,56 @@ function Now.ShowSlip()
 			if point and ns.Set then ns.Set("ui.trackerPos", { point, x or 0, y or 0 }) end
 		end)
 	end
+	Now.ShowArrow()
 	Now.PlaceSlip()
 	slip:Show()
 	Now.PaintSlip()
+end
+
+function Now.ShowArrow()
+	if not way then
+		way = CreateFrame("Frame", "NorthstarViewerArrow", UIParent)
+		way:SetSize(168, 36)
+		way:SetFrameStrata("MEDIUM")
+		way:SetMovable(true)
+		way:SetClampedToScreen(true)
+		way:EnableMouse(true)
+		way:RegisterForDrag("LeftButton")
+		local edge = way:CreateTexture(nil, "BACKGROUND")
+		edge:SetAllPoints()
+		edge:SetColorTexture(0.62, 0.54, 0.32, 1)
+		local bg = way:CreateTexture(nil, "BORDER")
+		bg:SetPoint("TOPLEFT", 1, -1)
+		bg:SetPoint("BOTTOMRIGHT", -1, 1)
+		bg:SetColorTexture(0.05, 0.04, 0.03, 1)
+		way.Bg = bg
+		way.Mark = slipLine(way)
+		way.Mark:SetPoint("LEFT", 8, 6)
+		way.Mark:SetText(">")
+		way.Label = slipLine(way)
+		way.Label:SetPoint("LEFT", 22, 6)
+		way.Label:SetWidth(138)
+		way.Dist = slipLine(way)
+		way.Dist:SetPoint("LEFT", 22, -8)
+		way.Dist:SetWidth(138)
+		way:SetScript("OnDragStart", function(self)
+			if ns.Get and ns.Get("ui.trackerLocked") then return end
+			self:StartMoving()
+		end)
+		way:SetScript("OnDragStop", function(self)
+			self:StopMovingOrSizing()
+			local point, _, _, x, y = self:GetPoint()
+			if point and ns.Set then ns.Set("ui.trackerArrowPos", { point, x or 0, y or 0 }) end
+		end)
+	end
+	way:ClearAllPoints()
+	local pos = ns.Get and ns.Get("ui.trackerArrowPos")
+	if type(pos) == "table" and type(pos[1]) == "string" then
+		way:SetPoint(pos[1], UIParent, pos[1], pos[2] or 0, pos[3] or 0)
+	else
+		way:SetPoint("TOP", UIParent, "TOP", 0, -36)
+	end
+	way:Show()
 end
 
 function Now.PaintSlip()
@@ -1057,50 +1198,164 @@ function Now.PaintSlip()
 	local scale = slipNumber("ui.trackerScale", 1, 0.8, 1.5)
 	local opacity = slipNumber("ui.trackerOpacity", 0.6, 0, 1)
 	slip.Bg:SetAlpha(opacity)
+	if way and way.Bg then way.Bg:SetAlpha(opacity) end
 	local titleSize = math.floor(13 * scale + 0.5)
 	local bodySize = math.floor(12 * scale + 0.5)
 	local width = SLIP_W - SLIP_PAD * 2
 	local E = ns.Engine
-	local view
-	if E and E.GetStepIndex and E.GetStepView then
-		local i = E.GetStepIndex()
-		if i then view = E.GetStepView(i) end
+	local guide = E and E.GetGuide and E.GetGuide()
+	local here = E and E.GetStepIndex and E.GetStepIndex() or nil
+	local count = E and E.GetStepCount and E.GetStepCount() or 0
+	local collapsed = ns.Get and ns.Get("ui.trackerCollapsed") and true or false
+	local upcoming = math.floor(slipNumber("ui.trackerSteps", 3, 2, 4))
+	if slip.lastIndex and here and here > slip.lastIndex then
+		slip.flash = slip.lastIndex
+		if ns.After then ns.After(0.8, function() slip.flash = nil if slip:IsShown() then Now.PaintSlip() end end) end
 	end
-	local composed = Now.Compose(view)
-	local function place(fs, text, size, r, g, b)
+	slip.lastIndex = here
+	local function style(fs, size, r, g, b)
 		gameFont(fs, size)
 		fs:SetTextColor(r, g, b, 1)
-		fs:SetText(text or "")
-		fs:SetWidth(width)
-		fs:ClearAllPoints()
-		fs:Show()
 	end
-	local y = SLIP_PAD
-	place(slip.Head, composed.title or "", titleSize, 1, 0.82, 0.25)
-	slip.Head:SetPoint("TOPLEFT", SLIP_PAD, -y)
-	y = y + slip.Head:GetStringHeight() + 3
-	place(slip.Step, composed.next or "", bodySize, 1, 1, 1)
-	slip.Step:SetPoint("TOPLEFT", SLIP_PAD, -y)
-	y = y + slip.Step:GetStringHeight() + 3
-	local checks = composed.checks or {}
-	local shown = 0
-	for i = 1, #slip.Rows do
-		local row = checks[i]
-		local fs = slip.Rows[i]
-		if row and row.text and row.text ~= "" then
-			shown = shown + 1
-			local text = row.done and ("|cff3dcc6e" .. row.text .. "|r") or goldCount(row.text)
-			place(fs, text, bodySize, 0.78, 0.78, 0.78)
-			fs:SetPoint("TOPLEFT", SLIP_PAD, -y)
-			y = y + fs:GetStringHeight() + 2
-		else
-			fs:Hide()
+	for _, b in ipairs({ slip.Prev, slip.Next, slip.Book, slip.Cog, slip.Min }) do
+		style(b.Label, bodySize, 0.9, 0.82, 0.55)
+	end
+	local y = 6
+	style(slip.Head, titleSize, 1, 0.82, 0.25)
+	local name = "No guide"
+	if type(guide) == "table" then
+		name = guide.zoneName or guide.title or guide.id or "Guide"
+		if guide.minLevel or guide.maxLevel then
+			name = name .. " " .. tostring(guide.minLevel or 1) .. "-" .. tostring(guide.maxLevel or guide.minLevel or 1)
 		end
 	end
-	if shown == 0 then
-		-- The step line already says the action. Leave the list empty.
+	slip.Head:ClearAllPoints()
+	slip.Head:SetPoint("TOPLEFT", SLIP_PAD, -y)
+	slip.Head:SetWidth(width - 96)
+	slip.Head:SetText(name)
+	slip.Head:Show()
+	local inset = 4
+	for _, b in ipairs({ slip.Min, slip.Cog, slip.Book, slip.Next, slip.Prev }) do
+		b:ClearAllPoints()
+		b:SetPoint("TOPRIGHT", -inset, -4)
+		inset = inset + 20
+		b:Show()
 	end
+	y = y + slip.Head:GetStringHeight() + 6
+	local function stepVerb(view)
+		local goals = view and view.goals
+		if type(goals) ~= "table" then return nil end
+		for i = 1, #goals do
+			local g = goals[i]
+			if g and g.t and g.t ~= "note" and not g.folded then return g.t end
+		end
+		return goals[1] and goals[1].t
+	end
+	local listed = 0
+	if not here or not (E and E.GetStepView) then
+		for i = 1, #slip.Steps do slip.Steps[i]:Hide() end
+		for i = 1, #slip.Goals do slip.Goals[i]:Hide() end
+		style(slip.Step, bodySize, 1, 1, 1)
+		slip.Step:ClearAllPoints()
+		slip.Step:SetPoint("TOPLEFT", SLIP_PAD, -y)
+		slip.Step:SetWidth(width)
+		slip.Step:SetText("Open a guide when you are ready.")
+		slip.Step:Show()
+		y = y + slip.Step:GetStringHeight() + 4
+	else
+		slip.Step:Hide()
+		local n = collapsed and 1 or (1 + upcoming)
+		for i = 1, #slip.Steps do
+			local row = slip.Steps[i]
+			local index = here + i - 1
+			local view = (i <= n and index <= (count > 0 and count or index)) and E.GetStepView(index) or nil
+			if view then
+				listed = listed + 1
+				row.stepIndex = index
+				local current = index == here
+				row.Band:SetShown(current)
+				style(row.Num, bodySize, current and 1 or 0.85, current and 0.86 or 0.8, current and 0.45 or 0.7)
+				style(row.Icon, bodySize, 0.9, 0.78, 0.4)
+				style(row.Text, bodySize, 1, 1, 1)
+				row.Num:SetText(tostring(index))
+				row.Icon:SetText(Now.StepIcon(stepVerb(view)))
+				row.Text:SetText(view.title or "")
+				local flash = slip.flash == index
+				row.Tick:SetShown(flash)
+				if flash then style(row.Tick, bodySize, 0.24, 0.8, 0.43) end
+				row:ClearAllPoints()
+				row:SetPoint("TOPLEFT", 4, -y)
+				row:SetPoint("TOPRIGHT", -4, -y)
+				row:Show()
+				y = y + 18
+				if current and not collapsed then
+					local shownGoals = 0
+					for g = 1, #slip.Goals do
+						local goal = view.goals and view.goals[g]
+						local fs = slip.Goals[g]
+						if goal and not goal.folded and goal.t ~= "note" and shownGoals < 4 then
+							shownGoals = shownGoals + 1
+							local text = UI.PlainGoalText and UI.PlainGoalText(goal) or goal.text or ""
+							local p = goal.progress
+							if p and type(p.cur) == "number" and type(p.max) == "number" and not tostring(text):find("%(%d+/%d+%)") then
+								text = text .. " (" .. p.cur .. "/" .. p.max .. ")"
+							end
+							local done = goal.status == "done" or goal.status == "skipped"
+							style(fs, bodySize, 1, 1, 1)
+							fs:SetText(done and ("|cff3dcc6e" .. text .. "|r") or goldCount(text))
+							fs:SetWidth(width - 16)
+							fs:ClearAllPoints()
+							fs:SetPoint("TOPLEFT", SLIP_PAD + 16, -y)
+							fs:Show()
+							y = y + fs:GetStringHeight() + 2
+						else
+							fs:Hide()
+						end
+					end
+				else
+					for g = 1, #slip.Goals do slip.Goals[g]:Hide() end
+				end
+			else
+				row:Hide()
+			end
+		end
+	end
+	if collapsed or not here then
+		slip.Progress:Hide()
+		slip.Track:Hide()
+		slip.Fill:Hide()
+	else
+		local pct = (count > 0 and here) and math.floor(here * 100 / count + 0.5) or 0
+		style(slip.Progress, bodySize, 0.85, 0.8, 0.62)
+		slip.Progress:ClearAllPoints()
+		slip.Progress:SetPoint("TOPLEFT", SLIP_PAD, -y)
+		slip.Progress:SetWidth(width)
+		slip.Progress:SetText((here or 0) .. "/" .. count .. "  " .. pct .. "%")
+		slip.Progress:Show()
+		y = y + slip.Progress:GetStringHeight() + 4
+		slip.Track:ClearAllPoints()
+		slip.Track:SetPoint("TOPLEFT", SLIP_PAD, -y)
+		slip.Track:SetWidth(width)
+		slip.Track:Show()
+		local fill = math.max(2, math.floor(width * pct / 100))
+		slip.Fill:ClearAllPoints()
+		slip.Fill:SetPoint("TOPLEFT", SLIP_PAD, -y)
+		slip.Fill:SetWidth(fill)
+		slip.Fill:Show()
+		y = y + 8
+	end
+	local cap = 420
+	if y + SLIP_PAD > cap then y = cap - SLIP_PAD end
 	slip:SetHeight(y + SLIP_PAD)
+	if way and way:IsShown() then
+		local size = math.floor(12 * scale + 0.5)
+		style(way.Mark, titleSize, 1, 0.82, 0.25)
+		style(way.Label, size, 1, 1, 1)
+		style(way.Dist, size, 0.9, 0.86, 0.7)
+		local wp = E and E.GetWaypoint and E.GetWaypoint()
+		way.Label:SetText(wp and wp.label or (guide and (guide.zoneName or guide.title) or ""))
+		way.Dist:SetText(Now.CourseLine())
+	end
 end
 
 function Now.Refresh()
@@ -1121,6 +1376,7 @@ end
 function Now.Show()
 	build()
 	if slip then slip:Hide() end
+	if way then way:Hide() end
 	f:Show()
 	Now.Refresh()
 end
@@ -1166,6 +1422,11 @@ ns.On("WAYPOINT_CHANGED", function() Now.Refresh() end)
 
 if ns.RegisterCommand then
 	ns.RegisterCommand("journal", function() ns.Fire("TOGGLE_JOURNAL") end, "Show or hide the step list")
+	ns.RegisterCommand("hidetracker", function()
+		local on = ns.Get("qol.hideQuestTracker")
+		ns.Set("qol.hideQuestTracker", not on)
+		if ns.Print then ns.Print(ns.Get("qol.hideQuestTracker") and "Quest tracker hidden." or "Quest tracker left to the game.") end
+	end, "Hide or show the game's objective tracker while Northstar is up.")
 	ns.RegisterCommand("opacity", function(rest)
 		local n = tonumber(rest)
 		if not n or n < 0 or n > 100 then

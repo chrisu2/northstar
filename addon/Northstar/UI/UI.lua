@@ -21,6 +21,8 @@ ns.RegisterDefaults("ui", {
 	trackerOpacity = 0.6, -- the closed note's ground, 0..1; the text stays solid
 	trackerScale = 1, -- 0.8..1.5, the closed note's text against 13px
 	trackerLocked = false, -- the closed note moves only when this is off
+	trackerSteps = 3, -- upcoming steps under the current one, 2..4
+	trackerCollapsed = false,
 	wideGuide = false, -- the old wide guide window, off unless turned on in saved settings
 	locked = false,
 	lockHud = false, -- the arrow, the action buttons and the timers move only on a Shift-drag (ns.DragLocked)

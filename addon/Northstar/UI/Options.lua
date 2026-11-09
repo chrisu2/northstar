@@ -214,6 +214,8 @@ local BUILTIN = {
 			search = "tracker font, text size, readability" },
 		{ kind = "toggle", key = "ui.trackerLocked", label = L["Lock the tracker"],
 			help = L["Stop the closed tracker from being dragged. Its place is remembered."] },
+		{ kind = "slider", key = "ui.trackerSteps", label = L["Upcoming steps in the tracker"], min = 2, max = 4, step = 1, format = "%d",
+			help = L["How many steps after the current one the closed tracker lists."] },
 		{ kind = "toggle", key = "ui.upcomingOpen", label = L["Expand Up next"], help = L["Start with the upcoming steps listed instead of collapsed."] },
 		{ kind = "toggle", key = "ui.newInForever", label = L["Mark quests new in Forever"],
 			help = L["A small infinity mark beside the name of a quest Forever added, in the guide, While you're here, the Codex and quest tooltips."],

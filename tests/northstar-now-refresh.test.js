@@ -209,3 +209,40 @@ test('closed tracker opacity and text scale are saved', () => {
 	assert.equal(shadow, 1);
 	assert.equal(step, 'Open a guide when you are ready.');
 });
+
+test('the guide viewer lists icons, collapses, skips, and remembers the tracker hide', () => {
+	const [icon, num, title, collapsed, skip, hidden, stored] = load(`
+		Northstar.Set("ui.journal", false)
+		local skipped = false
+		Northstar.Engine.GetGuide = function()
+			return { id = "g", zoneName = "Mulgore", minLevel = 1, maxLevel = 12, title = "Mulgore" }
+		end
+		Northstar.Engine.GetStepIndex = function() return 2 end
+		Northstar.Engine.GetStepCount = function() return 10 end
+		Northstar.Engine.GetStepView = function(i)
+			local t = (i == 2) and "kill" or "accept"
+			return { index = i, title = "Step " .. i, goals = { { t = t, text = "Do " .. i, status = "active" } } }
+		end
+		Northstar.Engine.Goto = function() end
+		Northstar.Engine.Skip = function() skipped = true end
+		Northstar.UI.Now.PaintSlip()
+		local row = NorthstarNowSlip.Steps[1]
+		emit(row.Icon:GetText())
+		emit(row.Num:GetText())
+		emit(row.Text:GetText())
+		NorthstarNowSlip.Min:Click()
+		emit(NorthstarNowSlip.Steps[2]:IsShown())
+		NorthstarNowSlip.Steps[1]:Click("RightButton")
+		emit(skipped)
+		Northstar.RunCommand("hidetracker")
+		emit(Northstar.Get("qol.hideQuestTracker"))
+		emit(NorthstarDB.settings.qol and NorthstarDB.settings.qol.hideQuestTracker)
+	`);
+	assert.equal(icon, '/');
+	assert.equal(num, '2');
+	assert.equal(title, 'Step 2');
+	assert.equal(collapsed, false);
+	assert.equal(skip, true);
+	assert.equal(hidden, true);
+	assert.equal(stored, true);
+});
