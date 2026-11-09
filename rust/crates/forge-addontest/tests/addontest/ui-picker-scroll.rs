@@ -17,7 +17,7 @@ local function guide(id, pack, extra)
 	for k, v in pairs(extra) do g[k] = v end
 	assert(Northstar.RegisterGuide(g))
 end
-assert(Northstar.RegisterPack({ addon = "Polestar_Guides", id = "guides", format = 1, title = "Polestar Guides", author = "Polestar", version = "0.1.0", license = "GPL-3.0" }))
+assert(Northstar.RegisterPack({ addon = "Northstar_Guides", id = "guides", format = 1, title = "Northstar Guides", author = "Polestar", version = "0.1.0", license = "GPL-3.0" }))
 local pros = {}
 for i = 1, 40 do pros[i] = "A reason to take this route, number " .. i end
 guide("forever/westfall", "guides", { title = "Westfall", category = "Leveling", pitch = "Westfall from end to end.", pros = pros })

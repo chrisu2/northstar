@@ -716,7 +716,7 @@ function Party.Spoke(key) return spoken[key] == true end
 -- Quests/PartyChat.lua stays quiet then with party.chatOnlyNeeded on. False
 -- solo, in a raid, and while a member's name is unknown or secret; with
 -- sharing and showing both off nobody is heard, so false.
-function Party.AllRunPolestar()
+function Party.AllRunNorthstar()
 	if not grouped() then return false end
 	local n = GetNumSubgroupMembers and GetNumSubgroupMembers() or 0
 	if n == 0 then return false end

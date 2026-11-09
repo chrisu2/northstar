@@ -1,7 +1,7 @@
-Polestar Codex: third-party notices
+Northstar Codex: third-party notices
 ===================================
 
-The data in this folder was generated for Polestar by `codex build` from the
+The data in this folder was generated for Northstar by `codex build` from the
 sources below: item, NPC, object, quest, zone and instance facts (ids, names,
 levels, coordinates, drop chances, requirements). No text, images or code
 were copied from them; the Dungeons journal is written in our own words.

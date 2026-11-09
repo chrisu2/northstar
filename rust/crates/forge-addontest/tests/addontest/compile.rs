@@ -80,10 +80,10 @@ fn the_compiled_pack_loads_under_lua_5_1_with_core_init_lua_and_round_trips_to_t
 			"id": "guides",
 			"format": 8,
 			"title": "Northstar Guides",
-			"author": "Northstar",
+			"author": "Polestar",
 			"version": manifest.get("version").to_js_string(),
 			"license": "GPL-3.0-only",
-			"notes": "Leveling, profession, reputation and collectible guides for Northstar.",
+			"notes": "Leveling, profession, reputation and collectible guides for Northstar. Guide text by Polestar.",
 		}])
 	);
 	// Guides.lua and the faction part hold the guides as compiled, their texts with name tokens (tokens.js),

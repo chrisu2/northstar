@@ -405,7 +405,7 @@ fn a_chosen_spec_holds_over_reload_level_up_talent_points_and_cat_form_on_every_
 		assert_eq!(o["saved"], "restoration", "{when}: the setting is still saved");
 		assert!(o["heal"].as_f64().unwrap() > 0.0, "{when}: Restoration weights");
 		assert_eq!(o["pick"], 2, "{when}: the Intellect/Spirit chest over the Agility one");
-		assert!(is_match(text(&o["line"]), r"^Polestar · Restoration \(healer\) \| "), "{when}: {}", o["line"]);
+		assert!(is_match(text(&o["line"]), r"^Northstar · Restoration \(healer\) \| "), "{when}: {}", o["line"]);
 	}
 	assert_eq!(out[4]["key"], "feral", "Automatic follows the Feral points again");
 	assert_eq!(out[4]["pick"], 1);

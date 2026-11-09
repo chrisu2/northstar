@@ -3067,7 +3067,7 @@ L["party chat: , "] = ", "
 L["Northstar told your party about your quest progress in chat (Options > Questing > Quests > Group to change this)."] = "Northstar가 채팅으로 파티에 퀘스트 진행 상황을 알렸습니다 (바꾸려면 설정 > 퀘스트 진행 > 퀘스트 > 파티)."
 L["%s is ready to turn in"] = "%s 제출 가능"
 L["looted %s, which starts %s"] = "%s 획득, 이 아이템으로 %s 시작"
--- L["{rt1} Polestar: "] = ""
+L["{rt1} Northstar: "] = "{rt1} Northstar: "
 
 -- UI/WhatsNew.lua
 L["Fixes from your reports"] = "신고로 고친 문제"

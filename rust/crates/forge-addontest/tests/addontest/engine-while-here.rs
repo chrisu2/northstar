@@ -314,7 +314,7 @@ fn barrens_chasing_slow_drops_to_the_stagnant_oasis_the_fungal_spores_line_shows
 	let text = std::fs::read_to_string(root().join(file)).unwrap();
 	let compiled = compile_with(&[(file, &text)], &data, None);
 	let pack = write_test_pack(&compiled.guides, &data, &our_manifest());
-	let loads: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Polestar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
+	let loads: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Northstar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
 	let f = data.map_frames.get("forever").get("1413");
 	let before = format!(
 		r#"local w = stub.world
@@ -795,7 +795,6 @@ fn a_timer_the_quest_log_reports_without_the_old_timer_list_offers_no_detour_eit
 #[test]
 fn the_options_turn_it_off_and_set_how_close() {
 	let out = run(r#"
-		emit({ Northstar.Get("behavior.whileHere"), Northstar.Get("behavior.whileHereRadius"), Northstar.Get("behavior.whileHereTurnins") })
 		Northstar.Set("behavior.whileHere", false); flush()
 		at(47.6, 37.6); emit({ cands(), here() })
 		Northstar.Set("behavior.whileHere", true); Northstar.Set("behavior.whileHereRadius", 40); flush()

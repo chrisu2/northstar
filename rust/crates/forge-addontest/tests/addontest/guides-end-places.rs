@@ -45,7 +45,7 @@ fn hillsbrad_30_32_the_undercity_near_the_start_is_no_end_and_no_banner() {
 	let sources: Vec<(&str, &str)> = texts.iter().map(|(f, t)| (f.as_str(), t.as_str())).collect();
 	let compiled = compile_with(&sources, &data, None);
 	let pack = write_test_pack(&compiled.guides, &data, &our_manifest());
-	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Polestar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
+	let lines: Vec<String> = pack.scripts.iter().map(|f| format!("assert(loadfile({}))(\"Northstar_Guides\", ns)", serde_json::to_string(f).unwrap())).collect();
 	let loads = format!("do local ns = {{}}\n{}\nend", lines.join("\n"));
 	let mut maps = String::new();
 	for (id, f) in data.map_frames.get("forever").as_obj().map(|o| o.entries()).unwrap_or_default() {

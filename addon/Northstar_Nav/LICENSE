@@ -1,7 +1,7 @@
 Polestar Nav (addon/Polestar_Nav)
 
-Polestar's walking router started from Shortest Path Forever v1.16.0 by
-Cillian Berragan, with thanks; Polestar maintains it since 2026-10-16.
+Northstar's walking router started from Shortest Path Forever v1.16.0 by
+Cillian Berragan, with thanks; Northstar maintains it since 2026-10-16.
 Routing/PathGrid.lua, Routing/Path.lua and Routing/PathJobs.lua began as his
 files (commit b1ad5bd) and keep his copyright, with Polestar's changes since:
 Copyright (C) 2026 Cillian Berragan (cjber),

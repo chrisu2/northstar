@@ -562,7 +562,7 @@ fn every_texture_the_ui_shows_and_every_goal_verb_icon_exists_as_a_valid_tga() {
 	for v in verbs {
 		assert!(ours.contains(&format!("icon-{v}").as_str()));
 	}
-	for n in ["emblem", "wordmark", "band", "watermark"] {
+	for n in ["emblem", "band", "watermark"] {
 		assert!(ours.contains(&n), "{n} is used");
 	}
 	let mut missing: Vec<&str> = Vec::new();

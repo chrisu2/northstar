@@ -282,7 +282,7 @@ fn shipped(faction: &str, race: &str, class: &str, level: u32, done: &str, log: 
 #[allow(clippy::too_many_arguments)]
 fn shipped_with(faction: &str, race: &str, class: &str, level: u32, done: &str, log: &str, guide: &str, extra: &str) -> Value {
 	let dir = forge_addontest::run::addons_dir();
-	let part = format!("Polestar_Guides_{faction}");
+	let part = format!("Northstar_Guides_{faction}");
 	emitted(&RunAddon {
 		stubs: vec!["stub_world.lua"],
 		before: format!(
@@ -291,7 +291,7 @@ w.race, w.faction, w.class, w.className, w.level = "{race}", "{faction}", "{clas
 w.complete({{ {done} }})
 for _, q in ipairs({{ {log} }}) do w.onQuest(q, {{ 1 }}) end"#
 		),
-		addons: vec![Addon::files("Northstar", &["Core/Core.xml"]), Addon::dir("Polestar_Guides", dir.join("Polestar_Guides")), Addon::dir(&part, dir.join(&part))],
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml"]), Addon::dir("Northstar_Guides", dir.join("Northstar_Guides")), Addon::dir(&part, dir.join(&part))],
 		script: format!(
 			r#"
 E = Northstar.Engine

@@ -1,4 +1,4 @@
-//! Quests/PartyChat.lua: in a party, a star-marked party chat line ("{rt1} Polestar: ") when you finish
+//! Quests/PartyChat.lua: in a party, a star-marked party chat line ("{rt1} Northstar: ") when you finish
 //! a quest's objectives (those finished within 3 s in one line), one when the quest is ready to turn in,
 //! and one when you loot an item that starts a quest, with the client's links (settings party.chat and
 //! party.chatLoot, on by default). Against the fake client (tests/lua/stub_world.lua for the quest log,
@@ -364,16 +364,16 @@ stub.advance(1)
 w.progress(33, 2, 5); stub.advance(5)
 emit(chat())"#;
 	for (locale, mark) in [
-		("enUS", "{rt1} Polestar: "),
-		("frFR", "{rt1} Polestar : "),
-		("ruRU", "{звезда} Polestar: "),
-		("deDE", "{rt1} Polestar: "),
-		("esES", "{rt1} Polestar: "),
-		("esMX", "{rt1} Polestar: "),
-		("ptBR", "{rt1} Polestar: "),
-		("koKR", "{rt1} Polestar: "),
-		("zhCN", "{rt1} Polestar: "),
-		("zhTW", "{rt1} Polestar: "),
+		("enUS", "{rt1} Northstar: "),
+		("frFR", "{rt1} Northstar : "),
+		("ruRU", "{звезда} Northstar: "),
+		("deDE", "{rt1} Northstar: "),
+		("esES", "{rt1} Northstar: "),
+		("esMX", "{rt1} Northstar: "),
+		("ptBR", "{rt1} Northstar: "),
+		("koKR", "{rt1} Northstar: "),
+		("zhCN", "{rt1} Northstar: "),
+		("zhTW", "{rt1} Northstar: "),
 	] {
 		let out = in_locale(script, locale);
 		let all = lines(&out[0]);
@@ -385,11 +385,11 @@ emit(chat())"#;
 	}
 	let shown = live(
 		r#"
-for _, m in ipairs({ "{rt1} Polestar: x", "{rt1} Polestar : x", "{звезда} Polestar: x" }) do
+for _, m in ipairs({ "{rt1} Northstar: x", "{rt1} Northstar : x", "{звезда} Northstar: x" }) do
 	emit(p.show("CHAT_MSG_PARTY", m, "Ana-TestRealm") or "dropped")
 end"#,
 	);
-	assert_eq!(shown, vec![json!(format!("{ICON} Polestar: x")), json!(format!("{ICON} Polestar : x")), json!(format!("{ICON} Polestar: x"))]);
+	assert_eq!(shown, vec![json!(format!("{ICON} Northstar: x")), json!(format!("{ICON} Northstar : x")), json!(format!("{ICON} Northstar: x"))]);
 }
 
 #[test]
@@ -418,26 +418,26 @@ emit(chat())"#;
 	let solo = live(&script.replace("p.join(\"Ana\")", ""));
 	assert_eq!(lines(&solo[0]), NONE, "solo");
 	let fr = in_locale(script, "frFR");
-	assert_eq!(lines(&fr[0]), vec![format!("PARTY {{rt1}} Polestar : a ramassé {}, qui lance «\u{a0}The Dark Iron War\u{a0}»", item_link(9001, "Mysterious Letter"))]);
+	assert_eq!(lines(&fr[0]), vec![format!("PARTY {{rt1}} Northstar : a ramassé {}, qui lance «\u{a0}The Dark Iron War\u{a0}»", item_link(9001, "Mysterious Letter"))]);
 }
 
 #[test]
 fn party_chat_the_filter_hides_your_own_lines_unless_asked_and_others_on_request() {
 	let script = r#"
-local mine = "{rt1} Polestar: |cffffff00|Hquest:33:0|h[Plagued Lands]|h|r is ready to turn in"
+local mine = "{rt1} Northstar: |cffffff00|Hquest:33:0|h[Plagued Lands]|h|r is ready to turn in"
 emit(p.show("CHAT_MSG_PARTY", mine, "Testchar") or "dropped")
-emit(p.show("CHAT_MSG_PARTY_LEADER", "{rt1} Polestar: x", "Ana-TestRealm") or "dropped")
-emit(p.show("CHAT_MSG_INSTANCE_CHAT", "{звезда} Polestar: x", "Ana-TestRealm") or "dropped")
-emit(p.show("CHAT_MSG_INSTANCE_CHAT_LEADER", "{rt1} Polestar: x", "Ana-TestRealm") or "dropped")
+emit(p.show("CHAT_MSG_PARTY_LEADER", "{rt1} Northstar: x", "Ana-TestRealm") or "dropped")
+emit(p.show("CHAT_MSG_INSTANCE_CHAT", "{звезда} Northstar: x", "Ana-TestRealm") or "dropped")
+emit(p.show("CHAT_MSG_INSTANCE_CHAT_LEADER", "{rt1} Northstar: x", "Ana-TestRealm") or "dropped")
 emit(p.show("CHAT_MSG_PARTY", "{rt1} pull now", "Ana-TestRealm") or "dropped")"#;
 	let out = live(script);
 	assert_eq!(
 		out,
-		vec![json!("dropped"), json!(format!("{ICON} Polestar: x")), json!(format!("{ICON} Polestar: x")), json!(format!("{ICON} Polestar: x")), json!("{rt1} pull now")],
-		"own lines dropped by default; others' with Polestar's star; other lines untouched"
+		vec![json!("dropped"), json!(format!("{ICON} Northstar: x")), json!(format!("{ICON} Northstar: x")), json!(format!("{ICON} Northstar: x")), json!("{rt1} pull now")],
+		"own lines dropped by default; others' with Northstar's star; other lines untouched"
 	);
 	let echo = with_settings(script, "chatEcho = true");
-	assert_eq!(echo[0], json!(format!("{ICON} Polestar: |cffffff00|Hquest:33:0|h[Plagued Lands]|h|r is ready to turn in")));
+	assert_eq!(echo[0], json!(format!("{ICON} Northstar: |cffffff00|Hquest:33:0|h[Plagued Lands]|h|r is ready to turn in")));
 	let hide = with_settings(script, "chatHideOthers = true");
 	assert_eq!(hide, vec![json!("dropped"), json!("dropped"), json!("dropped"), json!("dropped"), json!("{rt1} pull now")]);
 }
@@ -457,7 +457,7 @@ stub.advance(6)
 w.progress(33, 1, 1); stub.advance(3)
 emit(all); emit(chat())"#;
 	let on = with_settings(script, "chatOnlyNeeded = true");
-	assert_eq!(lines(&on[0]), NONE, "everyone runs Polestar");
+	assert_eq!(lines(&on[0]), NONE, "everyone runs Northstar");
 	assert_eq!(lines(&on[1]), vec![ready(33, "Plagued Lands")], "Ben does not");
 	let off = live(script);
 	assert_eq!(lines(&off[0]), vec![objectives("Plagued Hide 5/5", 33, "Plagued Lands")], "the option off");

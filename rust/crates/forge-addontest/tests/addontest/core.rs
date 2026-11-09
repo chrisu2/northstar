@@ -142,7 +142,7 @@ fn slash_command_bare_toggles_the_frame_names_dispatch_with_the_rest_of_the_line
 		addons: vec![core()],
 		script: r#"
 			local got = {}
-			Northstar.On("TOGGLE_FRAME", function() got[#got + 1] = "toggle" end)
+			Northstar.On("TOGGLE_JOURNAL", function() got[#got + 1] = "toggle" end)
 			Northstar.RegisterCommand("Goto", function(rest) got[#got + 1] = "goto:" .. rest end, "help text")
 			SlashCmdList.NORTHSTAR("")
 			SlashCmdList.NORTHSTAR("  goto   12 extra  ")

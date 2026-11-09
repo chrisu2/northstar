@@ -16,8 +16,8 @@ fn root() -> std::path::PathBuf {
 /// __opened (a locale file under Locales/ or a file of a language folder).
 fn client(locale: &str, folder: bool) -> String {
 	let files = if folder {
-		let list = toc_files("Polestar_deDE").unwrap().iter().map(|f| lua_string(&f.to_string_lossy())).collect::<Vec<_>>().join(", ");
-		format!("stub.packs.Polestar_deDE = {{ {list} }}")
+		let list = toc_files("Northstar_deDE").unwrap().iter().map(|f| lua_string(&f.to_string_lossy())).collect::<Vec<_>>().join(", ");
+		format!("stub.packs.Northstar_deDE = {{ {list} }}")
 	} else {
 		String::new()
 	};
@@ -29,7 +29,7 @@ do
 	local load = loadfile
 	function loadfile(file)
 		local rel = file:gsub("\\", "/"):match("/addon/(.*)$")
-		if rel and (rel:find("/Locales/") or rel:find("^Polestar_%a%a%u%u/")) then __opened[#__opened + 1] = rel end
+		if rel and (rel:find("/Locales/") or rel:find("^Northstar_%a%a%u%u/")) then __opened[#__opened + 1] = rel end
 		return load(file)
 	end
 end"#,
@@ -44,7 +44,7 @@ fn run(locale: &str, folder: bool) -> Vec<serde_json::Value> {
 		addons: vec![Addon::files("Northstar", &["Core/Core.xml"])],
 		script: r#"
 local L, N, T = Northstar.L, Northstar.Names, Northstar.GuideTexts
-emit({ BINDING_NAME_POLESTAR_NEXT, L["Previous step"], N.Cached("quest", 7) or false, T.PackText("guides", "Polestar Guides"), stub.packLoads.Polestar_deDE or 0, table.concat(__opened, " ") })"#
+emit({ BINDING_NAME_NORTHSTAR_NEXT, L["Previous step"], N.Cached("quest", 7) or false, T.PackText("guides", "Northstar Guides"), stub.packLoads.Northstar_deDE or 0, table.concat(__opened, " ") })"#
 			.into(),
 		..Default::default()
 	})
@@ -66,7 +66,7 @@ fn a_german_client_has_its_strings_before_the_first_file_reads_one_and_opens_no_
 	let out = run("deDE", true);
 	assert_eq!(
 		out[0],
-		json!(["Nächster Schritt", "Vorheriger Schritt", "Säuberung im Koboldlager", "Polestar-Guides", 1, "Polestar_deDE/Interface.lua Polestar_deDE/Names.lua Polestar_deDE/Texts.lua"]),
+		json!(["Nächster Schritt", "Vorheriger Schritt", "Säuberung im Koboldlager", "Northstar-Guides", 1, "Northstar_deDE/Interface.lua Northstar_deDE/Names.lua Northstar_deDE/Texts.lua"]),
 		"the key binding's name is read while Core/Commands.lua loads; the folder loads once, names and guide texts with it"
 	);
 }
@@ -75,10 +75,10 @@ fn a_german_client_has_its_strings_before_the_first_file_reads_one_and_opens_no_
 fn an_english_client_opens_no_language_folder_and_a_missing_one_leaves_the_interface_in_english() {
 	for locale in ["enUS", "enGB"] {
 		let out = run(locale, true);
-		assert_eq!(out[0], json!(["Next step", "Previous step", false, "Polestar Guides", 0, ""]), "{locale}");
+		assert_eq!(out[0], json!(["Next step", "Previous step", false, "Northstar Guides", 0, ""]), "{locale}");
 	}
 	let out = run("deDE", false);
-	assert_eq!(out[0], json!(["Next step", "Previous step", false, "Polestar Guides", 0, ""]), "a German client without Polestar_deDE");
+	assert_eq!(out[0], json!(["Next step", "Previous step", false, "Northstar Guides", 0, ""]), "a German client without Northstar_deDE");
 }
 
 #[test]
@@ -110,9 +110,9 @@ local early = L["Previous step"]
 local name = N.Cached("quest", 7) or false
 local logged = false
 for _, line in ipairs(Northstar.DebugLog()) do
-	if line:find("Locale: Polestar_deDE not loaded: DEMAND_LOADED", 1, true) then logged = true end
+	if line:find("Locale: Northstar_deDE not loaded: DEMAND_LOADED", 1, true) then logged = true end
 end
-emit({ BINDING_NAME_POLESTAR_NEXT, early, name, L["Previous step"], logged })"#
+emit({ BINDING_NAME_NORTHSTAR_NEXT, early, name, L["Previous step"], logged })"#
 			.into(),
 		..Default::default()
 	});

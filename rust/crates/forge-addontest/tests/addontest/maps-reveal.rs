@@ -467,8 +467,8 @@ fn the_minimap_button_s_logo_and_hover_are_polestar_s_files_the_hover_a_quarter_
 		None,
 	);
 	let rest = &out["rest"];
-	assert!(rest["icon"].as_str().unwrap().ends_with("Polestar\\Media\\UI\\logo"), "{rest}");
-	assert!(rest["hover"].as_str().unwrap().ends_with("Polestar\\Media\\UI\\circle"));
+	assert!(rest["icon"].as_str().unwrap().ends_with("Northstar\\Media\\UI\\logo"), "{rest}");
+	assert!(rest["hover"].as_str().unwrap().ends_with("Northstar\\Media\\UI\\circle"));
 	assert_eq!(rest["layer"], "HIGHLIGHT");
 	for k in ["rest", "enter", "leave", "bar", "repainted"] {
 		assert!((f64::from(out[k]["strength"].as_f64().unwrap()) - 0.25).abs() < 1e-6, "{k}: the hover at 25 %: {}", out[k]);

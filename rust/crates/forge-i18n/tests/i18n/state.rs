@@ -41,10 +41,18 @@ fn a_file_in_another_layout_is_an_error_for_the_check() {
 
 #[test]
 fn every_shipped_interface_file_loads_has_no_stale_or_twice_set_key_and_keeps_the_english_formats() {
-	let names: Vec<String> = std::fs::read_dir(polestar().join("Locales")).unwrap().flatten().map(|e| e.file_name().to_string_lossy().into_owned()).filter(|f| f.ends_with(".lua")).collect();
+	let addon = polestar().parent().unwrap().to_path_buf();
+	let mut names = Vec::new();
+	for e in std::fs::read_dir(&addon).unwrap().flatten() {
+		let n = e.file_name().to_string_lossy().into_owned();
+		let Some(code) = n.strip_prefix("Northstar_") else { continue };
+		if e.path().join("Interface.lua").is_file() {
+			names.push(code.to_string());
+		}
+	}
 	assert!(!names.is_empty());
 	for f in &names {
-		assert!(forge_guide::locales::locale(f.trim_end_matches(".lua")).is_some(), "Locales/{f}: not a locale Northstar ships");
+		assert!(forge_guide::locales::locale(f).is_some(), "Northstar_{f}: not a locale Northstar ships");
 	}
 	let shipped = shipped();
 	assert!(!shipped.is_empty());

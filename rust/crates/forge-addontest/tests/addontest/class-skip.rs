@@ -136,7 +136,7 @@ fn skipping_the_step_the_rest_follows_from_says_so_and_offers_the_undo_instead_o
 		sn.completed, sn.state = completed, E.GetGuideState("test/class/call-of-water")
 		emit(sn)
 		local before = #stub.messages
-		SlashCmdList.POLESTAR("skip")
+		SlashCmdList.NORTHSTAR("skip")
 		emit({ printed = table.concat(stub.messages, "\n", before + 1) })
 		GF.parts.empty.Primary.psAction(); flush()
 		emit(snap())"#);

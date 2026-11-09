@@ -1628,7 +1628,7 @@ emit({ page = { d.entrance.map, d.entrance.x, d.entrance.y }, arrow = { D.Entran
 // line for this. It is refused now and no tab changes; a hand-in still takes the tab of a pick-up guide at its
 // last step, whichever tab is active.
 const SIX_TABS: &str = r#"
-Northstar.RegisterPack({ addon = "Polestar_Test", id = "test", format = 1, title = "Test", author = "Test", version = "1", license = "MIT" })
+Northstar.RegisterPack({ addon = "Northstar_Test", id = "test", format = 1, title = "Test", author = "Test", version = "1", license = "MIT" })
 for i = 1, 6 do
 	Northstar.RegisterGuide({ id = "test/f" .. i, pack = "test", title = "Filler " .. i, minLevel = 1, maxLevel = 60, steps = { { goals = { { t = "level", level = 60 } } } } })
 end

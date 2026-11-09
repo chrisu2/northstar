@@ -65,7 +65,7 @@ const REFUSED_AT_LOAD: &str = r#"
 do
 	local load = C_AddOns.LoadAddOn
 	function C_AddOns.LoadAddOn(name)
-		if not stub.loggedIn and type(name) == "string" and name:find("^Polestar_%l%l%u%u$") then return false, "DEP_DEMAND_LOADED" end
+		if not stub.loggedIn and type(name) == "string" and name:find("^Northstar_%l%l%u%u$") then return false, "DEP_DEMAND_LOADED" end
 		return load(name)
 	end
 end"#;

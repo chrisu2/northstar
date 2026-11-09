@@ -149,7 +149,7 @@ fn polestar_whatsnew_and_about_reopen_it_once_seen() {
 		r#"
 		stub.advance(10)
 		local atLogin = shown()
-		SlashCmdList.POLESTAR("whatsnew")
+		SlashCmdList.NORTHSTAR("whatsnew")
 		local slash = shown()
 		NorthstarWhatsNew:Hide()
 		Northstar.Fire("SHOW_WHATSNEW")

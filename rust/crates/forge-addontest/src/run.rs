@@ -227,6 +227,31 @@ end",
 		let list: Vec<String> = files.iter().map(|f| path_str(f)).collect();
 		lines.push(format!("__load({}, {{ {} }}, {saved})", lua_string(name), list.join(", ")));
 	}
+	// Northstar leaves the wide guide and the floating arrow off. These tests
+	// exercise that window and that arrow, so every login turns both on after
+	// the saved-variable migration (which runs inside stub.login and would
+	// otherwise tuck the window away). A test that wants the product defaults
+	// sets them again after it logs in. The guide frame only renders while it
+	// is shown, so render once the window is back.
+	if opts.addons.iter().any(|a| a.addon_name() == "Northstar") {
+		lines.push(
+			"if Northstar and Northstar.Set then
+  local login = stub.login
+  function stub.login(...)
+    login(...)
+    Northstar.Set(\"ui.wideGuide\", true)
+    Northstar.Set(\"ui.journal\", false)
+    Northstar.Set(\"nav.arrow\", true)
+    local GF = Northstar.UI and Northstar.UI.GuideFrame
+    if GF and GF.ApplyVisibility then GF.ApplyVisibility() end
+    if GF and GF.Render then GF.Render() end
+    local arrow = Northstar.Nav and Northstar.Nav.arrow
+    if arrow and arrow.Refresh then arrow:Refresh() end
+  end
+end"
+			.into(),
+		);
+	}
 	if opts.login {
 		lines.push("stub.login()".into());
 	}

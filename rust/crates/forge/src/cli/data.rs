@@ -1087,12 +1087,12 @@ fn maps(args: Vec<String>) -> Result<(), Fail> {
 pub(super) const NEWQUESTS_USAGE: &str = "usage: forge data newquests [options]
 
 The quests Forever added (in neither pfQuest's Classic database nor the Classic Era client's quest
-table), for the addon's \"New in Forever\" mark -> addon/Polestar/Quests/NewQuestIds.lua.
+table), for the addon's \"New in Forever\" mark -> addon/Northstar/Quests/NewQuestIds.lua.
   --data DIR      data/forever (quests.json)
   --sources DIR   source cache folder (default: <root>/data/sources): the pinned client quest tables
   --offline       use cached tables only
   --check         fail when the file is out of date instead of writing it
-  --lua FILE      output (default: <root>/addon/Polestar/Quests/NewQuestIds.lua)
+  --lua FILE      output (default: <root>/addon/Northstar/Quests/NewQuestIds.lua)
   --root DIR      the checkout (default: the one above the current folder)";
 
 fn newquests(args: Vec<String>) -> Result<(), Fail> {
@@ -1104,7 +1104,7 @@ fn newquests(args: Vec<String>) -> Result<(), Fail> {
 	let root = root_of(&kv)?;
 	let data = get("--data").map(abs).unwrap_or_else(|| root.join("data").join("forever"));
 	let src = get("--sources").map(abs).unwrap_or_else(|| root.join("data").join("sources"));
-	let out = get("--lua").map(abs).unwrap_or_else(|| root.join("addon/Polestar/Quests/NewQuestIds.lua"));
+	let out = get("--lua").map(abs).unwrap_or_else(|| root.join("addon/Northstar/Quests/NewQuestIds.lua"));
 	let (ids, lua) = forge_data::newquests::build(&data, &src, fl.iter().any(|f| f == "--offline"), &|m| println!("{m}"))?;
 	println!("newquests: {} quests new in Forever ({} bytes of ids)", ids.len(), ids.len() * forge_data::newquests::WIDTH);
 	if fl.iter().any(|f| f == "--check") {

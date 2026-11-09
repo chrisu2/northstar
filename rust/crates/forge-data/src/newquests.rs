@@ -1,5 +1,5 @@
 //! `forge data newquests`: the quests World of Warcraft: Forever added to the game, for the addon's
-//! "New in Forever" mark -> addon/Polestar/Quests/NewQuestIds.lua. Same inputs give byte-identical output.
+//! "New in Forever" mark -> addon/Northstar/Quests/NewQuestIds.lua. Same inputs give byte-identical output.
 //!
 //! A quest is new in Forever when Classic never had it: neither pfQuest's Classic database (the
 //! `pfquest` source of data/forever/quests.json) nor the Classic Era client's quest table (QuestV2,
@@ -9,7 +9,7 @@
 //! (QuestV2 holds the quests with a completion bit), which is why both Classic sources count.
 //!
 //! The ids ship as one string of fixed-width decimal ids, ascending, read by binary search
-//! (addon/Polestar/Quests/NewQuests.lua): a few KB resident where a table set would cost ~40 bytes
+//! (addon/Northstar/Quests/NewQuests.lua): a few KB resident where a table set would cost ~40 bytes
 //! an id.
 
 use std::collections::BTreeSet;

@@ -3067,7 +3067,7 @@ L["party chat: , "] = "，"
 L["Northstar told your party about your quest progress in chat (Options > Questing > Quests > Group to change this)."] = "Northstar 已在聊天中告訴你的隊伍你的任務進度（在 選項 > 解任務 > 任務 > 小隊 中更改）。"
 L["%s is ready to turn in"] = "%s 可繳交"
 L["looted %s, which starts %s"] = "拾取了 %s，可開始任務 %s"
--- L["{rt1} Polestar: "] = ""
+L["{rt1} Northstar: "] = "{rt1} Northstar: "
 
 -- UI/WhatsNew.lua
 L["Fixes from your reports"] = "根據你的回報所做的修正"

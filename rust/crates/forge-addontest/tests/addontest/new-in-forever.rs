@@ -109,7 +109,7 @@ fn a_forever_quest_s_goal_row_and_its_tooltip_carry_the_mark_a_classic_one_does_
 	assert!(tip.iter().any(|l| l.contains(GLYPH) && l.ends_with(" New in Forever")), "the goal's tooltip says so: {tip:?}");
 	assert_eq!(out[2]["default"], true, "on by default");
 	let glyph = text(&out[2]["glyph"]);
-	assert_eq!(glyph, "|TInterface\\AddOns\\Polestar\\Media\\UI\\icon-forever:8:16:0:0|t", "16x8, in its own colours");
+	assert_eq!(glyph, "|TInterface\\AddOns\\Northstar\\Media\\UI\\icon-forever:8:16:0:0|t", "16x8, in its own colours");
 	assert_eq!(strs(&out[3])[0], "Accept \u{201c}Crimson Crate Delivery\u{201d}", "turned off: gone at once");
 	assert!(!strs(&out[4]).iter().any(|l| l.contains("New in Forever")), "{}", out[4]);
 	assert_eq!(strs(&out[5]), on, "back on");
@@ -216,7 +216,7 @@ fn the_ids_stay_within_their_memory_budget() {
 local N = Northstar.NewQuests
 collectgarbage("collect"); collectgarbage("collect")
 local before = collectgarbage("count")
-assert(loadfile({file}))("Northstar", Polestar)
+assert(loadfile({file}))("Northstar", Northstar)
 collectgarbage("collect"); collectgarbage("collect")
 emit({{ kb = collectgarbage("count") - before, n = N.Count(), hit = N.IsNew(98240) }})"#,
 			file = forge_addontest::run::lua_string(&file.to_string_lossy())

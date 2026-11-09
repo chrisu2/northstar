@@ -61,9 +61,11 @@ fn has_control(s: &str) -> bool {
 	s.chars().any(|c| (c as u32) < 0x20 || c as u32 == 0x7f)
 }
 
-/// OUR_FOLDER_RE: /^polestar($|_)/i
+/// OUR_FOLDER_RE: /^(polestar|northstar)($|_)/i
 fn is_our_folder(s: &str) -> bool {
-	s.len() >= 8 && s.as_bytes()[..8].eq_ignore_ascii_case(b"polestar") && (s.len() == 8 || s.as_bytes()[8] == b'_')
+	let b = s.as_bytes();
+	let hit = |name: &[u8]| s.len() >= name.len() && b[..name.len()].eq_ignore_ascii_case(name) && (s.len() == name.len() || b[name.len()] == b'_');
+	hit(b"polestar") || hit(b"northstar")
 }
 
 /// 1-based line of `"key":` in the JSON text, else 1.

@@ -277,11 +277,12 @@ fn the_sidebar_is_one_compact_block_on_one_edge_the_lockup_wordmark_tagline_unde
 		local _, _, _, _, labelY = opt.Label:GetPoint(1)
 		local _, _, _, _, iconY = opt.Icon:GetPoint(1)
 		local navFirst = F.navButtons[1]
-		emit({ wordmark = pt(F.Wordmark), tagline = pt(F.Tagline), search = pt(F.Search), navTop = F.psNavTop, navX = select(4, navFirst.Icon:GetPoint(1)),
+		emit({ wordmark = pt(F.Wordmark), word = F.Wordmark:GetText(), tagline = pt(F.Tagline), search = pt(F.Search), navTop = F.psNavTop, navX = select(4, navFirst.Icon:GetPoint(1)),
 			status = pt(F.Status), optLabelBottom = optY + opt:GetHeight() + iconY - opt.Icon:GetHeight() + labelY - opt.Label:GetStringHeight(),
 			emblem = pt(F.Emblem), firstRail = (function() for _, b in ipairs(F.railButtons) do if b:IsShown() and b.psKey == "Guides" then local _, _, _, _, y = b:GetPoint(1); return -y end end end)() })"#);
 	let edge = 24;
-	assert_eq!(out["wordmark"], json!(["TOPLEFT", edge - 2, -22]), "the wordmark's ink (2px into its box) sits on the sidebar edge");
+	assert_eq!(out["wordmark"], json!(["TOPLEFT", edge, -22]), "the text wordmark sits on the sidebar edge");
+	assert_eq!(out["word"], "Northstar");
 	assert_eq!(out["tagline"], json!(["TOPLEFT", edge, -52]), "the tagline under the wordmark, on the same edge");
 	assert_eq!(out["search"], json!(["TOPLEFT", edge, -(112 - 30)]), "the search ends on the header band's 112 line");
 	assert_eq!(out["navTop"], 112 + 12, "navigation 12px under the search");

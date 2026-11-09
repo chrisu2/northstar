@@ -657,7 +657,7 @@ emit(sq.hoverUnit(6))
 "#,
 		"w.complete({ 783 })",
 	);
-	let mark = " |TInterface\\AddOns\\Polestar\\Media\\UI\\icon-forever:8:16:0:0|t";
+	let mark = " |TInterface\\AddOns\\Northstar\\Media\\UI\\icon-forever:8:16:0:0|t";
 	assert_eq!(out[0], json!(["?", format!("Kobold Camp Cleanup{mark}: | Kill Kobold Vermin 0/10"), "Kobold Candles: | Large Candle 0/8"]));
 	assert_eq!(out[1], json!(["?", format!("Starts a quest: | A Strange Note{mark}")]));
 	assert_eq!(out[2], json!(["?", "Kobold Camp Cleanup: | Kill Kobold Vermin 0/10", "Kobold Candles: | Large Candle 0/8"]));

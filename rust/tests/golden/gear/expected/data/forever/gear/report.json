@@ -38,7 +38,7 @@
 			"quests": 4,
 			"skippedSlot": 1
 		},
-		"bytes": 2318
+		"bytes": 2320
 	},
 	"wowsims": {
 		"meta": {
@@ -122,6 +122,6 @@
 		},
 		"rejected": 4
 	},
-	"specDataBytes": 20314,
+	"specDataBytes": 20365,
 	"gaps": []
 }

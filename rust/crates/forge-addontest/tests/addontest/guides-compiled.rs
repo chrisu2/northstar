@@ -327,7 +327,7 @@ fn guide_id_before(lines: &[String], i: usize) -> String {
 
 #[test]
 fn a_goal_spliced_in_before_goals_fails_the_checks() {
-	let (sources, committed) = setup();
+	let (_, committed) = setup();
 	let (_tmp, dir, id) = broken_copy(|lines| {
 		let i = (0..lines.len()).position(|j| lines[j] == GOALS_OPEN && is_goal(lines.get(j + 1)) && is_goal(lines.get(j + 2))).unwrap();
 		let id = guide_id_before(lines, i);
@@ -338,7 +338,11 @@ fn a_goal_spliced_in_before_goals_fails_the_checks() {
 	let broken = load(&dir);
 	assert_eq!(broken.problems, committed.problems, "the registry takes it without a word");
 	assert!(is_match(&broken.shape.join("\n"), &format!(r"(?m)^{id}: step \d+ \(.+\): entry \[1\] outside goals$")));
-	assert!(is_match(&diff(&broken.steps, sources).join("\n"), &format!(r"(?m)^{id} step \d+ ")));
+	// Registered steps are fewer than the source where a step is not for this
+	// character, so the splice is measured against the unedited register.
+	let prev = get(&committed.steps, &id).unwrap_or_else(|| panic!("missing {id}"));
+	let now = get(&broken.steps, &id).unwrap_or_else(|| panic!("spliced {id} did not register"));
+	assert_ne!(prev, now, "a goal spliced out of its list changes what the guide registers");
 }
 
 #[test]

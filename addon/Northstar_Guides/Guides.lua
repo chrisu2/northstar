@@ -6460,7 +6460,7 @@ do
 				},
 				{
 					title = "Tradeskills: {skill:171}",
-					note = "Each crafting profession gives 3 points, at 150, 225 and 300. Ranks count once per profession across your account. Follow the Northstar guide \"{skill:171} 1-300\" (Professions). A crafting profession at 150 also unlocks the Legacy System.",
+					note = "Each crafting profession gives 3 points, at 150, 225 and 300. Ranks count once per profession across your account. Follow the Polestar guide \"{skill:171} 1-300\" (Professions). A crafting profession at 150 also unlocks the Legacy System.",
 					goals = {
 						{ t = "skill", skill = "Alchemy", skillLine = 171, level = 150 },
 						{ t = "skill", skill = "Alchemy", skillLine = 171, level = 225 },
@@ -6469,7 +6469,7 @@ do
 				},
 				{
 					title = "Tradeskills: {skill:164}",
-					note = "Follow the Northstar guide \"{skill:164} 1-300\" (Professions).",
+					note = "Follow the Polestar guide \"{skill:164} 1-300\" (Professions).",
 					goals = {
 						{ t = "skill", skill = "Blacksmithing", skillLine = 164, level = 150 },
 						{ t = "skill", skill = "Blacksmithing", skillLine = 164, level = 225 },
@@ -6478,7 +6478,7 @@ do
 				},
 				{
 					title = "Tradeskills: {skill:333}",
-					note = "Follow the Northstar guide \"{skill:333} 1-300\" (Professions).",
+					note = "Follow the Polestar guide \"{skill:333} 1-300\" (Professions).",
 					goals = {
 						{ t = "skill", skill = "Enchanting", skillLine = 333, level = 150 },
 						{ t = "skill", skill = "Enchanting", skillLine = 333, level = 225 },
@@ -6487,7 +6487,7 @@ do
 				},
 				{
 					title = "Tradeskills: {skill:202}",
-					note = "Follow the Northstar guide \"{skill:202} 1-300\" (Professions).",
+					note = "Follow the Polestar guide \"{skill:202} 1-300\" (Professions).",
 					goals = {
 						{ t = "skill", skill = "Engineering", skillLine = 202, level = 150 },
 						{ t = "skill", skill = "Engineering", skillLine = 202, level = 225 },
@@ -6496,7 +6496,7 @@ do
 				},
 				{
 					title = "Tradeskills: {skill:165}",
-					note = "Follow the Northstar guide \"{skill:165} 1-300\" (Professions).",
+					note = "Follow the Polestar guide \"{skill:165} 1-300\" (Professions).",
 					goals = {
 						{ t = "skill", skill = "Leatherworking", skillLine = 165, level = 150 },
 						{ t = "skill", skill = "Leatherworking", skillLine = 165, level = 225 },
@@ -6505,7 +6505,7 @@ do
 				},
 				{
 					title = "Tradeskills: {skill:197}",
-					note = "Follow the Northstar guide \"{skill:197} 1-300\" (Professions).",
+					note = "Follow the Polestar guide \"{skill:197} 1-300\" (Professions).",
 					goals = {
 						{ t = "skill", skill = "Tailoring", skillLine = 197, level = 150 },
 						{ t = "skill", skill = "Tailoring", skillLine = 197, level = 225 },
@@ -6514,7 +6514,7 @@ do
 				},
 				{
 					title = "PvP: battleground reputations (Alliance)",
-					note = "Exalted with each of the four battleground factions is worth a point. Follow the Northstar Reputation guides Warsong Gulch Reputation, Arathi Basin Reputation, Alterac Valley Reputation and Darkspear Islands Reputation (Forever's new battleground, open from level 30). The Diplomat Legacy perk increases reputation gains.",
+					note = "Exalted with each of the four battleground factions is worth a point. Follow the Polestar Reputation guides Warsong Gulch Reputation, Arathi Basin Reputation, Alterac Valley Reputation and Darkspear Islands Reputation (Forever's new battleground, open from level 30). The Diplomat Legacy perk increases reputation gains.",
 					only = { factions = { "Alliance" } },
 					goals = {
 						{ t = "rep", faction = 890, factionName = "Silverwing Sentinels", standing = 8, note = "{zone:1460}" },
@@ -6525,7 +6525,7 @@ do
 				},
 				{
 					title = "PvP: battleground reputations (Horde)",
-					note = "Exalted with each of the four battleground factions is worth a point. Follow the Northstar Reputation guides Warsong Gulch Reputation, Arathi Basin Reputation, Alterac Valley Reputation and Darkspear Islands Reputation (Forever's new battleground, open from level 30). The Diplomat Legacy perk increases reputation gains.",
+					note = "Exalted with each of the four battleground factions is worth a point. Follow the Polestar Reputation guides Warsong Gulch Reputation, Arathi Basin Reputation, Alterac Valley Reputation and Darkspear Islands Reputation (Forever's new battleground, open from level 30). The Diplomat Legacy perk increases reputation gains.",
 					only = { factions = { "Horde" } },
 					goals = {
 						{ t = "rep", faction = 889, factionName = "Warsong Outriders", standing = 8, note = "{zone:1460}" },
@@ -6536,7 +6536,7 @@ do
 				},
 				{
 					title = "PvP: honor ranks",
-					note = "Ranks 3, 7, 10, 13 and 14 are a point each. Northstar cannot read your highest rank yet, so tick each one off yourself. Forever's honor rules for reaching a rank have not been published in detail; in Classic, ranks come from your weekly honor standing, and 13-14 take many weeks of top standing.",
+					note = "Ranks 3, 7, 10, 13 and 14 are a point each. Polestar cannot read your highest rank yet, so tick each one off yourself. Forever's honor rules for reaching a rank have not been published in detail; in Classic, ranks come from your weekly honor standing, and 13-14 take many weeks of top standing.",
 					goals = {
 						{ t = "kill", target = "enemy players for honor until PvP Rank 3" },
 						{ t = "kill", target = "enemy players for honor until PvP Rank 7" },
@@ -6558,7 +6558,7 @@ do
 					title = "Adventure: explore the world map",
 					note = "Exploring the entire world map on one character is a point, and it can also unlock the Legacy System. It must all be on the same character. Forever's new zones are part of the map: the {zone:2548}, {zone:2652} and {zone:2482}, a level 60 zone.",
 					goals = {
-						{ t = "note", text = "Follow the Northstar Exploration guides: Exploration: Eastern Kingdoms 1-30, 30-45 and 45-60, and Exploration: Kalimdor 1-30, 30-45 and 45-60. They track every area as you discover it. Exploration: Zephras Isle covers the Skyborne island; whether its map counts towards this challenge is not confirmed yet." },
+						{ t = "note", text = "Follow the Polestar Exploration guides: Exploration: Eastern Kingdoms 1-30, 30-45 and 45-60, and Exploration: Kalimdor 1-30, 30-45 and 45-60. They track every area as you discover it. Exploration: Zephras Isle covers the Skyborne island; whether its map counts towards this challenge is not confirmed yet." },
 						{ t = "note", text = "This step cannot check the whole map by itself yet; it becomes a tracked goal once the Legacy achievement ids are recorded." },
 					},
 				},
@@ -7266,7 +7266,7 @@ do
 				},
 				{
 					title = "The level 60 books: {npc:5497}",
-					note = "{npc:5497}, the mage trainer beside {npc:211033} in the Wizard's Sanctum, takes the level 60 books: she offers each book's quest while the book is in your bags. Hand in {item:228132}, {item:228138} and {item:228140} the same way (their quests are not in Northstar's data yet).",
+					note = "{npc:5497}, the mage trainer beside {npc:211033} in the Wizard's Sanctum, takes the level 60 books: she offers each book's quest while the book is in your bags. Hand in {item:228132}, {item:228138} and {item:228140} the same way (their quests are not in Polestar's data yet).",
 					only = { factions = { "Alliance" } },
 					goals = {
 						{ t = "accept", quest = 84402, title = "Necromancy 101", npc = 5497, npcName = "Jennea Cannon", minLevel = 1, qlvl = 60, map = 1453, x = 49.56, y = 85.8, z = 29.7 },
@@ -7283,7 +7283,7 @@ do
 				},
 				{
 					title = "The level 60 books: {npc:7825}",
-					note = "{npc:7825}, beside {npc:211022} in the {object:36082}, takes the level 60 books: each book's quest is offered while the book is in your bags. Take and hand them in one at a time (Northstar cannot track these quests for the Horde yet).",
+					note = "{npc:7825}, beside {npc:211022} in the {object:36082}, takes the level 60 books: each book's quest is offered while the book is in your bags. Take and hand them in one at a time (Polestar cannot track these quests for the Horde yet).",
 					only = { factions = { "Horde" } },
 					goals = {
 						{ t = "talk", npc = 7825, npcName = "Oran Snakewrithe", map = 1458, x = 73.06, y = 32.85, z = -62.1, f = "e" },
@@ -15792,7 +15792,7 @@ do
 				},
 				{
 					title = "Neutral to Friendly",
-					note = "After the {quest:98247}, Friendly is 1000 more: 14 Journeyman writs, 8 Expert or 5 Artisan. Expert and Artisan customers are mostly not in Northstar's data yet: follow the mark the quest puts on your map. Journeyman envelopes drop from mobs of about level 11 to 31; Expert and Artisan ones from higher mobs.",
+					note = "After the {quest:98247}, Friendly is 1000 more: 14 Journeyman writs, 8 Expert or 5 Artisan. Expert and Artisan customers are mostly not in Polestar's data yet: follow the mark the quest puts on your map. Journeyman envelopes drop from mobs of about level 11 to 31; Expert and Artisan ones from higher mobs.",
 					goals = {
 						{ t = "rep", faction = 2586, factionName = "Azeroth Commerce Authority", standing = 5, only = { factions = { "Alliance" } } },
 						{ t = "rep", faction = 2587, factionName = "Durotar Supply and Logistics", standing = 5, only = { factions = { "Horde" } } },
@@ -15955,7 +15955,7 @@ do
 				},
 				{
 					title = "{zone:1418} writ customer",
-					note = "{npc:2921} works about 550 yards east of {area:340}. He is the only Expert customer Northstar's data knows.",
+					note = "{npc:2921} works about 550 yards east of {area:340}. He is the only Expert customer Polestar's data knows.",
 					when = { { k = "onquest", q = { 94256 } } },
 					goals = {
 						{ t = "turnin", quest = 94256, title = "Craftsman's Writ: Frost Protection Potion", npc = 2921, npcName = "Lotwil Veriatus", map = 1418, x = 25.95, y = 44.87, z = 243.4, f = "e", note = "{item:6050}, 125 reputation" },

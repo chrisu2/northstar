@@ -1233,7 +1233,7 @@ fn spotter_mount_spotted_the_unit_tooltip_line_and_polestar_mount() {
 	]
 	.concat()));
 	assert_eq!(spotted, json!([["target", 8000]]));
-	assert_eq!(lines, json!(["Mount: Amber Strider | Vendor \u{b7} Amber Vale", "/pole mount: how to get it"]));
+	assert_eq!(lines, json!(["Mount: Amber Strider | Vendor \u{b7} Amber Vale", "/ns mount: how to get it"]));
 	assert_eq!(shown, json!([false, "mount", 8000]));
 	assert_eq!(class_mount, json!(["Summon Shadowsteed", false, false]));
 	assert!(is_match(text(&nothing), r"No mount found"));

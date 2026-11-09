@@ -123,10 +123,10 @@ fn control_characters_are_refused_in_every_string_field() {
 
 #[test]
 fn the_default_folder_is_polestarpack_and_the_title_in_camelcase_cut_to_the_64_characters_a_folder_may_have() {
-	// 64 characters, one word: NorthstarPack_ and it would be 77.
+	// 64 characters. NorthstarPack_ is 14, so Long plus 46 r's fills it.
 	let title = format!("Long{}", "r".repeat(60));
 	let (folder, _) = folder_of("long", &with("title", json!(title)));
-	assert_eq!(folder, format!("NorthstarPack_Long{}", "r".repeat(47)));
+	assert_eq!(folder, format!("NorthstarPack_Long{}", "r".repeat(46)));
 	assert_eq!(folder.len(), 64);
 	assert!(check(&with("folder", json!(folder))).is_empty());
 }

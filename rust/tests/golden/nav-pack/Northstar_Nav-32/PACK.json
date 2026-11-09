@@ -45,8 +45,8 @@
 		}
 	},
 	"files": {
-		"Nav/Nav0.lua": "21d733aaf285bbca7473905247e55ad6e5c9ecdbe4882af5728e635b96e8bd5c",
-		"Nav/Nav0_1.lua": "e5c20215345fc631b89609512119d51e072d16c282525a11671123fbdd35219b",
-		"Nav/Chokepoints.lua": "638c4d04bf44545b750880605414b8c655e258faf097a7de6e6a2ed1fafce2c6"
+		"Nav/Nav0.lua": "b446dc551af943a839fb52f991c3bf78e1f252dd94883db3b761bce9d97f328c",
+		"Nav/Nav0_1.lua": "9887ea84e648e79720e6f7ca4cf72c1e31684dd356bbe2763ef875074a3c3dca",
+		"Nav/Chokepoints.lua": "bd190d760aba1bf0f69a0d626f357c64b371542c73c95092c83ae231366cfead"
 	}
 }

@@ -822,7 +822,7 @@ pub fn update_locale_text(text: &str, file: &str, keys: &[(String, Vec<String>)]
 /// the global `Northstar` rather than `...`.
 pub fn new_locale_text(locale: &str, keys: &[(String, Vec<String>)], fill: &V, retire: &V, title: &str, language_folder: bool) -> Result<LocaleUpdate, String> {
 	let language = locales::locale(locale).map_or(locale, |m| m.language);
-	let (ns, guard) = if language_folder { ("local ns = Polestar", "ns and ") } else { ("local _, ns = ...", "") };
+	let (ns, guard) = if language_folder { ("local ns = Northstar", "ns and ") } else { ("local _, ns = ...", "") };
 	let head = [
 		format!("-- {language} ({locale}): {title}."),
 		"-- Keys are the English strings exactly as the code writes them; a key".into(),

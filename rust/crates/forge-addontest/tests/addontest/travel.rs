@@ -36,10 +36,10 @@ do
 	local load = loadfile
 	function loadfile(file)
 		local chunk, err = load(file)
-		if not chunk or not file:match("[/\\]Polestar[/\\]Core[/\\]Init%.lua$") then return chunk, err end
+		if not chunk or not file:match("[/\\]Northstar[/\\]Core[/\\]Init%.lua$") then return chunk, err end
 		return function(...)
 			chunk(...)
-			C_AddOns.LoadAddOn("Polestar_" .. GetLocale())
+			C_AddOns.LoadAddOn("Northstar_" .. GetLocale())
 		end
 	end
 end"#;

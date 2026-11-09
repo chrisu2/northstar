@@ -305,7 +305,7 @@ fn reaching_the_target_switches_to_the_arrived_state_with_hysteresis_one_chime_a
 		seen[#seen + 1] = { A.GetMode(), #stub.sounds }
 		seen[#seen + 1] = arrivals
 		emit(seen)"#);
-	assert_eq!(out, json!([["travel", "20 yd", 0], ["arrived", "Arrived", 1, true, false], ["arrived", 1], ["travel", "20 yd", false], ["arrived", 1], 2]));
+	assert_eq!(out, json!([["travel", "20 yd", 0], ["arrived", "Here", 1, true, false], ["arrived", 1], ["travel", "20 yd", false], ["arrived", 1], 2]));
 }
 
 #[test]
@@ -494,8 +494,8 @@ fn an_area_target_is_arrived_anywhere_inside_it_shows_the_distance_to_its_edge_o
 		out["seen"],
 		json!([
 			["travel", "140 yd", "Kill Bristlebacks", 140],
-			["arrived", "Arrived", "Kill Bristlebacks", 0],
-			["arrived", "Arrived", "Kill Bristlebacks", 0],
+			["arrived", "Here", "Kill Bristlebacks", 0],
+			["arrived", "Here", "Kill Bristlebacks", 0],
 			["travel", "15 yd", "Kill Bristlebacks", 15]
 		])
 	);

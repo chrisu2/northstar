@@ -3047,7 +3047,7 @@ L["party chat: , "] = ", "
 L["Northstar told your party about your quest progress in chat (Options > Questing > Quests > Group to change this)."] = "Northstar hat deiner Gruppe im Chat von deinem Questfortschritt erzählt (ändern unter Optionen > Questen > Quests > Gruppe)."
 L["%s is ready to turn in"] = "%s kann abgegeben werden"
 L["looted %s, which starts %s"] = "hat %s erbeutet, damit beginnt %s"
--- L["{rt1} Polestar: "] = ""
+L["{rt1} Northstar: "] = "{rt1} Northstar: "
 
 -- UI/WhatsNew.lua
 L["Fixes from your reports"] = "Korrekturen aus euren Meldungen"

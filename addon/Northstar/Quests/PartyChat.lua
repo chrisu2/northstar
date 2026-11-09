@@ -108,7 +108,7 @@ local function cut(s, n)
 end
 
 -- The marker every line starts with.
-local function marker() return L["{rt1} Polestar: "] end
+local function marker() return L["{rt1} Northstar: "] end
 
 -- "[Plagued Lands] Plagued Hide 5/5, Rabid Wolves 8/8": the objectives as
 -- many as fit under MAX_BYTES, the rest cut to an ellipsis; nil when not even
@@ -146,7 +146,7 @@ local function pump()
 	while queue[1] and now - queue[1].at > MAX_AGE do table.remove(queue, 1) end
 	if not queue[1] then return end
 	local send = (C_ChatInfo and C_ChatInfo.SendChatMessage) or SendChatMessage
-	if not (live and send) or allHavePolestar() then
+	if not (live and send) or allHaveNorthstar() then
 		queue = {}
 		return
 	end
@@ -373,8 +373,8 @@ end
 ---------------------------------------------------------------------------
 
 -- The tokens the marker starts with in every language (the locales'
--- L["{rt1} Polestar: "]: "{rt1} Polestar: ", frFR "{rt1} Polestar : ",
--- ruRU "{звезда} Polestar: ").
+-- L["{rt1} Northstar: "]: "{rt1} Northstar: ", frFR "{rt1} Northstar : ",
+-- ruRU "{звезда} Northstar: ").
 local TOKENS = { "{rt1}", "{звезда}" }
 PartyChat.ICON = "|TInterface\\AddOns\\" .. ADDON .. "\\Media\\UI\\logo:0|t"
 
@@ -382,7 +382,7 @@ PartyChat.ICON = "|TInterface\\AddOns\\" .. ADDON .. "\\Media\\UI\\logo:0|t"
 function PartyChat.MarkerToken(msg)
 	if type(msg) ~= "string" or ns.Compat.IsSecret(msg) then return nil end
 	for _, t in ipairs(TOKENS) do
-		if msg:sub(1, #t) == t and msg:find("^ Polestar ?: ", #t + 1) then return #t end
+		if msg:sub(1, #t) == t and msg:find("^ Northstar ?: ", #t + 1) then return #t end
 	end
 	return nil
 end
