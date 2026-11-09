@@ -232,6 +232,59 @@ emit({ query = P.Query(), selected = P.Selected(), preview = P.details.Pitch:Get
 	assert_eq!(r["active"], true);
 }
 
+#[test]
+fn a_horde_tauren_sees_leveling_guides_in_the_picker_after_the_modules_load() {
+	// The faction part is not loaded with the core. Login must load Northstar_Guides_Horde
+	// the way the client does, or a Tauren has no leveling guides.
+	let horde = forge_addontest::run::dir_files(&forge_addontest::run::addons_dir().join("Northstar_Guides_Horde")).unwrap();
+	let main = forge_addontest::run::dir_files(&forge_addontest::run::addons_dir().join("Northstar_Guides")).unwrap();
+	let list = |files: &[std::path::PathBuf]| files.iter().map(|f| forge_addontest::run::lua_string(&f.to_string_lossy())).collect::<Vec<_>>().join(", ");
+	let before = format!(
+		"stub.packs.Northstar_Guides = {{ {} }}\nstub.packs.Northstar_Guides_Horde = {{ {} }}\nstub.packs.Northstar_Guides_Alliance = {{}}\n\
+stub.world.race, stub.world.raceName, stub.world.raceID = \"Tauren\", \"Tauren\", 6\n\
+stub.world.faction = \"Horde\"\n\
+stub.world.class, stub.world.className, stub.world.classID = \"WARRIOR\", \"Warrior\", 1\n\
+stub.world.level = 1\n",
+		list(&main),
+		list(&horde)
+	);
+	let r = emitted(&RunAddon {
+		stubs: vec!["stub_world.lua", "stub_encoding.lua", "stub_packs.lua"],
+		before,
+		addons: vec![Addon::files("Northstar", &["Core/Core.xml", "Theme/Theme.xml", "UI/UI.xml"])],
+		saved: vec![(
+			"Northstar".into(),
+			"NorthstarDB = { schema = 1, welcomeSeen = 1 }; NorthstarCharDB = { schema = 1, welcomeSeen = 1 }".into(),
+		)],
+		script: r#"
+for _, f in ipairs(stub.packs.Northstar_Guides) do assert(loadfile(f))("Northstar_Guides", {}) end
+stub.addonLoaded("Northstar_Guides")
+stub.login()
+local UI = Northstar.UI
+local P = UI.Picker
+UI.ShowPicker()
+P.SetView("browse")
+P.SetCategory("Leveling")
+local n, hit = 0, false
+for _, e in ipairs(P.Entries(UI.PlayerFaction() or "Horde", "", "Leveling")) do
+	if e.kind == "guide" then
+		n = n + 1
+		if e.guide.id == "forever/horde/tauren/01-mulgore" then hit = true end
+	end
+end
+local open = Northstar.Engine.GetGuide()
+emit({ n = n, hit = hit, loads = stub.packLoads.Northstar_Guides_Horde or 0, open = open and open.id or false })
+"#
+		.into(),
+		..Default::default()
+	})
+	.remove(0);
+	assert_eq!(r["loads"], 1, "the Horde part loads on demand: {r}");
+	assert!(r["n"].as_i64().unwrap() > 0, "leveling guides listed: {r}");
+	assert_eq!(r["hit"], true, "Mulgore is listed for a Tauren: {r}");
+	assert_eq!(r["open"], "forever/horde/tauren/01-mulgore", "login opens that leveling guide: {r}");
+}
+
 fn shipped_wording(locale: &str, label: &str) {
 	let r = run_with(
 		r#"
