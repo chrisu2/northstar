@@ -273,7 +273,20 @@ for _, e in ipairs(P.Entries(UI.PlayerFaction() or "Horde", "", "Leveling")) do
 	end
 end
 local open = Northstar.Engine.GetGuide()
-emit({ n = n, hit = hit, loads = stub.packLoads.Northstar_Guides_Horde or 0, open = open and open.id or false })
+Northstar.Set("ui.journal", true)
+Northstar.UI.Now.Show()
+local listed, shown = false, false
+local rows = Northstar.UI.Sheet.LevelingRows(Northstar.UI.Sheet.Headers(), Northstar.UI.Sheet.Player())
+for _, row in ipairs(rows) do
+	if row.id == "forever/horde/tauren/01-mulgore" then listed = true end
+end
+local sheet = Northstar.UI.Now.frame
+for i = 1, #sheet.Rows do
+	local b = sheet.Rows[i]
+	if b:IsShown() and b.rowId == "forever/horde/tauren/01-mulgore" then shown = true end
+end
+emit({ n = n, hit = hit, loads = stub.packLoads.Northstar_Guides_Horde or 0, open = open and open.id or false,
+	listed = listed, shown = shown, drop = sheet.Drop:GetText(), rest = sheet.Area:GetText() })
 "#
 		.into(),
 		..Default::default()
@@ -283,6 +296,10 @@ emit({ n = n, hit = hit, loads = stub.packLoads.Northstar_Guides_Horde or 0, ope
 	assert!(r["n"].as_i64().unwrap() > 0, "leveling guides listed: {r}");
 	assert_eq!(r["hit"], true, "Mulgore is listed for a Tauren: {r}");
 	assert_eq!(r["open"], "forever/horde/tauren/01-mulgore", "login opens that leveling guide: {r}");
+	assert_eq!(r["listed"], true, "the tome's leveling list includes Mulgore: {r}");
+	assert_eq!(r["shown"], true, "Mulgore is on the open page: {r}");
+	assert_eq!(r["drop"], "M", "the zone header is an illuminated drop cap: {r}");
+	assert_eq!(r["rest"], "ulgore", "the rest of the zone name sits beside it: {r}");
 }
 
 fn shipped_wording(locale: &str, label: &str) {

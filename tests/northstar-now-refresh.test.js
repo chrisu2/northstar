@@ -72,7 +72,7 @@ test('the default sheet is a short bar and does not open the wide guide', () => 
 		emit(Northstar.Get("nav.arrow"))
 		emit(NorthstarDB.schema)
 	`);
-	assert.ok(height >= 100 && height <= 160, `quest log is ${height}`);
+	assert.ok(height >= 400 && height <= 460, `tome is ${height}`);
 	assert.equal(grown, height, `the step strip does not stretch the log (${grown})`);
 	assert.equal(journal, true);
 	assert.equal(wide, false);
@@ -157,7 +157,7 @@ test('an old saved floating arrow and wide window do not come back', () => {
 	assert.equal(arrow, false);
 	assert.equal(schema, 2);
 	assert.notEqual(shown, true);
-	assert.ok(width >= 280 && width <= 360, `width ${width}`);
+	assert.ok(width >= 600 && width <= 700, `width ${width}`);
 	assert.notEqual(dart, true);
 });
 

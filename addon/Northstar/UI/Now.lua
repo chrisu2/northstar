@@ -1,6 +1,6 @@
--- The route sheet. One column: the current action, then four areas down the
--- side. Quest is the leveling route. Class, Trade and PvP open guides that
--- are already in this install. Fishing is one trade row.
+-- The route sheet, drawn as an open tome. Crimson cover, gold tooling, two
+-- parchment pages. Quest is the leveling route. Class, Trade and PvP open
+-- guides that are already in this install. Fishing is one trade row.
 --
 -- Forever only: Interface 16001. Nothing here is checked in the 1.60.1.70862
 -- client. A skill number is shown only when the client names that profession.
@@ -16,10 +16,10 @@ Sheet.AREAS = { "quest", "class", "trade", "pvp" }
 
 local f
 local area = "quest"
-local stepsOpen = false
-local COMPACT_H = 128
-local BAR_W = 320
-local ROW_H = 16
+local stepsOpen = true
+local COMPACT_H = 420
+local BAR_W = 640
+local ROW_H = 18
 
 local function nowClock()
 	if GetTime then return GetTime() end
@@ -378,6 +378,49 @@ function Sheet.ReleaseLabel(on)
 	return "Release in a battleground: off."
 end
 
+-- Leveling guides this character can follow, from the loaded packs.
+-- The Horde and Alliance guides live in Northstar_Guides_<faction>, loaded at login.
+function Sheet.LevelingRows(headers, player)
+	local G = ns.Guides
+	local rows = {}
+	for _, h in ipairs(headers or {}) do
+		if h and (h.category == nil or h.category == "Leveling") then
+			local ok = true
+			if player and G and G.GuideMatches then
+				ok = G.GuideMatches(h, player) or (G.OtherStart and G.OtherStart(h, player))
+			end
+			if ok then
+				local title = h.zoneName
+				if type(title) ~= "string" or title == "" then title = h.title or h.id end
+				rows[#rows + 1] = { id = h.id, title = title, minLevel = h.minLevel or 1, maxLevel = h.maxLevel or h.minLevel or 1 }
+			end
+		end
+	end
+	local level = player and player.level or 1
+	local function band(row)
+		if level >= row.minLevel and level <= row.maxLevel then return 0 end
+		if row.minLevel > level then return 1 end
+		return 2
+	end
+	table.sort(rows, function(a, b)
+		local ba, bb = band(a), band(b)
+		if ba ~= bb then return ba < bb end
+		if a.minLevel ~= b.minLevel then return a.minLevel < b.minLevel end
+		return (a.title or "") < (b.title or "")
+	end)
+	return rows
+end
+
+function Sheet.RangeInk(minLevel, maxLevel, level)
+	local Q = (ns.Theme and ns.Theme.QUEST) or {}
+	level = level or 1
+	minLevel, maxLevel = minLevel or 1, maxLevel or minLevel or 1
+	if level >= minLevel and level <= maxLevel then return Q.easy end
+	if minLevel <= level + 4 then return Q.gold end
+	if minLevel <= level + 8 then return Q.hard end
+	return Q.crimson
+end
+
 -- Class guides for this character, from the loaded packs.
 function Now.ClassRows()
 	local view = Sheet.ClassView(Sheet.Headers(), Sheet.Player())
@@ -387,9 +430,26 @@ end
 local function questColors()
 	local T = ns.Theme
 	return (T and T.QUEST) or {
-		title = { 0.28, 0.14, 0.04, 1 }, body = { 0.32, 0.18, 0.06, 1 }, muted = { 0.45, 0.30, 0.16, 1 },
-		wash = { 0.78, 0.66, 0.42, 0.45 }, check = "Interface\\Buttons\\UI-CheckBox-Check",
-		bg = "Interface\\DialogFrame\\UI-DialogBox-Background", edge = "Interface\\DialogFrame\\UI-DialogBox-Border",
+		crimson = { 0.48, 0.08, 0.13, 1 }, gold = { 0.89, 0.75, 0.34, 1 },
+		parchment = { 0.95, 0.89, 0.77, 1 }, ink = { 0.23, 0.09, 0.11, 1 },
+		muted = { 0.47, 0.33, 0.25, 1 }, plum = { 0.16, 0.10, 0.13, 1 },
+		easy = { 0.24, 0.48, 0.27, 1 }, hard = { 0.77, 0.47, 0.19, 1 },
+		title = { 0.48, 0.08, 0.13, 1 }, body = { 0.23, 0.09, 0.11, 1 },
+		page = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-page",
+		cover = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-cover",
+		corner = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-corner",
+		ribbon = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-ribbon",
+		ribbonOn = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-ribbon-on",
+		check = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-check",
+		mark = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-mark",
+		rule = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-rule",
+		spine = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-spine",
+		plumTex = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-plum",
+		goldTex = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-gold",
+		crimsonTex = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-crimson",
+		fontTitle = "Interface\\AddOns\\Northstar\\Media\\Fonts\\Cinzel-Regular.ttf",
+		fontBody = "Interface\\AddOns\\Northstar\\Media\\Fonts\\Alegreya-Regular.ttf",
+		fontFallback = "Fonts\\FRIZQT__.TTF",
 	}
 end
 
@@ -406,15 +466,11 @@ local function label(parent, font, key)
 	return fs
 end
 
-local function button(parent, text, width, onClick)
-	local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-	b:SetSize(width or 120, 22)
-	b:SetText(text)
-	b.Label = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	b.Label:SetAllPoints()
-	b.Label:SetText(text)
-	b:SetScript("OnClick", onClick)
-	return b
+local function face(fs, path, size)
+	local Q = questColors()
+	if not fs:SetFont(path or Q.fontBody, size or 12, "") then
+		fs:SetFont(Q.fontFallback or "Fonts\\FRIZQT__.TTF", size or 12, "")
+	end
 end
 
 local function openListed(id)
@@ -437,12 +493,32 @@ local function areaLabel(id)
 	return "Leveling"
 end
 
+local function button(parent, text, width, onClick)
+	local b = CreateFrame("Button", nil, parent)
+	b:SetSize(width or 120, 18)
+	b:SetText(text)
+	b.Label = b:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	b.Label:SetAllPoints()
+	b.Label:SetJustifyH("LEFT")
+	b.Label:SetText(text)
+	face(b.Label, questColors().fontBody, 11)
+	ink(b.Label, "gold")
+	b:SetScript("OnClick", onClick)
+	return b
+end
+
+local function plate(parent, path, layer)
+	local t = parent:CreateTexture(nil, layer or "BACKGROUND")
+	t:SetTexture(path)
+	return t
+end
+
 local function build()
 	if f then return f end
 	local Q = questColors()
-	f = CreateFrame("Frame", "NorthstarNow", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	f = CreateFrame("Frame", "NorthstarNow", UIParent)
 	f:SetSize(BAR_W, COMPACT_H)
-	f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -120)
+	f:SetPoint("TOP", UIParent, "TOP", 0, -80)
 	f:SetFrameStrata("MEDIUM")
 	f:SetMovable(true)
 	f:EnableMouse(true)
@@ -450,158 +526,247 @@ local function build()
 	f:SetScript("OnDragStart", function(self) if not ns.DragLocked() then self:StartMoving() end end)
 	f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
 	f:SetClampedToScreen(true)
-	if f.SetBackdrop then
-		f:SetBackdrop({
-			bgFile = Q.bg, edgeFile = Q.edge,
-			tile = true, tileSize = 32, edgeSize = 32,
-			insets = { left = 11, right = 12, top = 12, bottom = 11 },
-		})
-		if f.SetBackdropColor then f:SetBackdropColor(1, 1, 1, 1) end
+	f:Hide()
+
+	local cover = plate(f, Q.cover)
+	cover:SetAllPoints()
+	local corners = {
+		{ "TOPLEFT", 8, -8, 0, 1, 0, 1 },
+		{ "TOPRIGHT", -8, -8, 1, 0, 0, 1 },
+		{ "BOTTOMLEFT", 8, 8, 0, 1, 1, 0 },
+		{ "BOTTOMRIGHT", -8, 8, 1, 0, 1, 0 },
+	}
+	for i = 1, #corners do
+		local c = corners[i]
+		local t = plate(f, Q.corner, "ARTWORK")
+		t:SetSize(22, 22)
+		t:SetPoint(c[1], f, c[1], c[2], c[3])
+		t:SetTexCoord(c[4], c[5], c[6], c[7])
 	end
 
-	f.Menu = CreateFrame("Frame", "NorthstarNowMenu", f, "UIDropDownMenuTemplate")
-	f.Menu:SetPoint("TOPLEFT", 4, -8)
-	if UIDropDownMenu_SetWidth then UIDropDownMenu_SetWidth(f.Menu, 140) end
-	if UIDropDownMenu_Initialize then
-		UIDropDownMenu_Initialize(f.Menu, function()
-			for _, spec in ipairs(AREAS) do
-				local info = UIDropDownMenu_CreateInfo and UIDropDownMenu_CreateInfo() or {}
-				info.text = spec.label
-				info.checked = area == spec.id
-				info.func = function() area = spec.id; UIDropDownMenu_SetText(f.Menu, spec.label); Now.Refresh() end
-				if UIDropDownMenu_AddButton then UIDropDownMenu_AddButton(info) end
-			end
+	f.Title = label(f, "GameFontNormal", "gold")
+	face(f.Title, Q.fontTitle, 16)
+	f.Title:SetPoint("TOP", 0, -12)
+	f.Title:SetJustifyH("CENTER")
+	f.Title:SetText("Northstar")
+
+	local close = CreateFrame("Button", nil, f)
+	close:SetSize(16, 16)
+	close:SetPoint("TOPRIGHT", -14, -12)
+	close.Label = label(close, "GameFontNormal", "gold")
+	face(close.Label, Q.fontTitle, 14)
+	close.Label:SetAllPoints()
+	close.Label:SetJustifyH("CENTER")
+	close.Label:SetText("x")
+	close:SetScript("OnClick", function() f:Hide() end)
+
+	local function page(x, w)
+		local p = CreateFrame("Frame", nil, f)
+		p:SetSize(w, 360)
+		p:SetPoint("TOPLEFT", x, -40)
+		local bg = plate(p, Q.page)
+		bg:SetAllPoints()
+		return p
+	end
+	local left = page(16, 168)
+	local center = page(184, 268)
+	local right = page(460, 164)
+	f.Center = center
+	local spine = plate(f, Q.spine, "ARTWORK")
+	spine:SetSize(8, 360)
+	spine:SetPoint("TOPLEFT", 452, -40)
+
+	f.Menu = CreateFrame("Button", "NorthstarNowMenu", f)
+	f.Menu:SetSize(1, 1)
+	f.Menu:Hide()
+
+	f.Areas = {}
+	for i, spec in ipairs(AREAS) do
+		local b = CreateFrame("Button", nil, f)
+		b:SetSize(78, 26)
+		b:SetPoint("TOPLEFT", 8, -46 - (i - 1) * 28)
+		b.Plate = plate(b, spec.id == "quest" and Q.ribbonOn or Q.ribbon)
+		b.Plate:SetAllPoints()
+		b.Label = label(b, "GameFontHighlightSmall", spec.id == "quest" and "ink" or "parchment")
+		face(b.Label, Q.fontBody, 11)
+		b.Label:SetPoint("LEFT", 8, 2)
+		b.Label:SetText(spec.label)
+		b.areaId = spec.id
+		b:SetScript("OnClick", function()
+			area = spec.id
+			Now.Refresh()
 		end)
-	end
-	if UIDropDownMenu_SetText then UIDropDownMenu_SetText(f.Menu, areaLabel(area)) end
-
-	f.Tools = button(f, "Tools", 54, function()
-		if f.ToolsBox:IsShown() then f.ToolsBox:Hide() else f.ToolsBox:Show() end
-	end)
-	f.Tools:SetPoint("TOPRIGHT", -16, -16)
-	f.ToolsBox = CreateFrame("Frame", nil, f, BackdropTemplateMixin and "BackdropTemplate" or nil)
-	f.ToolsBox:SetSize(150, 88)
-	f.ToolsBox:SetPoint("TOPRIGHT", f.Tools, "BOTTOMRIGHT", 0, -2)
-	f.ToolsBox:Hide()
-	if f.ToolsBox.SetBackdrop then
-		f.ToolsBox:SetBackdrop({ bgFile = Q.bg, edgeFile = Q.edge, tile = true, tileSize = 32, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
+		f.Areas[spec.id] = b
 	end
 
-	f.Area = label(f, "GameFontNormal", "title")
-	f.Area:SetPoint("TOPLEFT", 24, -22)
-	f.Step = label(f, "GameFontNormalSmall", "muted")
-	f.Step:SetPoint("TOPLEFT", 24, -42)
-	f.Head = label(f, "GameFontNormal", "title")
-	f.Head:SetPoint("TOPLEFT", 24, -56)
-	f.Head:SetPoint("TOPRIGHT", -20, -56)
-	f.Course = label(f, "GameFontHighlightSmall", "body")
-	f.Course:SetPoint("TOPLEFT", 24, -74)
-	f.Course:SetPoint("TOPRIGHT", -20, -74)
-	-- Kept for the course numbers. The line the player reads is Course.
-	f.Bear = label(f, "GameFontHighlightSmall", "body")
-	f.Bear:SetPoint("TOPLEFT", 24, -74)
+	f.ZoneHead = label(left, "GameFontHighlightSmall", "title")
+	face(f.ZoneHead, Q.fontBody, 13)
+	f.ZoneHead:SetPoint("TOPLEFT", 8, -118)
+	f.ZoneHead:SetText("Zones")
+
+	f.Rows = {}
+	for i = 1, 12 do
+		local b = CreateFrame("Button", nil, left)
+		b:SetSize(152, ROW_H)
+		b:SetPoint("TOPLEFT", 8, -136 - (i - 1) * ROW_H)
+		b.Plate = plate(b, Q.goldTex)
+		b.Plate:SetAllPoints()
+		b.Plate:Hide()
+		b.Label = label(b, "GameFontHighlightSmall", "ink")
+		face(b.Label, Q.fontBody, 11)
+		b.Label:SetPoint("LEFT", 2, 0)
+		b.Label:SetText("")
+		b.Range = label(b, "GameFontHighlightSmall", "gold")
+		face(b.Range, Q.fontBody, 10)
+		b.Range:SetPoint("RIGHT", -2, 0)
+		b.Range:SetJustifyH("RIGHT")
+		b.Range:SetText("")
+		b:SetScript("OnClick", function(self)
+			if self.rowId then openListed(self.rowId) end
+		end)
+		b:Hide()
+		f.Rows[i] = b
+	end
+
+	f.DropPlate = plate(center, Q.crimsonTex, "ARTWORK")
+	f.DropPlate:SetSize(28, 32)
+	f.DropPlate:SetPoint("TOPLEFT", 10, -8)
+	f.DropPlate:Hide()
+	f.Drop = label(center, "GameFontNormal", "gold")
+	face(f.Drop, Q.fontTitle, 22)
+	f.Drop:SetPoint("TOPLEFT", 14, -10)
+	f.Drop:SetText("")
+	f.Drop:Hide()
+
+	f.Area = label(center, "GameFontNormal", "title")
+	face(f.Area, Q.fontTitle, 18)
+	f.Area:SetPoint("TOPLEFT", 12, -16)
+	f.Area:SetText("Leveling")
+
+	f.Rule = plate(center, Q.rule, "ARTWORK")
+	f.Rule:SetSize(240, 8)
+	f.Rule:SetPoint("TOPLEFT", 10, -44)
+
+	f.Step = label(center, "GameFontHighlightSmall", "muted")
+	face(f.Step, Q.fontBody, 11)
+	f.Step:SetPoint("TOPLEFT", 10, -54)
+
+	f.Band = plate(center, Q.goldTex, "BORDER")
+	f.Band:SetPoint("TOPLEFT", 8, -70)
+	f.Band:SetSize(250, 18)
+	f.Band:Hide()
+	f.Mark = plate(center, Q.mark, "OVERLAY")
+	f.Mark:SetSize(12, 14)
+	f.Mark:SetPoint("TOPLEFT", 10, -72)
+	f.Mark:Hide()
+	f.Next = label(center, "GameFontHighlight", "ink")
+	face(f.Next, Q.fontBody, 12)
+	f.Next:SetPoint("TOPLEFT", 24, -72)
+	f.Next:SetWidth(228)
+
+	f.Strip = CreateFrame("Frame", nil, center)
+	f.Strip:SetPoint("TOPLEFT", 8, -92)
+	f.Strip:SetSize(250, 220)
+	f.StripRows = {}
+	for i = 1, 8 do
+		local row = CreateFrame("Frame", nil, f.Strip)
+		row:SetHeight(ROW_H)
+		row:SetPoint("TOPLEFT", 0, -((i - 1) * ROW_H))
+		row:SetPoint("RIGHT", 0, 0)
+		row.Wash = plate(row, Q.goldTex)
+		row.Wash:SetAllPoints()
+		row.Wash:Hide()
+		row.Mark = plate(row, Q.check, "ARTWORK")
+		row.Mark:SetSize(12, 12)
+		row.Mark:SetPoint("LEFT", 2, 0)
+		row.Mark:Hide()
+		row.Text = label(row, "GameFontHighlightSmall", "ink")
+		face(row.Text, Q.fontBody, 11)
+		row.Text:SetPoint("LEFT", 16, 0)
+		row.Text:SetPoint("RIGHT", -4, 0)
+		row:Hide()
+		f.StripRows[i] = row
+	end
+
+	f.Head = label(right, "GameFontNormal", "title")
+	face(f.Head, Q.fontTitle, 13)
+	f.Head:SetPoint("TOPLEFT", 10, -12)
+	f.Head:SetWidth(144)
+	f.Dir = label(right, "GameFontHighlightSmall", "muted")
+	face(f.Dir, Q.fontBody, 11)
+	f.Dir:SetPoint("TOPLEFT", 10, -36)
+	f.Dir:SetText("Direction")
+	f.Arrow = plate(right, Q.mark, "ARTWORK")
+	f.Arrow:SetSize(12, 14)
+	f.Arrow:SetPoint("TOPLEFT", 8, -52)
+	f.Course = label(right, "GameFontHighlightSmall", "ink")
+	face(f.Course, Q.fontBody, 12)
+	f.Course:SetPoint("TOPLEFT", 22, -52)
+	f.Course:SetWidth(132)
+	f.Bear = label(right, "GameFontHighlightSmall", "muted")
+	f.Bear:SetPoint("TOPLEFT", 10, -68)
 	f.Bear:Hide()
-	f.Dist = label(f, "GameFontHighlightSmall", "body")
-	f.Dist:SetPoint("TOPLEFT", 24, -74)
+	f.Dist = label(right, "GameFontHighlightSmall", "muted")
+	f.Dist:SetPoint("TOPLEFT", 10, -68)
 	f.Dist:Hide()
-	f.Tick = f:CreateTexture(nil, "OVERLAY")
+	f.Tick = plate(right, Q.mark, "OVERLAY")
 	f.Tick:SetSize(1, 1)
 	f.Tick:Hide()
-	f.Next = label(f, "GameFontHighlight", "body")
-	f.Next:SetPoint("TOPLEFT", 44, -92)
-	f.Next:SetPoint("TOPRIGHT", -16, -92)
-	f.More = label(f, "GameFontHighlightSmall", "muted")
-	f.More:SetPoint("TOPLEFT", 24, -110)
-	f.More:SetPoint("RIGHT", -16, 0)
-	f.More:SetHeight(20)
-	f.More:Hide()
 
 	f.Checks = {}
 	f.GoalLines = {}
 	for i = 1, 6 do
-		local mark = f:CreateTexture(nil, "OVERLAY")
-		mark:SetTexture(Q.check)
-		mark:SetSize(16, 16)
-		mark:SetPoint("TOPLEFT", 22, -90 - (i - 1) * ROW_H)
+		local mark = plate(right, Q.check, "ARTWORK")
+		mark:SetSize(12, 12)
+		mark:SetPoint("TOPLEFT", 8, -78 - (i - 1) * 16)
 		mark:Hide()
-		local line = label(f, "GameFontHighlightSmall", "body")
+		local line = label(right, "GameFontHighlightSmall", "ink")
+		face(line, Q.fontBody, 11)
 		line:SetPoint("LEFT", mark, "RIGHT", 4, 0)
-		line:SetPoint("RIGHT", f, "RIGHT", -16, 0)
+		line:SetWidth(128)
 		line:Hide()
 		f.Checks[i] = mark
 		f.GoalLines[i] = line
 	end
 
-	f.Strip = CreateFrame("Frame", nil, f, BackdropTemplateMixin and "BackdropTemplate" or nil)
-	f.Strip:SetWidth(132)
-	f.Strip:SetPoint("TOPLEFT", f, "TOPRIGHT", -6, -12)
-	f.Strip:SetPoint("BOTTOMLEFT", f, "BOTTOMRIGHT", -6, 12)
-	if f.Strip.SetBackdrop then
-		f.Strip:SetBackdrop({ bgFile = Q.bg, edgeFile = Q.edge, tile = true, tileSize = 32, edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
-	end
-	f.StripRows = {}
-	for i = 1, 8 do
-		local row = CreateFrame("Frame", nil, f.Strip)
-		row:SetHeight(ROW_H)
-		row:SetPoint("TOPLEFT", 8, -6 - (i - 1) * ROW_H)
-		row:SetPoint("TOPRIGHT", -8, -6 - (i - 1) * ROW_H)
-		row.Wash = row:CreateTexture(nil, "BACKGROUND")
-		row.Wash:SetAllPoints()
-		local w = Q.wash
-		row.Wash:SetColorTexture(w[1], w[2], w[3], w[4] or 0.45)
-		row.Wash:Hide()
-		row.Mark = row:CreateTexture(nil, "OVERLAY")
-		row.Mark:SetTexture(Q.check)
-		row.Mark:SetSize(14, 14)
-		row.Mark:SetPoint("LEFT", 0, 0)
-		row.Mark:Hide()
-		row.Text = label(row, "GameFontHighlightSmall", "body")
-		row.Text:SetPoint("LEFT", 16, 0)
-		row.Text:SetPoint("RIGHT", 0, 0)
-		row:Hide()
-		f.StripRows[i] = row
-	end
+	f.More = label(right, "GameFontHighlightSmall", "muted")
+	face(f.More, Q.fontBody, 11)
+	f.More:SetPoint("BOTTOMLEFT", 10, 28)
+	f.More:SetWidth(144)
+	f.More:Hide()
 
-	f.Wide = button(f, "Steps", 54, function()
+	f.Wide = button(center, "Steps", 70, function()
 		stepsOpen = not stepsOpen
 		Now.Refresh()
 	end)
-	f.Wide:SetPoint("BOTTOMRIGHT", -16, 12)
-	f.Areas = {}
-	for _, spec in ipairs(AREAS) do
-		local b = button(f, spec.label, 90, function()
-			area = spec.id
-			if UIDropDownMenu_SetText then UIDropDownMenu_SetText(f.Menu, spec.label) end
-			Now.Refresh()
-		end)
-		b.areaId = spec.id
-		b:Hide()
-		f.Areas[spec.id] = b
-	end
-	f.Rows = {}
-	for i = 1, 12 do
-		local b = button(f, "", 260, function(self)
-			if self.rowId then openListed(self.rowId) end
-		end)
-		b:SetPoint("TOPLEFT", 20, -88 - (i - 1) * ROW_H)
-		b:Hide()
-		f.Rows[i] = b
-	end
-	f.Sleep = button(f.ToolsBox, "Sleeping bag", 130, function() openListed(Sheet.SLEEP_ID) end)
-	f.Sleep:SetPoint("TOPLEFT", 8, -8)
+	f.Wide:SetPoint("BOTTOMRIGHT", -8, 8)
+
+	f.Tools = button(f, "Tools", 44, function()
+		if f.ToolsBox:IsShown() then f.ToolsBox:Hide() else f.ToolsBox:Show() end
+	end)
+	f.Tools:SetPoint("BOTTOMLEFT", 18, 12)
+	f.ToolsBox = CreateFrame("Frame", nil, f)
+	f.ToolsBox:SetSize(160, 72)
+	f.ToolsBox:SetPoint("BOTTOMLEFT", f.Tools, "TOPLEFT", 0, 4)
+	local boxBg = plate(f.ToolsBox, Q.page)
+	boxBg:SetAllPoints()
+	f.ToolsBox:Hide()
+
+	f.Sleep = button(f.ToolsBox, "Sleeping bag", 140, function() openListed(Sheet.SLEEP_ID) end)
+	f.Sleep:SetPoint("TOPLEFT", 4, -4)
 	f.Sleep:Hide()
-	f.FishTime = button(f.ToolsBox, "Fish time", 64, function() Fish.ToggleSession() end)
-	f.FishTime:SetPoint("TOPLEFT", 8, -32)
+	f.FishTime = button(f.ToolsBox, "Fish time", 72, function() Fish.ToggleSession() end)
+	f.FishTime:SetPoint("TOPLEFT", 4, -24)
 	f.FishTime:Hide()
-	f.FishTally = button(f.ToolsBox, "Fish tally", 64, function() Fish.AddCatch() end)
+	f.FishTally = button(f.ToolsBox, "Fish tally", 72, function() Fish.AddCatch() end)
 	f.FishTally:SetPoint("LEFT", f.FishTime, "RIGHT", 4, 0)
 	f.FishTally:Hide()
-	f.Release = button(f.ToolsBox, "Release", 130, function()
+	f.Release = button(f.ToolsBox, "Release", 148, function()
 		local on = ns.Get and ns.Get("qol.autoReleasePvP")
 		if ns.Set then ns.Set("qol.autoReleasePvP", not on) end
 		Now.Refresh()
 	end)
-	f.Release:SetPoint("TOPLEFT", 8, -56)
+	f.Release:SetPoint("TOPLEFT", 4, -44)
 	f.Release:Hide()
 
 	Now.frame = f
@@ -609,26 +774,44 @@ local function build()
 end
 
 local function showRows(frame, rows)
+	local open = ns.Engine and ns.Engine.GetGuide and ns.Engine.GetGuide()
+	local openId = open and open.id
+	local level = Sheet.Player().level or 1
 	for i = 1, #frame.Rows do
 		local b = frame.Rows[i]
 		local row = rows[i]
 		if row then
 			b.rowId = row.id
 			b.Label:SetText(row.label or row.title or row.id)
+			if b.Range then
+				if row.minLevel then
+					b.Range:SetText(row.minLevel .. "-" .. row.maxLevel)
+					local c = Sheet.RangeInk(row.minLevel, row.maxLevel, level)
+					if c then b.Range:SetTextColor(c[1], c[2], c[3], c[4] or 1) end
+				else
+					b.Range:SetText("")
+				end
+			end
+			if b.Plate then b.Plate:SetShown(row.id ~= nil and row.id == openId) end
 			b:Show()
 		else
 			b.rowId = nil
+			if b.Range then b.Range:SetText("") end
+			if b.Plate then b.Plate:Hide() end
 			b:Hide()
 		end
 	end
 end
 
 local function paintChecks(frame, checks, nextText)
+	local Q = questColors()
 	for i = 1, #frame.Checks do
 		local row = checks and checks[i]
 		local mark, line = frame.Checks[i], frame.GoalLines[i]
 		if row then
 			line:SetText(row.text or "")
+			local c = row.done and Q.easy or Q.gold
+			line:SetTextColor(c[1], c[2], c[3], c[4] or 1)
 			line:Show()
 			if row.done then mark:Show() else mark:Hide() end
 		else
@@ -639,20 +822,70 @@ local function paintChecks(frame, checks, nextText)
 	frame.Next:SetText(nextText or "")
 end
 
+local function paintRibbons(frame)
+	local Q = questColors()
+	for _, spec in ipairs(AREAS) do
+		local b = frame.Areas[spec.id]
+		local on = area == spec.id
+		if b.Plate then b.Plate:SetTexture(on and Q.ribbonOn or Q.ribbon) end
+		if b.Label then
+			local c = on and Q.ink or Q.parchment
+			b.Label:SetTextColor(c[1], c[2], c[3], 1)
+		end
+	end
+end
+
+local function zoneTitle()
+	local E = ns.Engine
+	local g = E and E.GetGuide and E.GetGuide()
+	if type(g) ~= "table" then return nil end
+	if type(g.zoneName) == "string" and g.zoneName ~= "" then return g.zoneName end
+	for _, h in ipairs(Sheet.Headers()) do
+		if h.id == g.id then
+			if type(h.zoneName) == "string" and h.zoneName ~= "" then return h.zoneName end
+			if type(h.title) == "string" and h.title ~= "" then return h.title end
+		end
+	end
+	if type(g.title) == "string" and g.title ~= "" then return g.title end
+end
+
+local function paintDrop(frame, zone)
+	if zone and zone ~= "" then
+		frame.Drop:SetText(zone:sub(1, 1))
+		frame.Drop:Show()
+		frame.DropPlate:Show()
+		frame.Area:ClearAllPoints()
+		frame.Area:SetPoint("LEFT", frame.Drop, "RIGHT", 6, -4)
+		frame.Area:SetText(zone:sub(2))
+	else
+		frame.Drop:Hide()
+		frame.DropPlate:Hide()
+		frame.Area:ClearAllPoints()
+		frame.Area:SetPoint("TOPLEFT", frame.Center, "TOPLEFT", 12, -16)
+		frame.Area:SetText(areaLabel(area))
+	end
+end
+
 local function paintStrip(frame)
-	frame.Strip:SetShown(stepsOpen)
+	local show = stepsOpen and area == "quest"
+	frame.Strip:SetShown(show)
 	frame.Wide:SetText(stepsOpen and "Hide steps" or "Steps")
 	if frame.Wide.Label then frame.Wide.Label:SetText(stepsOpen and "Hide steps" or "Steps") end
+	local Q = questColors()
 	local E = ns.Engine
 	local here = E and E.GetStepIndex and E.GetStepIndex() or 1
 	for i = 1, #frame.StripRows do
 		local row = frame.StripRows[i]
 		local index = here - 1 + i
 		local view = E and E.GetStepView and index >= 1 and E.GetStepView(index) or nil
-		if stepsOpen and view and view.title then
-			row.Text:SetText(view.title)
-			row.Wash:SetShown(index == here)
-			row.Mark:SetShown(index < here)
+		if show and view and view.title then
+			local current = index == here
+			row.Text:SetText((current and "! " or "") .. view.title)
+			local c = current and Q.ink or (index < here and Q.easy or Q.muted)
+			row.Text:SetTextColor(c[1], c[2], c[3], c[4] or 1)
+			row.Wash:SetShown(current)
+			row.Mark:SetTexture(index < here and Q.check or Q.mark)
+			row.Mark:SetShown(index <= here)
 			row:Show()
 		else
 			row:Hide()
@@ -662,20 +895,25 @@ end
 
 function Now.Apply(composed)
 	local frame = build()
-	frame.Area:SetText(areaLabel(area))
+	paintRibbons(frame)
 	if UIDropDownMenu_SetText then UIDropDownMenu_SetText(frame.Menu, areaLabel(area)) end
 	frame.Sleep:Hide()
 	frame.FishTime:Hide()
 	frame.FishTally:Hide()
 	frame.Release:Hide()
 	frame.ToolsBox:Hide()
+	frame.Band:Hide()
+	frame.Mark:Hide()
 	showRows(frame, {})
 	for i = 1, #frame.Checks do frame.Checks[i]:Hide(); frame.GoalLines[i]:Hide() end
 	frame.Tick:Hide()
 	frame.Bear:Hide()
 	frame.Dist:Hide()
+	frame:SetHeight(COMPACT_H)
 	local headers = Sheet.Headers()
 	if area == "class" then
+		paintDrop(frame, nil)
+		if frame.ZoneHead then frame.ZoneHead:SetText("Guides") end
 		local view = Sheet.ClassView(headers, Sheet.Player())
 		frame.Step:SetText("Not the leveling route")
 		frame.Head:SetText(view.text)
@@ -683,8 +921,9 @@ function Now.Apply(composed)
 		frame.Course:SetText("")
 		frame.More:SetText("")
 		showRows(frame, view.rows)
-		frame:SetHeight(COMPACT_H + #view.rows * ROW_H)
 	elseif area == "trade" then
+		paintDrop(frame, nil)
+		if frame.ZoneHead then frame.ZoneHead:SetText("Guides") end
 		local view = Sheet.TradeView(headers, Sheet.NamedRank)
 		frame.Step:SetText("Loaded profession guides")
 		frame.Head:SetText(view.text)
@@ -698,10 +937,11 @@ function Now.Apply(composed)
 			rows[i] = { id = row.id, label = row.title .. "  " .. row.skill }
 		end
 		showRows(frame, rows)
-		frame:SetHeight(COMPACT_H + #rows * ROW_H)
 		frame.FishTime:Show()
 		frame.FishTally:Show()
 	elseif area == "pvp" then
+		paintDrop(frame, nil)
+		if frame.ZoneHead then frame.ZoneHead:SetText("Guides") end
 		local view = Sheet.PvpView(headers)
 		frame.Step:SetText("Battlegrounds")
 		frame.Head:SetText(view.text)
@@ -710,11 +950,13 @@ function Now.Apply(composed)
 		frame.More:SetText(view.companion)
 		frame.More:Show()
 		showRows(frame, view.battlegrounds)
-		frame:SetHeight(COMPACT_H + (#view.battlegrounds + 1) * ROW_H)
 		frame.Release:Show()
 		if frame.Release.Label then frame.Release.Label:SetText(Sheet.ReleaseLabel(ns.Get and ns.Get("qol.autoReleasePvP"))) end
 		frame.Release:SetText(Sheet.ReleaseLabel(ns.Get and ns.Get("qol.autoReleasePvP")))
 	else
+		paintDrop(frame, zoneTitle())
+		if frame.ZoneHead then frame.ZoneHead:SetText("Zones") end
+		showRows(frame, Sheet.LevelingRows(headers, Sheet.Player()))
 		frame.Step:SetText(composed.step or "")
 		frame.Head:SetText(composed.title or "")
 		paintChecks(frame, composed.checks, composed.next)
@@ -723,10 +965,12 @@ function Now.Apply(composed)
 		frame.Dist:SetText(dist)
 		frame.Course:SetText(Now.CourseLine())
 		frame.Course:Show()
+		local on = (composed.next or "") ~= ""
+		frame.Band:SetShown(on)
+		frame.Mark:SetShown(on)
 		local sleep = Sheet.Open(headers, Sheet.SLEEP_ID)
 		if sleep.ok then frame.Sleep:Show() end
 		frame.More:SetText("")
-		frame:SetHeight(COMPACT_H)
 	end
 	paintStrip(frame)
 end

@@ -81,13 +81,31 @@ local BRAND = {
 -- The quest log: stock parchment and the brown ink the client prints on it.
 -- Now.lua is the only window that reads this table.
 Theme.QUEST = {
-	title = { 0.28, 0.14, 0.04, 1 },
-	body = { 0.32, 0.18, 0.06, 1 },
-	muted = { 0.45, 0.30, 0.16, 1 },
-	wash = { 0.78, 0.66, 0.42, 0.45 },
-	check = "Interface\\Buttons\\UI-CheckBox-Check",
-	bg = "Interface\\DialogFrame\\UI-DialogBox-Background",
-	edge = "Interface\\DialogFrame\\UI-DialogBox-Border",
+	crimson = { 122 / 255, 20 / 255, 32 / 255, 1 }, -- #7a1420
+	gold = { 226 / 255, 192 / 255, 86 / 255, 1 },
+	parchment = { 241 / 255, 228 / 255, 196 / 255, 1 }, -- #f1e4c4
+	ink = { 58 / 255, 24 / 255, 28 / 255, 1 },
+	muted = { 120 / 255, 84 / 255, 64 / 255, 1 },
+	plum = { 42 / 255, 26 / 255, 34 / 255, 1 }, -- #2a1a22
+	easy = { 62 / 255, 122 / 255, 69 / 255, 1 },
+	hard = { 196 / 255, 120 / 255, 48 / 255, 1 },
+	title = { 122 / 255, 20 / 255, 32 / 255, 1 },
+	body = { 58 / 255, 24 / 255, 28 / 255, 1 },
+	page = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-page",
+	cover = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-cover",
+	corner = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-corner",
+	ribbon = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-ribbon",
+	ribbonOn = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-ribbon-on",
+	check = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-check",
+	mark = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-mark",
+	rule = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-rule",
+	spine = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-spine",
+	plumTex = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-plum",
+	goldTex = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-gold",
+	crimsonTex = "Interface\\AddOns\\Northstar\\Media\\UI\\tome-crimson",
+	fontTitle = "Interface\\AddOns\\Northstar\\Media\\Fonts\\Cinzel-Regular.ttf",
+	fontBody = "Interface\\AddOns\\Northstar\\Media\\Fonts\\Alegreya-Regular.ttf",
+	fontFallback = "Fonts\\FRIZQT__.TTF",
 }
 
 local SCHEMES = {
