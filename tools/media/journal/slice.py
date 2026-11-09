@@ -218,15 +218,25 @@ def ingame(frame, letter):
 		print(name, f"{widget.width}x{widget.height}", "at", x, y, "on", f"{sw}x{sh}")
 
 	place(frame, "northstar-ingame-open.png")
-	slip = Image.new("RGBA", (280, 130), (0, 0, 0, 0))
-	card = letter.resize((280, 130), Image.Resampling.LANCZOS)
-	slip.paste(card, (0, 0), card)
+	# Closed tracker: a dark panel, top-left, clear of the minimap and the quest list.
+	# TOPLEFT 16, -140 on a 1:1 UI scale is x=16, y=140.
+	slip = Image.new("RGBA", (260, 112), (0, 0, 0, 0))
 	d = ImageDraw.Draw(slip)
-	d.text((48, 32), "The Hunt Begins", font=cinzel, fill=ink)
-	d.text((48, 54), "Kill Plainstriders (1/7)", font=small, fill=current)
-	d.text((48, 72), "Plainstrider Meat  1/7", font=small, fill=ink)
-	d.text((48, 90), "Ahead, 120 yd", font=small, fill=ink)
-	place(slip, "northstar-ingame-closed.png")
+	d.rectangle((0, 0, 259, 111), fill=(158, 138, 82, 255))
+	d.rectangle((1, 1, 258, 110), fill=(13, 10, 8, int(255 * 0.6)))
+	def ink_text(xy, text, fill):
+		d.text((xy[0] + 1, xy[1] + 1), text, font=small, fill=(0, 0, 0, 255))
+		d.text(xy, text, font=small, fill=fill)
+	ink_text((10, 10), "The Hunt Begins", (255, 209, 64, 255))
+	ink_text((10, 30), "Kill Plainstriders (1/7)", (255, 255, 255, 255))
+	ink_text((10, 50), "Plainstrider Meat", (200, 200, 200, 255))
+	ink_text((150, 50), "(1/7)", (226, 192, 86, 255))
+	ink_text((10, 70), "Plainstrider Beak", (61, 204, 110, 255))
+	ink_text((10, 90), "Ahead, 120 yd", (255, 255, 255, 255))
+	canvas = shot.copy()
+	canvas.alpha_composite(slip, (16, 140))
+	canvas.convert("RGB").save(ART / "northstar-ingame-closed.png")
+	print("northstar-ingame-closed.png", "260x112", "at", 16, 140, "on", f"{sw}x{sh}")
 
 
 if __name__ == "__main__":

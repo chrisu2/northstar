@@ -181,3 +181,31 @@ test('an old saved wide window stays closed unless wideGuide is set', () => {
 	assert.equal(journal, true);
 	assert.notEqual(shown, true);
 });
+
+test('closed tracker opacity and text scale are saved', () => {
+	const [opacity, scale, stored, alpha, path, size, flags, shadow, step] = load(`
+		Northstar.Set("ui.journal", false)
+		Northstar.RunCommand("opacity 40")
+		Northstar.Set("ui.trackerScale", 1.25)
+		local slip = NorthstarNowSlip
+		emit(Northstar.Get("ui.trackerOpacity"))
+		emit(Northstar.Get("ui.trackerScale"))
+		emit(NorthstarDB.settings.ui.trackerOpacity)
+		emit(slip.Bg:GetAlpha())
+		local font, px, outline = slip.Head:GetFont()
+		emit(font)
+		emit(px)
+		emit(outline)
+		emit(select(4, slip.Head:GetShadowColor()))
+		emit(slip.Step:GetText())
+	`);
+	assert.equal(opacity, 0.4);
+	assert.equal(scale, 1.25);
+	assert.equal(stored, 0.4);
+	assert.equal(alpha, 0.4);
+	assert.equal(path, 'Fonts\\FRIZQT__.TTF');
+	assert.equal(size, 16);
+	assert.equal(flags, 'OUTLINE');
+	assert.equal(shadow, 1);
+	assert.equal(step, 'Open a guide when you are ready.');
+});

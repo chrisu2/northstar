@@ -972,41 +972,94 @@ function Now.Apply(composed)
 	paintStrip(frame)
 end
 
+local GAME_FONT = "Fonts\\FRIZQT__.TTF"
+local SLIP_W = 260
+local SLIP_PAD = 10
+
+local function gameFont(fs, size)
+	if not fs:SetFont(GAME_FONT, size, "OUTLINE") then
+		fs:SetFont(GAME_FONT, size, "OUTLINE")
+	end
+	fs:SetShadowColor(0, 0, 0, 1)
+	if fs.SetShadowOffset then fs:SetShadowOffset(1, -1) end
+end
+
+local function slipNumber(path, fallback, lo, hi)
+	local n = ns.Get and ns.Get(path)
+	if type(n) ~= "number" then n = fallback end
+	if n < lo then n = lo elseif n > hi then n = hi end
+	return n
+end
+
+local function goldCount(text)
+	local plain, cur, max = tostring(text or ""):match("^(.-)%s*%((%d+)/(%d+)%)%s*$")
+	if not plain then return "|cffc8c8c8" .. tostring(text or "") .. "|r" end
+	return "|cffc8c8c8" .. plain .. " |cffe2c056(" .. cur .. "/" .. max .. ")|r"
+end
+
+function Now.PlaceSlip()
+	if not slip then return end
+	slip:ClearAllPoints()
+	local pos = ns.Get and ns.Get("ui.trackerPos")
+	if type(pos) == "table" and type(pos[1]) == "string" then
+		slip:SetPoint(pos[1], UIParent, pos[1], pos[2] or 0, pos[3] or 0)
+	else
+		-- Top-left, under the corner and clear of the right-hand quest tracker.
+		slip:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -140)
+	end
+end
+
 function Now.ShowSlip()
 	if not slip then
-		local Q = questColors()
 		slip = CreateFrame("Frame", "NorthstarNowSlip", UIParent)
-		slip:SetSize(280, 130)
-		slip:SetPoint("TOP", UIParent, "TOP", 0, -80)
+		slip:SetWidth(SLIP_W)
 		slip:SetFrameStrata("MEDIUM")
-		local bg = slip:CreateTexture(nil, "BACKGROUND")
-		bg:SetAllPoints()
-		bg:SetTexture(Q.letter)
-		slip.Head = label(slip, "GameFontNormal", "ink")
-		face(slip.Head, Q.fontTitle, 13)
-		slip.Head:SetPoint("TOPLEFT", 36, -28)
-		slip.Head:SetWidth(200)
-		slip.Line = label(slip, "GameFontHighlightSmall", "current")
-		face(slip.Line, Q.fontBody, 12)
-		slip.Line:SetPoint("TOPLEFT", 36, -50)
-		slip.Line:SetWidth(200)
-		slip.Course = label(slip, "GameFontHighlightSmall", "ink")
-		face(slip.Course, Q.fontBody, 12)
-		slip.Course:SetPoint("TOPLEFT", 36, -72)
-		slip.Course:SetWidth(200)
+		slip:SetMovable(true)
+		slip:SetClampedToScreen(true)
 		slip:EnableMouse(true)
-		slip:SetScript("OnMouseUp", function()
-			if ns.Set then ns.Set("ui.journal", true) end
-			slip:Hide()
-			Now.Show()
+		slip:RegisterForDrag("LeftButton")
+		local edge = slip:CreateTexture(nil, "BACKGROUND")
+		edge:SetAllPoints()
+		edge:SetColorTexture(0.62, 0.54, 0.32, 1)
+		local bg = slip:CreateTexture(nil, "BORDER")
+		bg:SetPoint("TOPLEFT", 1, -1)
+		bg:SetPoint("BOTTOMRIGHT", -1, 1)
+		bg:SetColorTexture(0.05, 0.04, 0.03, 1)
+		slip.Bg = bg
+		local function line()
+			local fs = slip:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+			fs:SetJustifyH("LEFT")
+			fs:SetJustifyV("TOP")
+			fs:SetWordWrap(true)
+			return fs
+		end
+		slip.Head = line()
+		slip.Step = line()
+		slip.Rows = {}
+		for i = 1, 6 do slip.Rows[i] = line() end
+		slip:SetScript("OnDragStart", function(self)
+			if ns.Get and ns.Get("ui.trackerLocked") then return end
+			self:StartMoving()
+		end)
+		slip:SetScript("OnDragStop", function(self)
+			self:StopMovingOrSizing()
+			local point, _, _, x, y = self:GetPoint()
+			if point and ns.Set then ns.Set("ui.trackerPos", { point, x or 0, y or 0 }) end
 		end)
 	end
+	Now.PlaceSlip()
 	slip:Show()
 	Now.PaintSlip()
 end
 
 function Now.PaintSlip()
 	if not slip or not slip:IsShown() then return end
+	local scale = slipNumber("ui.trackerScale", 1, 0.8, 1.5)
+	local opacity = slipNumber("ui.trackerOpacity", 0.6, 0, 1)
+	slip.Bg:SetAlpha(opacity)
+	local titleSize = math.floor(13 * scale + 0.5)
+	local bodySize = math.floor(12 * scale + 0.5)
+	local width = SLIP_W - SLIP_PAD * 2
 	local E = ns.Engine
 	local view
 	if E and E.GetStepIndex and E.GetStepView then
@@ -1014,9 +1067,40 @@ function Now.PaintSlip()
 		if i then view = E.GetStepView(i) end
 	end
 	local composed = Now.Compose(view)
-	slip.Head:SetText(composed.title or "")
-	slip.Line:SetText(composed.next or "")
-	slip.Course:SetText(Now.CourseLine())
+	local function place(fs, text, size, r, g, b)
+		gameFont(fs, size)
+		fs:SetTextColor(r, g, b, 1)
+		fs:SetText(text or "")
+		fs:SetWidth(width)
+		fs:ClearAllPoints()
+		fs:Show()
+	end
+	local y = SLIP_PAD
+	place(slip.Head, composed.title or "", titleSize, 1, 0.82, 0.25)
+	slip.Head:SetPoint("TOPLEFT", SLIP_PAD, -y)
+	y = y + slip.Head:GetStringHeight() + 3
+	place(slip.Step, composed.next or "", bodySize, 1, 1, 1)
+	slip.Step:SetPoint("TOPLEFT", SLIP_PAD, -y)
+	y = y + slip.Step:GetStringHeight() + 3
+	local checks = composed.checks or {}
+	local shown = 0
+	for i = 1, #slip.Rows do
+		local row = checks[i]
+		local fs = slip.Rows[i]
+		if row and row.text and row.text ~= "" then
+			shown = shown + 1
+			local text = row.done and ("|cff3dcc6e" .. row.text .. "|r") or goldCount(row.text)
+			place(fs, text, bodySize, 0.78, 0.78, 0.78)
+			fs:SetPoint("TOPLEFT", SLIP_PAD, -y)
+			y = y + fs:GetStringHeight() + 2
+		else
+			fs:Hide()
+		end
+	end
+	if shown == 0 then
+		-- The step line already says the action. Leave the list empty.
+	end
+	slip:SetHeight(y + SLIP_PAD)
 end
 
 function Now.Refresh()
@@ -1067,7 +1151,11 @@ ns.On("TOGGLE_JOURNAL", function()
 	sync()
 end)
 ns.On("SETTING_CHANGED", function(path)
-	if path == "ui.journal" or path == "ui.shown" then sync() end
+	if path == "ui.journal" or path == "ui.shown" then sync()
+	elseif path == "ui.trackerOpacity" or path == "ui.trackerScale" or path == "ui.trackerPos" then
+		if slip and slip:IsShown() then Now.PaintSlip() end
+		if path == "ui.trackerPos" then Now.PlaceSlip() end
+	end
 end)
 ns.On("GUIDE_CHANGED", function() Now.Refresh() end)
 -- The arrow already follows these. The sheet was only painted on guide
@@ -1078,6 +1166,14 @@ ns.On("WAYPOINT_CHANGED", function() Now.Refresh() end)
 
 if ns.RegisterCommand then
 	ns.RegisterCommand("journal", function() ns.Fire("TOGGLE_JOURNAL") end, "Show or hide the step list")
+	ns.RegisterCommand("opacity", function(rest)
+		local n = tonumber(rest)
+		if not n or n < 0 or n > 100 then
+			if ns.Print then ns.Print("Usage: /ns opacity 0-100") end
+			return
+		end
+		ns.Set("ui.trackerOpacity", n / 100)
+	end, "Closed tracker background, 0 to 100. The text stays solid.")
 	ns.RegisterCommand("fish", function()
 		ns.Set("ui.journal", true)
 		ns.Set("ui.shown", true)

@@ -17,7 +17,10 @@ local format, type = string.format, type
 
 ns.RegisterDefaults("ui", {
 	shown = true,
-	journal = true, -- the compact current-action bar; the old guide window stays tucked away
+	journal = true, -- the open book; closing it leaves the small tracker note
+	trackerOpacity = 0.6, -- the closed note's ground, 0..1; the text stays solid
+	trackerScale = 1, -- 0.8..1.5, the closed note's text against 13px
+	trackerLocked = false, -- the closed note moves only when this is off
 	wideGuide = false, -- the old wide guide window, off unless turned on in saved settings
 	locked = false,
 	lockHud = false, -- the arrow, the action buttons and the timers move only on a Shift-drag (ns.DragLocked)

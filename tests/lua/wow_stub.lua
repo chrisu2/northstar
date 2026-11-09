@@ -240,6 +240,11 @@ function Methods.GetTextColor(self)
 	return c[1], c[2], c[3], c[4]
 end
 function Methods.SetShadowColor(self, r, g, b, a) self.shadowColor = { r, g, b, a or 1 } end
+function Methods.SetShadowOffset(self, x, y) self.shadowOffset = { x or 0, y or 0 } end
+function Methods.GetShadowOffset(self)
+	local o = self.shadowOffset or { 0, 0 }
+	return o[1], o[2]
+end
 function Methods.GetShadowColor(self)
 	local c = self.shadowColor or { 0, 0, 0, 0 }
 	return c[1], c[2], c[3], c[4]
