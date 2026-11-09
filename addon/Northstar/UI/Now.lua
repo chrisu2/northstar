@@ -16,6 +16,7 @@ Fish.GUIDE = "forever/professions/fishing"
 Sheet.AREAS = { "quest", "class", "trade", "pvp" }
 
 local f
+local slip
 local area = "quest"
 local stepsOpen = true
 local COMPACT_H = 500
@@ -537,7 +538,11 @@ local function build()
 	close.Label:SetAllPoints()
 	close.Label:SetJustifyH("CENTER")
 	close.Label:SetText("x")
-	close:SetScript("OnClick", function() f:Hide() end)
+	close:SetScript("OnClick", function()
+		f:Hide()
+		if ns.Set then ns.Set("ui.journal", false) end
+		Now.ShowSlip()
+	end)
 
 	-- Leather cut from the book's own cover, laid over the ring binding.
 	local gutter = plate(f, Q.spine, "ARTWORK")
@@ -556,12 +561,14 @@ local function build()
 	f.Menu:SetSize(1, 1)
 	f.Menu:Hide()
 
+	-- Leveling and Class stay on the left page. Professions and PvP stay on
+	-- the right page. Neither pair crosses the binding.
 	f.Areas = {}
-	local ribbonX = 150
+	local tabX = { quest = 108, class = 230, trade = 468, pvp = 640 }
 	for _, spec in ipairs(AREAS) do
 		local b = CreateFrame("Button", nil, f)
 		b:SetHeight(22)
-		b:SetPoint("TOPLEFT", ribbonX, -44)
+		b:SetPoint("TOPLEFT", tabX[spec.id], -44)
 		b.Icon = plate(b, Q.ribbon, "ARTWORK")
 		b.Icon:SetSize(22, 14)
 		b.Icon:SetPoint("LEFT", 0, 0)
@@ -573,14 +580,13 @@ local function build()
 		face(b.Label, Q.fontBody, 12)
 		b.Label:SetPoint("LEFT", 24, 0)
 		b.Label:SetText(spec.label)
-		b:SetWidth(24 + (spec.label:len() * 7) + 8)
+		b:SetWidth(24 + (spec.label:len() * 7) + 12)
 		b.areaId = spec.id
 		b:SetScript("OnClick", function()
 			area = spec.id
 			Now.Refresh()
 		end)
 		f.Areas[spec.id] = b
-		ribbonX = ribbonX + b:GetWidth() + 10
 	end
 
 	f.ZoneHead = label(left, "GameFontHighlightSmall", "ink")
@@ -591,8 +597,8 @@ local function build()
 	f.Rows = {}
 	for i = 1, 12 do
 		local b = CreateFrame("Button", nil, left)
-		b:SetSize(250, ROW_H)
-		b:SetPoint("TOPLEFT", 4, -28 - (i - 1) * ROW_H)
+		b:SetSize(210, ROW_H)
+		b:SetPoint("TOPLEFT", 8, -28 - (i - 1) * ROW_H)
 		b.Seal = plate(b, Q.seal, "ARTWORK")
 		b.Seal:SetSize(14, 14)
 		b.Seal:SetPoint("LEFT", 0, 0)
@@ -603,7 +609,7 @@ local function build()
 		b.Label:SetText("")
 		b.Range = label(b, "GameFontHighlightSmall", "ink")
 		face(b.Range, Q.fontBody, 11)
-		b.Range:SetPoint("RIGHT", -2, 0)
+		b.Range:SetPoint("RIGHT", -18, 0)
 		b.Range:SetJustifyH("RIGHT")
 		b.Range:SetText("")
 		b:SetScript("OnClick", function(self)
@@ -654,7 +660,7 @@ local function build()
 
 	f.Strip = CreateFrame("Frame", nil, right)
 	f.Strip:SetPoint("TOPLEFT", 8, -90)
-	f.Strip:SetSize(280, 100)
+	f.Strip:SetSize(270, 108)
 	f.StripRows = {}
 	for i = 1, 8 do
 		local row = CreateFrame("Frame", nil, f.Strip)
@@ -675,15 +681,15 @@ local function build()
 	end
 
 	f.Note = CreateFrame("Frame", nil, right)
-	f.Note:SetPoint("BOTTOMLEFT", 4, 22)
-	f.Note:SetSize(260, 190)
+	f.Note:SetPoint("BOTTOMLEFT", 16, 16)
+	f.Note:SetSize(240, 150)
 	local noteBg = plate(f.Note, Q.letter)
 	noteBg:SetAllPoints()
 
 	f.Head = label(f.Note, "GameFontNormal", "ink")
 	face(f.Head, Q.fontTitle, 12)
-	f.Head:SetPoint("TOPLEFT", 28, -28)
-	f.Head:SetWidth(180)
+	f.Head:SetPoint("TOPLEFT", 40, -36)
+	f.Head:SetWidth(160)
 	if f.Head.SetWordWrap then f.Head:SetWordWrap(true) end
 
 	f.Checks = {}
@@ -691,13 +697,13 @@ local function build()
 	for i = 1, 6 do
 		local mark = label(f.Note, "GameFontHighlightSmall", "easy")
 		face(mark, Q.fontBody, 11)
-		mark:SetPoint("TOPLEFT", 28, -50 - (i - 1) * 13)
+		mark:SetPoint("TOPLEFT", 40, -56 - (i - 1) * 12)
 		mark:SetText("v")
 		mark:Hide()
 		local line = label(f.Note, "GameFontHighlightSmall", "ink")
 		face(line, Q.fontBody, 11)
 		line:SetPoint("LEFT", mark, "RIGHT", 4, 0)
-		line:SetWidth(160)
+		line:SetWidth(140)
 		line:Hide()
 		f.Checks[i] = mark
 		f.GoalLines[i] = line
@@ -705,11 +711,11 @@ local function build()
 
 	f.Dir = label(f.Note, "GameFontHighlightSmall", "muted")
 	face(f.Dir, Q.fontBody, 11)
-	f.Dir:SetPoint("TOPLEFT", 28, -92)
+	f.Dir:SetPoint("TOPLEFT", 40, -96)
 	f.Dir:SetText("")
 	f.Course = label(f.Note, "GameFontHighlightSmall", "ink")
 	face(f.Course, Q.fontBody, 12)
-	f.Course:SetPoint("TOPLEFT", 28, -106)
+	f.Course:SetPoint("TOPLEFT", 40, -110)
 	f.Course:SetWidth(170)
 	f.Bear = label(f.Note, "GameFontHighlightSmall", "muted")
 	f.Bear:SetPoint("TOPLEFT", 8, -8)
@@ -867,7 +873,8 @@ local function paintStrip(frame)
 	local here = E and E.GetStepIndex and E.GetStepIndex() or 1
 	for i = 1, #frame.StripRows do
 		local row = frame.StripRows[i]
-		local index = here - 1 + i
+			-- One finished step, the current line, then the next few in neutral ink.
+			local index = here - 1 + i
 		local view = E and E.GetStepView and index >= 1 and E.GetStepView(index) or nil
 		if show and view and view.title then
 			local current = index == here
@@ -965,7 +972,55 @@ function Now.Apply(composed)
 	paintStrip(frame)
 end
 
+function Now.ShowSlip()
+	if not slip then
+		local Q = questColors()
+		slip = CreateFrame("Frame", "NorthstarNowSlip", UIParent)
+		slip:SetSize(280, 130)
+		slip:SetPoint("TOP", UIParent, "TOP", 0, -80)
+		slip:SetFrameStrata("MEDIUM")
+		local bg = slip:CreateTexture(nil, "BACKGROUND")
+		bg:SetAllPoints()
+		bg:SetTexture(Q.letter)
+		slip.Head = label(slip, "GameFontNormal", "ink")
+		face(slip.Head, Q.fontTitle, 13)
+		slip.Head:SetPoint("TOPLEFT", 36, -28)
+		slip.Head:SetWidth(200)
+		slip.Line = label(slip, "GameFontHighlightSmall", "current")
+		face(slip.Line, Q.fontBody, 12)
+		slip.Line:SetPoint("TOPLEFT", 36, -50)
+		slip.Line:SetWidth(200)
+		slip.Course = label(slip, "GameFontHighlightSmall", "ink")
+		face(slip.Course, Q.fontBody, 12)
+		slip.Course:SetPoint("TOPLEFT", 36, -72)
+		slip.Course:SetWidth(200)
+		slip:EnableMouse(true)
+		slip:SetScript("OnMouseUp", function()
+			if ns.Set then ns.Set("ui.journal", true) end
+			slip:Hide()
+			Now.Show()
+		end)
+	end
+	slip:Show()
+	Now.PaintSlip()
+end
+
+function Now.PaintSlip()
+	if not slip or not slip:IsShown() then return end
+	local E = ns.Engine
+	local view
+	if E and E.GetStepIndex and E.GetStepView then
+		local i = E.GetStepIndex()
+		if i then view = E.GetStepView(i) end
+	end
+	local composed = Now.Compose(view)
+	slip.Head:SetText(composed.title or "")
+	slip.Line:SetText(composed.next or "")
+	slip.Course:SetText(Now.CourseLine())
+end
+
 function Now.Refresh()
+	Now.PaintSlip()
 	if not f or not f:IsShown() then return end
 	local E = ns.Engine
 	if E and E.GetGuide then
@@ -981,6 +1036,7 @@ end
 
 function Now.Show()
 	build()
+	if slip then slip:Hide() end
 	f:Show()
 	Now.Refresh()
 end
@@ -998,7 +1054,7 @@ local function shown()
 end
 
 local function sync()
-	if shown() then Now.Show() else Now.Hide() end
+	if shown() then Now.Show() else Now.Hide(); Now.ShowSlip() end
 end
 
 ns.On("TOGGLE_JOURNAL", function()

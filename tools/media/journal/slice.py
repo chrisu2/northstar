@@ -50,6 +50,27 @@ def write_tga(path, image):
 	path.write_bytes(bytes(header) + bgra)
 
 
+def natural_parchment(image):
+	"""Cut the cyan rim and the black corner. Leave the warm painted face."""
+	im = image.convert("RGBA")
+	pix = im.load()
+	w, h = im.size
+	for y in range(h):
+		for x in range(w):
+			r, g, b, a = pix[x, y]
+			if a < 40 or (r < 45 and g < 45 and b < 45):
+				pix[x, y] = (0, 0, 0, 0)
+				continue
+			# Cyan and pink rim light on the curl. The face itself stays.
+			if b > r + 4 and b > 90:
+				pix[x, y] = (0, 0, 0, 0)
+				continue
+			if r > 160 and b > g + 20 and g < 150:
+				pix[x, y] = (0, 0, 0, 0)
+	bbox = im.getbbox()
+	return im.crop(bbox) if bbox else im
+
+
 def fit(image, tw, th):
 	"""Scale image to fit inside tw,th. No crop, no stretch. Transparent rest."""
 	im = image.convert("RGBA")
@@ -85,8 +106,9 @@ def main():
 	write_tga(OUT / "journal-spine.tga", spine)
 
 	# Sprite sheet, left to right: scroll, loose parchment, map, letter, open letter.
-	# The loose sheet, not the envelope: the envelope's writing panel is too small for the tracker.
-	letter = sheet.crop((317, 13, 550, 275))
+	# The loose sheet. Drop the cyan rim light and the black corner so the
+	# writing face stays the painted warm parchment.
+	letter = natural_parchment(sheet.crop((317, 13, 550, 275)))
 	letter_tex, _ = fit(letter, 256, 256)
 	write_tga(OUT / "journal-letter.tga", letter_tex)
 
@@ -123,9 +145,9 @@ def preview(book, letter, ribbon, seal, uv):
 	# Cover the rings with the leather strip.
 	spine = book.crop((136, 260, 166, 760)).resize((52, 420), Image.Resampling.LANCZOS)
 	frame.paste(spine, (386, 48), spine)
-	# Letter card on the lower right page. Text sits on its white paper.
-	card = letter.resize((250, 200), Image.Resampling.LANCZOS)
-	frame.paste(card, (520, 270), card)
+	# Parchment note on the lower right page. Text stays inside the face.
+	card = letter.resize((240, 150), Image.Resampling.LANCZOS)
+	frame.paste(card, (500, 330), card)
 	# Ribbon tabs along the top.
 	names = [("Leveling", True), ("Class", False), ("Professions", False), ("PvP", False)]
 	ink = (0x3A, 0x24, 0x14, 255)
@@ -137,7 +159,7 @@ def preview(book, letter, ribbon, seal, uv):
 	small = ImageFont.truetype(str(FONTS / "Alegreya-Regular.ttf"), 13)
 	d = ImageDraw.Draw(frame)
 	d.text((348, 8), "Northstar", font=cinzel, fill=(226, 196, 140, 255))
-	for text, on, x in (("Leveling", True, 120), ("Class", False, 250), ("Professions", False, 370), ("PvP", False, 540)):
+	for text, on, x in (("Leveling", True, 108), ("Class", False, 230), ("Professions", False, 468), ("PvP", False, 640)):
 		icon = seal.resize((18, 18), Image.Resampling.LANCZOS) if on else ribbon.resize((22, 14), Image.Resampling.LANCZOS)
 		frame.paste(icon, (x, 46), icon)
 		d.text((x + 26, 44), text, font=small, fill=ink)
@@ -150,7 +172,7 @@ def preview(book, letter, ribbon, seal, uv):
 			mark = seal.resize((16, 16), Image.Resampling.LANCZOS)
 			frame.paste(mark, (112, y), mark)
 		d.text((132, y - 2), name, font=body, fill=ink)
-		d.text((360, y - 2), lv, font=small, fill=ink)
+		d.text((300, y - 2), lv, font=small, fill=ink)
 		y += 22
 	d.text((470, 78), "M", font=dropf, fill=current)
 	d.text((498, 86), "ulgore", font=cinzel, fill=ink)
@@ -158,13 +180,53 @@ def preview(book, letter, ribbon, seal, uv):
 	d.text((470, 140), "Kill Plainstriders (1/7)", font=body, fill=current)
 	d.text((470, 166), "Speak with Grull Hawkwind", font=body, fill=done)
 	# Text sits on the letter's white paper.
-	d.text((555, 310), "The Hunt Begins", font=cinzel, fill=ink)
-	d.text((555, 332), "Plainstrider Meat  1/7", font=small, fill=current)
-	d.text((555, 350), "Plainstrider Beak  7/7", font=small, fill=done)
-	d.text((555, 372), "Ahead, 120 yd", font=small, fill=ink)
+	neutral = (0x6A, 0x4A, 0x32, 255)
+	d.text((470, 188), "Return to Grull Hawkwind", font=small, fill=neutral)
+	d.text((470, 208), "Accept The Battleboars", font=small, fill=neutral)
+	d.text((530, 368), "The Hunt Begins", font=cinzel, fill=ink)
+	d.text((530, 390), "Plainstrider Meat  1/7", font=small, fill=current)
+	d.text((530, 408), "Plainstrider Beak  7/7", font=small, fill=done)
+	d.text((530, 428), "Ahead, 120 yd", font=small, fill=ink)
 	ART.mkdir(parents=True, exist_ok=True)
+	ingame(frame, letter)
 	frame.convert("RGB").save(ART / "northstar-tome.png")
 	print("preview", ART / "northstar-tome.png", "uv", uv)
+
+
+def ingame(frame, letter):
+	"""Lay the real window on Chris's Forever shot.
+
+	Assumption: Use UI Scale is off, so 1 UI unit is 1 screenshot pixel.
+	The book is 820 by 500, anchored to the top centre, 80 pixels down.
+	The closed note uses that same anchor and is 280 by 130.
+	"""
+	shot_path = Path("/home/ubuntu/.cursor/projects/workspace/uploads/forever-ui_cebb.png")
+	shot = Image.open(shot_path).convert("RGBA")
+	sw, sh = shot.size
+	ink = (0x3A, 0x24, 0x14, 255)
+	current = (0x8A, 0x32, 0x22, 255)
+	done = (0x2F, 0x6B, 0x3A, 255)
+	cinzel = ImageFont.truetype(str(FONTS / "Cinzel-Regular.ttf"), 13)
+	small = ImageFont.truetype(str(FONTS / "Alegreya-Regular.ttf"), 12)
+
+	def place(widget, name):
+		canvas = shot.copy()
+		x = (sw - widget.width) // 2
+		y = 80
+		canvas.alpha_composite(widget, (x, y))
+		canvas.convert("RGB").save(ART / name)
+		print(name, f"{widget.width}x{widget.height}", "at", x, y, "on", f"{sw}x{sh}")
+
+	place(frame, "northstar-ingame-open.png")
+	slip = Image.new("RGBA", (280, 130), (0, 0, 0, 0))
+	card = letter.resize((280, 130), Image.Resampling.LANCZOS)
+	slip.paste(card, (0, 0), card)
+	d = ImageDraw.Draw(slip)
+	d.text((48, 32), "The Hunt Begins", font=cinzel, fill=ink)
+	d.text((48, 54), "Kill Plainstriders (1/7)", font=small, fill=current)
+	d.text((48, 72), "Plainstrider Meat  1/7", font=small, fill=ink)
+	d.text((48, 90), "Ahead, 120 yd", font=small, fill=ink)
+	place(slip, "northstar-ingame-closed.png")
 
 
 if __name__ == "__main__":
